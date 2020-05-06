@@ -1,11 +1,9 @@
-context("Test the overall app", () => {
+context("Test multiple-choice", () => {
   beforeEach(() => {
-    cy.visit("");
+    cy.visit("/multiple-choice");
   });
 
-  describe("Desktop functionalities", () => {
-    it("renders with text", () => {
-      cy.get(".app").should("have.text", "Hello World");
-    });
+  it("renders with text", () => {
+    cy.get("#app").should("have.text", "Loading...");
   });
 });
