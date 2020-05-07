@@ -11,7 +11,8 @@ module.exports = (env, argv) => {
     context: __dirname, // to automatically find tsconfig.json
     devtool: 'source-map',
     entry: {
-      'multiple-choice': './src/multiple-choice/index.tsx'
+      'multiple-choice': './src/multiple-choice/index.tsx',
+      'wrapper': './src/shared/wrapper.tsx'
     },
     mode: 'development',
     output: {
@@ -86,9 +87,12 @@ module.exports = (env, argv) => {
         filename: 'multiple-choice/index.html',
         template: 'src/shared/index.html'
       }),
-      new CopyWebpackPlugin([
-        {from: 'src/public', to: 'multiple-choice/'}
-      ]),
+      // Wrapper page, useful for testing and Cypress.
+      new HtmlWebpackPlugin({
+        chunks: ['wrapper'],
+        filename: 'wrapper.html',
+        template: 'src/shared/wrapper.html'
+      })
     ]
   };
 };

@@ -1,14 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import iframePhone from "iframe-phone";
-
-type Mode = "runtime" | "authoring"
-
-interface IframePhone {
-  post: (type: string, data: any) => void;
-  addListener: (type: string, handler: (data: any) => void) => void;
-  initialize: () => void;
-  disconnect: () => void;
-}
+import { IframePhone, Mode } from "../types";
 
 interface IConfig {
   authoredState: boolean;
@@ -23,10 +15,8 @@ export const useLARAInteractiveAPI = (config: IConfig) => {
   const [ interactiveState, setInteractiveState ] = useState<any>();
 
   const initInteractive = (data: any) => {
-    const newAuthoredState = typeof data.authoredState === "string" ? JSON.parse(data.authoredState) : data.authoredState;
-    const newInteractiveState = typeof data.interactiveState === "string" ? JSON.parse(data.interactiveState) : data.interactiveState;
-    setAuthoredState(newAuthoredState);
-    setInteractiveState(newInteractiveState);
+    setAuthoredState(data.authoredState);
+    setInteractiveState(data.interactiveState);
     setMode(data.mode);
   };
 
