@@ -21,7 +21,7 @@ describe("Authoring", () => {
     expect(formEl.props().formData).toEqual(authoredState);
   });
 
-  it("calls setAuthoredState on form change and generates unique IDs for choices (if missing)", () => {
+  it("calls setAuthoredState on form change and generates unique IDs for choices when they're missing", () => {
     const setState = jest.fn();
     const wrapper = mount(<Authoring authoredState={authoredState} setAuthoredState={setState} />);
     const form = wrapper.find(Form).instance();
@@ -42,5 +42,15 @@ describe("Authoring", () => {
     expect(setStateArg.choices[0].id).toBeDefined();
     expect(setStateArg.choices[1].id).toBeDefined();
     expect(setStateArg.choices[0].id).not.toEqual(setStateArg.choices[1].id);
+  });
+
+  it("calls setAuthoredState on form change and doesn't overwrite existing choice IDs", () => {
+    const setState = jest.fn();
+    const wrapper = mount(<Authoring authoredState={authoredState} setAuthoredState={setState} />);
+    const form = wrapper.find(Form).instance();
+    // Mocked form, see __mocks__ dir.
+    (form as any).triggerChange(authoredState);
+
+    expect(setState).toHaveBeenCalledWith(authoredState);
   });
 });
