@@ -8,8 +8,8 @@ interface IInteractiveState {
 
 interface IProps {
   authoredState: IAuthoredState;
-  interactiveState: IInteractiveState | null;
-  setInteractiveState: (state: IInteractiveState) => void;
+  interactiveState?: IInteractiveState;
+  setInteractiveState?: (state: IInteractiveState) => void;
 }
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState }) => {
@@ -39,15 +39,17 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         newChoices.splice(currentIdx, 1);
       }
     }
-    setInteractiveState(Object.assign({}, interactiveState, { selectedChoiceIds: newChoices }));
+    if (setInteractiveState) {
+      setInteractiveState(Object.assign({}, interactiveState, { selectedChoiceIds: newChoices }));
+    }
   };
 
   return (
     <div className={css.runtime}>
-      <div>{ authoredState.prompt }</div>
+      { authoredState.prompt && <div>{ authoredState.prompt }</div> }
       <div>
         {
-          authoredState.choices.map(choice =>
+          authoredState.choices && authoredState.choices.map(choice =>
             <div key={choice.id}>
               <input
                 type={type}
@@ -60,6 +62,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           )
         }
       </div>
+      {
+        authoredState.extraInstructions &&
+        <div className={css.extraInstructions}>{ authoredState.extraInstructions }</div>
+      }
     </div>
   );
 };

@@ -12,14 +12,15 @@ import css from "./authoring.scss";
 export interface IChoice {
   id: string;
   content: string;
-  correct: boolean | null;
+  correct?: boolean;
 }
 
 export interface IAuthoredState {
   version: number;
-  prompt: string;
-  multipleAnswers: boolean;
-  choices: IChoice[];
+  prompt?: string;
+  extraInstructions?: string;
+  multipleAnswers?: boolean;
+  choices?: IChoice[];
 }
 
 const schemaVersion = 1;
@@ -38,6 +39,10 @@ const schema: JSONSchema6 = {
     },
     prompt: {
       title: "Prompt",
+      type: "string"
+    },
+    extraInstructions: {
+      title: "Extra instructions",
       type: "string"
     },
     multipleAnswers: {
@@ -77,6 +82,9 @@ const uiSchema = {
   prompt: {
     "ui:widget": "textarea"
   },
+  extraInstructions: {
+    "ui:widget": "textarea"
+  },
   choices: {
     items: {
       id: {
@@ -88,7 +96,7 @@ const uiSchema = {
 
 interface IProps {
   authoredState: IAuthoredState;
-  setAuthoredState: (state: IAuthoredState) => void;
+  setAuthoredState?: (state: IAuthoredState) => void;
 }
 
 export const Authoring: React.FC<IProps> = ({ authoredState, setAuthoredState }) => {
@@ -101,7 +109,9 @@ export const Authoring: React.FC<IProps> = ({ authoredState, setAuthoredState })
       }
     });
     // Immediately save the data.
-    setAuthoredState(event.formData);
+    if (setAuthoredState) {
+      setAuthoredState(event.formData);
+    }
   };
 
   return (
