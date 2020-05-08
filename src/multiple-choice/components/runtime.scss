@@ -1,0 +1,11 @@
+.runtime {
+  // These values should match LARA. In the future, we might extend interactive API so LARA can provide them.
+  padding: 20px 20px 13px;
+  font-family: Helvetica, Arial, sans-serif;
+  font-weight: 500;
+  font-size: 16px;
+
+  input {
+    margin-right: 10px;
+  }
+}

@@ -22,7 +22,7 @@
     ],
     "moduleNameMapper": {
       "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>/__mocks__/fileMock.js",
-      "\\.(css|less|sass)$": "identity-obj-proxy"
+      "\\.(css|less|sass|scss)$": "identity-obj-proxy"
     },
     "moduleFileExtensions": [
       "ts",
@@ -70,6 +70,8 @@
     "@types/jest": "^25.2.1",
     "@types/react": "^16.9.34",
     "@types/react-dom": "^16.9.7",
+    "@types/react-jsonschema-form": "^1.7.2",
+    "@types/uuid": "^7.0.3",
     "autoprefixer": "^9.7.6",
     "babel-core": "^6.26.3",
     "babel-jest": "^25.5.1",
@@ -105,7 +107,11 @@
     "webpack-dev-server": "^3.10.3"
   },
   "dependencies": {
+    "iframe-phone": "^1.2.1",
     "react": "^16.13.1",
-    "react-dom": "^16.13.1"
+    "react-dom": "^16.13.1",
+    "react-jsonschema-form": "^1.8.1",
+    "shutterbug": "^1.2.0",
+    "uuid": "^8.0.0"
   }
 }

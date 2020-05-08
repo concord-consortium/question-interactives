@@ -10,10 +10,13 @@ module.exports = (env, argv) => {
   return {
     context: __dirname, // to automatically find tsconfig.json
     devtool: 'source-map',
-    entry: './src/index.tsx',
+    entry: {
+      'multiple-choice': './src/multiple-choice/index.tsx',
+      'wrapper': './src/shared/wrapper.tsx'
+    },
     mode: 'development',
     output: {
-      filename: 'assets/index.[hash].js'
+      filename: '[name]/assets/index.[hash].js'
     },
     performance: { hints: false },
     module: {
@@ -33,10 +36,26 @@ module.exports = (env, argv) => {
           loader: 'ts-loader'
         },
         {
-          test: /\.(sa|sc|c)ss$/i,
+          test: /\.css$/i,
           use: [
             devMode ? 'style-loader' : MiniCssExtractPlugin.loader,
-            'css-loader',
+            'css-loader'
+          ]
+        },
+        {
+          test: /\.(sa|sc)ss$/i,
+          use: [
+            devMode ? 'style-loader' : MiniCssExtractPlugin.loader,
+            {
+              loader: 'css-loader',
+              options: {
+                modules: {
+                  localIdentName: '[name]--[local]--question-int'
+                },
+                sourceMap: true,
+                importLoaders: 1
+              }
+            },
             'postcss-loader',
             'sass-loader'
           ]
@@ -45,7 +64,8 @@ module.exports = (env, argv) => {
           test: /\.(png|woff|woff2|eot|ttf|svg)$/,
           loader: 'url-loader',
           options: {
-            limit: 8192
+            limit: 8192,
+            publicPath: '../../'
           }
         }
       ]
@@ -59,15 +79,20 @@ module.exports = (env, argv) => {
     },
     plugins: [
       new MiniCssExtractPlugin({
-        filename: devMode ? "assets/index.css" : "assets/index.[hash].css"
+        filename: devMode ? "[name]/assets/index.css" : "[name]/assets/index.[hash].css"
       }),
+      // HtmlWebpackPlugin and CopyWebpackPlugin will need to be configured in a similar way for all future question types.
       new HtmlWebpackPlugin({
-        filename: 'index.html',
-        template: 'src/index.html'
+        chunks: ['multiple-choice'],
+        filename: 'multiple-choice/index.html',
+        template: 'src/shared/index.html'
       }),
-      new CopyWebpackPlugin([
-        {from: 'src/public'}
-      ])
+      // Wrapper page, useful for testing and Cypress.
+      new HtmlWebpackPlugin({
+        chunks: ['wrapper'],
+        filename: 'wrapper.html',
+        template: 'src/shared/wrapper.html'
+      })
     ]
   };
 };
