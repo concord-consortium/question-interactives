@@ -34,6 +34,10 @@ export const useLARAInteractiveAPI = (config: IConfig) => {
     phone.current?.post("interactiveState", state);
   }
 
+  const handleSetHeight = (height: number) => {
+    phone.current?.post("height", height);
+  }
+
   useEffect(() => {
     const intPhone = iframePhone.getIFrameEndpoint();
     intPhone.addListener("initInteractive", initInteractive);
@@ -51,13 +55,19 @@ export const useLARAInteractiveAPI = (config: IConfig) => {
     // Note that this callback might be executed multiple times, e.g. when aspectRatio is updated.
     // LARA seems to accept that perfectly fine. It would be nicer if it was possible to set aspect ratio
     // on its own, without sending the complete configuration each time. But it doesn't seem to break anything.
+    const features: any = {};
+    if (config.authoredState) {
+      features.authoredState = true;
+    }
+    if (config.interactiveState) {
+      features.interactiveState = true;
+    }
+    if (config.aspectRatio) {
+      features.aspectRatio = config.aspectRatio;
+    }
     phone.current?.post("supportedFeatures", {
       apiVersion: 1,
-      features: {
-        authoredState: config.authoredState,
-        interactiveState: config.interactiveState,
-        aspectRatio: config.aspectRatio
-      }
+      features
     });
   }, [config.authoredState, config.interactiveState, config.aspectRatio])
 
@@ -66,6 +76,7 @@ export const useLARAInteractiveAPI = (config: IConfig) => {
     authoredState,
     interactiveState,
     setAuthoredState: handleAuthoredStateChange,
-    setInteractiveState: handleInteractiveStateChange
+    setInteractiveState: handleInteractiveStateChange,
+    setHeight: handleSetHeight
   };
 }

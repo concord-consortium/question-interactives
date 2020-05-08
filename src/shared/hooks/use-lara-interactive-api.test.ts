@@ -65,6 +65,15 @@ describe("useLARAInteractiveAPI", () => {
     expect(phone.post).toHaveBeenCalledWith("interactiveState", "newInteractiveState");
   });
 
+  it("sends preffered interactive height back to LARA", () => {
+    const { result } = renderHook(DefHookWrapper);
+    const phone = iframePhone.getIFrameEndpoint();
+    act(() => {
+      result.current.setHeight(123);
+    });
+    expect(phone.post).toHaveBeenCalledWith("height", 123);
+  });
+
   it("responds to getInteractiveState message", () => {
     const { result } = renderHook(DefHookWrapper);
     const phone = iframePhone.getIFrameEndpoint();

@@ -1,5 +1,5 @@
 import React from "react";
-import { shallow } from "enzyme";
+import { mount, shallow } from "enzyme";
 import { App } from "./app";
 import { Runtime } from "./runtime";
 import { Authoring } from "./authoring";
@@ -13,7 +13,8 @@ jest.mock("../../shared/hooks/use-lara-interactive-api", () => ({
 describe("App", () => {
   beforeEach(() => {
     mode = undefined;
-  })
+  });
+
   it("should render Runtime or Authoring component depending on the mode", () => {
     mode = "runtime";
     let wrapper = shallow(<App />);
@@ -24,5 +25,14 @@ describe("App", () => {
     wrapper = shallow(<App />);
     expect(wrapper.find(Authoring).length).toEqual(1);
     expect(wrapper.find(Runtime).length).toEqual(0);
+  });
+
+  it("should listen to window resize event", () => {
+    const addSpy = jest.spyOn(window, "addEventListener");
+    const removeSpy = jest.spyOn(window, "removeEventListener");
+    const wrapper = mount(<App />);
+    expect(addSpy).toHaveBeenCalledWith("resize", expect.anything());
+    wrapper.unmount();
+    expect(removeSpy).toHaveBeenCalledWith("resize", expect.anything());
   });
 });
