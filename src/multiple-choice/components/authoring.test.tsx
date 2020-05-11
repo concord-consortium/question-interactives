@@ -1,6 +1,6 @@
 import React from "react";
 import { mount, shallow } from "enzyme";
-import { Authoring } from "./authoring";
+import { Authoring, IAuthoredState } from "./authoring";
 import Form from "react-jsonschema-form";
 
 const authoredState = {
@@ -52,5 +52,15 @@ describe("Authoring", () => {
     (form as any).triggerChange(authoredState);
 
     expect(setState).toHaveBeenCalledWith(authoredState);
+  });
+
+  it("prepopulates 3 choices", () => {
+    const setState = jest.fn();
+    const wrapper = mount(<Authoring authoredState={undefined} setAuthoredState={setState} />);
+    const formEl = wrapper.find(Form);
+    expect(formEl.length).toEqual(1);
+    const formData: IAuthoredState = formEl.props().formData as any;
+    expect(formData.choices).toBeDefined();
+    expect(formData.choices!.length).toEqual(3);
   });
 });
