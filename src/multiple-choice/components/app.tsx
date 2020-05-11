@@ -1,34 +1,16 @@
-import React, { useEffect, useRef } from "react";
+import React, { useRef } from "react";
 import { useLARAInteractiveAPI } from "../../shared/hooks/use-lara-interactive-api";
+import { useAutoHeight } from "../../shared/hooks/use-auto-height";
 import { Authoring } from "./authoring";
 import { Runtime } from "./runtime";
 
 export const App = () => {
-  const interactiveAPIConfig = {
+  const container = useRef<HTMLDivElement>(null);
+  const { mode, authoredState, interactiveState, setInteractiveState, setAuthoredState, setHeight } = useLARAInteractiveAPI({
     interactiveState: true,
     authoredState: true,
-  };
-  const { mode, authoredState, interactiveState, setInteractiveState, setAuthoredState, setHeight } = useLARAInteractiveAPI(interactiveAPIConfig);
-  const container = useRef<HTMLDivElement>(null);
-
-  const calcHeight = () => {
-    const height = container.current?.offsetHeight
-    if (height && height > 0) {
-      setHeight(height);
-    }
-  };
-
-  // Update height on every re-render.
-  useEffect(calcHeight);
-
-  useEffect(() => {
-    // It's necessary to wrap calcHeight in a closure function. Note that calcHeight will be recreated on every render.
-    // This will break the cleanup function which would try to remove wrong reference. resizeHandler is created
-    // only once, as useEffect has empty dependencies list.
-    const resizeHandler = () => calcHeight();
-    window.addEventListener("resize", resizeHandler);
-    return () => window.removeEventListener("resize", resizeHandler);
-  }, []);
+  });
+  useAutoHeight({ container, setHeight });
 
   const report = mode === "report";
   return (
@@ -39,4 +21,3 @@ export const App = () => {
     </div>
   );
 };
-
