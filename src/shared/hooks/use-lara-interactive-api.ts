@@ -15,8 +15,11 @@ export const useLARAInteractiveAPI = (config: IConfig) => {
   const [ interactiveState, setInteractiveState ] = useState<any>();
 
   const initInteractive = (data: any) => {
-    setAuthoredState(data.authoredState);
-    setInteractiveState(data.interactiveState);
+    // LARA sometimes sends string (report page), sometimes already parsed JSON (authoring, runtime).
+    const laraAuthoredState = typeof data.authoredState === "string" ? JSON.parse(data.authoredState) : data.authoredState;
+    const laraInteractiveState = typeof data.interactiveState === "string" ? JSON.parse(data.interactiveState) : data.interactiveState;
+    setAuthoredState(laraAuthoredState);
+    setInteractiveState(laraInteractiveState);
     setMode(data.mode);
   };
 

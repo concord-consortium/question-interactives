@@ -1,5 +1,5 @@
 import React from "react";
-import { IAuthoredState } from "./authoring";
+import { IAuthoredState, IChoice } from "./authoring";
 import css from "./runtime.scss";
 
 interface IInteractiveState {
@@ -10,9 +10,23 @@ interface IProps {
   authoredState: IAuthoredState;
   interactiveState?: IInteractiveState;
   setInteractiveState?: (state: IInteractiveState) => void;
+  report?: boolean;
 }
 
-export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState }) => {
+const getChoiceClass = (choice: IChoice, questionScored: boolean, checked: boolean) => {
+  if (!questionScored) {
+    return undefined;
+  }
+  if (checked && choice.correct) {
+    return css.correctChoice;
+  }
+  if (!checked && choice.correct) {
+    // User didn't check correct answer. Mark it.
+    return css.incorrectChoice;
+  }
+};
+
+export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const type = authoredState.multipleAnswers ? "checkbox" : "radio";
   let selectedChoiceIds = interactiveState?.selectedChoiceIds || [];
   if (!authoredState.multipleAnswers && selectedChoiceIds.length > 1) {
@@ -44,22 +58,30 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
   };
 
+  // Question is scored if it has at least one correct answer defined.
+  const questionScored = !!authoredState.choices && authoredState.choices.filter(c => c.correct).length > 0;
+
   return (
     <div className={css.runtime}>
       { authoredState.prompt && <div>{ authoredState.prompt }</div> }
       <div>
         {
-          authoredState.choices && authoredState.choices.map(choice =>
-            <div key={choice.id}>
-              <input
-                type={type}
-                value={choice.id}
-                name="answer"
-                checked={selectedChoiceIds.indexOf(choice.id) !== -1}
-                onChange={handleChange.bind(null, choice.id)}
-              /> { choice.content }
-            </div>
-          )
+          authoredState.choices && authoredState.choices.map(choice => {
+            const checked = selectedChoiceIds.indexOf(choice.id) !== -1;
+            return (
+              <div key={choice.id} className={report && getChoiceClass(choice, questionScored, checked)}>
+                <input
+                  type={type}
+                  value={choice.id}
+                  name="answer"
+                  checked={checked}
+                  onChange={report ? undefined : handleChange.bind(null, choice.id)}
+                  readOnly={report}
+                  disabled={report}
+                /> {choice.content}
+              </div>
+            );
+          })
         }
       </div>
       {

@@ -25,6 +25,12 @@ describe("App", () => {
     wrapper = shallow(<App />);
     expect(wrapper.find(Authoring).length).toEqual(1);
     expect(wrapper.find(Runtime).length).toEqual(0);
+
+    mode = "report";
+    wrapper = shallow(<App />);
+    expect(wrapper.find(Authoring).length).toEqual(0);
+    expect(wrapper.find(Runtime).length).toEqual(1);
+    expect(wrapper.find(Runtime).props().report).toEqual(true);
   });
 
   it("should listen to window resize event", () => {

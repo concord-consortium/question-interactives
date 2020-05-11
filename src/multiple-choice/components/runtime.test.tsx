@@ -59,4 +59,32 @@ describe("Runtime", () => {
     wrapper.find("input[value='id2']").simulate("change", { target: { checked: false } });
     expect(setState).toHaveBeenCalledWith({selectedChoiceIds: []});
   });
+
+  describe("report mode", () => {
+    it("renders prompt, extra instructions and *disabled* choices", () => {
+      const wrapper = shallow(<Runtime authoredState={authoredState} report={true} />);
+      expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.prompt));
+      expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.extraInstructions));
+      expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[0].content));
+      expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[1].content));
+
+      expect(wrapper.find("input[value='id1']").props().disabled).toEqual(true);
+      expect(wrapper.find("input[value='id2']").props().disabled).toEqual(true);
+    });
+
+    it("handles passed interactiveState", () => {
+      const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} report={true} />);
+      expect(wrapper.find("input[value='id1']").props().checked).toEqual(false);
+      expect(wrapper.find("input[value='id2']").props().checked).toEqual(true);
+    });
+
+    it("never calls setInteractiveState when user selects an answer", () => {
+      const setState = jest.fn();
+      const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} report={true} />);
+      wrapper.find("input[value='id1']").simulate("change", { target: { checked: true } });
+      expect(setState).not.toHaveBeenCalled();
+      wrapper.find("input[value='id2']").simulate("change", { target: { checked: true } });
+      expect(setState).not.toHaveBeenCalled();
+    });
+  });
 });
