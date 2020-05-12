@@ -2,6 +2,13 @@
 
 .runtime {
   @include lara-styles;
+
+  textarea {
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    width: 100%;
+    padding: 16px;
+  }
 }
 
 .extraInstructions {
@@ -9,12 +16,4 @@
   background: #f5f5f5;
   padding: 5px;
   font-size: 0.9em;
-}
-
-.correctChoice {
-  color: #055c05;
-}
-
-.incorrectChoice {
-  color: #930606;
 }

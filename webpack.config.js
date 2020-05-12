@@ -12,6 +12,7 @@ module.exports = (env, argv) => {
     devtool: 'source-map',
     entry: {
       'multiple-choice': './src/multiple-choice/index.tsx',
+      'open-response': './src/open-response/index.tsx',
       'wrapper': './src/shared/wrapper.tsx'
     },
     mode: 'development',
@@ -85,6 +86,11 @@ module.exports = (env, argv) => {
       new HtmlWebpackPlugin({
         chunks: ['multiple-choice'],
         filename: 'multiple-choice/index.html',
+        template: 'src/shared/index.html'
+      }),
+      new HtmlWebpackPlugin({
+        chunks: ['open-response'],
+        filename: 'open-response/index.html',
         template: 'src/shared/index.html'
       }),
       // Wrapper page, useful for testing and Cypress.
