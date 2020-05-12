@@ -24,6 +24,10 @@ const Wrapper = () => {
       // Phone connected, ready to be used. Export it to global namespace so it can be used by developer in web console
       // or in Cypress tests.
       (window as any).phone = phone.current;
+      const mode = getURLParam("mode");
+      if (mode) {
+        phone.current?.post("initInteractive", { mode });
+      }
     });
   }, []);
 
