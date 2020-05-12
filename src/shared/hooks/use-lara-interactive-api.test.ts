@@ -38,13 +38,14 @@ describe("useLARAInteractiveAPI", () => {
     act(() => {
       phone._trigger("initInteractive", {
         mode: "runtime",
-        interactiveState: "intState",
-        authoredState: "authoredState"
+        // Note that states can be passed either using JS object or stringified JSON.
+        interactiveState: {data: "intState"},
+        authoredState: '{"data": "authoredState"}'
       });
     });
     expect(result.current.mode).toEqual("runtime");
-    expect(result.current.authoredState).toEqual("authoredState");
-    expect(result.current.interactiveState).toEqual("intState");
+    expect(result.current.authoredState).toEqual({data: "authoredState"});
+    expect(result.current.interactiveState).toEqual({data: "intState"});
   });
 
   it("sends updated authored state back to LARA", () => {

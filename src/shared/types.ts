@@ -1,4 +1,4 @@
-export type Mode = "runtime" | "authoring"
+export type Mode = "runtime" | "authoring" | "report";
 
 export interface IframePhone {
   post: (type: string, data: any) => void;

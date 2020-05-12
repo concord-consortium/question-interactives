@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef } from "react";
 import { useLARAInteractiveAPI } from "../../shared/hooks/use-lara-interactive-api";
 import { Authoring } from "./authoring";
 import { Runtime } from "./runtime";
@@ -30,10 +30,11 @@ export const App = () => {
     return () => window.removeEventListener("resize", resizeHandler);
   }, []);
 
+  const report = mode === "report";
   return (
     <div ref={container}>
       { mode === "authoring" && <Authoring authoredState={authoredState} setAuthoredState={setAuthoredState} /> }
-      { mode === "runtime" && <Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} /> }
+      { (mode === "runtime" || report) && <Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} report={report}/> }
       { mode === undefined && "Loading..." }
     </div>
   );

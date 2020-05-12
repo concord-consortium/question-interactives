@@ -117,4 +117,35 @@ context("Test multiple-choice interactive", () => {
       });
     });
   });
+
+  context("Report view", () => {
+    it("renders prompt and choices and handles pre-existing interactive state, but doesn't let user change it", () => {
+      phonePost("initInteractive", {
+        mode: "report",
+        authoredState: {
+          prompt: "Test prompt",
+          multipleAnswers: false,
+          choices: [
+            {id: "id1", content: "choice A"},
+            {id: "id2", content: "choice B"},
+          ]
+        },
+        interactiveState: {
+          selectedChoiceIds: ["id2"]
+        }
+      });
+
+      cy.getIframeBody().find("#app").should("include.text", "Test prompt");
+      cy.getIframeBody().find("#app").should("include.text", "choice A");
+      cy.getIframeBody().find("#app").should("include.text", "choice B");
+
+      cy.getIframeBody().find("input[value='id1']").should("not.be.checked");
+      cy.getIframeBody().find("input[value='id2']").should("be.checked");
+
+      cy.getIframeBody().find("input[value='id2']").click({ force: true });
+
+      cy.getIframeBody().find("input[value='id1']").should("not.be.checked");
+      cy.getIframeBody().find("input[value='id2']").should("be.checked");
+    });
+  });
 });
