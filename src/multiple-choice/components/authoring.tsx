@@ -26,12 +26,6 @@ export interface IAuthoredState {
 const schemaVersion = 1;
 const schema: JSONSchema6 = {
   type: "object",
-  required: [
-    "version",
-    "prompt",
-    "multiAnswer",
-    "choices"
-  ],
   properties: {
     version: {
       type: "number",
@@ -94,8 +88,31 @@ const uiSchema = {
   }
 };
 
+const defaultState: IAuthoredState = {
+  version: 1,
+  prompt: "",
+  multipleAnswers: false,
+  choices: [
+    {
+      id: "1",
+      content: "Choice A",
+      correct: false
+    },
+    {
+      id: "2",
+      content: "Choice B",
+      correct: false
+    },
+    {
+      id: "3",
+      content: "Choice C",
+      correct: false
+    }
+  ]
+};
+
 interface IProps {
-  authoredState: IAuthoredState;
+  authoredState: IAuthoredState | undefined;
   setAuthoredState?: (state: IAuthoredState) => void;
 }
 
@@ -119,7 +136,7 @@ export const Authoring: React.FC<IProps> = ({ authoredState, setAuthoredState })
       <Form
         schema={schema}
         uiSchema={uiSchema}
-        formData={authoredState}
+        formData={authoredState || defaultState}
         onChange={onChange}
         noValidate={true}
       >
