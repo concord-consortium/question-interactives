@@ -69,7 +69,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           authoredState.choices && authoredState.choices.map(choice => {
             const checked = selectedChoiceIds.indexOf(choice.id) !== -1;
             return (
-              <div key={choice.id} className={report && getChoiceClass(choice, questionScored, checked)}>
+              <div key={choice.id} className={report ? getChoiceClass(choice, questionScored, checked) : undefined}>
                 <input
                   type={type}
                   value={choice.id}
