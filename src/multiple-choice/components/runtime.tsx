@@ -13,19 +13,6 @@ interface IProps {
   report?: boolean;
 }
 
-const getChoiceClass = (choice: IChoice, questionScored: boolean, checked: boolean) => {
-  if (!questionScored) {
-    return undefined;
-  }
-  if (checked && choice.correct) {
-    return css.correctChoice;
-  }
-  if (!checked && choice.correct) {
-    // User didn't check correct answer. Mark it.
-    return css.incorrectChoice;
-  }
-};
-
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const type = authoredState.multipleAnswers ? "checkbox" : "radio";
   let selectedChoiceIds = interactiveState?.selectedChoiceIds || [];
@@ -58,8 +45,23 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
   };
 
-  // Question is scored if it has at least one correct answer defined.
-  const questionScored = !!authoredState.choices && authoredState.choices.filter(c => c.correct).length > 0;
+  const getChoiceClass = (choice: IChoice, checked: boolean) => {
+    if (!report) {
+      return undefined;
+    }
+    // Question is scored if it has at least one correct answer defined.
+    const questionScored = !!authoredState.choices && authoredState.choices.filter(c => c.correct).length > 0;
+    if (!questionScored) {
+      return undefined;
+    }
+    if (checked && choice.correct) {
+      return css.correctChoice;
+    }
+    if (!checked && choice.correct) {
+      // User didn't check correct answer. Mark it.
+      return css.incorrectChoice;
+    }
+  };
 
   return (
     <div className={css.runtime}>
@@ -69,7 +71,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           authoredState.choices && authoredState.choices.map(choice => {
             const checked = selectedChoiceIds.indexOf(choice.id) !== -1;
             return (
-              <div key={choice.id} className={report && getChoiceClass(choice, questionScored, checked)}>
+              <div key={choice.id} className={getChoiceClass(choice, checked)}>
                 <input
                   type={type}
                   value={choice.id}
