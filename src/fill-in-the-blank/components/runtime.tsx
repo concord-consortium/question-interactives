@@ -46,13 +46,6 @@ export const insertInputs = (prompt: string, blanks: IBlankDef[], userResponses:
   return result;
 };
 
-const getInputClass = (value?: string, matchTerm?: string) => {
-  if (!matchTerm) {
-    return undefined;
-  }
-  return value === matchTerm ? css.correctAnswer : css.incorrectAnswer;
-}
-
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const handleChange = (blankId: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const newState = Object.assign({}, interactiveState, { blanks: interactiveState?.blanks?.slice() || [] });
@@ -69,6 +62,13 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
   };
 
+  const getInputClass = (value?: string, matchTerm?: string) => {
+    if (!report || !matchTerm) {
+      return undefined;
+    }
+    return value === matchTerm ? css.correctAnswer : css.incorrectAnswer;
+  }
+
   let content = [];
   try {
     content = insertInputs(authoredState.prompt || "", authoredState.blanks || [], interactiveState?.blanks || []);
@@ -84,7 +84,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             return element;
           } else {
             return <input
-              className={report ? getInputClass(element.value, element.matchTerm) : undefined}
+              className={getInputClass(element.value, element.matchTerm)}
               type="text"
               key={element.id}
               value={element.value}

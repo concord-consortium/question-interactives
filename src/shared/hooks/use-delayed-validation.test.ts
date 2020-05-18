@@ -3,7 +3,7 @@ import { renderHook, act } from "@testing-library/react-hooks";
 import { useDelayedValidation } from "./use-delayed-validation";
 import Form from "react-jsonschema-form";
 
-describe("useAutoHeight", () => {
+describe("useDelayedValidation", () => {
   it("should call clearTimeout and setTimeout when trigger is called", () => {
     const clearSpy = jest.spyOn(window, "clearTimeout");
     const setSpy = jest.spyOn(window, "setTimeout");
