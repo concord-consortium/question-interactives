@@ -86,7 +86,7 @@ const uiSchema = {
 };
 
 interface IProps {
-  authoredState: IAuthoredState;
+  authoredState: IAuthoredState | null;
   setAuthoredState?: (state: IAuthoredState) => void;
 }
 

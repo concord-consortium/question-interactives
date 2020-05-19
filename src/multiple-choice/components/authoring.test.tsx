@@ -56,7 +56,7 @@ describe("Authoring", () => {
 
   it("prepopulates 3 choices", () => {
     const setState = jest.fn();
-    const wrapper = mount(<Authoring authoredState={undefined} setAuthoredState={setState} />);
+    const wrapper = mount(<Authoring authoredState={null} setAuthoredState={setState} />);
     const formEl = wrapper.find(Form);
     expect(formEl.length).toEqual(1);
     const formData: IAuthoredState = formEl.props().formData as any;

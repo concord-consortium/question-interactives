@@ -7,13 +7,13 @@ interface IFilledBlank {
   response: string;
 }
 
-interface IInteractiveState {
+export interface IInteractiveState {
   blanks: IFilledBlank[];
 }
 
 interface IProps {
-  authoredState: IAuthoredState;
-  interactiveState?: IInteractiveState;
+  authoredState: IAuthoredState | null;
+  interactiveState?: IInteractiveState | null;
   setInteractiveState?: (state: IInteractiveState) => void;
   report?: boolean;
 }
@@ -71,7 +71,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   let content = [];
   try {
-    content = insertInputs(authoredState.prompt || "", authoredState.blanks || [], interactiveState?.blanks || []);
+    content = insertInputs(authoredState?.prompt || "", authoredState?.blanks || [], interactiveState?.blanks || []);
   } catch (e) {
     return e.message;
   }
@@ -97,7 +97,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         })
       }
       {
-        authoredState.extraInstructions &&
+        authoredState?.extraInstructions &&
         <div className={css.extraInstructions}>{ authoredState.extraInstructions }</div>
       }
     </div>

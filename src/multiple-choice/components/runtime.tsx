@@ -2,21 +2,21 @@ import React from "react";
 import { IAuthoredState, IChoice } from "./authoring";
 import css from "./runtime.scss";
 
-interface IInteractiveState {
+export interface IInteractiveState {
   selectedChoiceIds: string[];
 }
 
 interface IProps {
-  authoredState: IAuthoredState;
-  interactiveState?: IInteractiveState;
+  authoredState: IAuthoredState | null;
+  interactiveState?: IInteractiveState | null;
   setInteractiveState?: (state: IInteractiveState) => void;
   report?: boolean;
 }
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
-  const type = authoredState.multipleAnswers ? "checkbox" : "radio";
+  const type = authoredState?.multipleAnswers ? "checkbox" : "radio";
   let selectedChoiceIds = interactiveState?.selectedChoiceIds || [];
-  if (!authoredState.multipleAnswers && selectedChoiceIds.length > 1) {
+  if (!authoredState?.multipleAnswers && selectedChoiceIds.length > 1) {
     // This can happen when author changes type of the question, but student provided some answers before.
     // Don't let multiple radio inputs be selected, as that basically breaks their behavior and event handling.
     // Clear previous answer instead.
@@ -26,7 +26,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const handleChange = (choiceId: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const checked = event.target.checked;
     let newChoices;
-    if (!authoredState.multipleAnswers) {
+    if (!authoredState?.multipleAnswers) {
       // Radio buttons, just one answer.
       newChoices = [ choiceId ];
     } else {
@@ -50,7 +50,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       return undefined;
     }
     // Question is scored if it has at least one correct answer defined.
-    const questionScored = !!authoredState.choices && authoredState.choices.filter(c => c.correct).length > 0;
+    const questionScored = !!authoredState?.choices && authoredState.choices.filter(c => c.correct).length > 0;
     if (!questionScored) {
       return undefined;
     }
@@ -65,10 +65,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   return (
     <div className={css.runtime}>
-      { authoredState.prompt && <div>{ authoredState.prompt }</div> }
+      { authoredState?.prompt && <div>{ authoredState.prompt }</div> }
       <div>
         {
-          authoredState.choices && authoredState.choices.map(choice => {
+          authoredState?.choices && authoredState.choices.map(choice => {
             const checked = selectedChoiceIds.indexOf(choice.id) !== -1;
             return (
               <div key={choice.id} className={getChoiceClass(choice, checked)}>
@@ -87,7 +87,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         }
       </div>
       {
-        authoredState.extraInstructions &&
+        authoredState?.extraInstructions &&
         <div className={css.extraInstructions}>{ authoredState.extraInstructions }</div>
       }
     </div>

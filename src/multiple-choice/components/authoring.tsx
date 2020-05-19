@@ -112,7 +112,7 @@ const defaultState: IAuthoredState = {
 };
 
 interface IProps {
-  authoredState: IAuthoredState | undefined;
+  authoredState: IAuthoredState | null;
   setAuthoredState?: (state: IAuthoredState) => void;
 }
 
