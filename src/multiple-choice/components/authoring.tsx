@@ -64,7 +64,21 @@ const schema: JSONSchema6 = {
             default: false
           }
         }
-      }
+      },
+      default: [
+        {
+          id: "1",
+          content: "Choice A",
+        },
+        {
+          id: "2",
+          content: "Choice B",
+        },
+        {
+          id: "3",
+          content: "Choice C",
+        }
+      ]
     }
   }
 };
@@ -86,29 +100,6 @@ const uiSchema = {
       }
     }
   }
-};
-
-const defaultState: IAuthoredState = {
-  version: 1,
-  prompt: "",
-  multipleAnswers: false,
-  choices: [
-    {
-      id: "1",
-      content: "Choice A",
-      correct: false
-    },
-    {
-      id: "2",
-      content: "Choice B",
-      correct: false
-    },
-    {
-      id: "3",
-      content: "Choice C",
-      correct: false
-    }
-  ]
 };
 
 interface IProps {
@@ -136,7 +127,7 @@ export const Authoring: React.FC<IProps> = ({ authoredState, setAuthoredState })
       <Form
         schema={schema}
         uiSchema={uiSchema}
-        formData={authoredState || defaultState}
+        formData={authoredState}
         onChange={onChange}
         noValidate={true}
       >
