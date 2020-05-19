@@ -1,0 +1,15 @@
+@import "../../shared/styles/helpers";
+
+.runtime {
+  @include lara-styles;
+
+  button {
+    margin: 5px;
+    &:disabled {
+      opacity: 0.5;
+    }
+  }
+  .buttons {
+    margin-left: 10px;
+  }
+}
