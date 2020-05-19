@@ -69,14 +69,17 @@ const schema: JSONSchema6 = {
         {
           id: "1",
           content: "Choice A",
+          correct: false
         },
         {
           id: "2",
           content: "Choice B",
+          correct: false
         },
         {
           id: "3",
           content: "Choice C",
+          correct: false
         }
       ]
     }

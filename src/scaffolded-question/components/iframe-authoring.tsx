@@ -5,22 +5,23 @@ import iframePhone from "iframe-phone";
 
 import css from "./iframe-authoring.scss";
 
-// Later, this will be replaced by LARA Interactive API call that returns all the available managed interactives.
+// This is only temporary list. It will be replaced by LARA Interactive API call that returns all the available managed interactives.
+const scaffoldedQuestionSegment = /scaffolded-question\/?$/;
 const availableInteractives = [
   {
     url: "",
     name: "Select an interactive"
   },
   {
-    url: window.location.origin + "/open-response",
+    url: window.location.href.replace(scaffoldedQuestionSegment, "open-response"),
     name: "Open response"
   },
   {
-    url: window.location.origin + "/fill-in-the-blank",
+    url: window.location.href.replace(scaffoldedQuestionSegment, "fill-in-the-blank"),
     name: "Fill in the blank"
   },
   {
-    url: window.location.origin + "/multiple-choice",
+    url: window.location.href.replace(scaffoldedQuestionSegment, "multiple-choice"),
     name: "Multiple choice"
   }
 ]
