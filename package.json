@@ -73,6 +73,7 @@
     "@types/react-dom": "^16.9.7",
     "@types/react-jsonschema-form": "^1.7.2",
     "@types/uuid": "^7.0.3",
+    "@types/video.js": "^7.3.9",
     "autoprefixer": "^9.7.6",
     "babel-core": "^6.26.3",
     "babel-jest": "^25.5.1",
@@ -114,6 +115,7 @@
     "react-jsonschema-form": "^1.8.1",
     "resize-observer-polyfill": "^1.5.1",
     "shutterbug": "^1.2.0",
-    "uuid": "^8.0.0"
+    "uuid": "^8.0.0",
+    "video.js": "^7.7.6"
   }
 }
