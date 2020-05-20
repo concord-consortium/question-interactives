@@ -58,10 +58,6 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
       mode: "authoring",
       authoredState
     });
-    phone.post("initInteractive", {
-      mode: "authoring",
-      authoredState
-    });
   }
 
   useEffect(() => {
