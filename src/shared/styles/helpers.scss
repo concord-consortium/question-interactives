@@ -1,3 +1,9 @@
+$correctColor: #055c05;
+$incorrectColor: #930606;
+
+$themeColor1: #83cddd;
+$themeColor2: #34a5be;
+
 @mixin lara-styles {
   // These values should match LARA. In the future, we might extend interactive API so LARA can provide them.
   padding: 20px 20px 13px;
@@ -10,8 +16,47 @@
   }
 }
 
-$correctColor: #055c05;
-$incorrectColor: #930606;
+// Based on LARA btn mixin from mw-runtime-base.scss (after little cleanup).
+@mixin lara-button($color1: $themeColor1, $color2: $themeColor2) {
+  font-size: 15px;
+  font-weight: 500;
+  color: #fcfcfc;
+  padding: 9px 13px;
+  // Color-dependent rules:
+  background: $color1;
+  background-image: linear-gradient(to bottom, $color1, $color2);
+  border: 1px solid $color2;
+  text-shadow: 0 -1px 0 darken($color1, 25%);
+  // ---
+  box-shadow: rgba(255, 255, 255, 0.4) 0 1px 0 inset, rgba(0, 0, 0, 0.2) 0 1px 2px;
+  border-radius: 4px;
+  margin-top: 13px;
+  cursor: pointer;
+  text-transform: none;
+  text-align: center;
+  transition: all ease-in;
+
+
+  &:hover {
+    background-color: darken($color1, 5%);
+    background-image: linear-gradient(to bottom, darken($color1, 5%), darken($color2, 10%));
+  }
+
+  &:active {
+    background-color: darken($color1, 10%);
+    background-image: linear-gradient(to bottom, darken($color1, 10%), darken($color2, 5%));
+  }
+}
+
+.locked {
+  // Based on LARA styles.
+  color: #525252;
+  font-weight: lighter;
+  background-color: #ededed;
+  width: 100%;
+  padding: 4px;
+  font-size: 14pt;
+}
 
 .extraInstructions {
   margin-top: 10px;

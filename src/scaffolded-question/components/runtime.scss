@@ -4,12 +4,15 @@
   @include lara-styles;
 
   button {
+    @include lara-button;
     margin: 5px;
-    &:disabled {
-      opacity: 0.5;
+    svg {
+      // icon
+      margin-left: 5px;
     }
   }
+
   .buttons {
-    margin-left: 10px;
+    float: right;
   }
 }

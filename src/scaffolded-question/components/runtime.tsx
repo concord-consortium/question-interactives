@@ -1,7 +1,9 @@
 import React from "react";
 import { IAuthoredState } from "./authoring";
-import css from "./runtime.scss";
 import { IframeRuntime } from "./iframe-runtime";
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faLock } from '@fortawesome/free-solid-svg-icons'
+import css from "./runtime.scss";
 
 interface IInteractiveState {
   subinteractiveStates: {
@@ -78,9 +80,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         !report &&
         <div className={css.buttons}>
           { hintAvailable && <button onClick={handleHint}>Hint</button> }
-          <button onClick={handleSubmit} disabled={submitted}>Submit</button>
+          { !submitted && <button onClick={handleSubmit} disabled={submitted}>Submit <FontAwesomeIcon icon={faLock} size="sm" /></button> }
         </div>
       }
+      { !report && submitted && <div className={css.locked}>Your answer is now locked. <FontAwesomeIcon icon={faLock} size="sm" /></div> }
       {
         report &&
         <div>
