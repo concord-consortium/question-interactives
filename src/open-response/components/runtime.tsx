@@ -1,9 +1,11 @@
 import React from "react";
 import { IAuthoredState } from "./authoring";
 import css from "./runtime.scss";
+import { useRequiredQuestion } from "../../shared/hooks/use-required-question";
 
-interface IInteractiveState {
+export interface IInteractiveState {
   response: string;
+  submitted?: boolean;
 }
 
 interface IProps {
@@ -11,9 +13,15 @@ interface IProps {
   interactiveState?: IInteractiveState;
   setInteractiveState?: (state: IInteractiveState) => void;
   report?: boolean;
+  setNavigation?: (enableForwardNav: boolean, message: string) => void;
 }
 
-export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
+export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, setNavigation, report }) => {
+  const submitEnabled = !!interactiveState?.response;
+  const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, submitEnabled });
+
+  const readOnly = report || interactiveState?.submitted;
+
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (setInteractiveState) {
       setInteractiveState(Object.assign({}, interactiveState, { response: event.target.value }));
@@ -26,9 +34,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       <div>
         <textarea
           value={interactiveState?.response}
-          onChange={report ? undefined : handleChange}
-          readOnly={report}
-          disabled={report}
+          onChange={readOnly ? undefined : handleChange}
+          readOnly={readOnly}
+          disabled={readOnly}
           rows={8}
           placeholder={authoredState.defaultAnswer || "Type answer here"}
         />
@@ -36,6 +44,13 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       {
         authoredState.extraInstructions &&
         <div className={css.extraInstructions}>{ authoredState.extraInstructions }</div>
+      }
+      {
+        !report &&
+        <div>
+          { submitButton }
+          { lockedInfo }
+        </div>
       }
     </div>
   );

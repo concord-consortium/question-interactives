@@ -18,6 +18,7 @@ export interface IChoice {
 export interface IAuthoredState {
   version: number;
   prompt?: string;
+  required?: boolean;
   extraInstructions?: string;
   multipleAnswers?: boolean;
   choices?: IChoice[];
@@ -34,6 +35,10 @@ const schema: JSONSchema6 = {
     prompt: {
       title: "Prompt",
       type: "string"
+    },
+    required: {
+      title: "Required",
+      type: "boolean"
     },
     extraInstructions: {
       title: "Extra instructions",

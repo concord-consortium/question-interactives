@@ -13,6 +13,7 @@ import { v4 as uuidv4 } from "uuid";
 export interface IAuthoredState {
   version: number;
   prompt?: string;
+  required?: boolean;
   extraInstructions?: string;
   subinteractives: {
     id: string;
@@ -32,6 +33,10 @@ const schema: JSONSchema6 = {
     prompt: {
       title: "Prompt",
       type: "string"
+    },
+    required: {
+      title: "Required",
+      type: "boolean"
     },
     extraInstructions: {
       title: "Extra instructions",
@@ -76,7 +81,7 @@ const uiSchema = {
 };
 
 interface IProps {
-  authoredState: IAuthoredState;
+  authoredState?: IAuthoredState;
   setAuthoredState?: (state: IAuthoredState) => void;
 }
 
@@ -85,7 +90,7 @@ export const Authoring: React.FC<IProps> = ({ authoredState, setAuthoredState })
     const formData = event.formData as IAuthoredState;
     // Generate interactive ID if necessary.
     formData.subinteractives?.forEach(int => {
-      if (int.id === undefined) {
+      if (!int.id) {
         int.id = uuidv4();
       }
     });

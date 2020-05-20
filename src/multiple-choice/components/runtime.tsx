@@ -1,9 +1,11 @@
 import React from "react";
 import { IAuthoredState, IChoice } from "./authoring";
 import css from "./runtime.scss";
+import { useRequiredQuestion } from "../../shared/hooks/use-required-question";
 
-interface IInteractiveState {
+export interface IInteractiveState {
   selectedChoiceIds: string[];
+  submitted?: boolean;
 }
 
 interface IProps {
@@ -11,9 +13,10 @@ interface IProps {
   interactiveState?: IInteractiveState;
   setInteractiveState?: (state: IInteractiveState) => void;
   report?: boolean;
+  setNavigation?: (enableForwardNav: boolean, message: string) => void;
 }
 
-export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
+export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report, setNavigation }) => {
   const type = authoredState.multipleAnswers ? "checkbox" : "radio";
   let selectedChoiceIds = interactiveState?.selectedChoiceIds || [];
   if (!authoredState.multipleAnswers && selectedChoiceIds.length > 1) {
@@ -22,6 +25,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     // Clear previous answer instead.
     selectedChoiceIds = [];
   }
+
+  const submitEnabled = selectedChoiceIds.length > 0;
+  const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, submitEnabled });
 
   const handleChange = (choiceId: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const checked = event.target.checked;
@@ -63,6 +69,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
   };
 
+  const readOnly = report || interactiveState?.submitted;
+
   return (
     <div className={css.runtime}>
       { authoredState.prompt && <div>{ authoredState.prompt }</div> }
@@ -77,9 +85,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                   value={choice.id}
                   name="answer"
                   checked={checked}
-                  onChange={report ? undefined : handleChange.bind(null, choice.id)}
-                  readOnly={report}
-                  disabled={report}
+                  onChange={readOnly ? undefined : handleChange.bind(null, choice.id)}
+                  readOnly={readOnly}
+                  disabled={readOnly}
                 /> {choice.content}
               </div>
             );
@@ -89,6 +97,13 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       {
         authoredState.extraInstructions &&
         <div className={css.extraInstructions}>{ authoredState.extraInstructions }</div>
+      }
+      {
+        !report &&
+        <div>
+          { submitButton }
+          { lockedInfo }
+        </div>
       }
     </div>
   );

@@ -1,14 +1,16 @@
 import React from "react";
 import { IAuthoredState, IBlankDef } from "./authoring";
 import css from "./runtime.scss";
+import { useRequiredQuestion } from "../../shared/hooks/use-required-question";
 
-interface IFilledBlank {
+export interface IFilledBlank {
   id: string;
   response: string;
 }
 
-interface IInteractiveState {
+export interface IInteractiveState {
   blanks: IFilledBlank[];
+  submitted?: boolean;
 }
 
 interface IProps {
@@ -16,6 +18,7 @@ interface IProps {
   interactiveState?: IInteractiveState;
   setInteractiveState?: (state: IInteractiveState) => void;
   report?: boolean;
+  setNavigation?: (enableForwardNav: boolean, message: string) => void;
 }
 
 export const insertInputs = (prompt: string, blanks: IBlankDef[], userResponses: IFilledBlank[]) => {
@@ -46,7 +49,10 @@ export const insertInputs = (prompt: string, blanks: IBlankDef[], userResponses:
   return result;
 };
 
-export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
+export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, setNavigation, report }) => {
+  const submitEnabled = (interactiveState?.blanks || []).length > 0;
+  const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, submitEnabled });
+
   const handleChange = (blankId: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const newState = Object.assign({}, interactiveState, { blanks: interactiveState?.blanks?.slice() || [] });
     const newResponse = {id: blankId, response: event.target.value };
@@ -76,6 +82,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     return e.message;
   }
 
+  const readOnly = report || interactiveState?.submitted;
+
   return (
     <div className={css.runtime}>
       {
@@ -89,9 +97,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               key={element.id}
               value={element.value}
               size={element.size}
-              onChange={report ? undefined : handleChange.bind(null, element.id)}
-              readOnly={report}
-              disabled={report}
+              onChange={readOnly ? undefined : handleChange.bind(null, element.id)}
+              readOnly={readOnly}
+              disabled={readOnly}
             />
           }
         })
@@ -99,6 +107,13 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       {
         authoredState.extraInstructions &&
         <div className={css.extraInstructions}>{ authoredState.extraInstructions }</div>
+      }
+      {
+        !report &&
+        <div>
+          { submitButton }
+          { lockedInfo }
+        </div>
       }
     </div>
   );
