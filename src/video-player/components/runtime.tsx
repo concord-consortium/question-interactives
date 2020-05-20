@@ -15,6 +15,10 @@ interface IProps {
   setInteractiveState?: (state: IInteractiveState) => void;
   report?: boolean;
 }
+// small sample mp4
+// "https://models-resources.s3.amazonaws.com/geniblocks/resources/fablevision/video/charcoal.mp4";
+// sample captions
+// "https://models-resources.s3.amazonaws.com/question-interactives/test-captions.vtt";
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const playerRef = useRef(null);
@@ -25,18 +29,18 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const loadPlayer = () => {
     const player: videojs.Player = videojs(playerRef.current, { controls: true }, () => {
+      if (authoredState.captionUrl) {
+        const textTrack = authoredState.captionUrl;
+        player.addRemoteTextTrack({
+          kind: 'subtitles',
+          language: 'en',
+          label: 'English',
+          src: textTrack,
+          'default': true
+        }, true);
+      }
 
-      const textTrack = authoredState.captionUrl ? authoredState.captionUrl : "https://models-resources.s3.amazonaws.com/question-interactives/test-captions.vtt";
-      player.addRemoteTextTrack({
-        kind: 'subtitles',
-        language: 'en',
-        label: 'English',
-        src: textTrack,
-        'default': true
-      }, true);
-
-      const url = authoredState.videoUrl ? authoredState.videoUrl :
-        "https://models-resources.s3.amazonaws.com/geniblocks/resources/fablevision/video/charcoal.mp4";
+      const url = authoredState.videoUrl ? authoredState.videoUrl :"";
       player.src(url);
     });
     return () => {
@@ -55,7 +59,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       { authoredState.prompt && <div>{ authoredState.prompt }</div> }
       <div className={css.videoPlayerContainer}>
         <div className="video-player" data-vjs-player={true}>
-          <video ref={playerRef} className="video-js vjs-big-play-centered"
+          <video ref={playerRef} className="video-js vjs-big-play-centered vjs-fluid"
             onPlaying={report ? undefined : handleChange}
             onEnded={report ? undefined : handleChange}
             onTimeUpdate={report ? undefined : handleChange}
