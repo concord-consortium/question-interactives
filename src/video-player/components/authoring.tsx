@@ -13,6 +13,7 @@ export interface IAuthoredState {
   videoUrl: string;
   captionUrl?: string;
   prompt?: string;
+  credit?: string;
   disableNextButton?: boolean;
 }
 
@@ -36,6 +37,10 @@ const schema: JSONSchema6 = {
       title: "Prompt",
       type: "string"
     },
+    credit: {
+      title: "Credit",
+      type: "string"
+    },
     disableNextButton: {
       title: "Disable \"Next\" button",
       type: "boolean"
@@ -54,6 +59,9 @@ const uiSchema = {
     "ui:widget": "textarea"
   },
   prompt: {
+    "ui:widget": "textarea"
+  },
+  credit: {
     "ui:widget": "textarea"
   },
   disableNextButton: {

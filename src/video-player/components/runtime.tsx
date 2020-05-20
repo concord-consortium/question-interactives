@@ -40,7 +40,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         }, true);
       }
 
-      const url = authoredState.videoUrl ? authoredState.videoUrl :"";
+      const url = authoredState.videoUrl ? authoredState.videoUrl : "";
       player.src(url);
     });
     return () => {
@@ -56,7 +56,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   return (
     <div className={css.runtime}>
-      { authoredState.prompt && <div>{ authoredState.prompt }</div> }
+      { authoredState.prompt && <div className={css.prompt}>{ authoredState.prompt }</div> }
       <div className={css.videoPlayerContainer}>
         <div className="video-player" data-vjs-player={true}>
           <video ref={playerRef} className="video-js vjs-big-play-centered vjs-fluid"
@@ -66,6 +66,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           />
         </div>
       </div>
+      {authoredState.credit && <div className={css.credit}>{ authoredState.credit }</div> }
     </div>
   );
 };
