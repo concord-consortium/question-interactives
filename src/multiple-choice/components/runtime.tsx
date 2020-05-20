@@ -69,7 +69,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
   };
 
-  const readOnly = report || interactiveState?.submitted;
+  const readOnly = report || (authoredState.required && interactiveState?.submitted);
 
   return (
     <div className={css.runtime}>

@@ -38,7 +38,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   // User can submit answer only if any answer has been provided before.
   const submitEnabled = !!subState;
 
-  const reportOrSubmitted = report || interactiveState?.submitted;
+  const readOnly = report || (authoredState.required && interactiveState?.submitted);
 
   const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, submitEnabled });
 
@@ -68,8 +68,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         url={currentInteractive.url}
         authoredState={currentInteractive.authoredState}
         interactiveState={subState}
-        setInteractiveState={reportOrSubmitted ? undefined : handleNewInteractiveState.bind(null, currentInteractive.id)}
-        report={reportOrSubmitted}
+        setInteractiveState={readOnly ? undefined : handleNewInteractiveState.bind(null, currentInteractive.id)}
+        report={readOnly}
       />
       {
         authoredState.extraInstructions &&

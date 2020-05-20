@@ -20,7 +20,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const submitEnabled = !!interactiveState?.response;
   const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, submitEnabled });
 
-  const readOnly = report || interactiveState?.submitted;
+  const readOnly = report || (authoredState.required && interactiveState?.submitted);
 
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (setInteractiveState) {
