@@ -77,8 +77,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       {
         !report &&
         <div className={css.buttons}>
-          <button onClick={handleHint} disabled={!hintAvailable}>Hint</button>
-          <button onClick={handleSubmit} disabled={submitted}>Submit { submitted ? "✓" : ""}</button>
+          { hintAvailable && <button onClick={handleHint}>Hint</button> }
+          <button onClick={handleSubmit} disabled={submitted}>Submit</button>
         </div>
       }
       {
