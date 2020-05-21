@@ -1,7 +1,8 @@
-import React, { ChangeEvent, useEffect, useRef, useState } from "react";
+import React, { ChangeEvent, useContext, useEffect, useRef, useState } from "react";
 import { FieldProps } from "react-jsonschema-form";
 import { IframePhone } from "../../shared/types";
 import iframePhone from "iframe-phone";
+import { AutoHeightContext } from "../../shared/hooks/use-auto-height";
 
 import css from "./iframe-authoring.scss";
 
@@ -71,6 +72,12 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
       }
     }
   }, [url]);
+
+  // Notify parent component that our height possibly changed on each re-render. Opening iframe-authoring will
+  // definitely make container taller. It'd be okay to send these notifications only when `authoringOpened` is updated,
+  // but this notification and related height re-calculation is cheap enough not to worry about that.
+  const { notifyHeightUpdated } = useContext(AutoHeightContext);
+  useEffect(notifyHeightUpdated);
 
   return (
     <div className={css.iframeAuthoring}>

@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useContext, useEffect, useRef, useState } from "react";
 import { IframePhone } from "../../shared/types";
 import iframePhone from "iframe-phone";
+import { AutoHeightContext } from "../../shared/hooks/use-auto-height";
 
 interface IProps {
   url: string;
@@ -14,6 +15,7 @@ export const IframeRuntime: React.FC<IProps> = ({ url, authoredState, interactiv
   const [ iframeHeight, setIframeHeight ] = useState(300);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const phoneRef = useRef<IframePhone>();
+  const { notifyHeightUpdated } = useContext(AutoHeightContext);
 
   const initInteractive = () => {
     const phone = phoneRef.current;
@@ -25,6 +27,7 @@ export const IframeRuntime: React.FC<IProps> = ({ url, authoredState, interactiv
     });
     phone.addListener("height", (newHeight: number) => {
       setIframeHeight(newHeight);
+      notifyHeightUpdated();
     });
     phone.post("initInteractive", {
       mode: report ? "report" : "runtime",
