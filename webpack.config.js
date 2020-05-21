@@ -14,6 +14,7 @@ module.exports = (env, argv) => {
       'multiple-choice': './src/multiple-choice/index.tsx',
       'open-response': './src/open-response/index.tsx',
       'fill-in-the-blank': './src/fill-in-the-blank/index.tsx',
+      'scaffolded-question': './src/scaffolded-question/index.tsx',
       'wrapper': './src/shared/wrapper.tsx'
     },
     mode: 'development',
@@ -97,6 +98,11 @@ module.exports = (env, argv) => {
       new HtmlWebpackPlugin({
         chunks: ['fill-in-the-blank'],
         filename: 'fill-in-the-blank/index.html',
+        template: 'src/shared/index.html'
+      }),
+      new HtmlWebpackPlugin({
+        chunks: ['scaffolded-question'],
+        filename: 'scaffolded-question/index.html',
         template: 'src/shared/index.html'
       }),
       // Wrapper page, useful for testing and Cypress.
