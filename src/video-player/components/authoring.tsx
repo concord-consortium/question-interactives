@@ -12,9 +12,14 @@ export interface IAuthoredState {
   version: number;
   videoUrl: string;
   captionUrl?: string;
+  poster?: string;
   prompt?: string;
   credit?: string;
+  creditLinkDisplayText?: string;
+  creditLink?: string;
   disableNextButton?: boolean;
+  fixedAspectRatio?: string;
+  fixedHeight?: number;
 }
 
 const schemaVersion = 1;
@@ -33,6 +38,10 @@ const schema: JSONSchema6 = {
       title: "Caption Url",
       type: "string"
     },
+    poster: {
+      title: "Poster / preview image",
+      type: "string"
+    },
     prompt: {
       title: "Prompt",
       type: "string"
@@ -41,9 +50,25 @@ const schema: JSONSchema6 = {
       title: "Credit",
       type: "string"
     },
+    creditLink: {
+      title: "Credit Link",
+      type: "string"
+    },
+    creditLinkDisplayText: {
+      title: "Credit Link Display Text",
+      type: "string"
+    },
     disableNextButton: {
       title: "Disable \"Next\" button",
       type: "boolean"
+    },
+    fixedAspectRatio: {
+      title: "Fixed Aspect Ratio",
+      type: "string"
+    },
+    fixedHeight: {
+      title: "Fixed Height",
+      type: "number"
     }
   }
 };
@@ -53,10 +78,15 @@ const uiSchema = {
     "ui:widget": "hidden"
   },
   videoUrl: {
-    "ui:widget": "textarea"
+    "ui:widget": "textarea",
+    "ui:help": "Path to hosted video file (mp4, webm, ogg, etc)"
   },
   captionUrl: {
-    "ui:widget": "textarea"
+    "ui:widget": "textarea",
+    "ui:help": "Path to subtitles or captions, if available"
+  },
+  poster: {
+    "ui:help": "Path to a static image to display before video playback begins"
   },
   prompt: {
     "ui:widget": "textarea"
@@ -64,8 +94,23 @@ const uiSchema = {
   credit: {
     "ui:widget": "textarea"
   },
+  creditLink: {
+    "ui:widget": "uri",
+    "ui:help": "Link to attribution"
+  },
+  creditLinkDisplayText: {
+    "ui:help": "Text to display for the link to attribution (leave blank to display the url)"
+  },
+  // Behavior properties
   disableNextButton: {
-    "ui:widget": "checkbox"
+    "ui:widget": "checkbox",
+    "ui:help": "Students must watch the whole video before they can proceed"
+  },
+  fixedAspectRatio: {
+    "ui:help": "Specify either a number (1.33, 0.75, etc), or use a:b notation (16:9, 4:3, 1:1). Leave blank for responsive behavior"
+  },
+  fixedHeight: {
+    "ui:help": "Specify a fixed height, or leave blank for responsive behavior"
   }
 };
 
