@@ -14,7 +14,7 @@ export const useAutoHeight = (config: IConfig) => {
   const currentHeight = useRef(0);
 
   const recalcHeight = (last = false) => {
-    const height = container.current?.offsetHeight;
+    const height = container.current?.scrollHeight;
     if (height && height > 0 && height !== currentHeight.current) {
       setHeight(height);
       currentHeight.current = height;
