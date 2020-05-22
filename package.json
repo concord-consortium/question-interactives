@@ -99,7 +99,7 @@
     "tslint-loader": "^3.5.4",
     "tslint-react": "^5.0.0",
     "tslint-react-hooks": "^2.2.2",
-    "typescript": "^3.8.3",
+    "typescript": "^3.9.3",
     "url-loader": "^4.1.0",
     "wait-on": "^4.0.2",
     "webpack": "^4.43.0",
@@ -114,6 +114,7 @@
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-jsonschema-form": "^1.8.1",
+    "resize-observer-polyfill": "^1.5.1",
     "shutterbug": "^1.2.0",
     "uuid": "^8.0.0"
   }

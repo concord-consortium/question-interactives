@@ -1,4 +1,5 @@
 import { RefObject, useEffect } from "react";
+import ResizeObserver from "resize-observer-polyfill";
 
 interface IConfig {
   container: RefObject<HTMLDivElement>;
@@ -8,22 +9,25 @@ interface IConfig {
 export const useAutoHeight = (config: IConfig) => {
   const { container, setHeight } = config;
 
-  const calcHeight = () => {
-    const height = container.current?.offsetHeight;
-    if (height && height > 0) {
-      setHeight(height);
-    }
-  };
-
-  // Update height on every re-render.
-  useEffect(calcHeight);
-
   useEffect(() => {
-    // It's necessary to wrap calcHeight in a closure function. Note that calcHeight will be recreated on every render.
-    // This will break the cleanup function which would try to remove wrong reference. resizeHandler is created
-    // only once, as useEffect has empty dependencies list.
-    const resizeHandler = () => calcHeight();
-    window.addEventListener("resize", resizeHandler);
-    return () => window.removeEventListener("resize", resizeHandler);
-  }, []);
-}
+    // TypeScript doesn't seem to have types of the native ResizeObserver yet. Use types coming from polyfill.
+    const NativeResizeObserver = (window as any).ResizeObserver as new(callback: ResizeObserverCallback) => ResizeObserver;
+
+    const observer = new (NativeResizeObserver || ResizeObserver)(entries => {
+      const entry = entries[0];
+      // scrollHeight describes min height of the container necessary to avoid scrollbars.
+      // It works better than offsetHeight (e.g. when we have some elements with `float:right` css props).
+      const height = entry?.target?.scrollHeight;
+      if (height && height > 0) {
+        setHeight(Math.ceil(height));
+      }
+    });
+    if (container.current) {
+      observer.observe(container.current);
+    }
+    // Cleanup function.
+    return () => {
+      observer.disconnect();
+    }
+  }, [container.current]);
+};

@@ -3,16 +3,20 @@ import { renderHook } from "@testing-library/react-hooks";
 import { useAutoHeight } from "./use-auto-height";
 
 describe("useAutoHeight", () => {
-  it("should listen to window resize event", () => {
-    const addSpy = jest.spyOn(window, "addEventListener");
-    const removeSpy = jest.spyOn(window, "removeEventListener");
+  it("should use native ResizeObserver when possible and cleanup the observer on unmount", () => {
+    const observeSpy = jest.fn();
+    const disconnectSpy = jest.fn();
+    (window as any).ResizeObserver = function ResizeObserverMock() {
+      this.observe = observeSpy;
+      this.disconnect = disconnectSpy;
+    };
     const HookWrapper = () => {
-      const container = useRef<HTMLDivElement>(null);
+      const container = useRef<HTMLDivElement>(document.createElement("div"));
       useAutoHeight({ container, setHeight: jest.fn() });
     }
     const { unmount } = renderHook(HookWrapper);
-    expect(addSpy).toHaveBeenCalledWith("resize", expect.anything());
+    expect(observeSpy).toHaveBeenCalled();
     unmount();
-    expect(removeSpy).toHaveBeenCalledWith("resize", expect.anything());
+    expect(disconnectSpy).toHaveBeenCalled();
   });
 });
