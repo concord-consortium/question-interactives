@@ -64,12 +64,26 @@ module.exports = (env, argv) => {
           ]
         },
         {
-          test: /\.(png|woff|woff2|eot|ttf|svg)$/,
+          test: /\.(png|woff|woff2|eot|ttf)$/,
           loader: 'url-loader',
           options: {
             limit: 8192,
             publicPath: '../../'
           }
+        },
+        {
+          test: /\.svg$/,
+          oneOf: [
+            {
+              // Do not apply SVGR import in (S)CSS files.
+              issuer: /\.(sa|sc|c)ss$/,
+              use: 'url-loader'
+            },
+            {
+              issuer: /\.tsx?$/,
+              loader: '@svgr/webpack'
+            }
+          ]
         }
       ]
     },
