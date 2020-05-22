@@ -26,8 +26,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     selectedChoiceIds = [];
   }
 
-  const submitEnabled = selectedChoiceIds.length > 0;
-  const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, submitEnabled });
+  const isAnswered = selectedChoiceIds.length > 0;
+  const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, isAnswered });
 
   const handleChange = (choiceId: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const checked = event.target.checked;

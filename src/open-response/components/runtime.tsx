@@ -17,8 +17,8 @@ interface IProps {
 }
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, setNavigation, report }) => {
-  const submitEnabled = !!interactiveState?.response;
-  const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, submitEnabled });
+  const isAnswered = !!interactiveState?.response;
+  const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, isAnswered });
 
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
 

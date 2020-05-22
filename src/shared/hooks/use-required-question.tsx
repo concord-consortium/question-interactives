@@ -8,12 +8,12 @@ interface IConfig {
   interactiveState: { submitted?: boolean } | undefined;
   setInteractiveState: ((interactiveState: {submitted?: boolean}) => void) | undefined;
   setNavigation: ((enableForwardNav: boolean, message: string) => void) | undefined;
-  submitEnabled: boolean;
+  isAnswered: boolean;
 }
 
 // This hook can be used by any interactive that defines `required` property in its authored state and
 // `submitted` property in its interactive state (student state).
-export const useRequiredQuestion = ({ authoredState, interactiveState, setInteractiveState, setNavigation, submitEnabled }: IConfig) => {
+export const useRequiredQuestion = ({ authoredState, interactiveState, setInteractiveState, setNavigation, isAnswered }: IConfig) => {
   const handleSubmit = () => {
     if (setInteractiveState) {
       setInteractiveState(Object.assign({}, interactiveState, { submitted: true }));
@@ -25,10 +25,10 @@ export const useRequiredQuestion = ({ authoredState, interactiveState, setIntera
       const forwardNavEnabled = !!interactiveState?.submitted;
       setNavigation(forwardNavEnabled, forwardNavEnabled ? "" : "Please submit an answer first.");
     }
-  }, [authoredState, interactiveState, authoredState]);
+  }, [authoredState, interactiveState]);
 
   const submitButton = authoredState?.required && !interactiveState?.submitted ? (
-    <button className={css.laraButton} onClick={handleSubmit} disabled={!submitEnabled}>
+    <button className={css.laraButton} onClick={handleSubmit} disabled={!isAnswered}>
       Submit <FontAwesomeIcon icon={faLock} size="sm" />
     </button>
   ) : null;

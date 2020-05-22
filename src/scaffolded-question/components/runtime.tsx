@@ -35,12 +35,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const submitted = interactiveState?.submitted;
   const hintAvailable = !submitted && (currentSubintIndex < authoredState.subinteractives.length - 1);
 
-  // User can submit answer only if any answer has been provided before.
-  const submitEnabled = !!subState;
-
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
 
-  const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, submitEnabled });
+  // User can submit answer only if any answer has been provided before.
+  const isAnswered = !!subState;
+  const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, isAnswered });
 
   const handleNewInteractiveState = (interactiveId: string, newInteractiveState: any) => {
     if (setInteractiveState) {

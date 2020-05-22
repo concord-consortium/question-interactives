@@ -50,8 +50,8 @@ export const insertInputs = (prompt: string, blanks: IBlankDef[], userResponses:
 };
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, setNavigation, report }) => {
-  const submitEnabled = (interactiveState?.blanks || []).length > 0;
-  const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, submitEnabled });
+  const isAnswered = (interactiveState?.blanks || []).length > 0;
+  const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, isAnswered });
 
   const handleChange = (blankId: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const newState = Object.assign({}, interactiveState, { blanks: interactiveState?.blanks?.slice() || [] });
