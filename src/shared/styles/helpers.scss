@@ -53,6 +53,10 @@ $themeColor2: #34a5be;
   }
 }
 
+.laraButton {
+  @include lara-button;
+}
+
 .locked {
   // Based on LARA styles.
   color: #525252;
@@ -61,6 +65,7 @@ $themeColor2: #34a5be;
   width: 100%;
   padding: 4px;
   font-size: 14pt;
+  margin-top: 10px;
 }
 
 .extraInstructions {

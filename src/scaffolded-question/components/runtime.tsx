@@ -1,11 +1,10 @@
 import React from "react";
 import { IAuthoredState } from "./authoring";
 import { IframeRuntime } from "./iframe-runtime";
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faLock } from '@fortawesome/free-solid-svg-icons'
 import css from "./runtime.scss";
+import { useRequiredQuestion } from "../../shared/hooks/use-required-question";
 
-interface IInteractiveState {
+export interface IInteractiveState {
   subinteractiveStates: {
     [id: string]: any;
   },
@@ -18,9 +17,10 @@ interface IProps {
   interactiveState?: IInteractiveState;
   setInteractiveState?: (state: IInteractiveState) => void;
   report?: boolean;
+  setNavigation?: (enableForwardNav: boolean, message: string) => void;
 }
 
-export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
+export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, setNavigation, report }) => {
   const currentSubintId = interactiveState?.currentSubinteractiveId;
   let currentInteractive = authoredState.subinteractives.find(si => si.id === currentSubintId);
   if (!currentInteractive) {
@@ -35,10 +35,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const submitted = interactiveState?.submitted;
   const hintAvailable = !submitted && (currentSubintIndex < authoredState.subinteractives.length - 1);
 
-  // User can submit answer only if any answer has been provided before.
-  const submitAvailable = !submitted && !!subState;
+  const readOnly = report || (authoredState.required && interactiveState?.submitted);
 
-  const reportOrSubmitted = report || interactiveState?.submitted;
+  // User can submit answer only if any answer has been provided before.
+  const isAnswered = !!subState;
+  const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, isAnswered });
 
   const handleNewInteractiveState = (interactiveId: string, newInteractiveState: any) => {
     if (setInteractiveState) {
@@ -54,12 +55,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
   };
 
-  const handleSubmit = () => {
-    if (setInteractiveState) {
-      setInteractiveState(Object.assign({}, interactiveState, { submitted: true }));
-    }
-  };
-
   if (authoredState.subinteractives.length === 0) {
     return <div>"No subquestions available. Please add them using authoring interface."</div>;
   }
@@ -72,8 +67,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         url={currentInteractive.url}
         authoredState={currentInteractive.authoredState}
         interactiveState={subState}
-        setInteractiveState={reportOrSubmitted ? undefined : handleNewInteractiveState.bind(null, currentInteractive.id)}
-        report={reportOrSubmitted}
+        setInteractiveState={readOnly ? undefined : handleNewInteractiveState.bind(null, currentInteractive.id)}
+        report={readOnly}
       />
       {
         authoredState.extraInstructions &&
@@ -83,15 +78,15 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         !report &&
         <div className={css.buttons}>
           { hintAvailable && <button onClick={handleHint}>Hint</button> }
-          { !submitted && <button onClick={handleSubmit} disabled={!submitAvailable}>Submit <FontAwesomeIcon icon={faLock} size="sm" /></button> }
+          { submitButton }
         </div>
       }
-      { !report && submitted && <div className={css.locked}>Your answer is now locked. <FontAwesomeIcon icon={faLock} size="sm" /></div> }
+      { !report && lockedInfo }
       {
         report &&
         <div>
           <div>Hint has been used { currentSubintIndex } times.</div>
-          <div>Question has been { submitted ? "" : "not" } submitted.</div>
+          { authoredState.required && <div>Question has been { submitted ? "" : "not" } submitted.</div> }
         </div>
       }
     </div>

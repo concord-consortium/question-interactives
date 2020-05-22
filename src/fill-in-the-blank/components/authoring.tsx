@@ -22,7 +22,8 @@ export interface IAuthoredState {
   version: number;
   prompt?: string;
   extraInstructions?: string;
-  blanks?: IBlankDef[]
+  blanks?: IBlankDef[];
+  required?: boolean;
 }
 
 const schemaVersion = 1;
@@ -36,6 +37,10 @@ const schema: JSONSchema7 = {
     prompt: {
       title: "Prompt. Provide sentence with one or more blanks specified with [blank-<ID>], for example [blank-1], [blank-test].",
       type: "string"
+    },
+    required: {
+      title: "Required",
+      type: "boolean"
     },
     extraInstructions: {
       title: "Extra instructions",
@@ -86,7 +91,7 @@ const uiSchema = {
 };
 
 interface IProps {
-  authoredState: IAuthoredState;
+  authoredState: IAuthoredState | undefined;
   setAuthoredState?: (state: IAuthoredState) => void;
 }
 

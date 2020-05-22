@@ -6,7 +6,7 @@ import { Authoring } from "./authoring";
 
 let mode: any;
 jest.mock("../../shared/hooks/use-lara-interactive-api", () => ({
-    useLARAInteractiveAPI: () => ({ mode })
+    useLARAInteractiveAPI: () => ({ mode, authoredState: {} })
   })
 );
 

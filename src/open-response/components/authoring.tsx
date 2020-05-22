@@ -13,6 +13,7 @@ export interface IAuthoredState {
   prompt?: string;
   extraInstructions?: string;
   defaultAnswer?: string;
+  required?: boolean;
 }
 
 const schemaVersion = 1;
@@ -26,6 +27,10 @@ const schema: JSONSchema6 = {
     prompt: {
       title: "Prompt",
       type: "string"
+    },
+    required: {
+      title: "Required",
+      type: "boolean"
     },
     extraInstructions: {
       title: "Extra instructions",
@@ -54,7 +59,7 @@ const uiSchema = {
 };
 
 interface IProps {
-  authoredState: IAuthoredState;
+  authoredState: IAuthoredState | undefined;
   setAuthoredState?: (state: IAuthoredState) => void;
 }
 

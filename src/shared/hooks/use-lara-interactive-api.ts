@@ -8,11 +8,11 @@ interface IConfig {
   aspectRatio?: number;
 }
 
-export const useLARAInteractiveAPI = (config: IConfig) => {
+export const useLARAInteractiveAPI = <AS, IS>(config: IConfig) => {
   const phone = useRef<IframePhone>();
   const [ mode, setMode ] = useState<Mode>();
-  const [ authoredState, setAuthoredState ] = useState<any>();
-  const [ interactiveState, setInteractiveState ] = useState<any>();
+  const [ authoredState, setAuthoredState ] = useState<AS>();
+  const [ interactiveState, setInteractiveState ] = useState<IS>();
 
   const initInteractive = (data: any) => {
     // LARA sometimes sends string (report page), sometimes already parsed JSON (authoring, runtime).
@@ -39,6 +39,10 @@ export const useLARAInteractiveAPI = (config: IConfig) => {
 
   const handleSetHeight = (height: number) => {
     phone.current?.post("height", height);
+  }
+
+  const handleSetNavigation = (enableForwardNav: boolean, message: string) => {
+    phone.current?.post("navigation", { enableForwardNav, message });
   }
 
   useEffect(() => {
@@ -80,6 +84,7 @@ export const useLARAInteractiveAPI = (config: IConfig) => {
     interactiveState,
     setAuthoredState: handleAuthoredStateChange,
     setInteractiveState: handleInteractiveStateChange,
-    setHeight: handleSetHeight
+    setHeight: handleSetHeight,
+    setNavigation: handleSetNavigation,
   };
 }
