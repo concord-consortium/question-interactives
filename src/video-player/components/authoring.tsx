@@ -10,16 +10,16 @@ import css from "../../shared/styles/authoring.scss";
 
 export interface IAuthoredState {
   version: number;
-  videoUrl: string;
+  videoUrl?: string;
   captionUrl?: string;
   poster?: string;
   prompt?: string;
   credit?: string;
-  creditLinkDisplayText?: string;
   creditLink?: string;
-  disableNextButton?: boolean;
+  creditLinkDisplayText?: string;
   fixedAspectRatio?: string;
   fixedHeight?: number;
+  required?: boolean;
 }
 
 const schemaVersion = 1;
@@ -58,10 +58,6 @@ const schema: JSONSchema6 = {
       title: "Credit Link Display Text",
       type: "string"
     },
-    disableNextButton: {
-      title: "Disable \"Next\" button",
-      type: "boolean"
-    },
     fixedAspectRatio: {
       title: "Fixed Aspect Ratio",
       type: "string"
@@ -69,7 +65,11 @@ const schema: JSONSchema6 = {
     fixedHeight: {
       title: "Fixed Height",
       type: "number"
-    }
+    },
+    required: {
+      title: "Required",
+      type: "boolean"
+    },
   }
 };
 
@@ -102,20 +102,19 @@ const uiSchema = {
     "ui:help": "Text to display for the link to attribution (leave blank to display the url)"
   },
   // Behavior properties
-  disableNextButton: {
-    "ui:widget": "checkbox",
-    "ui:help": "Students must watch the whole video before they can proceed"
-  },
   fixedAspectRatio: {
     "ui:help": "Specify either a number (1.33, 0.75, etc), or use a:b notation (16:9, 4:3, 1:1). Leave blank for responsive behavior"
   },
   fixedHeight: {
     "ui:help": "Specify a fixed height, or leave blank for responsive behavior"
+  },
+  required: {
+    "ui:help": "Students must watch all the video before they can continue"
   }
 };
 
 interface IProps {
-  authoredState: IAuthoredState;
+  authoredState: IAuthoredState | undefined;
   setAuthoredState?: (state: IAuthoredState) => void;
 }
 

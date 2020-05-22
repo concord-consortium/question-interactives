@@ -1,12 +1,14 @@
 import React, { useRef, useEffect } from "react";
 import { IAuthoredState } from "./authoring";
-import css from "./runtime.scss";
+import { useRequiredQuestion } from "../../shared/hooks/use-required-question";
 import videojs from "video.js";
+import css from "./runtime.scss";
 
 import "./video-js.css";
 
-interface IInteractiveState {
-  response: number;
+export interface IInteractiveState {
+  percentageViewed: number;
+  submitted?: boolean;
 }
 
 interface IProps {
@@ -14,15 +16,31 @@ interface IProps {
   interactiveState?: IInteractiveState;
   setInteractiveState?: (state: IInteractiveState) => void;
   report?: boolean;
+  setNavigation?: (enableForwardNav: boolean, message: string) => void;
 }
 // small sample mp4
 // "https://models-resources.s3.amazonaws.com/geniblocks/resources/fablevision/video/charcoal.mp4";
 // sample captions
 // "https://models-resources.s3.amazonaws.com/question-interactives/test-captions.vtt";
 
-export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
+export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, setNavigation, report }) => {
   const playerRef = useRef(null);
 
+  let viewed : number = interactiveState?.percentageViewed ?interactiveState?.percentageViewed : 0;
+
+  const getViewPercentage = () => {
+    if (!playerRef.current) viewed = 0;
+    const video: HTMLVideoElement = playerRef.current! as HTMLVideoElement;
+    viewed = video.currentTime / video.duration;
+  };
+  const getViewedTimestamp = () => {
+    if (!interactiveState?.percentageViewed) return 0;
+    if (!playerRef.current) return 0;
+    const video: HTMLVideoElement = playerRef.current! as HTMLVideoElement;
+    return interactiveState?.percentageViewed * video.duration;
+  };
+
+  const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, isAnswered: viewed > 0.96 });
   useEffect(() => {
     loadPlayer();
   }, []);
@@ -55,6 +73,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       player.height(authoredState.fixedHeight);
     }
 
+    if (interactiveState?.percentageViewed) {
+      player.currentTime(getViewedTimestamp());
+    }
+
     return () => {
       player.dispose();
     };
@@ -70,9 +92,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       return `${roundedAspect}:100`;
     }
   };
+
   const handleChange = (event: any) => {
     if (setInteractiveState) {
-      setInteractiveState(Object.assign({}, interactiveState, { response: ((playerRef.current! as HTMLVideoElement).currentTime) }));
+      setInteractiveState(Object.assign({}, interactiveState, { percentageViewed: getViewPercentage() }));
     }
   };
 
@@ -93,6 +116,13 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       {authoredState.creditLink && <div className={css.creditLink}><a href={authoredState.creditLink} target="_blank">
         {authoredState.creditLinkDisplayText ? authoredState.creditLinkDisplayText : authoredState.creditLink}
       </a></div>}
+      {
+        !report &&
+        <div>
+          { submitButton }
+          { lockedInfo }
+        </div>
+      }
     </div>
   );
 };
