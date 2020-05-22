@@ -32,13 +32,4 @@ describe("App", () => {
     expect(wrapper.find(Runtime).length).toEqual(1);
     expect(wrapper.find(Runtime).props().report).toEqual(true);
   });
-
-  it("should listen to window resize event", () => {
-    const addSpy = jest.spyOn(window, "addEventListener");
-    const removeSpy = jest.spyOn(window, "removeEventListener");
-    const wrapper = mount(<App />);
-    expect(addSpy).toHaveBeenCalledWith("resize", expect.anything());
-    wrapper.unmount();
-    expect(removeSpy).toHaveBeenCalledWith("resize", expect.anything());
-  });
 });
