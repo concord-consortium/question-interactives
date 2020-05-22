@@ -14,11 +14,12 @@ export const useAutoHeight = (config: IConfig) => {
     const NativeResizeObserver = (window as any).ResizeObserver as new(callback: ResizeObserverCallback) => ResizeObserver;
 
     const observer = new (NativeResizeObserver || ResizeObserver)(entries => {
-      for (const entry of entries) {
-        const height = entry.target?.scrollHeight;
-        if (height && height > 0) {
-          setHeight(Math.ceil(height));
-        }
+      const entry = entries[0];
+      // scrollHeight describes min height of the container necessary to avoid scrollbars.
+      // It works better than offsetHeight (e.g. when we have some elements with `float:right` css props).
+      const height = entry?.target?.scrollHeight;
+      if (height && height > 0) {
+        setHeight(Math.ceil(height));
       }
     });
     if (container.current) {
