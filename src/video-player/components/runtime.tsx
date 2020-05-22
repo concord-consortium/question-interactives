@@ -26,12 +26,13 @@ interface IProps {
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, setNavigation, report }) => {
   const playerRef = useRef(null);
 
-  let viewed : number = interactiveState?.percentageViewed ?interactiveState?.percentageViewed : 0;
-
   const getViewPercentage = () => {
-    if (!playerRef.current) viewed = 0;
-    const video: HTMLVideoElement = playerRef.current! as HTMLVideoElement;
-    viewed = video.currentTime / video.duration;
+    let viewed = 0;
+    if (playerRef.current) {
+      const video: HTMLVideoElement = playerRef.current! as HTMLVideoElement;
+      viewed = video.currentTime / video.duration;
+    }
+    return viewed;
   };
   const getViewedTimestamp = () => {
     if (!interactiveState?.percentageViewed) return 0;
@@ -40,7 +41,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     return interactiveState?.percentageViewed * video.duration;
   };
 
-  const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, isAnswered: viewed > 0.96 });
+  const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, isAnswered: getViewPercentage() > 0.96 });
   useEffect(() => {
     loadPlayer();
   }, []);
@@ -49,22 +50,21 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     const player: videojs.Player = videojs(playerRef.current,
       {
         controls: true,
-        fluid: authoredState.fixedAspectRatio  || authoredState.fixedHeight ? false : true
+        fluid: authoredState.fixedAspectRatio || authoredState.fixedHeight ? false : true
       }, () => {
-      if (authoredState.captionUrl) {
-        const textTrack = authoredState.captionUrl;
-        player.addRemoteTextTrack({
-          kind: 'subtitles',
-          language: 'en',
-          label: 'English',
-          src: textTrack,
-          'default': true
-        }, true);
-      }
+        const url = authoredState.videoUrl ? authoredState.videoUrl : "";
+        player.src(url);
 
-      const url = authoredState.videoUrl ? authoredState.videoUrl : "";
-      player.src(url);
-    });
+        if (authoredState.captionUrl) {
+          player.addRemoteTextTrack({
+            kind: 'captions',
+            language: 'en',
+            label: 'English',
+            src: authoredState.captionUrl,
+            'default': true
+          }, false);
+        }
+      });
 
     if (authoredState.fixedAspectRatio) {
       player.aspectRatio(getAspectRatio(authoredState.fixedAspectRatio));
@@ -93,7 +93,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
   };
 
-  const handleChange = (event: any) => {
+  const handleChange = (e: any) => {
     if (setInteractiveState) {
       setInteractiveState(Object.assign({}, interactiveState, { percentageViewed: getViewPercentage() }));
     }
@@ -107,8 +107,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           <video ref={playerRef} className="video-js vjs-big-play-centered vjs-fluid"
             poster={authoredState.poster}
             onPlaying={report ? undefined : handleChange}
-            onEnded={report ? undefined : handleChange}
             onTimeUpdate={report ? undefined : handleChange}
+            onEnded={report ? undefined : handleChange}
           />
         </div>
       </div>
