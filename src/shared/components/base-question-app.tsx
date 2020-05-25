@@ -9,15 +9,12 @@ import css from "./base-question-app.scss";
 
 interface IBaseQuestionAuthoredState {
   version: number;
-  // Note that `prop: some_type | undefined` is different from `prop?: some_type`. The latter lets child interface
-  // (one that extends this one) not to provide this property at all. Not using `?` explicitly requires interface
-  // to define this property, but also allows undefined value.
-  hint: string | undefined;
-  required: boolean | undefined;
+  hint?: string;
+  required?: boolean;
 }
 
 interface IBaseQuestionInteractiveState {
-  submitted: boolean | undefined;
+  submitted?: boolean;
 }
 
 interface IAuthoringComponentProps<IAuthoredState> {

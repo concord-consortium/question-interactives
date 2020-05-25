@@ -3,8 +3,8 @@ import LockIcon from "../icons/lock.svg";
 import css from "../styles/helpers.scss";
 
 interface IConfig {
-  authoredState: { required: boolean | undefined } | undefined;
-  interactiveState: { submitted: boolean | undefined } | undefined;
+  authoredState: { required?: boolean } | undefined;
+  interactiveState: { submitted?: boolean } | undefined;
   setInteractiveState: ((interactiveState: {submitted?: boolean}) => void) | undefined;
   setNavigation: ((enableForwardNav: boolean, message: string) => void) | undefined;
   isAnswered: boolean;

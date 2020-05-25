@@ -9,15 +9,15 @@ import { JSONSchema6 } from "json-schema";
 
 export interface IAuthoredState {
   version: number;
-  prompt: string | undefined;
-  defaultAnswer: string | undefined;
-  hint: string | undefined;
-  required: boolean | undefined;
+  prompt?: string;
+  defaultAnswer?: string;
+  hint?: string;
+  required?: boolean;
 }
 
 export interface IInteractiveState {
-  response: string | undefined;
-  submitted: boolean | undefined;
+  response?: string;
+  submitted?: boolean;
 }
 
 const schemaVersion = 1;

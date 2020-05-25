@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 
 interface IConfig {
-  authoredState: { hint: string | undefined } | undefined;
+  authoredState: { hint?: string } | undefined;
   setHint: ((hint: string | undefined) => void) | undefined;
 }
 
