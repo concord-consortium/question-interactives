@@ -5,19 +5,20 @@ import { Runtime } from "./runtime";
 const authoredState = {
   version: 1,
   prompt: "Test prompt",
-  extraInstructions: "Test extra instructions",
+  hint: "hint",
+  required: false,
   defaultAnswer: ""
 };
 
 const interactiveState = {
-  response: "Test response"
+  response: "Test response",
+  submitted: undefined
 };
 
 describe("Runtime", () => {
-  it("renders prompt, extra instructions and textarea", () => {
+  it("renders prompt and textarea", () => {
     const wrapper = shallow(<Runtime authoredState={authoredState} />);
     expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.prompt));
-    expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.extraInstructions));
     expect(wrapper.find("textarea").length).toEqual(1);
   });
 
@@ -34,10 +35,9 @@ describe("Runtime", () => {
   });
 
   describe("report mode", () => {
-    it("renders prompt, extra instructions and *disabled* textarea", () => {
+    it("renders prompt and *disabled* textarea", () => {
       const wrapper = shallow(<Runtime authoredState={authoredState} report={true} />);
       expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.prompt));
-      expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.extraInstructions));
       expect(wrapper.find("textarea").props().disabled).toEqual(true);
     });
 
