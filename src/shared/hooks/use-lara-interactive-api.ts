@@ -35,15 +35,19 @@ export const useLARAInteractiveAPI = <AS, IS>(config: IConfig) => {
   const handleInteractiveStateChange = (state: any) => {
     setInteractiveState(state);
     phone.current?.post("interactiveState", state);
-  }
+  };
 
   const handleSetHeight = (height: number) => {
     phone.current?.post("height", height);
-  }
+  };
+
+  const handleSetHint = (hint: string) => {
+    phone.current?.post("hint", hint);
+  };
 
   const handleSetNavigation = (enableForwardNav: boolean, message: string) => {
     phone.current?.post("navigation", { enableForwardNav, message });
-  }
+  };
 
   useEffect(() => {
     const intPhone = iframePhone.getIFrameEndpoint();
@@ -85,6 +89,7 @@ export const useLARAInteractiveAPI = <AS, IS>(config: IConfig) => {
     setAuthoredState: handleAuthoredStateChange,
     setInteractiveState: handleInteractiveStateChange,
     setHeight: handleSetHeight,
+    setHint: handleSetHint,
     setNavigation: handleSetNavigation,
   };
 }
