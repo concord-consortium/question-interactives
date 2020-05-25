@@ -36,7 +36,6 @@ $themeColor2: #34a5be;
   text-align: center;
   transition: all ease-in;
 
-
   &:hover {
     background-color: darken($color1, 5%);
     background-image: linear-gradient(to bottom, darken($color1, 5%), darken($color2, 10%));
@@ -50,6 +49,11 @@ $themeColor2: #34a5be;
   &:disabled {
     cursor: not-allowed;
     opacity: 0.3;
+  }
+
+  // Icon.
+  svg {
+    fill: #fcfcfc;
   }
 }
 
@@ -66,6 +70,23 @@ $themeColor2: #34a5be;
   padding: 4px;
   font-size: 14pt;
   margin-top: 10px;
+
+  // Icon.
+  svg {
+    fill: #525252;
+  }
+}
+
+.smallIcon {
+  width: 17px;
+  height: 17px;
+  vertical-align: middle;
+}
+
+.mediumIcon {
+  width: 22px;
+  height: 22px;
+  vertical-align: middle;
 }
 
 .extraInstructions {
