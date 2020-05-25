@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { IframePhone } from "../../shared/types";
 import iframePhone from "iframe-phone";
+import css from "./iframe-runtime.scss";
 
 interface IProps {
   url: string;
@@ -12,6 +13,7 @@ interface IProps {
 
 export const IframeRuntime: React.FC<IProps> = ({ url, authoredState, interactiveState, setInteractiveState, report }) => {
   const [ iframeHeight, setIframeHeight ] = useState(300);
+  const [ hint, setHint ] = useState("");
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const phoneRef = useRef<IframePhone>();
 
@@ -25,6 +27,9 @@ export const IframeRuntime: React.FC<IProps> = ({ url, authoredState, interactiv
     });
     phone.addListener("height", (newHeight: number) => {
       setIframeHeight(newHeight);
+    });
+    phone.addListener("hint", (newHint: string) => {
+      setHint(newHint);
     });
     phone.post("initInteractive", {
       mode: report ? "report" : "runtime",
@@ -58,6 +63,9 @@ export const IframeRuntime: React.FC<IProps> = ({ url, authoredState, interactiv
   }, [report])
 
   return (
-    <iframe ref={iframeRef} src={url} width="100%" height={iframeHeight} frameBorder={0} />
+    <div>
+      <iframe ref={iframeRef} src={url} width="100%" height={iframeHeight} frameBorder={0} />
+      { hint && <div className={css.hint}>{ hint }</div> }
+    </div>
   )
 };
