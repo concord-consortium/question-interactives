@@ -6,22 +6,25 @@ context("Test open response interactive", () => {
   });
 
   context("Runtime view", () => {
-    it("renders prompt and handles pre-existing interactive state", () => {
+    it("renders prompt, sends hint to parent and handles pre-existing interactive state", () => {
       phonePost("initInteractive", {
         mode: "runtime",
         authoredState: {
           version: 1,
           prompt: "Test prompt",
-          extraInstructions: "Hints",
+          hint: "Hint",
           defaultAnswer: "Default answer"
         },
         interactiveState: {
           response: [ "Test response" ]
         }
       });
+      phoneListen("hint");
+      getAndClearLastPhoneMessage((hint) => {
+        expect(hint).eql("Hint");
+      });
 
       cy.getIframeBody().find("#app").should("include.text", "Test prompt");
-      cy.getIframeBody().find("#app").should("include.text", "Hints");
 
       cy.getIframeBody().find("textarea").should("have.attr", "placeholder", "Default answer");
       cy.getIframeBody().find("textarea").should("have.value", "Test response");
@@ -34,7 +37,7 @@ context("Test open response interactive", () => {
         authoredState: {
           version: 1,
           prompt: "Test prompt",
-          extraInstructions: "Hints",
+          hint: "Hint",
           defaultAnswer: "Default answer"
         }
       });
@@ -54,17 +57,17 @@ context("Test open response interactive", () => {
         authoredState: {
           version: 1,
           prompt: "Test prompt",
-          extraInstructions: "Hints",
+          hint: "Hint",
           defaultAnswer: "Default answer"
         }
       });
 
       cy.getIframeBody().find("#app").should("include.text", "Prompt");
-      cy.getIframeBody().find("#app").should("include.text", "Extra instructions");
+      cy.getIframeBody().find("#app").should("include.text", "Hint");
       cy.getIframeBody().find("#app").should("include.text", "Default answer");
 
       cy.getIframeBody().find("#root_prompt").should("have.value", "Test prompt");
-      cy.getIframeBody().find("#root_extraInstructions").should("have.value", "Hints");
+      cy.getIframeBody().find("#root_hint").should("have.value", "Hint");
       cy.getIframeBody().find("#root_defaultAnswer").should("have.value", "Default answer");
     });
 
@@ -80,9 +83,9 @@ context("Test open response interactive", () => {
         expect(state.prompt).eql("Test prompt");
       });
 
-      cy.getIframeBody().find("#root_extraInstructions").type("Hints");
+      cy.getIframeBody().find("#root_hint").type("Hint");
       getAndClearLastPhoneMessage(state => {
-        expect(state.extraInstructions).eql("Hints");
+        expect(state.hint).eql("Hint");
       });
 
       cy.getIframeBody().find("#root_defaultAnswer").type("Default answer");
@@ -99,7 +102,7 @@ context("Test open response interactive", () => {
         authoredState: {
           version: 1,
           prompt: "Test prompt",
-          extraInstructions: "Hints",
+          hint: "Hint",
           defaultAnswer: "Default answer"
         },
         interactiveState: {
@@ -108,12 +111,11 @@ context("Test open response interactive", () => {
       });
 
       cy.getIframeBody().find("#app").should("include.text", "Test prompt");
-      cy.getIframeBody().find("#app").should("include.text", "Hints");
 
       cy.getIframeBody().find("textarea").should("have.attr", "placeholder", "Default answer");
       cy.getIframeBody().find("textarea").should("have.value", "Test response");
 
-      cy.getIframeBody().find("textarea").type("Ne answer", { force: true });
+      cy.getIframeBody().find("textarea").type("New answer", { force: true });
 
       cy.getIframeBody().find("textarea").should("have.value", "Test response");
     });
