@@ -8,6 +8,7 @@ import "./video-js.css";
 
 export interface IInteractiveState {
   percentageViewed: number;
+  lastViewedTimestamp: number;
   submitted?: boolean;
 }
 
@@ -23,22 +24,26 @@ interface IProps {
 // sample captions
 // "https://models-resources.s3.amazonaws.com/question-interactives/test-captions.vtt";
 
+let saveStateInterval : any;
+
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, setNavigation, report }) => {
   let viewedProgress = interactiveState?.percentageViewed || 0;
+  let viewedTimestamp = interactiveState?.lastViewedTimestamp || 0;
   const playerRef = useRef(null);
 
+  const getViewTime = () => {
+    if (playerRef.current) {
+      const video: HTMLVideoElement = playerRef.current! as HTMLVideoElement;
+      return video.currentTime;
+    }
+    else return 0;
+  };
   const getViewPercentage = () => {
     if (playerRef.current) {
       const video: HTMLVideoElement = playerRef.current! as HTMLVideoElement;
       return video.currentTime / video.duration;
     }
     else return 0;
-  };
-  const getViewedTimestamp = () => {
-    if (!viewedProgress) return 0;
-    if (!playerRef.current) return 0;
-    const video: HTMLVideoElement = playerRef.current! as HTMLVideoElement;
-    return viewedProgress * video.duration;
   };
 
   const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, isAnswered: viewedProgress > 0.96 });
@@ -72,10 +77,13 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     if (authoredState.fixedHeight) {
       player.height(authoredState.fixedHeight);
     }
-
-    if (viewedProgress) {
-      player.currentTime(getViewedTimestamp());
-    }
+    player.ready(() => {
+      if (viewedTimestamp) {
+        // console.log(player.duration());
+        // console.log(viewedProgress);
+        player.currentTime(viewedTimestamp);
+      }
+    });
 
     return () => {
       player.dispose();
@@ -93,26 +101,38 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
   };
 
-  const handleChange = (e: any) => {
+  const handlePlaying = (e: any) => {
+    // store current playback progress each second
+    saveStateInterval = setInterval(updateState, 1000);
+  };
+
+  const handleStop = (e: any) => {
+    clearInterval(saveStateInterval);
+    updateState();
+  };
+
+  const updateState = () => {
+    viewedTimestamp = getViewTime();
     viewedProgress = getViewPercentage();
     if (setInteractiveState) {
-      setInteractiveState(Object.assign({}, interactiveState, { percentageViewed: viewedProgress }));
+      setInteractiveState(Object.assign({}, interactiveState, { percentageViewed: viewedProgress, lastViewedTimestamp: viewedTimestamp }));
     }
   };
 
   return (
     <div className={css.runtime}>
       { authoredState.prompt && <div className={css.prompt}>{ authoredState.prompt }</div> }
-      <div className={css.videoPlayerContainer}>
+      <div className={`${css.videoPlayerContainer} last-viewed${viewedTimestamp}`}>
         <div className="video-player" data-vjs-player={true}>
           <video ref={playerRef} className="video-js vjs-big-play-centered vjs-fluid"
             poster={authoredState.poster}
-            onPlaying={report ? undefined : handleChange}
-            onTimeUpdate={report ? undefined : handleChange}
-            onEnded={report ? undefined : handleChange}
+            onPlaying={report ? undefined : handlePlaying}
+            onEnded={report ? undefined : handleStop}
+            onPause={report ? undefined : handleStop}
           />
         </div>
       </div>
+      {interactiveState?.lastViewedTimestamp && <div className={css.lastViewed}>{interactiveState.lastViewedTimestamp}</div>}
       {authoredState.credit && <div className={css.credit}>{authoredState.credit}</div>}
       {authoredState.creditLink && <div className={css.creditLink}><a href={authoredState.creditLink} target="_blank">
         {authoredState.creditLinkDisplayText ? authoredState.creditLinkDisplayText : authoredState.creditLink}
