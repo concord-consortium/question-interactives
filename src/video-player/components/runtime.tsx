@@ -24,24 +24,24 @@ interface IProps {
 // "https://models-resources.s3.amazonaws.com/question-interactives/test-captions.vtt";
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, setNavigation, report }) => {
+  let viewedProgress = interactiveState?.percentageViewed || 0;
   const playerRef = useRef(null);
 
   const getViewPercentage = () => {
-    let viewed = 0;
     if (playerRef.current) {
       const video: HTMLVideoElement = playerRef.current! as HTMLVideoElement;
-      viewed = video.currentTime / video.duration;
+      return video.currentTime / video.duration;
     }
-    return viewed;
+    else return 0;
   };
   const getViewedTimestamp = () => {
-    if (!interactiveState?.percentageViewed) return 0;
+    if (!viewedProgress) return 0;
     if (!playerRef.current) return 0;
     const video: HTMLVideoElement = playerRef.current! as HTMLVideoElement;
-    return interactiveState?.percentageViewed * video.duration;
+    return viewedProgress * video.duration;
   };
 
-  const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, isAnswered: getViewPercentage() > 0.96 });
+  const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, isAnswered: viewedProgress > 0.96 });
   useEffect(() => {
     loadPlayer();
   }, []);
@@ -73,7 +73,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       player.height(authoredState.fixedHeight);
     }
 
-    if (interactiveState?.percentageViewed) {
+    if (viewedProgress) {
       player.currentTime(getViewedTimestamp());
     }
 
@@ -94,8 +94,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const handleChange = (e: any) => {
+    viewedProgress = getViewPercentage();
     if (setInteractiveState) {
-      setInteractiveState(Object.assign({}, interactiveState, { percentageViewed: getViewPercentage() }));
+      setInteractiveState(Object.assign({}, interactiveState, { percentageViewed: viewedProgress }));
     }
   };
 
