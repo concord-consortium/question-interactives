@@ -75,7 +75,7 @@ context("Test fill in the blank interactive", () => {
       });
 
       cy.getIframeBody().find("#app").should("include.text", "Prompt");
-      cy.getIframeBody().find("#app").should("include.text", "Extra instructions");
+      cy.getIframeBody().find("#app").should("include.text", "Hint");
       cy.getIframeBody().find("#app").should("include.text", "Blank field options");
 
       cy.getIframeBody().find("#root_prompt").should("have.value", "Test prompt with [blank-1] and [blank-2]");
