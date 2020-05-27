@@ -35,17 +35,18 @@ interface IProps<IAuthoredState, IInteractiveState> {
   baseAuthoringProps?: Omit<IBaseAuthoringProps<IAuthoredState>, "authoredState" | "setAuthoredState">;
   Runtime: React.FC<IRuntimeComponentProps<IAuthoredState, IInteractiveState>>;
   isAnswered: (state: IInteractiveState | undefined) => boolean;
+  disableAutoHeight?: boolean;
 }
 
 export const BaseQuestionApp = <IAuthoredState extends IBaseQuestionAuthoredState, IInteractiveState extends IBaseQuestionInteractiveState>(
-  { Authoring, baseAuthoringProps, Runtime, isAnswered }: IProps<IAuthoredState, IInteractiveState>
+  { Authoring, baseAuthoringProps, Runtime, isAnswered, disableAutoHeight }: IProps<IAuthoredState, IInteractiveState>
 ) => {
   const container = useRef<HTMLDivElement>(null);
   const { mode, authoredState, interactiveState, setInteractiveState, setAuthoredState, setHeight, setHint, setNavigation } = useLARAInteractiveAPI<IAuthoredState, IInteractiveState>({
     interactiveState: true,
     authoredState: true,
   });
-  useAutoHeight({ container, setHeight });
+  useAutoHeight({ container, setHeight, disabled: disableAutoHeight });
   useHint({ authoredState, setHint });
   const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, isAnswered: isAnswered(interactiveState) });
 

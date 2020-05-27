@@ -4,12 +4,14 @@ import ResizeObserver from "resize-observer-polyfill";
 interface IConfig {
   container: RefObject<HTMLDivElement>;
   setHeight: (height: number) => void;
+  disabled?: boolean;
 }
 
-export const useAutoHeight = (config: IConfig) => {
-  const { container, setHeight } = config;
-
+export const useAutoHeight = ({ container, setHeight, disabled }: IConfig) => {
   useEffect(() => {
+    if (disabled) {
+      return;
+    }
     // TypeScript doesn't seem to have types of the native ResizeObserver yet. Use types coming from polyfill.
     const NativeResizeObserver = (window as any).ResizeObserver as new(callback: ResizeObserverCallback) => ResizeObserver;
 
