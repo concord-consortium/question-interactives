@@ -8,11 +8,11 @@ import css from "../../shared/styles/authoring.scss";
 
 export interface IBaseAuthoringProps<IAuthoredState> {
   authoredState: IAuthoredState;
-  setAuthoredState?: (state: IAuthoredState) => void;
+  setAuthoredState: (state: IAuthoredState) => void;
   preprocessFormData?: (data: IAuthoredState) => IAuthoredState;
   // react-jsonschema-form properties:
   schema: JSONSchema6;
-  uiSchema: UiSchema;
+  uiSchema?: UiSchema;
   // react-jsonschema-form additional fields.
   fields?: { [name: string]: Field };
   validate?: (formData: IAuthoredState, errors: FormValidation) => FormValidation;
