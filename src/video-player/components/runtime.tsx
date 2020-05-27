@@ -2,6 +2,7 @@ import React, { useRef, useEffect } from "react";
 import { IAuthoredState } from "./authoring";
 import { useRequiredQuestion } from "../../shared/hooks/use-required-question";
 import videojs from "video.js";
+import Shutterbug from "shutterbug";
 import css from "./runtime.scss";
 
 import "./video-js.css";
@@ -30,7 +31,12 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   let viewedProgress = interactiveState?.percentageViewed || 0;
   let viewedTimestamp = interactiveState?.lastViewedTimestamp || 0;
   const playerRef = useRef(null);
-
+  useEffect(() => {
+    Shutterbug.enable("." + css.app);
+    return () => {
+      Shutterbug.disable();
+    };
+  }, []);
   const getViewTime = () => {
     if (playerRef.current) {
       const video: HTMLVideoElement = playerRef.current! as HTMLVideoElement;
