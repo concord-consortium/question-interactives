@@ -14,9 +14,7 @@ interface IConfig {
 // `submitted` property in its interactive state (student state).
 export const useRequiredQuestion = ({ authoredState, interactiveState, setInteractiveState, setNavigation, isAnswered }: IConfig) => {
   const handleSubmit = () => {
-    if (setInteractiveState) {
-      setInteractiveState(Object.assign({}, interactiveState, { submitted: true }));
-    }
+    setInteractiveState?.(Object.assign({}, interactiveState, { submitted: true }));
   };
 
   useEffect(() => {

@@ -23,9 +23,7 @@ export const BaseAuthoring = <IAuthoredState,>({ authoredState, setAuthoredState
       formData = preprocessFormData(formData);
     }
     // Immediately save the data.
-    if (setAuthoredState) {
-      setAuthoredState(formData);
-    }
+    setAuthoredState?.(formData);
   };
 
   return (
