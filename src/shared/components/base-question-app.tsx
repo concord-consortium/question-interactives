@@ -4,8 +4,11 @@ import { useAutoHeight } from "../hooks/use-auto-height";
 import { useHint } from "../hooks/use-hint";
 import { useRequiredQuestion } from "../hooks/use-required-question";
 import { BaseAuthoring, IBaseAuthoringProps } from "./base-authoring";
+import { SubmitButton } from "./submit-button";
+import { LockedInfo } from "./locked-info";
 
 import css from "./base-question-app.scss";
+
 
 interface IBaseQuestionAuthoredState {
   version: number;
@@ -34,12 +37,14 @@ interface IProps<IAuthoredState, IInteractiveState> {
   Authoring?: React.FC<IAuthoringComponentProps<IAuthoredState>>;
   baseAuthoringProps?: Omit<IBaseAuthoringProps<IAuthoredState>, "authoredState" | "setAuthoredState">;
   Runtime: React.FC<IRuntimeComponentProps<IAuthoredState, IInteractiveState>>;
-  isAnswered: (state: IInteractiveState | undefined) => boolean;
   disableAutoHeight?: boolean;
+  disableSubmitBtnRendering?: boolean;
+  // Note that isAnswered is required when `disableSubmitBtnRendering` is false.
+  isAnswered?: (state: IInteractiveState | undefined) => boolean;
 }
 
 export const BaseQuestionApp = <IAuthoredState extends IBaseQuestionAuthoredState, IInteractiveState extends IBaseQuestionInteractiveState>(
-  { Authoring, baseAuthoringProps, Runtime, isAnswered, disableAutoHeight }: IProps<IAuthoredState, IInteractiveState>
+  { Authoring, baseAuthoringProps, Runtime, isAnswered, disableAutoHeight, disableSubmitBtnRendering }: IProps<IAuthoredState, IInteractiveState>
 ) => {
   const container = useRef<HTMLDivElement>(null);
   const { mode, authoredState, interactiveState, setInteractiveState, setAuthoredState, setHeight, setHint, setNavigation } = useLARAInteractiveAPI<IAuthoredState, IInteractiveState>({
@@ -48,7 +53,11 @@ export const BaseQuestionApp = <IAuthoredState extends IBaseQuestionAuthoredStat
   });
   useAutoHeight({ container, setHeight, disabled: disableAutoHeight });
   useHint({ authoredState, setHint });
-  const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, isAnswered: isAnswered(interactiveState) });
+  useRequiredQuestion({ authoredState, interactiveState, setNavigation });
+
+  if (!isAnswered && !disableSubmitBtnRendering) {
+    throw new Error("isAnsered function is required when disableSubmitBtnRendering = false");
+  }
 
   const renderAuthoring = () => {
     if (Authoring) {
@@ -66,10 +75,13 @@ export const BaseQuestionApp = <IAuthoredState extends IBaseQuestionAuthoredStat
     return (
       <div className={css.runtime}>
         <Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} />
-        <div>
-          { submitButton }
-          { lockedInfo }
-        </div>
+        {
+          !disableSubmitBtnRendering &&
+          <div>
+            <SubmitButton authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} isAnswered={!!isAnswered?.(interactiveState)} />
+            <LockedInfo interactiveState={interactiveState} />
+          </div>
+        }
       </div>
     );
   };
