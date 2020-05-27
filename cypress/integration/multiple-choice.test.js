@@ -6,11 +6,12 @@ context("Test multiple-choice interactive", () => {
   });
 
   context("Runtime view", () => {
-    it("renders prompt and choices and handles pre-existing interactive state", () => {
+    it("renders prompt, sends hint to parent and handles pre-existing interactive state", () => {
       phonePost("initInteractive", {
         mode: "runtime",
         authoredState: {
           prompt: "Test prompt",
+          hint: "Hint",
           multipleAnswers: false,
           choices: [
             {id: "id1", content: "choice A"},
@@ -20,6 +21,10 @@ context("Test multiple-choice interactive", () => {
         interactiveState: {
           selectedChoiceIds: [ "id2" ]
         }
+      });
+      phoneListen("hint");
+      getAndClearLastPhoneMessage((hint) => {
+        expect(hint).eql("Hint");
       });
 
       cy.getIframeBody().find("#app").should("include.text", "Test prompt");
@@ -64,6 +69,7 @@ context("Test multiple-choice interactive", () => {
         authoredState: {
           version: 1,
           prompt: "Test prompt",
+          hint: "Hint",
           multipleAnswers: true,
           choices: [
             {id: "id1", content: "Choice A", correct: true},
@@ -73,9 +79,11 @@ context("Test multiple-choice interactive", () => {
       });
 
       cy.getIframeBody().find("#app").should("include.text", "Prompt");
+      cy.getIframeBody().find("#app").should("include.text", "Hint");
       cy.getIframeBody().find("#app").should("include.text", "Choices");
 
       cy.getIframeBody().find("#root_prompt").should("have.value", "Test prompt");
+      cy.getIframeBody().find("#root_hint").should("have.value", "Hint");
       cy.getIframeBody().find("#root_multipleAnswers").should("be.checked");
       cy.getIframeBody().find("#root_choices_0_content").should("have.value", "Choice A");
       cy.getIframeBody().find("#root_choices_0_correct").should("be.checked");
@@ -92,6 +100,11 @@ context("Test multiple-choice interactive", () => {
       getAndClearLastPhoneMessage(state => {
         expect(state.version).eql(1);
         expect(state.prompt).eql("Test prompt");
+      });
+
+      cy.getIframeBody().find("#root_hint").type("Hint");
+      getAndClearLastPhoneMessage(state => {
+        expect(state.hint).eql("Hint");
       });
 
       cy.getIframeBody().find("#root_multipleAnswers").click();
