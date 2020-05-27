@@ -49,37 +49,55 @@ export const BaseQuestionApp = <IAuthoredState extends IBaseQuestionAuthoredStat
   useHint({ authoredState, setHint });
   const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, isAnswered: isAnswered(interactiveState) });
 
-  const report = mode === "report";
-  const authoring = mode === "authoring";
-  const runtime = mode === "runtime";
-
-  let AuthoringComp = null;
-  if (authoring) {
+  const renderAuthoring = () => {
     if (Authoring) {
-      AuthoringComp = <Authoring authoredState={authoredState} setAuthoredState={setAuthoredState} />;
+      return <Authoring authoredState={authoredState} setAuthoredState={setAuthoredState} />;
     }
     if (!Authoring && baseAuthoringProps) {
-      AuthoringComp = <BaseAuthoring {...baseAuthoringProps} authoredState={authoredState} setAuthoredState={setAuthoredState} />;
+      return <BaseAuthoring {...baseAuthoringProps} authoredState={authoredState} setAuthoredState={setAuthoredState} />;
     }
-  }
+  };
+
+  const renderRuntime = () => {
+    if (!authoredState) {
+      return "Authored state is missing.";
+    }
+    return (
+      <div className={css.runtime}>
+        <Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} />
+        <div>
+          { submitButton }
+          { lockedInfo }
+        </div>
+      </div>
+    );
+  };
+
+  const renderReport = () => {
+    if (!authoredState) {
+      return "Authored state is missing.";
+    }
+    return (
+      <div className={css.runtime}>
+        <Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} report={true} />
+      </div>
+    );
+  };
+
+  const renderMode = () => {
+    switch (mode) {
+      case "authoring":
+        return renderAuthoring();
+      case "runtime":
+        return renderRuntime();
+      case "report":
+        return renderReport();
+      default:
+        return "Loading..."
+    }
+  };
 
   return (
-    <div ref={container}>
-      { AuthoringComp }
-      {
-        (runtime || report) && authoredState &&
-        <div className={css.runtime}>
-          <Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} report={report} />
-          {
-            !report &&
-            <div>
-            { submitButton }
-            { lockedInfo }
-            </div>
-          }
-        </div>
-      }
-      { mode === undefined && "Loading..." }
-    </div>
+    <div ref={container}>{ renderMode() }</div>
   );
 };
