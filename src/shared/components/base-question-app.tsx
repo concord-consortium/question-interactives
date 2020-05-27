@@ -93,6 +93,7 @@ export const BaseQuestionApp = <IAuthoredState extends IBaseQuestionAuthoredStat
     return (
       <div className={css.runtime}>
         <Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} report={true} />
+        { authoredState?.required && <div>Question has been { interactiveState?.submitted ? "" : "NOT" } submitted.</div> }
       </div>
     );
   };

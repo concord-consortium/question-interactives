@@ -1,8 +1,6 @@
 @import "../../shared/styles/helpers";
 
 .runtime {
-  @include lara-styles;
-
   button {
     @include lara-button;
     margin: 5px;

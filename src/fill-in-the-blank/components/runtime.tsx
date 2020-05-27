@@ -1,17 +1,6 @@
 import React from "react";
-import { IAuthoredState, IBlankDef } from "./authoring";
+import { IAuthoredState, IBlankDef, IInteractiveState, IFilledBlank } from "./app";
 import css from "./runtime.scss";
-import { useRequiredQuestion } from "../../shared/hooks/use-required-question";
-
-export interface IFilledBlank {
-  id: string;
-  response: string;
-}
-
-export interface IInteractiveState {
-  blanks: IFilledBlank[];
-  submitted?: boolean;
-}
 
 interface IProps {
   authoredState: IAuthoredState;
@@ -49,9 +38,7 @@ export const insertInputs = (prompt: string, blanks: IBlankDef[], userResponses:
   return result;
 };
 
-export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, setNavigation, report }) => {
-  const isAnswered = (interactiveState?.blanks || []).length > 0;
-  const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, isAnswered });
+export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
 
   const handleChange = (blankId: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const newState = Object.assign({}, interactiveState, { blanks: interactiveState?.blanks?.slice() || [] });
@@ -63,9 +50,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     } else {
       newState.blanks.push(newResponse);
     }
-    if (setInteractiveState) {
-      setInteractiveState(newState);
-    }
+    setInteractiveState?.(newState);
   };
 
   const getInputClass = (value?: string, matchTerm?: string) => {
@@ -85,7 +70,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
 
   return (
-    <div className={css.runtime}>
+    <div>
       {
         content.map(element => {
           if (typeof element === "string") {
@@ -103,17 +88,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             />
           }
         })
-      }
-      {
-        authoredState.extraInstructions &&
-        <div className={css.extraInstructions}>{ authoredState.extraInstructions }</div>
-      }
-      {
-        !report &&
-        <div>
-          { submitButton }
-          { lockedInfo }
-        </div>
       }
     </div>
   );

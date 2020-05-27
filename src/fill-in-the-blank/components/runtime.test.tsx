@@ -5,7 +5,6 @@ import { insertInputs, Runtime } from "./runtime";
 const authoredState = {
   version: 1,
   prompt: "Test prompt with [blank-1] and [blank-2].",
-  extraInstructions: "Test extra instructions",
   blanks: [
     {id: "[blank-1]", size: 10},
     {id: "[blank-2]", size: 20, matchTerm: "Expected answer"}
@@ -19,10 +18,9 @@ const interactiveState = {
 };
 
 describe("Runtime", () => {
-  it("renders prompt, extra instructions and inputs", () => {
+  it("renders prompt and inputs", () => {
     const wrapper = shallow(<Runtime authoredState={authoredState} />);
     expect(wrapper.text()).toEqual(expect.stringContaining("Test prompt with "));
-    expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.extraInstructions));
     expect(wrapper.find("input").length).toEqual(2);
     expect(wrapper.find("input").at(0).props().size).toEqual(10);
     expect(wrapper.find("input").at(1).props().size).toEqual(20);
@@ -47,10 +45,9 @@ describe("Runtime", () => {
   });
 
   describe("report mode", () => {
-    it("renders prompt, extra instructions and *disabled* inputs", () => {
+    it("renders prompt and *disabled* inputs", () => {
       const wrapper = shallow(<Runtime authoredState={authoredState} report={true} />);
       expect(wrapper.text()).toEqual(expect.stringContaining("Test prompt with "));
-      expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.extraInstructions));
       expect(wrapper.find("input").length).toEqual(2);
       expect(wrapper.find("input").at(0).props().disabled).toEqual(true);
       expect(wrapper.find("input").at(1).props().disabled).toEqual(true);

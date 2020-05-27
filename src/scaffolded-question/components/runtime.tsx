@@ -1,7 +1,7 @@
 import React from "react";
 import { IframeRuntime } from "./iframe-runtime";
-import { IInteractiveState } from "../index";
-import { IAuthoredState } from "../index";
+import { IInteractiveState } from "./app";
+import { IAuthoredState } from "./app";
 import { SubmitButton } from "../../shared/components/submit-button";
 import { LockedInfo } from "../../shared/components/locked-info";
 import css from "./runtime.scss";
@@ -71,13 +71,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         </div>
       }
       { !report && <LockedInfo interactiveState={interactiveState} /> }
-      {
-        report &&
-        <div>
-          <div>Hint has been used { currentSubintIndex } times.</div>
-          { authoredState.required && <div>Question has been { submitted ? "" : "not" } submitted.</div> }
-        </div>
-      }
+      { report && <div>Hint has been used { currentSubintIndex } times.</div> }
     </div>
   );
 };

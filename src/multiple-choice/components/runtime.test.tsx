@@ -5,7 +5,6 @@ import { Runtime } from "./runtime";
 const authoredState = {
   version: 1,
   prompt: "Test prompt",
-  extraInstructions: "Test extra instructions",
   choices: [
     {id: "id1", content: "Choice A"},
     {id: "id2", content: "Choice B"}
@@ -20,7 +19,6 @@ describe("Runtime", () => {
   it("renders prompt, extra instructions and choices", () => {
     const wrapper = shallow(<Runtime authoredState={authoredState} />);
     expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.prompt));
-    expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.extraInstructions));
     expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[0].content));
     expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[1].content));
   });
@@ -64,7 +62,6 @@ describe("Runtime", () => {
     it("renders prompt, extra instructions and *disabled* choices", () => {
       const wrapper = shallow(<Runtime authoredState={authoredState} report={true} />);
       expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.prompt));
-      expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.extraInstructions));
       expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[0].content));
       expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[1].content));
 

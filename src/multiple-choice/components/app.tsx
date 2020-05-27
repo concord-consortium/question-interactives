@@ -1,25 +1,135 @@
-import React, { useRef } from "react";
-import { useLARAInteractiveAPI } from "../../shared/hooks/use-lara-interactive-api";
-import { useAutoHeight } from "../../shared/hooks/use-auto-height";
-import { Authoring, IAuthoredState } from "./authoring";
-import { IInteractiveState, Runtime } from "./runtime";
+import React from "react";
+import { JSONSchema6 } from "json-schema";
+import { BaseQuestionApp } from "../../shared/components/base-question-app";
+import { Runtime } from "./runtime";
+import { v4 as uuidv4 } from "uuid";
 
-export const App = () => {
-  const container = useRef<HTMLDivElement>(null);
-  const { mode, authoredState, interactiveState, setInteractiveState, setAuthoredState, setHeight, setNavigation } = useLARAInteractiveAPI<IAuthoredState, IInteractiveState>({
-    interactiveState: true,
-    authoredState: true,
-  });
-  useAutoHeight({ container, setHeight });
+// Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
+// TS interfaces are not available in runtime in contrast to JSON schema.
 
-  const report = mode === "report";
-  const authoring = mode === "authoring";
-  const runtime = mode === "runtime";
-  return (
-    <div ref={container}>
-      { authoring && <Authoring authoredState={authoredState} setAuthoredState={setAuthoredState} /> }
-      { (runtime || report) && authoredState && <Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} report={report} setNavigation={setNavigation} /> }
-      { mode === undefined && "Loading..." }
-    </div>
-  );
+export interface IChoice {
+  id: string;
+  content: string;
+  correct?: boolean;
+}
+
+export interface IAuthoredState {
+  version: number;
+  prompt?: string;
+  required?: boolean;
+  hint?: string;
+  multipleAnswers?: boolean;
+  choices?: IChoice[];
+}
+
+export interface IInteractiveState {
+  selectedChoiceIds: string[];
+  submitted?: boolean;
+}
+
+export const baseAuthoringProps = {
+  schema: {
+    type: "object",
+    properties: {
+      version: {
+        type: "number",
+        default: 1
+      },
+      prompt: {
+        title: "Prompt",
+        type: "string"
+      },
+      required: {
+        title: "Required",
+        type: "boolean"
+      },
+      hint: {
+        title: "Hint",
+        type: "string"
+      },
+      multipleAnswers: {
+        type: "boolean",
+        title: "Allow multiple answers",
+        default: false
+      },
+      choices: {
+        type: "array",
+        title: "Choices",
+        items: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string"
+            },
+            content: {
+              type: "string",
+              title: "Choice text",
+              default: "choice"
+            },
+            correct: {
+              type: "boolean",
+              title: "Correct",
+              default: false
+            }
+          }
+        },
+        default: [
+          {
+            id: "1",
+            content: "Choice A",
+            correct: false
+          },
+          {
+            id: "2",
+            content: "Choice B",
+            correct: false
+          },
+          {
+            id: "3",
+            content: "Choice C",
+            correct: false
+          }
+        ]
+      }
+    }
+  } as JSONSchema6,
+
+  uiSchema: {
+    version: {
+      "ui:widget": "hidden"
+    },
+    prompt: {
+      "ui:widget": "textarea"
+    },
+    hint: {
+      "ui:widget": "textarea"
+    },
+    choices: {
+      items: {
+        id: {
+          "ui:widget": "hidden"
+        }
+      }
+    }
+  },
+
+  preprocessFormData: (authoredState: IAuthoredState) => {
+    // Generate choice ID if necessary.
+    authoredState.choices?.forEach(choice => {
+      if (choice.id === undefined) {
+        choice.id = uuidv4();
+      }
+    });
+    return authoredState;
+  }
 };
+
+const isAnswered = (interactiveState: IInteractiveState) => interactiveState?.selectedChoiceIds?.length > 0;
+
+export const App = () => (
+  <BaseQuestionApp<IAuthoredState, IInteractiveState>
+    Runtime={Runtime}
+    baseAuthoringProps={baseAuthoringProps}
+    isAnswered={isAnswered}
+  />
+);

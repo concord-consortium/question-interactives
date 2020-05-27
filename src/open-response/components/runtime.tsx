@@ -1,6 +1,6 @@
 import React from "react";
-import { IAuthoredState } from "../index";
-import { IInteractiveState } from "../index";
+import { IAuthoredState } from "./app";
+import { IInteractiveState } from "./app";
 
 interface IProps {
   authoredState: IAuthoredState;
