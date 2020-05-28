@@ -29,16 +29,12 @@ export const BaseAuthoring = <IAuthoredState,>({ authoredState, setAuthoredState
     }
     // Immediately save the data.
     setAuthoredState?.(formData);
-    if (validate) {
-      triggerDelayedValidation();
-    }
+    validate && triggerDelayedValidation();
   };
 
   useEffect(() => {
-    if (validate) {
-      // Initial validation.
-      triggerDelayedValidation();
-    }
+    // Initial validation (if necessary).
+    validate && triggerDelayedValidation();
   }, []);
 
   return (

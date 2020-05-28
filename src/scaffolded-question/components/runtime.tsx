@@ -36,7 +36,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const handleNewInteractiveState = (interactiveId: string, newInteractiveState: any) => {
     if (setInteractiveState) {
-      const updatedStates = Object.assign({}, interactiveState?.subinteractiveStates, { [interactiveId]: newInteractiveState  });
+      const updatedStates = Object.assign({}, interactiveState?.subinteractiveStates, { [interactiveId]: newInteractiveState });
       setInteractiveState(Object.assign({}, interactiveState, { subinteractiveStates: updatedStates }));
     }
   };
