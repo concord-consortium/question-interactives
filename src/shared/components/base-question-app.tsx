@@ -56,7 +56,7 @@ export const BaseQuestionApp = <IAuthoredState extends IBaseQuestionAuthoredStat
   useRequiredQuestion({ authoredState, interactiveState, setNavigation });
 
   if (!isAnswered && !disableSubmitBtnRendering) {
-    throw new Error("isAnsered function is required when disableSubmitBtnRendering = false");
+    throw new Error("isAnswered function is required when disableSubmitBtnRendering = false");
   }
 
   const renderAuthoring = () => {
