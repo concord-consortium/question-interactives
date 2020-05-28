@@ -7,6 +7,7 @@ import css from "./runtime.scss";
 
 import "./video-js.css";
 
+
 export interface IInteractiveState {
   percentageViewed: number;
   lastViewedTimestamp: number;
@@ -18,8 +19,8 @@ interface IProps {
   interactiveState?: IInteractiveState;
   setInteractiveState?: (state: IInteractiveState) => void;
   report?: boolean;
-  setNavigation?: (enableForwardNav: boolean, message: string) => void;
 }
+
 // small sample mp4
 // "https://models-resources.s3.amazonaws.com/geniblocks/resources/fablevision/video/charcoal.mp4";
 // sample captions
@@ -27,16 +28,15 @@ interface IProps {
 
 let saveStateInterval : any;
 
-export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, setNavigation, report }) => {
+export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
+  const readOnly = report || (authoredState.required && interactiveState?.submitted);
   let viewedProgress = interactiveState?.percentageViewed || 0;
   let viewedTimestamp = interactiveState?.lastViewedTimestamp || 0;
   const playerRef = useRef(null);
   useEffect(() => {
     loadPlayer();
     Shutterbug.enable("." + css.runtime);
-    Shutterbug.on("saycheese", playerRef.current);
     return () => {
-      Shutterbug.off("saycheese", playerRef.current);
       Shutterbug.disable();
     };
   }, []);
@@ -54,8 +54,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
     else return 0;
   };
-
-  const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, isAnswered: viewedProgress > 0.96 });
 
   const loadPlayer = () => {
     const player: videojs.Player = videojs(playerRef.current,
@@ -126,15 +124,15 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   return (
-    <div className={css.runtime}>
+    <div>
       { authoredState.prompt && <div className={css.prompt}>{ authoredState.prompt }</div> }
       <div className={`${css.videoPlayerContainer} last-viewed${viewedTimestamp}`}>
         <div className="video-player" data-vjs-player={true}>
           <video ref={playerRef} className="video-js vjs-big-play-centered vjs-fluid"
             poster={authoredState.poster}
-            onPlaying={report ? undefined : handlePlaying}
-            onEnded={report ? undefined : handleStop}
-            onPause={report ? undefined : handleStop}
+            onPlaying={readOnly ? undefined : handlePlaying}
+            onEnded={readOnly ? undefined : handleStop}
+            onPause={readOnly ? undefined : handleStop}
           />
         </div>
       </div>
@@ -143,13 +141,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       {authoredState.creditLink && <div className={css.creditLink}><a href={authoredState.creditLink} target="_blank">
         {authoredState.creditLinkDisplayText ? authoredState.creditLinkDisplayText : authoredState.creditLink}
       </a></div>}
-      {
-        !report &&
-        <div>
-          { submitButton }
-          { lockedInfo }
-        </div>
-      }
     </div>
   );
 };
