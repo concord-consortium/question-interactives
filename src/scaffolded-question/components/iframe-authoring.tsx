@@ -4,6 +4,7 @@ import { IframePhone } from "../../shared/types";
 import iframePhone from "iframe-phone";
 
 import css from "./iframe-authoring.scss";
+import { v4 as uuidv4 } from "uuid";
 
 // This is only temporary list. It will be replaced by LARA Interactive API call that returns all the available managed interactives.
 const scaffoldedQuestionSegment = /scaffolded-question\/?$/;
@@ -28,7 +29,7 @@ const availableInteractives = [
 
 export const IframeAuthoring: React.FC<FieldProps> = props => {
   const { onChange, formData } = props;
-  const { url, authoredState } = formData;
+  const { url, authoredState, id } = formData;
   const [ iframeHeight, setIframeHeight ] = useState(300);
   const [ authoringOpened, setAuthoringOpened ] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -36,7 +37,7 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
 
   const handleUrlChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const newUrl = event.target.value;
-    onChange({ url: newUrl, authoredState: undefined });
+    onChange({ url: newUrl, authoredState: undefined, id: id || uuidv4() });
   };
 
   const handleHeaderClick = () => {
@@ -49,7 +50,7 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
       return;
     }
     phone.addListener("authoredState", (newAuthoredState: any) => {
-      onChange({ url, authoredState: newAuthoredState });
+      onChange({ url, authoredState: newAuthoredState, id: id || uuidv4() });
     });
     phone.addListener("height", (newHeight: number) => {
       setIframeHeight(newHeight);

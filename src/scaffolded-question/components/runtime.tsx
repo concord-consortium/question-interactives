@@ -1,16 +1,10 @@
 import React from "react";
-import { IAuthoredState } from "./authoring";
 import { IframeRuntime } from "./iframe-runtime";
+import { IInteractiveState } from "./app";
+import { IAuthoredState } from "./app";
+import { SubmitButton } from "../../shared/components/submit-button";
+import { LockedInfo } from "../../shared/components/locked-info";
 import css from "./runtime.scss";
-import { useRequiredQuestion } from "../../shared/hooks/use-required-question";
-
-export interface IInteractiveState {
-  subinteractiveStates: {
-    [id: string]: any;
-  },
-  currentSubinteractiveId: string;
-  submitted: boolean;
-}
 
 interface IProps {
   authoredState: IAuthoredState;
@@ -20,7 +14,7 @@ interface IProps {
   setNavigation?: (enableForwardNav: boolean, message: string) => void;
 }
 
-export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, setNavigation, report }) => {
+export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report, setNavigation }) => {
   const currentSubintId = interactiveState?.currentSubinteractiveId;
   let currentInteractive = authoredState.subinteractives.find(si => si.id === currentSubintId);
   if (!currentInteractive) {
@@ -39,11 +33,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   // User can submit answer only if any answer has been provided before.
   const isAnswered = !!subState;
-  const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, isAnswered });
 
   const handleNewInteractiveState = (interactiveId: string, newInteractiveState: any) => {
     if (setInteractiveState) {
-      const updatedStates = Object.assign({}, interactiveState?.subinteractiveStates, { [interactiveId]: newInteractiveState  });
+      const updatedStates = Object.assign({}, interactiveState?.subinteractiveStates, { [interactiveId]: newInteractiveState });
       setInteractiveState(Object.assign({}, interactiveState, { subinteractiveStates: updatedStates }));
     }
   };
@@ -71,24 +64,14 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         report={readOnly}
       />
       {
-        authoredState.extraInstructions &&
-        <div className={css.extraInstructions}>{ authoredState.extraInstructions }</div>
-      }
-      {
         !report &&
         <div className={css.buttons}>
           { hintAvailable && <button onClick={handleHint}>Hint</button> }
-          { submitButton }
+          <SubmitButton authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} isAnswered={isAnswered} />
         </div>
       }
-      { !report && lockedInfo }
-      {
-        report &&
-        <div>
-          <div>Hint has been used { currentSubintIndex } times.</div>
-          { authoredState.required && <div>Question has been { submitted ? "" : "not" } submitted.</div> }
-        </div>
-      }
+      { !report && <LockedInfo interactiveState={interactiveState} /> }
+      { report && <div>Hint has been used { currentSubintIndex } times.</div> }
     </div>
   );
 };

@@ -1,7 +1,6 @@
 import React from "react";
-import { IAuthoredState, IChoice } from "./authoring";
+import { IAuthoredState, IChoice } from "./app";
 import css from "./runtime.scss";
-import { useRequiredQuestion } from "../../shared/hooks/use-required-question";
 
 export interface IInteractiveState {
   selectedChoiceIds: string[];
@@ -13,10 +12,9 @@ interface IProps {
   interactiveState?: IInteractiveState;
   setInteractiveState?: (state: IInteractiveState) => void;
   report?: boolean;
-  setNavigation?: (enableForwardNav: boolean, message: string) => void;
 }
 
-export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report, setNavigation }) => {
+export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const type = authoredState.multipleAnswers ? "checkbox" : "radio";
   let selectedChoiceIds = interactiveState?.selectedChoiceIds || [];
   if (!authoredState.multipleAnswers && selectedChoiceIds.length > 1) {
@@ -25,9 +23,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     // Clear previous answer instead.
     selectedChoiceIds = [];
   }
-
-  const isAnswered = selectedChoiceIds.length > 0;
-  const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, isAnswered });
 
   const handleChange = (choiceId: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const checked = event.target.checked;
@@ -72,7 +67,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
 
   return (
-    <div className={css.runtime}>
+    <div>
       { authoredState.prompt && <div>{ authoredState.prompt }</div> }
       <div>
         {
@@ -94,17 +89,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           })
         }
       </div>
-      {
-        authoredState.extraInstructions &&
-        <div className={css.extraInstructions}>{ authoredState.extraInstructions }</div>
-      }
-      {
-        !report &&
-        <div>
-          { submitButton }
-          { lockedInfo }
-        </div>
-      }
     </div>
   );
 };

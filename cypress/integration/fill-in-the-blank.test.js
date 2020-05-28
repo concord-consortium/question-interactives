@@ -6,13 +6,13 @@ context("Test fill in the blank interactive", () => {
   });
 
   context("Runtime view", () => {
-    it("renders prompt and handles pre-existing interactive state", () => {
+    it("renders prompt, sends hint to parent and handles pre-existing interactive state", () => {
       phonePost("initInteractive", {
         mode: "runtime",
         authoredState: {
           version: 1,
           prompt: "Test prompt with [blank-1] and [blank-2]",
-          extraInstructions: "Hints",
+          hint: "Hint",
           blanks: [
             {id: "[blank-1]", size: 10},
             {id: "[blank-2]", size: 20},
@@ -24,9 +24,12 @@ context("Test fill in the blank interactive", () => {
           ]
         }
       });
+      phoneListen("hint");
+      getAndClearLastPhoneMessage((hint) => {
+        expect(hint).eql("Hint");
+      });
 
       cy.getIframeBody().find("#app").should("include.text", "Test prompt with ");
-      cy.getIframeBody().find("#app").should("include.text", "Hints");
 
       cy.getIframeBody().find("input").eq(0).should("have.value", "Test response");
       cy.getIframeBody().find("input").eq(1).should("have.value", "");
@@ -39,7 +42,6 @@ context("Test fill in the blank interactive", () => {
         authoredState: {
           version: 1,
           prompt: "Test prompt with [blank-1] and [blank-2]",
-          extraInstructions: "Hints",
           blanks: [
             {id: "[blank-1]", size: 10},
             {id: "[blank-2]", size: 20},
@@ -66,7 +68,7 @@ context("Test fill in the blank interactive", () => {
         authoredState: {
           version: 1,
           prompt: "Test prompt with [blank-1] and [blank-2]",
-          extraInstructions: "Hints",
+          hint: "Hint",
           blanks: [
             {id: "[blank-1]", size: 10},
             {id: "[blank-2]", size: 20, matchTerm: "test match term"},
@@ -79,7 +81,7 @@ context("Test fill in the blank interactive", () => {
       cy.getIframeBody().find("#app").should("include.text", "Blank field options");
 
       cy.getIframeBody().find("#root_prompt").should("have.value", "Test prompt with [blank-1] and [blank-2]");
-      cy.getIframeBody().find("#root_extraInstructions").should("have.value", "Hints");
+      cy.getIframeBody().find("#root_hint").should("have.value", "Hint");
 
       cy.getIframeBody().find("#root_blanks_0_id").should("have.value", "[blank-1]");
       cy.getIframeBody().find("#root_blanks_0_id").should("have.attr", "readonly");
@@ -103,9 +105,9 @@ context("Test fill in the blank interactive", () => {
         expect(state.blanks.length).eql(1);
       });
 
-      cy.getIframeBody().find("#root_extraInstructions").type("Hints");
+      cy.getIframeBody().find("#root_hint").type("Hint");
       getAndClearLastPhoneMessage(state => {
-        expect(state.extraInstructions).eql("Hints");
+        expect(state.hint).eql("Hint");
       });
 
       cy.getIframeBody().find("#root_blanks_0_size").clear().type("15");
@@ -122,7 +124,6 @@ context("Test fill in the blank interactive", () => {
         authoredState: {
           version: 1,
           prompt: "Test prompt with [blank-1] and [blank-2]",
-          extraInstructions: "Hints",
           blanks: [
             {id: "[blank-1]", size: 10},
             {id: "[blank-2]", size: 20},
@@ -136,7 +137,6 @@ context("Test fill in the blank interactive", () => {
       });
 
       cy.getIframeBody().find("#app").should("include.text", "Test prompt with ");
-      cy.getIframeBody().find("#app").should("include.text", "Hints");
 
       cy.getIframeBody().find("input").eq(0).should("have.value", "Test response");
       cy.getIframeBody().find("input").eq(0).type("New answer", { force: true });

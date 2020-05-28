@@ -1,8 +1,7 @@
 import React from "react";
-import { JSONSchema6 } from "json-schema";
 import { BaseQuestionApp } from "../../shared/components/base-question-app";
 import { Runtime } from "./runtime";
-import { IframeAuthoring } from "./iframe-authoring";
+import { JSONSchema6 } from "json-schema";
 
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
@@ -10,21 +9,14 @@ import { IframeAuthoring } from "./iframe-authoring";
 export interface IAuthoredState {
   version: number;
   prompt?: string;
-  required?: boolean;
+  defaultAnswer?: string;
   hint?: string;
-  subinteractives: {
-    id: string;
-    url: string;
-    authoredState: any;
-  }[]
+  required?: boolean;
 }
 
 export interface IInteractiveState {
-  subinteractiveStates: {
-    [id: string]: any;
-  },
-  currentSubinteractiveId: string;
-  submitted: boolean;
+  response?: string;
+  submitted?: boolean;
 }
 
 const baseAuthoringProps = {
@@ -47,23 +39,9 @@ const baseAuthoringProps = {
         title: "Hint",
         type: "string"
       },
-      subinteractives: {
-        type: "array",
-        title: "Subquestions",
-        items: {
-          type: "object",
-          properties: {
-            id: {
-              type: "string"
-            },
-            url: {
-              type: "string"
-            },
-            authoredState: {
-              type: "any"
-            }
-          }
-        }
+      defaultAnswer: {
+        type: "string",
+        title: "Default answer"
       }
     }
   } as JSONSchema6,
@@ -78,22 +56,18 @@ const baseAuthoringProps = {
     hint: {
       "ui:widget": "textarea"
     },
-    subinteractives: {
-      items: {
-        "ui:field": "iframeAuthoring"
-      }
-    }
-  },
-
-  fields: {
-    iframeAuthoring: IframeAuthoring
+    defaultAnswer: {
+      "ui:widget": "textarea"
+    },
   }
 };
+
+const isAnswered = (interactiveState: IInteractiveState | undefined) => !!interactiveState?.response;
 
 export const App = () => (
   <BaseQuestionApp<IAuthoredState, IInteractiveState>
     Runtime={Runtime}
     baseAuthoringProps={baseAuthoringProps}
-    disableSubmitBtnRendering={true}
+    isAnswered={isAnswered}
   />
 );

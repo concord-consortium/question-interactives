@@ -1,9 +1,5 @@
 @import "../../shared/styles/helpers";
 
-.runtime {
-  @include lara-styles;
-}
-
 .correctChoice {
   color: $correctColor;
 }
