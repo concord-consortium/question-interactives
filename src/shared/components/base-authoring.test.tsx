@@ -29,7 +29,7 @@ const authoredState = {
 };
 
 describe("BaseAuthoring", () => {
-  it("renders react-jsonschema-form and passes there authoredState", () => {
+  it("renders react-jsonschema-form and passes the authoredState", () => {
     const setState = jest.fn();
     const uiSchema = {};
     const fields = {
