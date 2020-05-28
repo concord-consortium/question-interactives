@@ -19,4 +19,21 @@ describe("useAutoHeight", () => {
     unmount();
     expect(disconnectSpy).toHaveBeenCalled();
   });
+
+  it("shouldn't do anything when it's disabled", () => {
+    const observeSpy = jest.fn();
+    const disconnectSpy = jest.fn();
+    (window as any).ResizeObserver = function ResizeObserverMock() {
+      this.observe = observeSpy;
+      this.disconnect = disconnectSpy;
+    };
+    const HookWrapper = () => {
+      const container = useRef<HTMLDivElement>(document.createElement("div"));
+      useAutoHeight({ container, setHeight: jest.fn(), disabled: true });
+    }
+    const { unmount } = renderHook(HookWrapper);
+    expect(observeSpy).not.toHaveBeenCalled();
+    unmount();
+    expect(disconnectSpy).not.toHaveBeenCalled();
+  });
 });

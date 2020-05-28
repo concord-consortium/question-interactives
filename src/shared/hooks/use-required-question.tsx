@@ -3,7 +3,7 @@ import LockIcon from "../icons/lock.svg";
 import css from "../styles/helpers.scss";
 
 interface IConfig {
-  authoredState: { required?: boolean };
+  authoredState: { required?: boolean } | undefined;
   interactiveState: { submitted?: boolean } | undefined;
   setInteractiveState: ((interactiveState: {submitted?: boolean}) => void) | undefined;
   setNavigation: ((enableForwardNav: boolean, message: string) => void) | undefined;
@@ -14,17 +14,15 @@ interface IConfig {
 // `submitted` property in its interactive state (student state).
 export const useRequiredQuestion = ({ authoredState, interactiveState, setInteractiveState, setNavigation, isAnswered }: IConfig) => {
   const handleSubmit = () => {
-    if (setInteractiveState) {
-      setInteractiveState(Object.assign({}, interactiveState, { submitted: true }));
-    }
+    setInteractiveState?.(Object.assign({}, interactiveState, { submitted: true }));
   };
 
   useEffect(() => {
-    if (authoredState.required && setNavigation) {
+    if (authoredState?.required && setNavigation) {
       const forwardNavEnabled = !!interactiveState?.submitted;
       setNavigation(forwardNavEnabled, forwardNavEnabled ? "" : "Please submit an answer first.");
     }
-  }, [authoredState, interactiveState]);
+  }, [authoredState?.required, interactiveState?.submitted]);
 
   const submitButton = authoredState?.required && !interactiveState?.submitted ? (
     <button className={css.laraButton} onClick={handleSubmit} disabled={!isAnswered}>

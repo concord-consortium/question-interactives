@@ -41,7 +41,7 @@ const schema: JSONSchema6 = {
       type: "boolean"
     },
     extraInstructions: {
-      title: "Extra instructions",
+      title: "Hint",
       type: "string"
     },
     multipleAnswers: {

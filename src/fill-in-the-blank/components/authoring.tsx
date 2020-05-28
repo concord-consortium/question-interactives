@@ -43,7 +43,7 @@ const schema: JSONSchema7 = {
       type: "boolean"
     },
     extraInstructions: {
-      title: "Extra instructions",
+      title: "Hint",
       type: "string"
     },
     blanks: {

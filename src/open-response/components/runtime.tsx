@@ -1,27 +1,16 @@
 import React from "react";
-import { IAuthoredState } from "./authoring";
-import css from "./runtime.scss";
-import { useRequiredQuestion } from "../../shared/hooks/use-required-question";
-
-export interface IInteractiveState {
-  response: string;
-  submitted?: boolean;
-}
+import { IAuthoredState } from "../index";
+import { IInteractiveState } from "../index";
 
 interface IProps {
   authoredState: IAuthoredState;
   interactiveState?: IInteractiveState;
   setInteractiveState?: (state: IInteractiveState) => void;
   report?: boolean;
-  setNavigation?: (enableForwardNav: boolean, message: string) => void;
 }
 
-export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, setNavigation, report }) => {
-  const isAnswered = !!interactiveState?.response;
-  const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, isAnswered });
-
+export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
-
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     if (setInteractiveState) {
       setInteractiveState(Object.assign({}, interactiveState, { response: event.target.value }));
@@ -29,7 +18,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   return (
-    <div className={css.runtime}>
+    <div>
       { authoredState.prompt && <div>{ authoredState.prompt }</div> }
       <div>
         <textarea
@@ -41,17 +30,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           placeholder={authoredState.defaultAnswer || "Type answer here"}
         />
       </div>
-      {
-        authoredState.extraInstructions &&
-        <div className={css.extraInstructions}>{ authoredState.extraInstructions }</div>
-      }
-      {
-        !report &&
-        <div>
-          { submitButton }
-          { lockedInfo }
-        </div>
-      }
     </div>
   );
 };
