@@ -32,8 +32,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   let viewedTimestamp = interactiveState?.lastViewedTimestamp || 0;
   const playerRef = useRef(null);
   useEffect(() => {
-    Shutterbug.enable("." + css.app);
+    loadPlayer();
+    Shutterbug.enable("." + css.runtime);
+    Shutterbug.on("saycheese", playerRef.current);
     return () => {
+      Shutterbug.off("saycheese", playerRef.current);
       Shutterbug.disable();
     };
   }, []);
@@ -53,9 +56,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const { submitButton, lockedInfo } = useRequiredQuestion({ authoredState, interactiveState, setInteractiveState, setNavigation, isAnswered: viewedProgress > 0.96 });
-  useEffect(() => {
-    loadPlayer();
-  }, []);
 
   const loadPlayer = () => {
     const player: videojs.Player = videojs(playerRef.current,
