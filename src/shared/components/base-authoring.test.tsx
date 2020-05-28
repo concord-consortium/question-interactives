@@ -53,7 +53,7 @@ describe("BaseAuthoring", () => {
     expect(formEl.props().validate).toEqual(validate);
   });
 
-  it("calls setAuthoredState on form change and uses preprocess form data function", () => {
+  it("calls setAuthoredState on form change and uses preprocessFormData function", () => {
     const setState = jest.fn();
     const preprocess = (data: ITestAuthoredState) => {
       data.testValue = data.testValue + "!!!";
