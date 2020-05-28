@@ -26,13 +26,12 @@ interface IProps {
 // sample captions
 // "https://models-resources.s3.amazonaws.com/question-interactives/test-captions.vtt";
 
-let saveStateInterval : any;
-
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
   let viewedProgress = interactiveState?.percentageViewed || 0;
   let viewedTimestamp = interactiveState?.lastViewedTimestamp || 0;
-  const playerRef = useRef(null);
+  const playerRef = useRef<HTMLVideoElement>(null);
+  const saveStateInterval = useRef<number>(0);
   useEffect(() => {
     loadPlayer();
     Shutterbug.enable("." + css.runtime);
@@ -42,15 +41,13 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   }, []);
   const getViewTime = () => {
     if (playerRef.current) {
-      const video: HTMLVideoElement = playerRef.current! as HTMLVideoElement;
-      return video.currentTime;
+      return playerRef.current.currentTime;
     }
     else return 0;
   };
   const getViewPercentage = () => {
     if (playerRef.current) {
-      const video: HTMLVideoElement = playerRef.current! as HTMLVideoElement;
-      return video.currentTime / video.duration;
+      return playerRef.current.currentTime / playerRef.current.duration;
     }
     else return 0;
   };
@@ -83,8 +80,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
     player.ready(() => {
       if (viewedTimestamp) {
-        // console.log(player.duration());
-        // console.log(viewedProgress);
         player.currentTime(viewedTimestamp);
       }
     });
@@ -107,11 +102,13 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const handlePlaying = (e: any) => {
     // store current playback progress each second
-    saveStateInterval = setInterval(updateState, 1000);
+    if (Math.trunc(getViewTime()) > saveStateInterval.current) {
+      saveStateInterval.current += 1;
+      updateState();
+    }
   };
 
   const handleStop = (e: any) => {
-    clearInterval(saveStateInterval);
     updateState();
   };
 
@@ -124,13 +121,13 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   return (
-    <div>
+    <div className={css.runtime}>
       { authoredState.prompt && <div className={css.prompt}>{ authoredState.prompt }</div> }
       <div className={`${css.videoPlayerContainer} last-viewed${viewedTimestamp}`}>
         <div className="video-player" data-vjs-player={true}>
           <video ref={playerRef} className="video-js vjs-big-play-centered vjs-fluid"
             poster={authoredState.poster}
-            onPlaying={readOnly ? undefined : handlePlaying}
+            onTimeUpdate={readOnly ? undefined : handlePlaying}
             onEnded={readOnly ? undefined : handleStop}
             onPause={readOnly ? undefined : handleStop}
           />
