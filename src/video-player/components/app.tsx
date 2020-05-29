@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { JSONSchema6 } from "json-schema";
 import { BaseQuestionApp } from "../../shared/components/base-question-app";
 import { Runtime } from "./runtime";
+
+import Shutterbug from "shutterbug";
 import { v4 as uuidv4 } from "uuid";
 
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
@@ -113,10 +115,18 @@ export const baseAuthoringProps = {
 
 const isAnswered = (interactiveState: IInteractiveState) => interactiveState?.percentageViewed > 0.95;
 
-export const App = () => (
-  <BaseQuestionApp<IAuthoredState, IInteractiveState>
-    Runtime={Runtime}
-    baseAuthoringProps={baseAuthoringProps}
-    isAnswered={isAnswered}
-  />
-);
+export const App = () => {
+  useEffect(() => {
+    Shutterbug.enable("#app");
+    return () => {
+      Shutterbug.disable();
+    };
+  }, []);
+  return (
+    <BaseQuestionApp<IAuthoredState, IInteractiveState>
+      Runtime={Runtime}
+      baseAuthoringProps={baseAuthoringProps}
+      isAnswered={isAnswered}
+    />
+  );
+}
