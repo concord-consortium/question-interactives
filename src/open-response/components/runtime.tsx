@@ -4,7 +4,7 @@ import { IInteractiveState } from "./app";
 
 interface IProps {
   authoredState: IAuthoredState;
-  interactiveState?: IInteractiveState;
+  interactiveState?: IInteractiveState | null;
   setInteractiveState?: (state: IInteractiveState) => void;
   report?: boolean;
 }

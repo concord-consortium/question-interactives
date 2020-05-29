@@ -1,14 +1,13 @@
-import React, { useRef } from "react";
-import { useLARAInteractiveAPI } from "../hooks/use-lara-interactive-api";
+import React, { useEffect, useRef } from "react";
 import { useAutoHeight } from "../hooks/use-auto-height";
 import { useHint } from "../hooks/use-hint";
 import { useRequiredQuestion } from "../hooks/use-required-question";
 import { BaseAuthoring, IBaseAuthoringProps } from "./base-authoring";
 import { SubmitButton } from "./submit-button";
 import { LockedInfo } from "./locked-info";
+import { setSupportedFeatures, useAuthoredState, useInitMessage, useInteractiveState } from "@concord-consortium/lara-interactive-api";
 
 import css from "./base-question-app.scss";
-
 
 interface IBaseQuestionAuthoredState {
   version: number;
@@ -21,13 +20,13 @@ interface IBaseQuestionInteractiveState {
 }
 
 interface IAuthoringComponentProps<IAuthoredState> {
-  authoredState: IAuthoredState | undefined,
+  authoredState: IAuthoredState | null,
   setAuthoredState?: (state: IAuthoredState) => void;
 }
 
 interface IRuntimeComponentProps<IAuthoredState, IInteractiveState> {
   authoredState: IAuthoredState,
-  interactiveState: IInteractiveState | undefined,
+  interactiveState?: IInteractiveState | null,
   setInteractiveState?: (state: IInteractiveState) => void;
   report?: boolean;
 }
@@ -40,20 +39,27 @@ interface IProps<IAuthoredState, IInteractiveState> {
   disableAutoHeight?: boolean;
   disableSubmitBtnRendering?: boolean;
   // Note that isAnswered is required when `disableSubmitBtnRendering` is false.
-  isAnswered?: (state: IInteractiveState | undefined) => boolean;
+  isAnswered?: (state: IInteractiveState | null) => boolean;
 }
 
 export const BaseQuestionApp = <IAuthoredState extends IBaseQuestionAuthoredState, IInteractiveState extends IBaseQuestionInteractiveState>(
   { Authoring, baseAuthoringProps, Runtime, isAnswered, disableAutoHeight, disableSubmitBtnRendering }: IProps<IAuthoredState, IInteractiveState>
 ) => {
   const container = useRef<HTMLDivElement>(null);
-  const { mode, authoredState, interactiveState, setInteractiveState, setAuthoredState, setHeight, setHint, setNavigation } = useLARAInteractiveAPI<IAuthoredState, IInteractiveState>({
-    interactiveState: true,
-    authoredState: true,
-  });
-  useAutoHeight({ container, setHeight, disabled: disableAutoHeight });
-  useHint({ authoredState, setHint });
-  useRequiredQuestion({ authoredState, interactiveState, setNavigation });
+  const { authoredState, setAuthoredState } = useAuthoredState<IAuthoredState>();
+  const { interactiveState, setInteractiveState } = useInteractiveState<IInteractiveState>();
+  const initMessage = useInitMessage();
+
+  useAutoHeight({ container, disabled: disableAutoHeight });
+  useHint();
+  useRequiredQuestion();
+
+  useEffect(() => {
+    setSupportedFeatures({
+      interactiveState: true,
+      authoredState: true
+    });
+  }, []);
 
   if (!isAnswered && !disableSubmitBtnRendering) {
     throw new Error("isAnswered function is required when disableSubmitBtnRendering = false");
@@ -78,8 +84,8 @@ export const BaseQuestionApp = <IAuthoredState extends IBaseQuestionAuthoredStat
         {
           !disableSubmitBtnRendering &&
           <div>
-            <SubmitButton authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} isAnswered={!!isAnswered?.(interactiveState)} />
-            <LockedInfo interactiveState={interactiveState} />
+            <SubmitButton isAnswered={!!isAnswered?.(interactiveState)} />
+            <LockedInfo />
           </div>
         }
       </div>
@@ -99,7 +105,7 @@ export const BaseQuestionApp = <IAuthoredState extends IBaseQuestionAuthoredStat
   };
 
   const renderMode = () => {
-    switch (mode) {
+    switch (initMessage?.mode) {
       case "authoring":
         return renderAuthoring();
       case "runtime":

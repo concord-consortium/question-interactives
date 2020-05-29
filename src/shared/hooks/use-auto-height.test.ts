@@ -12,7 +12,7 @@ describe("useAutoHeight", () => {
     };
     const HookWrapper = () => {
       const container = useRef<HTMLDivElement>(document.createElement("div"));
-      useAutoHeight({ container, setHeight: jest.fn() });
+      useAutoHeight({ container });
     }
     const { unmount } = renderHook(HookWrapper);
     expect(observeSpy).toHaveBeenCalled();
@@ -29,7 +29,7 @@ describe("useAutoHeight", () => {
     };
     const HookWrapper = () => {
       const container = useRef<HTMLDivElement>(document.createElement("div"));
-      useAutoHeight({ container, setHeight: jest.fn(), disabled: true });
+      useAutoHeight({ container, disabled: true });
     }
     const { unmount } = renderHook(HookWrapper);
     expect(observeSpy).not.toHaveBeenCalled();

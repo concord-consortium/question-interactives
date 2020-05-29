@@ -109,6 +109,7 @@
   },
   "dependencies": {
     "iframe-phone": "^1.2.1",
+    "@concord-consortium/lara-interactive-api": "0.4.0-pre.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
     "react-jsonschema-form": "^1.8.1",

@@ -8,7 +8,7 @@ import css from "./runtime.scss";
 
 interface IProps {
   authoredState: IAuthoredState;
-  interactiveState?: IInteractiveState;
+  interactiveState?: IInteractiveState | null;
   setInteractiveState?: (state: IInteractiveState) => void;
   report?: boolean;
   setNavigation?: (enableForwardNav: boolean, message: string) => void;
@@ -67,10 +67,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         !report &&
         <div className={css.buttons}>
           { hintAvailable && <button onClick={handleHint}>Hint</button> }
-          <SubmitButton authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} isAnswered={isAnswered} />
+          <SubmitButton isAnswered={isAnswered} />
         </div>
       }
-      { !report && <LockedInfo interactiveState={interactiveState} /> }
+      { !report && <LockedInfo /> }
       { report && <div>Hint has been used { currentSubintIndex } times.</div> }
     </div>
   );

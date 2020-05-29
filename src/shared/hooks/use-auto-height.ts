@@ -1,13 +1,13 @@
 import { RefObject, useEffect } from "react";
 import ResizeObserver from "resize-observer-polyfill";
+import { setHeight } from "@concord-consortium/lara-interactive-api";
 
 interface IConfig {
   container: RefObject<HTMLDivElement>;
-  setHeight: (height: number) => void;
   disabled?: boolean;
 }
 
-export const useAutoHeight = ({ container, setHeight, disabled }: IConfig) => {
+export const useAutoHeight = ({ container, disabled }: IConfig) => {
   useEffect(() => {
     if (disabled) {
       return;
