@@ -8,7 +8,7 @@ import { Runtime, IInteractiveState } from "./runtime";
 
 export const App = () => {
   const container = useRef<HTMLDivElement>(null);
-  const { mode, authoredState, interactiveState, setInteractiveState, setAuthoredState, setHeight } = useLaraInteractiveApi<IAuthoredState, IInteractiveState>({
+  const { mode, authoredState, interactiveState, setInteractiveState, setAuthoredState, setHeight } = useLaraInteractiveApi<IInteractiveState, IAuthoredState>({
     supportedFeatures: {
       interactiveState: true,
       authoredState: true,
