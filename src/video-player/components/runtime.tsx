@@ -1,18 +1,10 @@
 import React, { useRef, useEffect } from "react";
-import { IAuthoredState } from "./authoring";
-import { useRequiredQuestion } from "../../shared/hooks/use-required-question";
 import videojs from "video.js";
-
+import { IAuthoredState } from "./app";
+import { IInteractiveState } from "./app";
 import css from "./runtime.scss";
 
 import "./video-js.css";
-
-
-export interface IInteractiveState {
-  percentageViewed: number;
-  lastViewedTimestamp: number;
-  submitted?: boolean;
-}
 
 interface IProps {
   authoredState: IAuthoredState;
