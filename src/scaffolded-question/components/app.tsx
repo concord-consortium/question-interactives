@@ -12,7 +12,7 @@ export interface IAuthoredState {
   prompt?: string;
   required?: boolean;
   hint?: string;
-  subinteractives: {
+  subinteractives?: {
     id: string;
     url: string;
     authoredState: any;
