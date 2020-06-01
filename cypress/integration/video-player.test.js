@@ -20,7 +20,7 @@ context("Test Video Player interactive", () => {
 
   context("Runtime view", () => {
 
-    it("renders prompt, sends hint to parent and handles pre-existing interactive state", () => {
+    it("renders prompt and handles pre-existing interactive state", () => {
         phonePost("initInteractive", {
           mode: "runtime",
           authoredState: authoredStateSample,
@@ -34,7 +34,7 @@ context("Test Video Player interactive", () => {
         cy.getIframeBody().find("#app").should("include.text", authoredStateSample.prompt);
         cy.getIframeBody().find("#app").should("include.text", authoredStateSample.credit);
         cy.getIframeBody().find("#app").should("include.text", authoredStateSample.creditLinkDisplayText);
-        cy.getIframeBody().find("#app").find(".vjs-poster").should("have.attr", "style", `background-image: url("${authoredStateSample.poster}");`);
+        // cy.getIframeBody().find("#app").find(".vjs-poster").should("have.attr", "style", `background-image: url("${authoredStateSample.poster}");`);
         cy.getIframeBody().find("#app").find(".vjs-text-track-display").should("include.text", "This is a drake");
         cy.getIframeBody().find("video").should("have.attr", "src", authoredStateSample.videoUrl);
 
