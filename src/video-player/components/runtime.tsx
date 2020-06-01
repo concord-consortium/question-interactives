@@ -24,6 +24,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   let viewedTimestamp = interactiveState?.lastViewedTimestamp || 0;
   const playerRef = useRef<HTMLVideoElement>(null);
   const saveStateInterval = useRef<number>(0);
+  const hasStartedPlayback = useRef<boolean>(viewedTimestamp > 0 || viewedProgress > 0);
   useEffect(() => {
     if (!report) loadPlayer();
   }, []);
@@ -89,6 +90,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const handlePlaying = (e: any) => {
+    hasStartedPlayback.current = true;
     // store current playback progress each second
     if (Math.trunc(getViewTime()) > saveStateInterval.current) {
       saveStateInterval.current += 1;
@@ -107,6 +109,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       setInteractiveState(Object.assign({}, interactiveState, { percentageViewed: viewedProgress, lastViewedTimestamp: viewedTimestamp }));
     }
   };
+  const getPoster = () => {
+    if (hasStartedPlayback.current === false) return authoredState.poster;
+    else return;
+  }
 
   return (
     <div className={css.runtime}>
@@ -114,7 +120,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       <div className={`${css.videoPlayerContainer} last-viewed${viewedTimestamp}`}>
         <div className="video-player" data-vjs-player={true}>
           <video ref={playerRef} className="video-js vjs-big-play-centered vjs-fluid"
-            poster={authoredState.poster}
+            poster={getPoster()}
             onTimeUpdate={readOnly ? undefined : handlePlaying}
             onEnded={readOnly ? undefined : handleStop}
             onPause={readOnly ? undefined : handleStop}
