@@ -94,7 +94,7 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
       {
         url &&
         <div className={css.iframeAuthoring}>
-          <h4 onClick={handleHeaderClick} className={css.link} data-cy="subquestion-authoring">{authoringOpened ? "▲" : "▼"} Subquestion authoring</h4>
+          <h4 onClick={handleHeaderClick} className={css.link} data-cy="subquestion-authoring">{authoringOpened ? "▼" : "▶"} Subquestion authoring</h4>
           <div className={css.iframeContainer} style={{maxHeight: authoringOpened ? iframeHeight : 0 }}>
             <iframe id={id} ref={iframeRef} width="100%" height={iframeHeight} frameBorder={0} />
           </div>
