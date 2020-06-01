@@ -25,7 +25,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const playerRef = useRef<HTMLVideoElement>(null);
   const saveStateInterval = useRef<number>(0);
   useEffect(() => {
-    loadPlayer();
+    if (!report) loadPlayer();
   }, []);
   const getViewTime = () => {
     if (playerRef.current) {
