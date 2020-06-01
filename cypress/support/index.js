@@ -1,9 +1,22 @@
 // Taken from https://www.cypress.io/blog/2020/02/12/working-with-iframes-in-cypress/
-Cypress.Commands.add('getIframeBody', () => {
+Cypress.Commands.add('getIframeBody', (iframeSelector = 'iframe') => {
   // get the iframe > document > body
   // and retry until the body element is not empty
   return cy
-    .get('iframe')
+    .get(iframeSelector)
+    .its('0.contentDocument.body')
+    .should('not.be.empty')
+    // wraps "body" DOM element to allow
+    // chaining more Cypress commands, like ".find(...)"
+    // https://on.cypress.io/wrap
+    .then(cy.wrap)
+});
+
+// We can't just chain getIframeBody twice. It seems that for nested fire, it's necessary to use `find`, not `get`.
+// Based on this issue/comment: https://github.com/cypress-io/cypress/issues/136#issuecomment-619240781
+Cypress.Commands.add('getNestedIframeBody', (parentIframeSelector = 'iframe', nestedIframeSelector = 'iframe') => {
+  return cy.getIframeBody(parentIframeSelector)
+    .find(nestedIframeSelector)
     .its('0.contentDocument.body').should('not.be.empty')
     // wraps "body" DOM element to allow
     // chaining more Cypress commands, like ".find(...)"
