@@ -14,20 +14,25 @@ interface IProps {
   setNavigation?: (enableForwardNav: boolean, message: string) => void;
 }
 
-export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report, setNavigation }) => {
-  const currentSubintId = interactiveState?.currentSubinteractiveId;
-  let currentInteractive = authoredState.subinteractives.find(si => si.id === currentSubintId);
-  if (!currentInteractive) {
-    currentInteractive = authoredState.subinteractives[0];
+export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
+  const subinteractives = authoredState.subinteractives || [];
+  if (subinteractives.length === 0) {
+    return <div>"No subquestions available. Please add them using authoring interface."</div>;
   }
 
-  const currentSubintIndex = authoredState.subinteractives.indexOf(currentInteractive);
+  const currentSubintId = interactiveState?.currentSubinteractiveId;
+  let currentInteractive = subinteractives.find(si => si.id === currentSubintId);
+  if (!currentInteractive) {
+    currentInteractive = subinteractives[0];
+  }
+
+  const currentSubintIndex = subinteractives.indexOf(currentInteractive);
 
   const subStates = interactiveState?.subinteractiveStates;
   const subState = subStates && subStates[currentInteractive.id]
 
   const submitted = interactiveState?.submitted;
-  const hintAvailable = !submitted && (currentSubintIndex < authoredState.subinteractives.length - 1);
+  const hintAvailable = !submitted && (currentSubintIndex < subinteractives.length - 1);
 
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
 
@@ -42,15 +47,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const handleHint = () => {
-    if (setInteractiveState && currentSubintIndex < authoredState.subinteractives.length - 1) {
-      const newInteractive = authoredState.subinteractives[currentSubintIndex + 1];
+    if (setInteractiveState && currentSubintIndex < subinteractives.length - 1) {
+      const newInteractive = subinteractives[currentSubintIndex + 1];
       setInteractiveState(Object.assign({}, interactiveState, { currentSubinteractiveId: newInteractive.id }));
     }
   };
-
-  if (authoredState.subinteractives.length === 0) {
-    return <div>"No subquestions available. Please add them using authoring interface."</div>;
-  }
 
   return (
     <div className={css.runtime}>
