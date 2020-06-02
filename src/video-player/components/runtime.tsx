@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useEffect, useState } from "react";
 import videojs from "video.js";
 import { IAuthoredState } from "./app";
 import { IInteractiveState } from "./app";
@@ -24,9 +24,12 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   let viewedTimestamp = interactiveState?.lastViewedTimestamp || 0;
   const playerRef = useRef<HTMLVideoElement>(null);
   const saveStateInterval = useRef<number>(0);
-  const hasStartedPlayback = useRef<boolean>(viewedTimestamp > 0 || viewedProgress > 0);
+  const [hasStartedPlayback, setHasStartedPlayback] = useState(viewedTimestamp > 0 || viewedProgress > 0);
   useEffect(() => {
-    if (!report) loadPlayer();
+    const player = loadPlayer();
+    return () => {
+      player.dispose();
+    };
   }, []);
   const getViewTime = () => {
     if (playerRef.current) {
@@ -73,9 +76,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       }
     });
 
-    return () => {
-      player.dispose();
-    };
+    return player;
   };
 
   const getAspectRatio = (aspectRatio: string) => {
@@ -90,7 +91,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const handlePlaying = (e: any) => {
-    hasStartedPlayback.current = true;
+    setHasStartedPlayback(true);
     // store current playback progress each second
     if (Math.trunc(getViewTime()) > saveStateInterval.current) {
       saveStateInterval.current += 1;
@@ -110,7 +111,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
   };
   const getPoster = () => {
-    if (hasStartedPlayback.current === false) return authoredState.poster;
+    if (hasStartedPlayback === false) return authoredState.poster;
     else return;
   }
 

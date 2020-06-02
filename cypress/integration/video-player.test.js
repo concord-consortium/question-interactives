@@ -19,67 +19,86 @@ context("Test Video Player interactive", () => {
   });
 
   context("Runtime view", () => {
-
-    it("renders prompt and handles pre-existing interactive state", () => {
-        phonePost("initInteractive", {
-          mode: "runtime",
-          authoredState: authoredStateSample,
-          interactiveState: {
-            percentageViewed: 0.2,
-            lastViewedTimestamp: 1.2
-          }
-        });
-
-
-        cy.getIframeBody().find("#app").should("include.text", authoredStateSample.prompt);
-        cy.getIframeBody().find("#app").should("include.text", authoredStateSample.credit);
-        cy.getIframeBody().find("#app").should("include.text", authoredStateSample.creditLinkDisplayText);
-        // cy.getIframeBody().find("#app").find(".vjs-poster").should("have.attr", "style", `background-image: url("${authoredStateSample.poster}");`);
-        cy.getIframeBody().find("#app").find(".vjs-text-track-display").should("include.text", "This is a drake");
-        cy.getIframeBody().find("video").should("have.attr", "src", authoredStateSample.videoUrl);
-
+    it("renders video with poster on first load", () => {
+      phonePost("initInteractive", {
+        mode: "runtime",
+        authoredState: authoredStateSample,
+        interactiveState: {
+          percentageViewed: 0,
+          lastViewedTimestamp: 0
+        }
       });
+
+      const app = cy.getIframeBody().find("#app");
+      app.should("include.text", authoredStateSample.prompt);
+      app.should("include.text", authoredStateSample.credit);
+      app.should("include.text", authoredStateSample.creditLinkDisplayText);
+      cy.getIframeBody().find(".vjs-poster").should('exist');
+      cy.getIframeBody().find("video").should("have.attr", "src", authoredStateSample.videoUrl);
+    });
+
+    it("handles pre-existing interactive state", () => {
+      phonePost("initInteractive", {
+        mode: "runtime",
+        authoredState: authoredStateSample,
+        interactiveState: {
+          lastViewedTimestamp: 2.0
+        }
+      });
+
+      const app = cy.getIframeBody().find("#app");
+      // poster image is hidden if the video is not at the start
+      cy.getIframeBody().find(".vjs-poster.vjs-hidden").should('exist');
+      cy.getIframeBody().find("video").should("have.attr", "src", authoredStateSample.videoUrl);
+      cy.getIframeBody().find(".vjs-current-time-display").should("include.text", "0:02");
+    });
 
     it("plays video", () => {
       phonePost("initInteractive", {
         mode: "runtime",
         authoredState: authoredStateSample,
         interactiveState: {
-          percentageViewed: 0.2
+          percentageViewed: 0.1
         }
       });
       phoneListen("interactiveState");
       cy.getIframeBody().find(".vjs-big-play-button").click();
       getAndClearLastPhoneMessage((state) => {
         expect(state.lastViewedTimestamp).greaterThan(1.0);
+
+        cy.getIframeBody().find(".vjs-text-track-cue").should("include.text", "This is a drake");
+        cy.getIframeBody().find(".vjs-current-time-display").should("include.text", "0:01");
+        cy.getIframeBody().find(".vjs-poster.vjs-hidden").should('exist');
+
       });
     });
   });
   context("Authoring view", () => {
-  it("handles pre-existing authored state", () => {
+    it("handles pre-existing authored state", () => {
       phonePost("initInteractive", {
         mode: "authoring",
         authoredState: authoredStateSample
       });
-      cy.getIframeBody().find("#app").should("include.text", "Video Url");
-      cy.getIframeBody().find("#app").should("include.text", "Caption Url");
-      cy.getIframeBody().find("#app").should("include.text", "Poster / preview image");
-      cy.getIframeBody().find("#app").should("include.text", "Prompt");
-      cy.getIframeBody().find("#app").should("include.text", "Credit");
-      cy.getIframeBody().find("#app").should("include.text", "Credit Link");
-      cy.getIframeBody().find("#app").should("include.text", "Credit Link Display Text");
-      cy.getIframeBody().find("#app").should("include.text", "Fixed Aspect Ratio");
-      cy.getIframeBody().find("#app").should("include.text", "Fixed Height");
+      const app = cy.getIframeBody().find("#app");
+      app.should("include.text", "Video Url");
+      app.should("include.text", "Caption Url");
+      app.should("include.text", "Poster / preview image");
+      app.should("include.text", "Prompt");
+      app.should("include.text", "Credit");
+      app.should("include.text", "Credit Link");
+      app.should("include.text", "Credit Link Display Text");
+      app.should("include.text", "Fixed Aspect Ratio");
+      app.should("include.text", "Fixed Height");
 
       cy.getIframeBody().find("#root_videoUrl").should("have.value", authoredStateSample.videoUrl);
-      cy.getIframeBody().find("#root_captionUrl").should("include.text", authoredStateSample.captionUrl);
+      cy.getIframeBody().find("#root_captionUrl").should("have.value", authoredStateSample.captionUrl);
       cy.getIframeBody().find("#root_poster").should("have.value", authoredStateSample.poster);
       cy.getIframeBody().find("#root_prompt").should("include.text", authoredStateSample.prompt);
       cy.getIframeBody().find("#root_credit").should("include.text", authoredStateSample.credit);
       cy.getIframeBody().find("#root_creditLink").should("have.value", authoredStateSample.creditLink);
       cy.getIframeBody().find("#root_creditLinkDisplayText").should("have.value", authoredStateSample.creditLinkDisplayText);
 
-  });
+    });
 
     it("renders authoring form and sends back authored state", () => {
       phonePost("initInteractive", {
@@ -100,10 +119,10 @@ context("Test Video Player interactive", () => {
       phonePost("initInteractive", {
         mode: "report",
         authoredState: authoredStateSample,
-          interactiveState: {
-            percentageViewed: 0.2,
-            lastViewedTimestamp: 1.2
-          }
+        interactiveState: {
+          percentageViewed: 0.2,
+          lastViewedTimestamp: 1.2
+        }
       });
 
       cy.getIframeBody().find("#app").should("include.text", authoredStateSample.prompt);
