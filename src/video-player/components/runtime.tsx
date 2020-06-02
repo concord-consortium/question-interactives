@@ -113,7 +113,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const getPoster = () => {
     if (hasStartedPlayback === false) return authoredState.poster;
     else return;
-  }
+  };
 
   return (
     <div className={css.runtime}>
@@ -125,6 +125,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             onTimeUpdate={readOnly ? undefined : handlePlaying}
             onEnded={readOnly ? undefined : handleStop}
             onPause={readOnly ? undefined : handleStop}
+            controls={readOnly ? false : true}
           />
         </div>
       </div>

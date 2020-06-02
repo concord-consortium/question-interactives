@@ -68,7 +68,7 @@ context("Test Video Player interactive", () => {
 
         cy.getIframeBody().find(".vjs-text-track-cue").should("include.text", "This is a drake");
         cy.getIframeBody().find(".vjs-current-time-display").should("include.text", "0:01");
-        cy.getIframeBody().find(".vjs-poster.vjs-hidden").should('exist');
+        cy.getIframeBody().find(".vjs-poster.vjs-hidden").should("exist");
 
       });
     });
@@ -115,7 +115,7 @@ context("Test Video Player interactive", () => {
   });
 
   context("Report view", () => {
-    it("renders prompt and choices and handles pre-existing interactive state, but doesn't let user change it", () => {
+    it("renders video at last timestamp but does not allow user to play the video", () => {
       phonePost("initInteractive", {
         mode: "report",
         authoredState: authoredStateSample,
@@ -124,8 +124,9 @@ context("Test Video Player interactive", () => {
           lastViewedTimestamp: 1.2
         }
       });
-
-      cy.getIframeBody().find("#app").should("include.text", authoredStateSample.prompt);
+      cy.getIframeBody().find(".vjs-current-time-display").should("include.text", "0:01");
+      // Setting controls=false on the video player should remove all the controls, but the video.js library seems to be ignoring this value. More work to be done here, though we don't actually have any firm stories detailing what _should_ appear on report view. For now, leaving this out.
+      // cy.getIframeBody().find(".vjs-big-play-button").should("not.exist");
 
     });
   });
