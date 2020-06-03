@@ -27,7 +27,7 @@ export const insertInputs = (prompt: string, blanks: IBlankDef[], userResponses:
   if (dividedPrompt.length === 2) {
     // Blank found in this prompt part.
     result.push(...insertInputs(dividedPrompt[0], remainingBlanks, userResponses));
-    const response = userResponses.find(ur => ur.id === blank.id)?.response;
+    const response = userResponses.find(ur => ur.id === blank.id)?.response || "";
     result.push({id: blank.id, value: response, size: blank.size, matchTerm: blank.matchTerm });
     result.push(...insertInputs(dividedPrompt[1], remainingBlanks, userResponses));
   }
