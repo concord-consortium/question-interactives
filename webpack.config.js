@@ -15,6 +15,7 @@ module.exports = (env, argv) => {
       'open-response': './src/open-response/index.tsx',
       'fill-in-the-blank': './src/fill-in-the-blank/index.tsx',
       'scaffolded-question': './src/scaffolded-question/index.tsx',
+      'video-player': './src/video-player/index.tsx',
       'wrapper': './src/shared/wrapper.tsx'
     },
     mode: 'development',
@@ -112,6 +113,11 @@ module.exports = (env, argv) => {
       new HtmlWebpackPlugin({
         chunks: ['fill-in-the-blank'],
         filename: 'fill-in-the-blank/index.html',
+          template: 'src/shared/index.html'
+      }),
+      new HtmlWebpackPlugin({
+        chunks: ['video-player'],
+        filename: 'video-player/index.html',
         template: 'src/shared/index.html'
       }),
       new HtmlWebpackPlugin({
