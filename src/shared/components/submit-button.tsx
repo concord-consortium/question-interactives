@@ -19,7 +19,7 @@ export const SubmitButton: React.FC<IProps> = ({ isAnswered }) => {
   }
 
   const handleSubmit = () => {
-    setInteractiveState?.(Object.assign({}, interactiveState, { submitted: true }));
+    setInteractiveState?.(prevState => ({...prevState, submitted: true }));
   };
 
   return (

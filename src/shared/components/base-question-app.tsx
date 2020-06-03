@@ -19,15 +19,17 @@ interface IBaseQuestionInteractiveState {
   submitted?: boolean;
 }
 
+type UpdateFunc<State> = (prevState: State | null) => State;
+
 interface IAuthoringComponentProps<IAuthoredState> {
   authoredState: IAuthoredState | null,
-  setAuthoredState?: (state: IAuthoredState) => void;
+  setAuthoredState?: (updateFunc: UpdateFunc<IAuthoredState>) => void;
 }
 
 interface IRuntimeComponentProps<IAuthoredState, IInteractiveState> {
   authoredState: IAuthoredState,
   interactiveState?: IInteractiveState | null,
-  setInteractiveState?: (state: IInteractiveState) => void;
+  setInteractiveState?: (updateFunc: UpdateFunc<IInteractiveState>) => void;
   report?: boolean;
 }
 

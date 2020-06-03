@@ -29,14 +29,15 @@ describe("Runtime", () => {
   it("handles passed interactiveState", () => {
     const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} />);
     expect(wrapper.find("input").at(0).props().value).toEqual(interactiveState.blanks[0].response);
-    expect(wrapper.find("input").at(1).props().value).toEqual(undefined);
+    expect(wrapper.find("input").at(1).props().value).toEqual("");
   });
 
   it("calls setInteractiveState when user provides an answer", () => {
     const setState = jest.fn();
     const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} />);
     wrapper.find("input").at(1).simulate("change", { target: { value: "New response" } });
-    expect(setState).toHaveBeenCalledWith({
+    const newState = setState.mock.calls[0][0](interactiveState);
+    expect(newState).toEqual({
       blanks: [
         {id: "[blank-1]", response: "Test response"},
         {id: "[blank-2]", response: "New response"}
@@ -56,7 +57,7 @@ describe("Runtime", () => {
     it("handles passed interactiveState", () => {
       const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} report={true} />);
       expect(wrapper.find("input").at(0).props().value).toEqual(interactiveState.blanks[0].response);
-      expect(wrapper.find("input").at(1).props().value).toEqual(undefined);
+      expect(wrapper.find("input").at(1).props().value).toEqual("");
     });
 
     it("never calls setInteractiveState when user selects an answer", () => {
@@ -76,7 +77,7 @@ describe("insertInputs helper", () => {
       "Test prompt with ",
       {id: "[blank-1]", size: 10, matchTerm: undefined, value: "Test response"},
       " and ",
-      {id: "[blank-2]", size: 20, matchTerm: "Expected answer", value: undefined},
+      {id: "[blank-2]", size: 20, matchTerm: "Expected answer", value: ""},
       "."
     ])
   });

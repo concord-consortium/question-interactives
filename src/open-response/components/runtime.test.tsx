@@ -31,7 +31,8 @@ describe("Runtime", () => {
     const setState = jest.fn();
     const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} />);
     wrapper.find("textarea").simulate("change", { target: { value: "new response" } });
-    expect(setState).toHaveBeenCalledWith({response: "new response"});
+    const newState = setState.mock.calls[0][0](interactiveState);
+    expect(newState).toEqual({response: "new response"});
   });
 
   describe("report mode", () => {
