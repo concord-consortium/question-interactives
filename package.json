@@ -112,7 +112,7 @@
   "dependencies": {
     "deep-equal": "^2.0.3",
     "iframe-phone": "^1.2.1",
-    "@concord-consortium/lara-interactive-api": "0.4.0-pre.1",
+    "@concord-consortium/lara-interactive-api": "0.4.0-pre.5",
     "jquery": "^3.5.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
