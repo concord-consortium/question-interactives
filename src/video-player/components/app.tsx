@@ -4,7 +4,6 @@ import { BaseQuestionApp } from "../../shared/components/base-question-app";
 import { Runtime } from "./runtime";
 
 import Shutterbug from "shutterbug";
-import { v4 as uuidv4 } from "uuid";
 
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.

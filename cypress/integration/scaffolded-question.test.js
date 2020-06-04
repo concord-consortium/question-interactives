@@ -174,20 +174,27 @@ context("Test open response interactive", () => {
         }
       });
 
+      // Lots of cy.wait as this test seems to fail sometimes.
       // 1. Open subauthoring.
+      cy.wait(200);
       cy.getIframeBody().find("[data-cy=subquestion-authoring]").eq(0).click();
+      cy.wait(200);
       cy.getIframeBody().find("[data-cy=subquestion-authoring]").eq(1).click();
 
       // 2. Edit second question.
+      cy.wait(200);
       cy.getNestedIframeBody("iframe", "#int2").find("#root_prompt").clear();
+      cy.wait(200);
       cy.getNestedIframeBody("iframe", "#int2").find("#root_prompt").type("x", { force: true });
 
       // 3. Move it up
+      cy.wait(200);
       cy.getIframeBody().find(".array-item-move-up:not(:disabled)").click();
-      cy.wait(500);
 
       // 4. Move it down
+      cy.wait(200);
       cy.getIframeBody().find(".array-item-move-down:not(:disabled)").click();
+      cy.wait(200);
       cy.getNestedIframeBody("iframe", "#int2").find("#root_prompt").should("have.value", "x");
     });
   });

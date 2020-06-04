@@ -4,8 +4,8 @@ import css from "./runtime.scss";
 
 interface IProps {
   authoredState: IAuthoredState;
-  interactiveState?: IInteractiveState;
-  setInteractiveState?: (state: IInteractiveState) => void;
+  interactiveState?: IInteractiveState | null;
+  setInteractiveState?: (updateFunc: (prevState: IInteractiveState | null) => IInteractiveState) => void;
   report?: boolean;
   setNavigation?: (enableForwardNav: boolean, message: string) => void;
 }
@@ -27,7 +27,7 @@ export const insertInputs = (prompt: string, blanks: IBlankDef[], userResponses:
   if (dividedPrompt.length === 2) {
     // Blank found in this prompt part.
     result.push(...insertInputs(dividedPrompt[0], remainingBlanks, userResponses));
-    const response = userResponses.find(ur => ur.id === blank.id)?.response;
+    const response = userResponses.find(ur => ur.id === blank.id)?.response || "";
     result.push({id: blank.id, value: response, size: blank.size, matchTerm: blank.matchTerm });
     result.push(...insertInputs(dividedPrompt[1], remainingBlanks, userResponses));
   }
@@ -41,16 +41,18 @@ export const insertInputs = (prompt: string, blanks: IBlankDef[], userResponses:
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
 
   const handleChange = (blankId: string, event: React.ChangeEvent<HTMLInputElement>) => {
-    const newState = Object.assign({}, interactiveState, { blanks: interactiveState?.blanks?.slice() || [] });
-    const newResponse = {id: blankId, response: event.target.value };
-    const existingResponse = newState.blanks.find(b => b.id === blankId);
-    if (existingResponse) {
-      const idx = newState.blanks.indexOf(existingResponse);
-      newState.blanks.splice(idx, 1, newResponse);
-    } else {
-      newState.blanks.push(newResponse);
-    }
-    setInteractiveState?.(newState);
+    setInteractiveState?.(prevState => {
+      const newState = {...prevState, blanks: prevState?.blanks?.slice() || [] };
+      const newResponse = {id: blankId, response: event.target.value };
+      const existingResponse = newState.blanks.find(b => b.id === blankId);
+      if (existingResponse) {
+        const idx = newState.blanks.indexOf(existingResponse);
+        newState.blanks.splice(idx, 1, newResponse);
+      } else {
+        newState.blanks.push(newResponse);
+      }
+      return newState;
+    });
   };
 
   const getInputClass = (value?: string, matchTerm?: string) => {

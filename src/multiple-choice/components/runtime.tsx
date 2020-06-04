@@ -9,8 +9,8 @@ export interface IInteractiveState {
 
 interface IProps {
   authoredState: IAuthoredState;
-  interactiveState?: IInteractiveState;
-  setInteractiveState?: (state: IInteractiveState) => void;
+  interactiveState?: IInteractiveState | null;
+  setInteractiveState?: (updateFunc: (prevState: IInteractiveState | null) => IInteractiveState) => void;
   report?: boolean;
 }
 
@@ -26,7 +26,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const handleChange = (choiceId: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const checked = event.target.checked;
-    let newChoices;
+    let newChoices: string[];
     if (!authoredState.multipleAnswers) {
       // Radio buttons, just one answer.
       newChoices = [ choiceId ];
@@ -41,9 +41,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         newChoices.splice(currentIdx, 1);
       }
     }
-    if (setInteractiveState) {
-      setInteractiveState(Object.assign({}, interactiveState, { selectedChoiceIds: newChoices }));
-    }
+    setInteractiveState?.(prevState => ({...prevState, selectedChoiceIds: newChoices }));
   };
 
   const getChoiceClass = (choice: IChoice, checked: boolean) => {

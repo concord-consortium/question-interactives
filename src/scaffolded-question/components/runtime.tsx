@@ -8,8 +8,8 @@ import css from "./runtime.scss";
 
 interface IProps {
   authoredState: IAuthoredState;
-  interactiveState?: IInteractiveState;
-  setInteractiveState?: (state: IInteractiveState) => void;
+  interactiveState?: IInteractiveState | null;
+  setInteractiveState?: (updateFunc: (prevState: IInteractiveState | null) => IInteractiveState) => void;
   report?: boolean;
   setNavigation?: (enableForwardNav: boolean, message: string) => void;
 }
@@ -40,16 +40,18 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const isAnswered = !!subState;
 
   const handleNewInteractiveState = (interactiveId: string, newInteractiveState: any) => {
-    if (setInteractiveState) {
-      const updatedStates = Object.assign({}, interactiveState?.subinteractiveStates, { [interactiveId]: newInteractiveState });
-      setInteractiveState(Object.assign({}, interactiveState, { subinteractiveStates: updatedStates }));
-    }
+    setInteractiveState?.((prevState: IInteractiveState) => {
+      const updatedStates = {...prevState?.subinteractiveStates, [interactiveId]: newInteractiveState };
+      return {...prevState, subinteractiveStates: updatedStates };
+    });
   };
 
   const handleHint = () => {
-    if (setInteractiveState && currentSubintIndex < subinteractives.length - 1) {
-      const newInteractive = subinteractives[currentSubintIndex + 1];
-      setInteractiveState(Object.assign({}, interactiveState, { currentSubinteractiveId: newInteractive.id }));
+    if (currentSubintIndex < subinteractives.length - 1) {
+      setInteractiveState?.((prevState: IInteractiveState) => {
+        const newInteractive = subinteractives[currentSubintIndex + 1];
+        return {...prevState, currentSubinteractiveId: newInteractive.id };
+      });
     }
   };
 
@@ -68,10 +70,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         !report &&
         <div className={css.buttons}>
           { hintAvailable && <button onClick={handleHint}>Hint</button> }
-          <SubmitButton authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} isAnswered={isAnswered} />
+          <SubmitButton isAnswered={isAnswered} />
         </div>
       }
-      { !report && <LockedInfo interactiveState={interactiveState} /> }
+      { !report && <LockedInfo /> }
       { report && <div>Hint has been used { currentSubintIndex } times.</div> }
     </div>
   );

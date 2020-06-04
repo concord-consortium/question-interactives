@@ -62,7 +62,7 @@ const baseAuthoringProps = {
   }
 };
 
-const isAnswered = (interactiveState: IInteractiveState | undefined) => !!interactiveState?.response;
+const isAnswered = (interactiveState: IInteractiveState | null) => !!interactiveState?.response;
 
 export const App = () => (
   <BaseQuestionApp<IAuthoredState, IInteractiveState>

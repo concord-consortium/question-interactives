@@ -9,7 +9,7 @@ import "./video-js.css";
 interface IProps {
   authoredState: IAuthoredState;
   interactiveState?: IInteractiveState;
-  setInteractiveState?: (state: IInteractiveState) => void;
+  setInteractiveState?: (updateFunc: (prevState: IInteractiveState | null) => IInteractiveState) => void;
   report?: boolean;
 }
 
@@ -106,12 +106,13 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const updateState = () => {
     viewedTimestamp = getViewTime();
     viewedProgress = getViewPercentage();
-    if (setInteractiveState) {
-      setInteractiveState(Object.assign({}, interactiveState, { percentageViewed: viewedProgress, lastViewedTimestamp: viewedTimestamp }));
-    }
+    setInteractiveState?.(prevState => ({...prevState, percentageViewed: viewedProgress, lastViewedTimestamp: viewedTimestamp }));
   };
+
   const getPoster = () => {
-    if (hasStartedPlayback === false) return authoredState.poster;
+    if (!hasStartedPlayback) {
+      return authoredState.poster;
+    }
     else return;
   };
 
@@ -125,15 +126,17 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             onTimeUpdate={readOnly ? undefined : handlePlaying}
             onEnded={readOnly ? undefined : handleStop}
             onPause={readOnly ? undefined : handleStop}
-            controls={readOnly ? false : true}
+            controls={!readOnly}
           />
         </div>
       </div>
       {interactiveState?.lastViewedTimestamp && <div className={css.lastViewed}>{interactiveState.lastViewedTimestamp}</div>}
       {authoredState.credit && <div className={css.credit}>{authoredState.credit}</div>}
-      {authoredState.creditLink && <div className={css.creditLink}><a href={authoredState.creditLink} target="_blank">
-        {authoredState.creditLinkDisplayText ? authoredState.creditLinkDisplayText : authoredState.creditLink}
-      </a></div>}
+      {
+        authoredState.creditLink &&
+        <div className={css.creditLink}><a href={authoredState.creditLink} target="_blank">
+          {authoredState.creditLinkDisplayText ? authoredState.creditLinkDisplayText : authoredState.creditLink}
+        </a></div>}
     </div>
   );
 };

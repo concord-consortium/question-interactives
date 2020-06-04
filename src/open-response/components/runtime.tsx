@@ -4,17 +4,15 @@ import { IInteractiveState } from "./app";
 
 interface IProps {
   authoredState: IAuthoredState;
-  interactiveState?: IInteractiveState;
-  setInteractiveState?: (state: IInteractiveState) => void;
+  interactiveState?: IInteractiveState | null;
+  setInteractiveState?: (updateFunc: (prevState: IInteractiveState | null) => IInteractiveState) => void;
   report?: boolean;
 }
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    if (setInteractiveState) {
-      setInteractiveState(Object.assign({}, interactiveState, { response: event.target.value }));
-    }
+    setInteractiveState?.(prevState => ({...prevState, response: event.target.value }));
   };
 
   return (
