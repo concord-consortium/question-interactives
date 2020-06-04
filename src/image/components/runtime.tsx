@@ -20,22 +20,22 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   return (
     <div className={css.runtime}>
-      <div>
+      <div className={css.imageContainer}>
         <img
           src={authoredState.url}
           alt={authoredState.altText}
         />
-        {authoredState.caption && <div className={css.caption}>{authoredState.caption}</div>}
-        {authoredState.credit && <div className={css.credit}>{authoredState.credit}</div>}
-        {
-          authoredState.creditLink &&
-          <div className={css.creditLink}>
-            <a href={authoredState.creditLink} target="_blank">
-              {authoredState.creditLinkDisplayText ? authoredState.creditLinkDisplayText : authoredState.creditLink}
-            </a>
-          </div>
-        }
       </div>
+      {authoredState.caption && <div className={css.caption}>{authoredState.caption}</div>}
+      {authoredState.credit && <div className={css.credit}>{authoredState.credit}</div>}
+      {
+        authoredState.creditLink &&
+        <div className={css.creditLink}>
+          <a href={authoredState.creditLink} target="_blank">
+            {authoredState.creditLinkDisplayText ? authoredState.creditLinkDisplayText : authoredState.creditLink}
+          </a>
+        </div>
+      }
     </div>
   );
 };
