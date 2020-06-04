@@ -9,14 +9,17 @@ import { JSONSchema6 } from "json-schema";
 export interface IAuthoredState {
   version: number;
   url?: string;
+  altText?: string;
   caption?: string;
   credit?: string;
   creditLink?: string;
+  creditLinkDisplayText?: string;
   allowLightbox?: boolean;
   fullWidth?: boolean;
 }
 
 export interface IInteractiveState {
+  viewed: boolean;
   submitted?: boolean;
 }
 
@@ -32,6 +35,10 @@ const baseAuthoringProps = {
         title: "Url",
         type: "string"
       },
+      altText: {
+        title: "Alt Text",
+        type: "string"
+      },
       caption: {
         title: "Caption",
         type: "string"
@@ -42,6 +49,10 @@ const baseAuthoringProps = {
       },
       creditLink: {
         title: "Credit Link",
+        type: "string"
+      },
+      creditLinkDisplayText: {
+        title: "Credit Link Display Text",
         type: "string"
       },
       allowLightbox: {
@@ -63,6 +74,10 @@ const baseAuthoringProps = {
       "ui:widget": "textarea",
       "ui:help": "Path to hosted image file (jpg, png, gif, etc)"
     },
+    altText: {
+      "ui:widget": "textarea",
+      "ui:help": "Alt text is the written copy that appears in place of an image on a webpage if the image fails to load on a user's screen. This text helps screen-reading tools describe images to visually impaired readers"
+    },
     caption: {
       "ui:widget": "textarea"
     },
@@ -71,7 +86,10 @@ const baseAuthoringProps = {
     },
     creditLink: {
       "ui:widget": "textarea",
-      "ui:help": "Path to more information on the source of the image"
+      "ui:help": "Link to attribution"
+    },
+    creditLinkDisplayText: {
+      "ui:help": "Text to display for the link to attribution (leave blank to display the url)"
     },
     allowLightbox: {
       "ui:help": "Allow image to be shown in lightbox"
@@ -82,7 +100,7 @@ const baseAuthoringProps = {
   }
 };
 
-const isAnswered = (interactiveState: IInteractiveState | undefined) => true;
+const isAnswered = (interactiveState: IInteractiveState) => interactiveState?.viewed;
 
 export const App = () => (
   <BaseQuestionApp<IAuthoredState, IInteractiveState>

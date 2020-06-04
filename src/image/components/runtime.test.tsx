@@ -4,53 +4,30 @@ import { Runtime } from "./runtime";
 
 const authoredState = {
   version: 1,
-  prompt: "Test prompt",
-  hint: "hint",
-  required: false,
-  defaultAnswer: ""
+  url: "http://concord.org/sites/default/files/images/logos/cc/cc-logo.png",
+  altText: "CC Logo",
+  caption: "Image showing the CC Logo",
+  credit: "Copyright Concord Consortium",
+  creditLink: "https://concord.org",
+  creditLinkDisplayText: "Concord.org",
+  allowLightbox: true,
+  fullWidth: true
 };
 
 const interactiveState = {
-  response: "Test response",
+  viewed: true,
   submitted: undefined
 };
 
 describe("Runtime", () => {
-  it("renders prompt and textarea", () => {
+  it("renders prompt and image", () => {
     const wrapper = shallow(<Runtime authoredState={authoredState} />);
-    expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.prompt));
-    expect(wrapper.find("textarea").length).toEqual(1);
+    expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.caption));
   });
-
-  it("handles passed interactiveState", () => {
-    const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} />);
-    expect(wrapper.find("textarea").props().value).toEqual(interactiveState.response);
-  });
-
-  it("calls setInteractiveState when user provides an answer", () => {
-    const setState = jest.fn();
-    const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} />);
-    wrapper.find("textarea").simulate("change", { target: { value: "new response" } });
-    expect(setState).toHaveBeenCalledWith({response: "new response"});
-  });
-
-  describe("report mode", () => {
-    it("renders prompt and *disabled* textarea", () => {
-      const wrapper = shallow(<Runtime authoredState={authoredState} report={true} />);
-      expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.prompt));
-      expect(wrapper.find("textarea").props().disabled).toEqual(true);
-    });
-
-    it("handles passed interactiveState", () => {
-      const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} report={true} />);
-      expect(wrapper.find("textarea").props().value).toEqual(interactiveState.response);
-    });
-
-    it("never calls setInteractiveState when user selects an answer", () => {
-      const setState = jest.fn();
-      const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} report={true} />);
-      wrapper.find("textarea").simulate("change", { target: { value: "diff answer" } });
-      expect(setState).not.toHaveBeenCalled();
-    });
+});
+describe("report mode", () => {
+  it("renders prompt and *disabled* textarea", () => {
+    const wrapper = shallow(<Runtime authoredState={authoredState} report={true} />);
+    expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.caption));
   });
 });
