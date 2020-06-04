@@ -16,6 +16,7 @@ module.exports = (env, argv) => {
       'fill-in-the-blank': './src/fill-in-the-blank/index.tsx',
       'scaffolded-question': './src/scaffolded-question/index.tsx',
       'video-player': './src/video-player/index.tsx',
+      'image': './src/image/index.tsx',
       'wrapper': './src/shared/wrapper.tsx'
     },
     mode: 'development',
@@ -118,6 +119,11 @@ module.exports = (env, argv) => {
       new HtmlWebpackPlugin({
         chunks: ['video-player'],
         filename: 'video-player/index.html',
+        template: 'src/shared/index.html'
+      }),
+      new HtmlWebpackPlugin({
+        chunks: ['image'],
+        filename: 'image/index.html',
         template: 'src/shared/index.html'
       }),
       new HtmlWebpackPlugin({
