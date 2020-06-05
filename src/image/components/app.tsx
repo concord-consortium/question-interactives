@@ -9,6 +9,7 @@ import { JSONSchema6 } from "json-schema";
 export interface IAuthoredState {
   version: number;
   url?: string;
+  highResUrl?: string;
   altText?: string;
   caption?: string;
   credit?: string;
@@ -33,6 +34,10 @@ const baseAuthoringProps = {
       },
       url: {
         title: "Url",
+        type: "string"
+      },
+      highResUrl: {
+        title: "Url (high resolution image)",
         type: "string"
       },
       altText: {
@@ -73,6 +78,10 @@ const baseAuthoringProps = {
     url: {
       "ui:widget": "textarea",
       "ui:help": "Path to hosted image file (jpg, png, gif, etc)"
+    },
+    highResUrl: {
+      "ui:widget": "textarea",
+      "ui:help": "Path to high-resolution hosted image file (jpg, png, gif, etc) for zoomed-in view (optional)"
     },
     altText: {
       "ui:widget": "textarea",

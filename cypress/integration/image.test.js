@@ -2,7 +2,8 @@ import { phonePost, phoneListen, getAndClearLastPhoneMessage } from "../support"
 
 const authoredStateSample = {
   version: 1,
-  url: "http://concord.org/sites/default/files/images/logos/cc/cc-logo.png",
+  url: "http://authoring.staging.concord.org/assets/cc-logo-2a224e4f218b2f9c9c0d094362fe7372.png",
+  highResUrl: "http://concord.org/sites/default/files/images/logos/cc/cc-logo.png",
   altText: "CC Logo",
   caption: "Image showing the CC Logo",
   credit: "Copyright Concord Consortium",

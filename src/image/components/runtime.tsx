@@ -24,6 +24,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         <img
           src={authoredState.url}
           alt={authoredState.altText}
+          title={authoredState.altText}
         />
       </div>
       {authoredState.caption && <div className={css.caption}>{authoredState.caption}</div>}
