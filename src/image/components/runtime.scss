@@ -2,29 +2,36 @@
 
 .imageContainer{
   width: 100%;
+  margin-bottom: 10px;
   img{
     max-width: 100%;
-    width: 100%;
     height: auto;
+  }
+  &.fitWidth{
+    img{
+      width: 100%;
+    }
+  }
+  &.fitHeight{
+    img{
+      // max-height:100%;
+    }
   }
 }
 .caption{
-  font-size: 0.9em;
+  font-size: 0.8em;
   width: 100%;
-  text-align: center;
-  line-height: 2em;
+  line-height: 1.5em;
 }
 
 .credit{
   font-size: 0.8em;
   width: 100%;
-  text-align: center;
-  line-height: 2em;
+  line-height: 1.2em;
 }
 
 .creditLink{
   font-size: 0.8em;
   width: 100%;
-  text-align: center;
-  line-height: 2em;
+  line-height: 1.2em;
 }

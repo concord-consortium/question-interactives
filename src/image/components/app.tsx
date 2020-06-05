@@ -16,6 +16,7 @@ export interface IAuthoredState {
   creditLink?: string;
   creditLinkDisplayText?: string;
   allowLightbox?: boolean;
+  layout?: "fitWidth" | "fitHeight" | "originalDimensions";
   fullWidth?: boolean;
 }
 
@@ -64,9 +65,33 @@ const baseAuthoringProps = {
         title: "Allow lightbox",
         type: "boolean"
       },
-      fullWidth: {
-        title: "Full width",
-        type: "boolean"
+      layout: {
+        title: "Choose a layout style for the image",
+        type: "string",
+        default: "fitWidth",
+        oneOf: [
+          {
+            "type": "string",
+            "title": "Fit Width",
+            "enum": [
+              "fitWidth"
+            ]
+          },
+          {
+            "type": "string",
+            "title": "Fit Height",
+            "enum": [
+              "fitHeight"
+            ]
+          },
+          {
+            "type": "string",
+            "title": "Original Dimensions",
+            "enum": [
+              "originalDimensions"
+            ]
+          },
+        ]
       }
     }
   } as JSONSchema6,
@@ -103,8 +128,9 @@ const baseAuthoringProps = {
     allowLightbox: {
       "ui:help": "Allow image to be shown in lightbox"
     },
-    fullWidth: {
-      "ui:help": "Make the image take up all available width (full width layout only)"
+    layout: {
+      "ui:widget": "radio",
+      "ui:help": "Tall images may need to use 'Fit Height' to ensure all the image is visible on the page. Small images may prefer 'Original Dimensions' so that the image does not appear over-scaled"
     }
   }
 };

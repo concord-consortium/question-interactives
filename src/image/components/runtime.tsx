@@ -1,6 +1,7 @@
-import React, { useEffect } from "react";
+import React, { useEffect, ReactHTMLElement, ReactEventHandler } from "react";
 import { IAuthoredState } from "./app";
 import { IInteractiveState } from "./app";
+import { setSupportedFeatures } from "@concord-consortium/lara-interactive-api";
 import css from "./runtime.scss";
 
 interface IProps {
@@ -18,13 +19,36 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     setInteractiveState?.(prevState => ({...prevState, viewed: true }));
   };
 
+  const getImageLayout = () => {
+    switch (authoredState.layout) {
+      case "fitWidth":
+        return css.fitWidth;
+      case "fitHeight":
+        return css.fitHeight;
+      case "originalDimensions":
+        return;
+    }
+  };
+
+  const getOriginalImageSize = (e: any) => {
+    if (authoredState.layout === "fitHeight") {
+      const aspectRatio = e.target.naturalWidth / e.target.naturalHeight;
+      setSupportedFeatures({
+        interactiveState: true,
+        authoredState: true,
+        aspectRatio
+      });
+    }
+  };
+
   return (
     <div className={css.runtime}>
-      <div className={css.imageContainer}>
+      <div className={`${css.imageContainer} ${getImageLayout()}`}>
         <img
           src={authoredState.url}
           alt={authoredState.altText}
           title={authoredState.altText}
+          onLoad={getOriginalImageSize}
         />
       </div>
       {authoredState.caption && <div className={css.caption}>{authoredState.caption}</div>}
