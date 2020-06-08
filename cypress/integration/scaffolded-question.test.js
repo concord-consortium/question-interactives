@@ -29,7 +29,7 @@ context("Test open response interactive", () => {
           currentSubinteractiveId: "int1",
           subinteractiveStates: {
             int1: {
-              response: "Subquestion response"
+              answer: "Subquestion response"
             }
           }
         }
@@ -74,7 +74,8 @@ context("Test open response interactive", () => {
         expect(state).eql({
           subinteractiveStates: {
             int1: {
-              response: "Test subquestion answer"
+              type: "open_response_answer",
+              answer: "Test subquestion answer"
             }
           }
         });
@@ -223,7 +224,7 @@ context("Test open response interactive", () => {
           currentSubinteractiveId: "int1",
           subinteractiveStates: {
             int1: {
-              response: "Subquestion response"
+              answer: "Subquestion response"
             }
           }
         }
