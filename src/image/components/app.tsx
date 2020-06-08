@@ -17,7 +17,6 @@ export interface IAuthoredState {
   creditLinkDisplayText?: string;
   allowLightbox?: boolean;
   layout?: "fitWidth" | "fitHeight" | "originalDimensions";
-  fullWidth?: boolean;
 }
 
 export interface IInteractiveState {

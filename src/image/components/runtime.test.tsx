@@ -20,13 +20,19 @@ const interactiveState = {
 };
 
 describe("Runtime", () => {
-  it("renders prompt and image", () => {
+  it("renders caption and image", () => {
+    const wrapper = shallow(<Runtime authoredState={authoredState} />);
+    expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.caption));
+  });
+});
+describe("Authoring", () => {
+  it("renders caption and image", () => {
     const wrapper = shallow(<Runtime authoredState={authoredState} />);
     expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.caption));
   });
 });
 describe("report mode", () => {
-  it("renders prompt and *disabled* textarea", () => {
+  it("renders caption and image", () => {
     const wrapper = shallow(<Runtime authoredState={authoredState} report={true} />);
     expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.caption));
   });
