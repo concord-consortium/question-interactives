@@ -36,7 +36,7 @@ context("Test open response interactive", () => {
       });
       phoneListen("hint");
       getAndClearLastPhoneMessage(hint => {
-        expect(hint).eql("Hint");
+        expect(hint).eql({ text: "Hint" });
       });
 
       cy.getIframeBody().find("#app").should("include.text", "Test prompt");
