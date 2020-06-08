@@ -5,6 +5,7 @@ describe("preprocessFormData helper", () => {
   it("generates unique IDs for choices when they're missing", () => {
     const newData = baseAuthoringProps.preprocessFormData({
       version: 1,
+      type: "multiple_choice",
       prompt: "Test prompt",
       hint: "Test instructions",
       choices: [
@@ -22,6 +23,7 @@ describe("preprocessFormData helper", () => {
   it("doesn't overwrite existing choice IDs", () => {
     expect(baseAuthoringProps.preprocessFormData({
       version: 1,
+      type: "multiple_choice",
       prompt: "Test prompt",
       hint: "Test instructions",
       choices: [
@@ -30,6 +32,7 @@ describe("preprocessFormData helper", () => {
       ]
     })).toEqual({
       version: 1,
+      type: "multiple_choice",
       prompt: "Test prompt",
       hint: "Test instructions",
       choices: [

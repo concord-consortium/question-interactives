@@ -1,11 +1,6 @@
 import React from "react";
-import { IAuthoredState, IChoice } from "./app";
+import { IAuthoredState, IChoice, IInteractiveState } from "./app";
 import css from "./runtime.scss";
-
-export interface IInteractiveState {
-  selectedChoiceIds: string[];
-  submitted?: boolean;
-}
 
 interface IProps {
   authoredState: IAuthoredState;
@@ -41,7 +36,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         newChoices.splice(currentIdx, 1);
       }
     }
-    setInteractiveState?.(prevState => ({...prevState, selectedChoiceIds: newChoices }));
+    setInteractiveState?.(prevState => ({...prevState, type: "multiple_choice_answer", selectedChoiceIds: newChoices }));
   };
 
   const getChoiceClass = (choice: IChoice, checked: boolean) => {
