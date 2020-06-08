@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { IframePhone } from "../../shared/types";
 import iframePhone from "iframe-phone";
 import css from "./iframe-runtime.scss";
+import { IHintRequest } from "@concord-consortium/lara-interactive-api";
 
 interface IProps {
   url: string;
@@ -28,8 +29,8 @@ export const IframeRuntime: React.FC<IProps> = ({ url, authoredState, interactiv
     phone.addListener("height", (newHeight: number) => {
       setIframeHeight(newHeight);
     });
-    phone.addListener("hint", (newHint: string) => {
-      setHint(newHint);
+    phone.addListener("hint", (newHint: IHintRequest) => {
+      setHint(newHint.text || "");
     });
     phone.post("initInteractive", {
       mode: report ? "report" : "runtime",
