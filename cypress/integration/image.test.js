@@ -13,7 +13,7 @@ const authoredStateSample = {
   layout: "fitWidth"
 };
 
-context("Test Video Player interactive", () => {
+context("Test Image interactive", () => {
   beforeEach(() => {
     // cy.viewport(800, 600);
     cy.visit("/wrapper.html?iframe=/image");
