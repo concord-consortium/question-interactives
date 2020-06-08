@@ -6,18 +6,29 @@ import { JSONSchema6 } from "json-schema";
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
 
-export interface IAuthoredState {
-  version: number;
+// Note that format of this metadata is pretty strict. It needs to match LARA and report-service expectations.
+// It can be moved to lara-interactive-api package.
+export interface IAuthoringMetadata {
+  type: "open_response";
   prompt?: string;
-  defaultAnswer?: string;
-  hint?: string;
   required?: boolean;
 }
 
-export interface IInteractiveState {
-  response?: string;
+export interface IAuthoredState extends IAuthoringMetadata {
+  version: number;
+  defaultAnswer?: string;
+  hint?: string;
+}
+
+// Note that format of this metadata is pretty strict. It needs to match LARA and report-service expectations.
+// It can be moved to lara-interactive-api package.
+export interface IRuntimeMetadata {
+  type: "open_response_answer",
+  answer?: string;
   submitted?: boolean;
 }
+
+export interface IInteractiveState extends IRuntimeMetadata {}
 
 const baseAuthoringProps = {
   schema: {
@@ -26,6 +37,10 @@ const baseAuthoringProps = {
       version: {
         type: "number",
         default: 1
+      },
+      type: {
+        type: "string",
+        default: "open_response"
       },
       prompt: {
         title: "Prompt",
@@ -50,6 +65,9 @@ const baseAuthoringProps = {
     version: {
       "ui:widget": "hidden"
     },
+    type: {
+      "ui:widget": "hidden"
+    },
     prompt: {
       "ui:widget": "textarea"
     },
@@ -62,7 +80,7 @@ const baseAuthoringProps = {
   }
 };
 
-const isAnswered = (interactiveState: IInteractiveState | null) => !!interactiveState?.response;
+const isAnswered = (interactiveState: IInteractiveState | null) => !!interactiveState?.answer;
 
 export const App = () => (
   <BaseQuestionApp<IAuthoredState, IInteractiveState>

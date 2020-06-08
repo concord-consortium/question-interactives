@@ -16,7 +16,7 @@ context("Test open response interactive", () => {
           defaultAnswer: "Default answer"
         },
         interactiveState: {
-          response: [ "Test response" ]
+          answer: [ "Test response" ]
         }
       });
       phoneListen("hint");
@@ -45,7 +45,7 @@ context("Test open response interactive", () => {
 
       cy.getIframeBody().find("textarea").type("test answer");
       getAndClearLastPhoneMessage((state) => {
-        expect(state).eql({ response: "test answer" });
+        expect(state).eql({ type: "open_response_answer", answer: "test answer" });
       });
     });
   });
@@ -106,7 +106,7 @@ context("Test open response interactive", () => {
           defaultAnswer: "Default answer"
         },
         interactiveState: {
-          response: [ "Test response" ]
+          answer: [ "Test response" ]
         }
       });
 
