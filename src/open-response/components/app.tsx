@@ -24,7 +24,7 @@ export interface IAuthoredState extends IAuthoringMetadata {
 // It can be moved to lara-interactive-api package.
 export interface IRuntimeMetadata {
   type: "open_response_answer",
-  answer?: string;
+  answerText?: string;
   submitted?: boolean;
 }
 
@@ -80,7 +80,7 @@ const baseAuthoringProps = {
   }
 };
 
-const isAnswered = (interactiveState: IInteractiveState | null) => !!interactiveState?.answer;
+const isAnswered = (interactiveState: IInteractiveState | null) => !!interactiveState?.answerText;
 
 export const App = () => (
   <BaseQuestionApp<IAuthoredState, IInteractiveState>
