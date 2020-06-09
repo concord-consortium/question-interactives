@@ -7,10 +7,16 @@ import { IframeAuthoring } from "./iframe-authoring";
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
 
-export interface IAuthoredState {
-  version: number;
+// Note that format of this metadata is pretty strict. It needs to match LARA and report-service expectations.
+// It can be moved to lara-interactive-api package.
+export interface IAuthoringMetadata {
+  type: "interactive";
   prompt?: string;
   required?: boolean;
+}
+
+export interface IAuthoredState extends IAuthoringMetadata {
+  version: number;
   hint?: string;
   subinteractives?: {
     id: string;
@@ -19,7 +25,14 @@ export interface IAuthoredState {
   }[]
 }
 
-export interface IInteractiveState {
+// Note that format of this metadata is pretty strict. It needs to match LARA and report-service expectations.
+// It can be moved to lara-interactive-api package.
+export interface IRuntimeMetadata {
+  type: "interactive_state",
+  answerText?: string;
+}
+
+export interface IInteractiveState extends IRuntimeMetadata {
   subinteractiveStates: {
     [id: string]: any;
   },
@@ -34,6 +47,10 @@ const baseAuthoringProps = {
       version: {
         type: "number",
         default: 1
+      },
+      type: {
+        type: "string",
+        default: "interactive"
       },
       prompt: {
         title: "Prompt",
@@ -70,6 +87,9 @@ const baseAuthoringProps = {
 
   uiSchema: {
     version: {
+      "ui:widget": "hidden"
+    },
+    type: {
       "ui:widget": "hidden"
     },
     prompt: {
