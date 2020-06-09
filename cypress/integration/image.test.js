@@ -2,6 +2,7 @@ import { phonePost, phoneListen, getAndClearLastPhoneMessage } from "../support"
 
 const authoredStateSample = {
   version: 1,
+  // url here is a small image 114px x 35px
   url: "http://authoring.staging.concord.org/assets/cc-logo-2a224e4f218b2f9c9c0d094362fe7372.png",
   highResUrl: "http://concord.org/sites/default/files/images/logos/cc/cc-logo.png",
   altText: "CC Logo",
@@ -31,8 +32,30 @@ context("Test Image interactive", () => {
       app.should("include.text", authoredStateSample.credit);
       app.should("include.text", authoredStateSample.creditLinkDisplayText);
       cy.getIframeBody().find("img").should("have.attr", "src", authoredStateSample.url);
+      cy.getIframeBody().find("img").should('have.css', 'max-width');
+      // authored state set to fitWidth, page width is larger than 400, so image should be larger than native 115px
+      cy.getIframeBody().find("img").invoke('outerWidth').should('be.gt', 400);
+    });
+
+    it("resizes image within page viewport with layout set to fitWidth", () => {
+      phonePost("initInteractive", {
+        mode: "runtime",
+        authoredState: authoredStateSample
+      });
+      cy.viewport(400, 600);
+      cy.getIframeBody().find(".runtime--imageContainer--question-int").invoke('outerWidth').should('be.lt', 400);
+      cy.getIframeBody().find("img").invoke('outerWidth').should('be.lt', 400);
+    });
+
+    it("renders a small image at original size when layout set to originalDimensions", () => {
+      phonePost("initInteractive", {
+        mode: "runtime",
+        authoredState: { ...authoredStateSample, layout: "originalDimensions" }
+      });
+      cy.getIframeBody().find("img").invoke('outerWidth').should('be.lt', 400);
     });
   });
+
 
   context("Authoring view", () => {
     it("handles pre-existing authored state", () => {
@@ -63,4 +86,5 @@ context("Test Image interactive", () => {
 
     });
   });
+
 });
