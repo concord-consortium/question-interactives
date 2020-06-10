@@ -9,7 +9,7 @@ import { JSONSchema6 } from "json-schema";
 // Note that format of this metadata is pretty strict. It needs to match LARA and report-service expectations.
 // It can be moved to lara-interactive-api package.
 export interface IAuthoringMetadata {
-  type: "open_response";
+  questionType: "open_response";
   prompt?: string;
   required?: boolean;
 }
@@ -23,7 +23,7 @@ export interface IAuthoredState extends IAuthoringMetadata {
 // Note that format of this metadata is pretty strict. It needs to match LARA and report-service expectations.
 // It can be moved to lara-interactive-api package.
 export interface IRuntimeMetadata {
-  type: "open_response_answer",
+  answerType: "open_response_answer";
   answerText?: string;
   submitted?: boolean;
 }
@@ -38,7 +38,7 @@ const baseAuthoringProps = {
         type: "number",
         default: 1
       },
-      type: {
+      questionType: {
         type: "string",
         default: "open_response"
       },
@@ -65,7 +65,7 @@ const baseAuthoringProps = {
     version: {
       "ui:widget": "hidden"
     },
-    type: {
+    questionType: {
       "ui:widget": "hidden"
     },
     prompt: {

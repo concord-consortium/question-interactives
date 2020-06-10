@@ -16,7 +16,7 @@ export interface IChoice {
 // Note that format of this metadata is pretty strict. It needs to match LARA and report-service expectations.
 // It can be moved to lara-interactive-api package.
 export interface IAuthoringMetadata {
-  type: "multiple_choice";
+  questionType: "multiple_choice";
   prompt?: string;
   required?: boolean;
   choices: IChoice[];
@@ -31,7 +31,7 @@ export interface IAuthoredState extends IAuthoringMetadata {
 // Note that format of this metadata is pretty strict. It needs to match LARA and report-service expectations.
 // It can be moved to lara-interactive-api package.
 export interface IRuntimeMetadata {
-  type: "multiple_choice_answer",
+  answerType: "multiple_choice_answer",
   selectedChoiceIds: string[];
   submitted?: boolean;
 }
@@ -46,7 +46,7 @@ export const baseAuthoringProps = {
         type: "number",
         default: 1
       },
-      type: {
+      questionType: {
         type: "string",
         default: "multiple_choice"
       },
@@ -113,7 +113,7 @@ export const baseAuthoringProps = {
     version: {
       "ui:widget": "hidden"
     },
-    type: {
+    questionType: {
       "ui:widget": "hidden"
     },
     prompt: {

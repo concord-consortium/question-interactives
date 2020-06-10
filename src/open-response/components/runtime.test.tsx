@@ -5,7 +5,7 @@ import { IAuthoredState, IInteractiveState } from "./app";
 
 const authoredState = {
   version: 1,
-  type: "open_response",
+  questionType: "open_response",
   prompt: "Test prompt",
   hint: "hint",
   required: false,
@@ -13,8 +13,8 @@ const authoredState = {
 } as IAuthoredState;
 
 const interactiveState = {
-  type: "open_response_answer",
-  answer: "Test answer"
+  answerType: "open_response_answer",
+  answerText: "Test answer",
 } as IInteractiveState;
 
 describe("Runtime", () => {
@@ -26,7 +26,7 @@ describe("Runtime", () => {
 
   it("handles passed interactiveState", () => {
     const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} />);
-    expect(wrapper.find("textarea").props().value).toEqual(interactiveState.answer);
+    expect(wrapper.find("textarea").props().value).toEqual(interactiveState.answerText);
   });
 
   it("calls setInteractiveState when user provides an answer", () => {
@@ -34,7 +34,7 @@ describe("Runtime", () => {
     const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} />);
     wrapper.find("textarea").simulate("change", { target: { value: "new answer" } });
     const newState = setState.mock.calls[0][0](interactiveState);
-    expect(newState).toEqual({type: "open_response_answer", answer: "new answer"});
+    expect(newState).toEqual({answerType: "open_response_answer", answerText: "new answer"});
   });
 
   describe("report mode", () => {
@@ -46,7 +46,7 @@ describe("Runtime", () => {
 
     it("handles passed interactiveState", () => {
       const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} report={true} />);
-      expect(wrapper.find("textarea").props().value).toEqual(interactiveState.answer);
+      expect(wrapper.find("textarea").props().value).toEqual(interactiveState.answerText);
     });
 
     it("never calls setInteractiveState when user selects an answer", () => {

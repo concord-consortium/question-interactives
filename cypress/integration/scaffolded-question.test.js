@@ -29,7 +29,8 @@ context("Test open response interactive", () => {
           currentSubinteractiveId: "int1",
           subinteractiveStates: {
             int1: {
-              answer: "Subquestion response"
+              answerType: "open_response_answer",
+              answerText: "Subquestion response"
             }
           }
         }
@@ -72,10 +73,11 @@ context("Test open response interactive", () => {
       cy.getNestedIframeBody().find("textarea").type("Test subquestion answer");
       getAndClearLastPhoneMessage((state) => {
         expect(state).eql({
+          answerType: "interactive_state",
           subinteractiveStates: {
             int1: {
-              type: "open_response_answer",
-              answer: "Test subquestion answer"
+              answerType: "open_response_answer",
+              answerText: "Test subquestion answer"
             }
           }
         });
@@ -224,7 +226,8 @@ context("Test open response interactive", () => {
           currentSubinteractiveId: "int1",
           subinteractiveStates: {
             int1: {
-              answer: "Subquestion response"
+              answerType: "open_response_answer",
+              answerText: "Subquestion response"
             }
           }
         }

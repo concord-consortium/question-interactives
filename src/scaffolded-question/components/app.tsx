@@ -10,7 +10,7 @@ import { IframeAuthoring } from "./iframe-authoring";
 // Note that format of this metadata is pretty strict. It needs to match LARA and report-service expectations.
 // It can be moved to lara-interactive-api package.
 export interface IAuthoringMetadata {
-  type: "interactive";
+  questionType: "iframe_interactive";
   prompt?: string;
   required?: boolean;
 }
@@ -28,7 +28,7 @@ export interface IAuthoredState extends IAuthoringMetadata {
 // Note that format of this metadata is pretty strict. It needs to match LARA and report-service expectations.
 // It can be moved to lara-interactive-api package.
 export interface IRuntimeMetadata {
-  type: "interactive_state",
+  answerType: "interactive_state",
   answerText?: string;
 }
 
@@ -48,9 +48,9 @@ const baseAuthoringProps = {
         type: "number",
         default: 1
       },
-      type: {
+      questionType: {
         type: "string",
-        default: "interactive"
+        default: "iframe_interactive"
       },
       prompt: {
         title: "Prompt",
@@ -89,7 +89,7 @@ const baseAuthoringProps = {
     version: {
       "ui:widget": "hidden"
     },
-    type: {
+    questionType: {
       "ui:widget": "hidden"
     },
     prompt: {
