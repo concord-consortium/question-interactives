@@ -22,8 +22,8 @@ describe("Runtime", () => {
   it("renders prompt, extra instructions and choices", () => {
     const wrapper = shallow(<Runtime authoredState={authoredState} />);
     expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.prompt!));
-    expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[0].content));
-    expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[1].content));
+    expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[0].content!));
+    expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[1].content!));
   });
 
   it("renders radio buttons or checkboxes depending on multipleAnswers property", () => {
@@ -69,8 +69,8 @@ describe("Runtime", () => {
     it("renders prompt, extra instructions and *disabled* choices", () => {
       const wrapper = shallow(<Runtime authoredState={authoredState} report={true} />);
       expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.prompt!));
-      expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[0].content));
-      expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[1].content));
+      expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[0].content!));
+      expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[1].content!));
 
       expect(wrapper.find("input[value='id1']").props().disabled).toEqual(true);
       expect(wrapper.find("input[value='id2']").props().disabled).toEqual(true);

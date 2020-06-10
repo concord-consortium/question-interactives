@@ -2,33 +2,18 @@ import React from "react";
 import { BaseQuestionApp } from "../../shared/components/base-question-app";
 import { Runtime } from "./runtime";
 import { JSONSchema6 } from "json-schema";
+import { IAuthoringOpenResponseMetadata, IRuntimeOpenResponseMetadata } from "@concord-consortium/lara-interactive-api";
 
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
 
-// Note that format of this metadata is pretty strict. It needs to match LARA and report-service expectations.
-// It can be moved to lara-interactive-api package.
-export interface IAuthoringMetadata {
-  questionType: "open_response";
-  prompt?: string;
-  required?: boolean;
-}
-
-export interface IAuthoredState extends IAuthoringMetadata {
+export interface IAuthoredState extends IAuthoringOpenResponseMetadata {
   version: number;
   defaultAnswer?: string;
   hint?: string;
 }
 
-// Note that format of this metadata is pretty strict. It needs to match LARA and report-service expectations.
-// It can be moved to lara-interactive-api package.
-export interface IRuntimeMetadata {
-  answerType: "open_response_answer";
-  answerText?: string;
-  submitted?: boolean;
-}
-
-export interface IInteractiveState extends IRuntimeMetadata {}
+export interface IInteractiveState extends IRuntimeOpenResponseMetadata {}
 
 const baseAuthoringProps = {
   schema: {

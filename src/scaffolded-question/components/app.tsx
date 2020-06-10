@@ -3,19 +3,14 @@ import { JSONSchema6 } from "json-schema";
 import { BaseQuestionApp } from "../../shared/components/base-question-app";
 import { Runtime } from "./runtime";
 import { IframeAuthoring } from "./iframe-authoring";
+import {
+  IAuthoringInteractiveMetadata, IRuntimeInteractiveMetadata
+} from "@concord-consortium/lara-interactive-api";
 
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
 
-// Note that format of this metadata is pretty strict. It needs to match LARA and report-service expectations.
-// It can be moved to lara-interactive-api package.
-export interface IAuthoringMetadata {
-  questionType: "iframe_interactive";
-  prompt?: string;
-  required?: boolean;
-}
-
-export interface IAuthoredState extends IAuthoringMetadata {
+export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   version: number;
   hint?: string;
   subinteractives?: {
@@ -25,14 +20,7 @@ export interface IAuthoredState extends IAuthoringMetadata {
   }[]
 }
 
-// Note that format of this metadata is pretty strict. It needs to match LARA and report-service expectations.
-// It can be moved to lara-interactive-api package.
-export interface IRuntimeMetadata {
-  answerType: "interactive_state",
-  answerText?: string;
-}
-
-export interface IInteractiveState extends IRuntimeMetadata {
+export interface IInteractiveState extends IRuntimeInteractiveMetadata {
   subinteractiveStates: {
     [id: string]: any;
   },

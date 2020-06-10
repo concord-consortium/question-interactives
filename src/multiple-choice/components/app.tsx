@@ -3,40 +3,22 @@ import { JSONSchema6 } from "json-schema";
 import { BaseQuestionApp } from "../../shared/components/base-question-app";
 import { Runtime } from "./runtime";
 import { v4 as uuidv4 } from "uuid";
+import {
+  IAuthoringMultipleChoiceChoiceMetadata, IAuthoringMultipleChoiceMetadata, IRuntimeMultipleChoiceMetadata,
+} from "@concord-consortium/lara-interactive-api";
 
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
 
-export interface IChoice {
-  id: string;
-  content: string;
-  correct?: boolean;
-}
+export interface IChoice extends IAuthoringMultipleChoiceChoiceMetadata {}
 
-// Note that format of this metadata is pretty strict. It needs to match LARA and report-service expectations.
-// It can be moved to lara-interactive-api package.
-export interface IAuthoringMetadata {
-  questionType: "multiple_choice";
-  prompt?: string;
-  required?: boolean;
-  choices: IChoice[];
-}
-
-export interface IAuthoredState extends IAuthoringMetadata {
+export interface IAuthoredState extends IAuthoringMultipleChoiceMetadata {
   version: number;
   hint?: string;
   multipleAnswers?: boolean;
 }
 
-// Note that format of this metadata is pretty strict. It needs to match LARA and report-service expectations.
-// It can be moved to lara-interactive-api package.
-export interface IRuntimeMetadata {
-  answerType: "multiple_choice_answer",
-  selectedChoiceIds: string[];
-  submitted?: boolean;
-}
-
-export interface IInteractiveState extends  IRuntimeMetadata{}
+export interface IInteractiveState extends IRuntimeMultipleChoiceMetadata {}
 
 export const baseAuthoringProps = {
   schema: {
