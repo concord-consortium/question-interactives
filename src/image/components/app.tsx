@@ -16,7 +16,7 @@ export interface IAuthoredState {
   creditLink?: string;
   creditLinkDisplayText?: string;
   allowLightbox?: boolean;
-  layout?: "fitWidth" | "fitHeight" | "originalDimensions";
+  scaling?: "fitWidth" | "fitHeight" | "originalDimensions";
 }
 
 export interface IInteractiveState {
@@ -64,28 +64,28 @@ const baseAuthoringProps = {
         title: "Allow lightbox",
         type: "boolean"
       },
-      layout: {
-        title: "Choose a layout style for the image",
+      scaling: {
+        title: "Choose a scaling style for the image",
         type: "string",
         default: "fitWidth",
         oneOf: [
           {
             "type": "string",
-            "title": "Fit Width",
+            "title": "Fit Width - Image will be scaled to use all available width",
             "enum": [
               "fitWidth"
             ]
           },
           {
             "type": "string",
-            "title": "Fit Height",
+            "title": "Fit Height - Image will be scaled down if it is too long to be viewed all at once without scrolling",
             "enum": [
               "fitHeight"
             ]
           },
           {
             "type": "string",
-            "title": "Original Dimensions",
+            "title": "Original Dimensions - Very small images will not be enlarged. Allow a tall image to be viewed with scrolling",
             "enum": [
               "originalDimensions"
             ]
@@ -127,7 +127,7 @@ const baseAuthoringProps = {
     allowLightbox: {
       "ui:help": "Allow image to be shown in lightbox"
     },
-    layout: {
+    scaling: {
       "ui:widget": "radio",
       "ui:help": "Tall images may need to use 'Fit Height' to ensure all the image is visible on the page. Small images may prefer 'Original Dimensions' so that the image does not appear over-scaled"
     }
@@ -141,5 +141,6 @@ export const App = () => (
     Runtime={Runtime}
     baseAuthoringProps={baseAuthoringProps}
     isAnswered={isAnswered}
+    disableAutoHeight={true}
   />
 );

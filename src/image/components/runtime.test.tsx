@@ -10,8 +10,7 @@ const authoredState = {
   credit: "Copyright Concord Consortium",
   creditLink: "https://concord.org",
   creditLinkDisplayText: "Concord.org",
-  allowLightbox: true,
-  fullWidth: true
+  allowLightbox: true
 };
 
 const interactiveState = {

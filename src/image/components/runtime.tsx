@@ -20,7 +20,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const getImageLayout = () => {
-    switch (authoredState.layout) {
+    switch (authoredState.scaling) {
       case "fitWidth":
         return css.fitWidth;
       case "fitHeight":
@@ -31,14 +31,12 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const getOriginalImageSize = (e: any) => {
-    if (authoredState.layout === "fitHeight") {
-      const aspectRatio = e.target.naturalWidth / e.target.naturalHeight;
-      setSupportedFeatures({
-        interactiveState: true,
-        authoredState: true,
-        aspectRatio
-      });
-    }
+    const aspectRatio = e.target.naturalWidth / e.target.naturalHeight;
+    setSupportedFeatures({
+      interactiveState: true,
+      authoredState: true,
+      aspectRatio
+    });
   };
 
   return (

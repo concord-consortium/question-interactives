@@ -11,7 +11,7 @@ const authoredStateSample = {
   creditLink: "https://concord.org",
   creditLinkDisplayText: "Concord.org",
   allowLightbox: true,
-  layout: "fitWidth"
+  scaling: "fitWidth"
 };
 
 context("Test Image interactive", () => {
@@ -50,7 +50,7 @@ context("Test Image interactive", () => {
     it("renders a small image at original size when layout set to originalDimensions", () => {
       phonePost("initInteractive", {
         mode: "runtime",
-        authoredState: { ...authoredStateSample, layout: "originalDimensions" }
+        authoredState: { ...authoredStateSample, scaling: "originalDimensions" }
       });
       cy.getIframeBody().find("img").invoke('outerWidth').should('be.lt', 400);
     });
