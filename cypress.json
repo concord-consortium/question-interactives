@@ -1,5 +1,5 @@
 {
-  "baseUrl": "http://localhost:8080",
+  "baseUrl": "http://localhost:8081",
   "video": false,
   "fixturesFolder": false,
   "defaultCommandTimeout": 8000,
