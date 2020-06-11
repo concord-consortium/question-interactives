@@ -10,7 +10,8 @@ const authoredState = {
   choices: [
     {id: "id1", content: "Choice A"},
     {id: "id2", content: "Choice B"}
-  ]
+  ],
+  layout: "vertical",
 } as IAuthoredState;
 
 const interactiveState = {

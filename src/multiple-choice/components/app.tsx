@@ -12,10 +12,13 @@ import {
 
 export interface IChoice extends IAuthoringMultipleChoiceChoiceMetadata {}
 
+export type ILayout = "vertical" | "horizontal" | "likert" | "dropdown";
+
 export interface IAuthoredState extends IAuthoringMultipleChoiceMetadata {
   version: number;
   hint?: string;
   multipleAnswers?: boolean;
+  layout?: ILayout;
   choices: IChoice[];
 }
 
@@ -49,6 +52,23 @@ export const baseAuthoringProps = {
         type: "boolean",
         title: "Allow multiple answers",
         default: false
+      },
+      layout: {
+        title: "Layout",
+        type: "string",
+        default: "vertical",
+        enum: [
+          "vertical",
+          "horizontal",
+          "likert",
+          "dropdown"
+        ],
+        enumNames: [
+          "Vertical",
+          "Horizontal",
+          "Likert",
+          "Dropdown"
+        ]
       },
       choices: {
         type: "array",
