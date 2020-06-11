@@ -73,7 +73,7 @@ context("Test Image interactive", () => {
       app.should("include.text", "Credit Link");
       app.should("include.text", "Credit Link Display Text");
       app.should("include.text", "Allow lightbox");
-      app.should("include.text", "Choose a layout style for the image");
+      app.should("include.text", "Choose a scaling style for the image");
 
       cy.getIframeBody().find("#root_url").should("have.value", authoredStateSample.url);
       cy.getIframeBody().find("#root_highResUrl").should("have.value", authoredStateSample.highResUrl);
