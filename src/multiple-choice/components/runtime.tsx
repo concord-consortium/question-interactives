@@ -1,4 +1,5 @@
 import React from "react";
+import { v4 as uuidv4 } from "uuid";
 import { IAuthoredState, IChoice, IInteractiveState } from "./app";
 import css from "./runtime.scss";
 
@@ -8,6 +9,8 @@ interface IProps {
   setInteractiveState?: (updateFunc: (prevState: IInteractiveState | null) => IInteractiveState) => void;
   report?: boolean;
 }
+
+const baseElementId = uuidv4();     // DOM id necessary to associate inputs and label-for
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const type = authoredState.multipleAnswers ? "checkbox" : "radio";
@@ -19,7 +22,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     selectedChoiceIds = [];
   }
 
-  const handleChange = (choiceId: string, event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleRadioCheckChange = (choiceId: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const checked = event.target.checked;
     let newChoices: string[];
     if (!authoredState.multipleAnswers) {
@@ -37,6 +40,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       }
     }
     setInteractiveState?.(prevState => ({...prevState, answerType: "multiple_choice_answer", selectedChoiceIds: newChoices }));
+  };
+
+  const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+    const newChoice = [ event.target.value ];
+    setInteractiveState?.(prevState => ({...prevState, answerType: "multiple_choice_answer", selectedChoiceIds: newChoice }));
   };
 
   const getChoiceClass = (choice: IChoice, checked: boolean) => {
@@ -59,27 +67,52 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
 
+  const renderRadioChecks = () => {
+    return authoredState.choices && authoredState.choices.map(choice => {
+      const checked = selectedChoiceIds.indexOf(choice.id) !== -1;
+      const inputId = baseElementId + choice.id;
+      return (
+        <div key={choice.id} className={getChoiceClass(choice, checked)}>
+          <input
+            type={type}
+            value={choice.id}
+            id={inputId}
+            name="answer"
+            checked={checked}
+            onChange={readOnly ? undefined : handleRadioCheckChange.bind(null, choice.id)}
+            readOnly={readOnly}
+            disabled={readOnly}
+          />
+          <label htmlFor={inputId}>
+            {choice.content}
+          </label>
+        </div>
+      );
+    });
+  }
+
+  const renderSelect = () => {
+    return (
+      <select value={selectedChoiceIds[0]} onChange={handleSelectChange} disabled={readOnly}>
+        {
+          authoredState.choices && authoredState.choices.map(choice =>
+            <option key={choice.id} value={choice.id}>{ choice.content }</option>
+          )
+        }
+      </select>
+    );
+  }
+
+  const layout = authoredState.layout || "vertical";
+
   return (
     <div>
-      { authoredState.prompt && <div>{ authoredState.prompt }</div> }
-      <div>
+      { authoredState.prompt && <div className={css.prompt}>{ authoredState.prompt }</div> }
+      <div className={css.choices + " " + css[layout]} data-cy="choices-container">
         {
-          authoredState.choices && authoredState.choices.map(choice => {
-            const checked = selectedChoiceIds.indexOf(choice.id) !== -1;
-            return (
-              <div key={choice.id} className={getChoiceClass(choice, checked)}>
-                <input
-                  type={type}
-                  value={choice.id}
-                  name="answer"
-                  checked={checked}
-                  onChange={readOnly ? undefined : handleChange.bind(null, choice.id)}
-                  readOnly={readOnly}
-                  disabled={readOnly}
-                /> {choice.content}
-              </div>
-            );
-          })
+          authoredState.layout !== "dropdown"
+          ? renderRadioChecks()
+          : renderSelect()
         }
       </div>
     </div>

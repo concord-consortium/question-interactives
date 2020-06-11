@@ -1,5 +1,52 @@
 @import "../../shared/styles/helpers";
 
+.prompt {
+  padding-bottom: 5px;
+}
+
+.choices {
+
+  &.horizontal {
+    display: flex;
+    flex-wrap: wrap;
+
+    div {
+      display: flex;
+      margin-right: 25px;
+    }
+  }
+
+  &.likert {
+    display: grid;
+    grid-template-columns: repeat( auto-fit, minmax(0px, 1fr) );
+
+    div {
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+
+      input[type=radio], input[type=checkbox] {
+        margin: 5px 0;
+      }
+
+      label {
+        margin: 5px 0 0 0;
+      }
+    }
+  }
+
+  &.dropdown {
+    select {
+      margin: 5px;
+      padding: 2px;
+    }
+  }
+}
+
+label {
+  font-weight: normal;
+}
+
 .correctChoice {
   color: $correctColor;
 }
