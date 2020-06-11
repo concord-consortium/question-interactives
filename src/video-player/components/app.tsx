@@ -2,13 +2,13 @@ import React, { useEffect } from "react";
 import { JSONSchema6 } from "json-schema";
 import { BaseQuestionApp } from "../../shared/components/base-question-app";
 import { Runtime } from "./runtime";
-
+import { IAuthoringInteractiveMetadata, IRuntimeInteractiveMetadata } from "@concord-consortium/lara-interactive-api";
 import Shutterbug from "shutterbug";
 
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
 
-export interface IAuthoredState {
+export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   version: number;
   videoUrl?: string;
   captionUrl?: string;
@@ -22,11 +22,12 @@ export interface IAuthoredState {
   required?: boolean;
 }
 
-export interface IInteractiveState {
+export interface IInteractiveState extends IRuntimeInteractiveMetadata {
   percentageViewed: number;
   lastViewedTimestamp: number;
   submitted?: boolean;
 }
+
 export const baseAuthoringProps = {
   schema: {
     type: "object",
@@ -34,6 +35,10 @@ export const baseAuthoringProps = {
       version: {
         type: "number",
         default: 1
+      },
+      questionType: {
+        type: "string",
+        default: "iframe_interactive",
       },
       videoUrl: {
         title: "Video Url",
@@ -76,6 +81,9 @@ export const baseAuthoringProps = {
 
   uiSchema: {
     version: {
+      "ui:widget": "hidden"
+    },
+    questionType: {
       "ui:widget": "hidden"
     },
     videoUrl: {

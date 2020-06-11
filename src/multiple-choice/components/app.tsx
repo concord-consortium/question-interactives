@@ -16,6 +16,7 @@ export interface IAuthoredState extends IAuthoringMultipleChoiceMetadata {
   version: number;
   hint?: string;
   multipleAnswers?: boolean;
+  choices: IChoice[];
 }
 
 export interface IInteractiveState extends IRuntimeMultipleChoiceMetadata {}
