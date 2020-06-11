@@ -23,8 +23,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     switch (authoredState.scaling) {
       case "fitWidth":
         return css.fitWidth;
-      case "fitHeight":
-        return css.fitHeight;
       case "originalDimensions":
         return;
     }

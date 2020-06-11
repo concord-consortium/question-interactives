@@ -16,7 +16,7 @@ export interface IAuthoredState {
   creditLink?: string;
   creditLinkDisplayText?: string;
   allowLightbox?: boolean;
-  scaling?: "fitWidth" | "fitHeight" | "originalDimensions";
+  scaling?: "fitWidth" | "originalDimensions";
 }
 
 export interface IInteractiveState {
@@ -78,14 +78,7 @@ const baseAuthoringProps = {
           },
           {
             "type": "string",
-            "title": "Fit Height - Image will be scaled down if it is too long to be viewed all at once without scrolling",
-            "enum": [
-              "fitHeight"
-            ]
-          },
-          {
-            "type": "string",
-            "title": "Original Dimensions - Very small images will not be enlarged. Allow a tall image to be viewed with scrolling",
+            "title": "Original Dimensions - Very small images will not be enlarged",
             "enum": [
               "originalDimensions"
             ]
@@ -109,7 +102,7 @@ const baseAuthoringProps = {
     },
     altText: {
       "ui:widget": "textarea",
-      "ui:help": "Alt text is the written copy that appears in place of an image on a webpage if the image fails to load on a user's screen. This text helps screen-reading tools describe images to visually impaired readers"
+      "ui:help": "Alt text is the written copy that appears in place of an image on a webpage if the image fails to load on a user's screen. This text enables screen-reading tools to describe images to visually impaired readers, so it is recommended that descriptive text is included for all images."
     },
     caption: {
       "ui:widget": "textarea"
@@ -128,8 +121,7 @@ const baseAuthoringProps = {
       "ui:help": "Allow image to be shown in lightbox"
     },
     scaling: {
-      "ui:widget": "radio",
-      "ui:help": "Tall images may need to use 'Fit Height' to ensure all the image is visible on the page. Small images may prefer 'Original Dimensions' so that the image does not appear over-scaled"
+      "ui:widget": "radio"
     }
   }
 };
