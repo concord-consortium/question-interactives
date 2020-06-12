@@ -48,7 +48,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     const player: videojs.Player = videojs(playerRef.current,
       {
         controls: true,
-        fluid: authoredState.fixedAspectRatio || authoredState.fixedHeight ? false : true
+        fluid: authoredState.fixedAspectRatio || authoredState.fixedHeight ? false : true,
+        // This is a new property not supported by the current types
+        // @ts-ignore
+        crossOrigin: "anonymous"
       }, () => {
         const url = authoredState.videoUrl ? authoredState.videoUrl : "";
         player.src(url);

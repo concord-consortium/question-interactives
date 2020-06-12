@@ -120,6 +120,6 @@
     "resize-observer-polyfill": "^1.5.1",
     "shutterbug": "^1.2.0",
     "uuid": "^8.0.0",
-    "video.js": "^7.7.6"
+    "video.js": "^7.8.0"
   }
 }
