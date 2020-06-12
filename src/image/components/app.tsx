@@ -1,5 +1,5 @@
 import React from "react";
-import { BaseQuestionApp } from "../../shared/components/base-question-app";
+import { BaseApp } from "../../shared/components/base-app";
 import { Runtime } from "./runtime";
 import { JSONSchema6 } from "json-schema";
 
@@ -17,11 +17,6 @@ export interface IAuthoredState {
   creditLinkDisplayText?: string;
   allowLightbox?: boolean;
   scaling?: "fitWidth" | "originalDimensions";
-}
-
-export interface IInteractiveState {
-  viewed: boolean;
-  submitted?: boolean;
 }
 
 const baseAuthoringProps = {
@@ -126,13 +121,11 @@ const baseAuthoringProps = {
   }
 };
 
-const isAnswered = (interactiveState: IInteractiveState) => interactiveState?.viewed;
 
 export const App = () => (
-  <BaseQuestionApp<IAuthoredState, IInteractiveState>
+  <BaseApp<IAuthoredState>
     Runtime={Runtime}
     baseAuthoringProps={baseAuthoringProps}
-    isAnswered={isAnswered}
     disableAutoHeight={true}
   />
 );

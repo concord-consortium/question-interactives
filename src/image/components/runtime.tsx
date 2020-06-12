@@ -1,23 +1,14 @@
-import React, { useEffect, ReactHTMLElement, ReactEventHandler } from "react";
+import React from "react";
 import { IAuthoredState } from "./app";
-import { IInteractiveState } from "./app";
 import { setSupportedFeatures } from "@concord-consortium/lara-interactive-api";
 import css from "./runtime.scss";
 
 interface IProps {
   authoredState: IAuthoredState;
-  interactiveState?: IInteractiveState;
-  setInteractiveState?: (updateFunc: (prevState: IInteractiveState | null) => IInteractiveState) => void;
   report?: boolean;
 }
 
-export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
-  useEffect(() => {
-    updateState();
-  }, []);
-  const updateState = () => {
-    setInteractiveState?.(prevState => ({...prevState, viewed: true }));
-  };
+export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
 
   const getImageLayout = () => {
     switch (authoredState.scaling) {
