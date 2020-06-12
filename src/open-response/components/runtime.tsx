@@ -12,7 +12,7 @@ interface IProps {
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInteractiveState?.(prevState => ({...prevState, response: event.target.value }));
+    setInteractiveState?.(prevState => ({...prevState, answerType: "open_response_answer", answerText: event.target.value }));
   };
 
   return (
@@ -20,7 +20,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       { authoredState.prompt && <div>{ authoredState.prompt }</div> }
       <div>
         <textarea
-          value={interactiveState?.response}
+          value={interactiveState?.answerText}
           onChange={readOnly ? undefined : handleChange}
           readOnly={readOnly}
           disabled={readOnly}

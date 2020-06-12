@@ -3,14 +3,15 @@ import { JSONSchema6 } from "json-schema";
 import { BaseQuestionApp } from "../../shared/components/base-question-app";
 import { Runtime } from "./runtime";
 import { IframeAuthoring } from "./iframe-authoring";
+import {
+  IAuthoringInteractiveMetadata, IRuntimeInteractiveMetadata
+} from "@concord-consortium/lara-interactive-api";
 
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
 
-export interface IAuthoredState {
+export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   version: number;
-  prompt?: string;
-  required?: boolean;
   hint?: string;
   subinteractives?: {
     id: string;
@@ -19,7 +20,7 @@ export interface IAuthoredState {
   }[]
 }
 
-export interface IInteractiveState {
+export interface IInteractiveState extends IRuntimeInteractiveMetadata {
   subinteractiveStates: {
     [id: string]: any;
   },
@@ -34,6 +35,10 @@ const baseAuthoringProps = {
       version: {
         type: "number",
         default: 1
+      },
+      questionType: {
+        type: "string",
+        default: "iframe_interactive"
       },
       prompt: {
         title: "Prompt",
@@ -70,6 +75,9 @@ const baseAuthoringProps = {
 
   uiSchema: {
     version: {
+      "ui:widget": "hidden"
+    },
+    questionType: {
       "ui:widget": "hidden"
     },
     prompt: {

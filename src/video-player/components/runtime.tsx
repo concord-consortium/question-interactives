@@ -106,7 +106,13 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const updateState = () => {
     viewedTimestamp = getViewTime();
     viewedProgress = getViewPercentage();
-    setInteractiveState?.(prevState => ({...prevState, percentageViewed: viewedProgress, lastViewedTimestamp: viewedTimestamp }));
+    setInteractiveState?.(prevState => ({
+      ...prevState,
+      answerType: "interactive_state",
+      answerText: `Percentage viewed: ${viewedProgress}`,
+      percentageViewed: viewedProgress,
+      lastViewedTimestamp: viewedTimestamp
+    }));
   };
 
   const getPoster = () => {

@@ -53,6 +53,8 @@ context("Test fill in the blank interactive", () => {
       cy.getIframeBody().find("input").eq(0).type("Test response");
       getAndClearLastPhoneMessage((state) => {
         expect(state).eql({
+          answerType: "interactive_state",
+          answerText: "Test prompt with [ Test response ] and [  ]",
           blanks: [
             {id: "[blank-1]", response: "Test response"}
           ]

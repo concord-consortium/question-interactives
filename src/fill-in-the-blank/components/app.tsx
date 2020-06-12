@@ -3,6 +3,7 @@ import { FormValidation } from "react-jsonschema-form";
 import { JSONSchema6 } from "json-schema";
 import { BaseQuestionApp } from "../../shared/components/base-question-app";
 import { Runtime } from "./runtime";
+import { IAuthoringInteractiveMetadata, IRuntimeInteractiveMetadata } from "@concord-consortium/lara-interactive-api";
 
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
@@ -16,7 +17,7 @@ export interface IBlankDef {
   matchTerm?: string;
 }
 
-export interface IAuthoredState {
+export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   version: number;
   prompt?: string;
   hint?: string;
@@ -29,7 +30,7 @@ export interface IFilledBlank {
   response: string;
 }
 
-export interface IInteractiveState {
+export interface IInteractiveState extends IRuntimeInteractiveMetadata {
   blanks: IFilledBlank[];
   submitted?: boolean;
 }
@@ -41,6 +42,10 @@ export const baseAuthoringProps = {
       version: {
         type: "number",
         default: 1
+      },
+      questionType: {
+        type: "string",
+        default: "iframe_interactive"
       },
       prompt: {
         title: "Prompt. Provide sentence with one or more blanks specified with [blank-<ID>], for example [blank-1], [blank-test].",
@@ -81,6 +86,9 @@ export const baseAuthoringProps = {
 
   uiSchema: {
     version: {
+      "ui:widget": "hidden"
+    },
+    questionType: {
       "ui:widget": "hidden"
     },
     prompt: {

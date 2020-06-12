@@ -5,12 +5,14 @@ import { useRequiredQuestion } from "../hooks/use-required-question";
 import { BaseAuthoring, IBaseAuthoringProps } from "./base-authoring";
 import { SubmitButton } from "./submit-button";
 import { LockedInfo } from "./locked-info";
-import { setSupportedFeatures, useAuthoredState, useInitMessage, useInteractiveState } from "@concord-consortium/lara-interactive-api";
+import {
+  IAuthoringMetadata, IRuntimeMetadata, setSupportedFeatures, useAuthoredState, useInitMessage, useInteractiveState
+} from "@concord-consortium/lara-interactive-api";
+import { IBaseAuthoredState, UpdateFunc, IAuthoringComponentProps, IRuntimeComponentProps } from "./base-app";
 
-import css from "./base-question-app.scss";
+import css from "./base-app.scss";
 
-interface IBaseQuestionAuthoredState {
-  version: number;
+interface IBaseQuestionAuthoredState extends IBaseAuthoredState {
   hint?: string;
   required?: boolean;
 }
@@ -19,15 +21,7 @@ interface IBaseQuestionInteractiveState {
   submitted?: boolean;
 }
 
-type UpdateFunc<State> = (prevState: State | null) => State;
-
-interface IAuthoringComponentProps<IAuthoredState> {
-  authoredState: IAuthoredState | null,
-  setAuthoredState?: (updateFunc: UpdateFunc<IAuthoredState>) => void;
-}
-
-interface IRuntimeComponentProps<IAuthoredState, IInteractiveState> {
-  authoredState: IAuthoredState,
+interface IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> extends IRuntimeComponentProps<IAuthoredState> {
   interactiveState?: IInteractiveState | null,
   setInteractiveState?: (updateFunc: UpdateFunc<IInteractiveState>) => void;
   report?: boolean;
@@ -37,16 +31,17 @@ interface IProps<IAuthoredState, IInteractiveState> {
   // Question can provide either fully custom Authoring component or use BaseAuthoring (that uses react-jsonschema-form).
   Authoring?: React.FC<IAuthoringComponentProps<IAuthoredState>>;
   baseAuthoringProps?: Omit<IBaseAuthoringProps<IAuthoredState>, "authoredState" | "setAuthoredState">;
-  Runtime: React.FC<IRuntimeComponentProps<IAuthoredState, IInteractiveState>>;
+  Runtime: React.FC<IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState>>;
   disableAutoHeight?: boolean;
   disableSubmitBtnRendering?: boolean;
   // Note that isAnswered is required when `disableSubmitBtnRendering` is false.
   isAnswered?: (state: IInteractiveState | null) => boolean;
 }
 
-export const BaseQuestionApp = <IAuthoredState extends IBaseQuestionAuthoredState, IInteractiveState extends IBaseQuestionInteractiveState>(
-  { Authoring, baseAuthoringProps, Runtime, isAnswered, disableAutoHeight, disableSubmitBtnRendering }: IProps<IAuthoredState, IInteractiveState>
-) => {
+// BaseApp for interactives that save interactive state and show in the report. E.g. open response, multiple choice.
+export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBaseQuestionAuthoredState,
+  IInteractiveState extends IRuntimeMetadata & IBaseQuestionInteractiveState>(props: IProps<IAuthoredState, IInteractiveState>) => {
+  const { Authoring, baseAuthoringProps, Runtime, isAnswered, disableAutoHeight, disableSubmitBtnRendering } = props;
   const container = useRef<HTMLDivElement>(null);
   const { authoredState, setAuthoredState } = useAuthoredState<IAuthoredState>();
   const { interactiveState, setInteractiveState } = useInteractiveState<IInteractiveState>();

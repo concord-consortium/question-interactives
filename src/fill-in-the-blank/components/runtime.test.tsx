@@ -1,9 +1,11 @@
 import React from "react";
 import { shallow } from "enzyme";
-import { insertInputs, Runtime } from "./runtime";
+import { insertInputs, renderAnswerText, Runtime } from "./runtime";
+import { IAuthoredState, IInteractiveState } from "./app";
 
-const authoredState = {
+const authoredState: IAuthoredState = {
   version: 1,
+  questionType: "iframe_interactive",
   prompt: "Test prompt with [blank-1] and [blank-2].",
   blanks: [
     {id: "[blank-1]", size: 10},
@@ -11,7 +13,8 @@ const authoredState = {
   ]
 };
 
-const interactiveState = {
+const interactiveState: IInteractiveState = {
+  answerType: "interactive_state",
   blanks: [
     {id: "[blank-1]", response: "Test response"}
   ]
@@ -38,6 +41,8 @@ describe("Runtime", () => {
     wrapper.find("input").at(1).simulate("change", { target: { value: "New response" } });
     const newState = setState.mock.calls[0][0](interactiveState);
     expect(newState).toEqual({
+      answerType: "interactive_state",
+      answerText: "Test prompt with [ Test response ] and [ New response ].",
       blanks: [
         {id: "[blank-1]", response: "Test response"},
         {id: "[blank-2]", response: "New response"}
@@ -72,7 +77,7 @@ describe("Runtime", () => {
 
 describe("insertInputs helper", () => {
   it("returns array of strings and input field descriptions", () => {
-    const result = insertInputs(authoredState.prompt, authoredState.blanks, interactiveState.blanks);
+    const result = insertInputs(authoredState.prompt!, authoredState.blanks!, interactiveState.blanks);
     expect(result).toEqual([
       "Test prompt with ",
       {id: "[blank-1]", size: 10, matchTerm: undefined, value: "Test response"},
@@ -82,3 +87,24 @@ describe("insertInputs helper", () => {
     ])
   });
 });
+
+describe("insertInputs helper", () => {
+  it("returns array of strings and input field descriptions", () => {
+    const result = insertInputs(authoredState.prompt!, authoredState.blanks!, interactiveState.blanks);
+    expect(result).toEqual([
+      "Test prompt with ",
+      {id: "[blank-1]", size: 10, matchTerm: undefined, value: "Test response"},
+      " and ",
+      {id: "[blank-2]", size: 20, matchTerm: "Expected answer", value: ""},
+      "."
+    ])
+  });
+});
+
+describe("renderAnswerText helper", () => {
+  it("returns array of strings and input field descriptions", () => {
+    const result = renderAnswerText(authoredState.prompt!, authoredState.blanks!, interactiveState.blanks);
+    expect(result).toEqual("Test prompt with [ Test response ] and [  ].");
+  });
+});
+

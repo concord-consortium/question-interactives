@@ -38,11 +38,24 @@ export const insertInputs = (prompt: string, blanks: IBlankDef[], userResponses:
   return result;
 };
 
+export const renderAnswerText = (prompt: string, blanks: IBlankDef[], userResponses: IFilledBlank[]) => {
+  return insertInputs(prompt, blanks, userResponses).map(stringOrObj => {
+    if (typeof stringOrObj === "object") {
+      return `[ ${stringOrObj.value || ""} ]`;
+    }
+    return stringOrObj;
+  }).join("");
+};
+
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
 
   const handleChange = (blankId: string, event: React.ChangeEvent<HTMLInputElement>) => {
     setInteractiveState?.(prevState => {
-      const newState = {...prevState, blanks: prevState?.blanks?.slice() || [] };
+      const newState: IInteractiveState = {
+        ...prevState,
+        answerType: "interactive_state",
+        blanks: prevState?.blanks?.slice() || []
+      };
       const newResponse = {id: blankId, response: event.target.value };
       const existingResponse = newState.blanks.find(b => b.id === blankId);
       if (existingResponse) {
@@ -51,6 +64,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       } else {
         newState.blanks.push(newResponse);
       }
+      newState.answerText = renderAnswerText(authoredState.prompt || "", authoredState.blanks || [], newState.blanks);
       return newState;
     });
   };

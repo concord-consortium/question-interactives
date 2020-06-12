@@ -42,7 +42,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const handleNewInteractiveState = (interactiveId: string, newInteractiveState: any) => {
     setInteractiveState?.((prevState: IInteractiveState) => {
       const updatedStates = {...prevState?.subinteractiveStates, [interactiveId]: newInteractiveState };
-      return {...prevState, subinteractiveStates: updatedStates };
+      return {...prevState, answerType: "interactive_state", subinteractiveStates: updatedStates };
     });
   };
 
@@ -50,7 +50,12 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     if (currentSubintIndex < subinteractives.length - 1) {
       setInteractiveState?.((prevState: IInteractiveState) => {
         const newInteractive = subinteractives[currentSubintIndex + 1];
-        return {...prevState, currentSubinteractiveId: newInteractive.id };
+        return {
+          ...prevState,
+          answerType: "interactive_state",
+          currentSubinteractiveId: newInteractive.id,
+          answerText: `Hint has been used ${ currentSubintIndex + 1 } times.`
+        };
       });
     }
   };
