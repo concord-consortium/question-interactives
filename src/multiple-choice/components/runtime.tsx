@@ -106,8 +106,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const layout = authoredState.layout || "vertical";
 
   return (
-    <div>
-      { authoredState.prompt && <div className={css.prompt}>{ authoredState.prompt }</div> }
+    <fieldset>
+      { authoredState.prompt && <legend className={css.prompt + " list-unstyled"}>{ authoredState.prompt }</legend> }
       <div className={css.choices + " " + css[layout]} data-cy="choices-container">
         {
           authoredState.layout !== "dropdown"
@@ -115,6 +115,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           : renderSelect()
         }
       </div>
-    </div>
+    </fieldset>
   );
 };

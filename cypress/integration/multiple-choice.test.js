@@ -27,7 +27,7 @@ context("Test multiple-choice interactive", () => {
         expect(hint).eql({ text: "Hint" });
       });
 
-      cy.getIframeBody().find("#app").should("include.text", "Test prompt");
+      cy.getIframeBody().find("#app fieldset legend").should("include.text", "Test prompt");
       cy.getIframeBody().find("#app").should("include.text", "choice A");
       cy.getIframeBody().find("#app").should("include.text", "choice B");
 
