@@ -1,17 +1,28 @@
 @import "../styles/helpers";
 
 .locked {
-  // Based on LARA styles.
-  color: #525252;
-  font-weight: lighter;
-  background-color: #ededed;
-  width: 100%;
-  padding: 4px;
-  font-size: 14pt;
-  margin-top: 10px;
 
-  // Icon.
-  svg {
-    fill: #525252;
+  .header {
+    color: #525252;
+    font-weight: lighter;
+    background-color: #ededed;
+    width: 100%;
+    padding: 4px;
+    font-size: 14pt;
+    margin-top: 10px;
+
+    // Icon.
+    svg {
+      fill: #525252;
+    }
+  }
+
+  .feedback {
+    display: block;
+    width: 100%;
+    margin: 0px;
+    border: 1px solid #ededed;
+    border-radius: 0 0 13px 13px;
+    padding: 1em;
   }
 }
