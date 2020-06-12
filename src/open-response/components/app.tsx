@@ -35,6 +35,10 @@ const baseAuthoringProps = {
         title: "Required",
         type: "boolean"
       },
+      predictionFeedback: {
+        title: "Prediction feedback (optional)",
+        type: "string"
+      },
       hint: {
         title: "Hint",
         type: "string"

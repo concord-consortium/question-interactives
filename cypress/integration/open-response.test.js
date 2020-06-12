@@ -51,6 +51,39 @@ context("Test open response interactive", () => {
     });
   });
 
+  context("Submit button", () => {
+
+    it("renders a Submit button and shows feedback when Submit is clicked", () => {
+      phonePost("initInteractive", {
+        mode: "runtime",
+        authoredState: {
+          version: 1,
+          prompt: "Test prompt",
+          hint: "Hint",
+          defaultAnswer: "Default answer",
+          required: true,
+          predictionFeedback: "Good guess"
+        }
+      });
+
+      cy.getIframeBody().find("[data-cy=lock-answer-button]").should("be.visible");
+      cy.getIframeBody().find("[data-cy=lock-answer-button]").should("include.text", "Submit");
+      cy.getIframeBody().find("[data-cy=lock-answer-button]").should("have.attr", "disabled");
+
+      cy.getIframeBody().find("textarea").type("test answer");
+
+      cy.getIframeBody().find("[data-cy=lock-answer-button]").should("not.have.attr", "disabled");
+
+      cy.getIframeBody().find("[data-cy=lock-answer-button]").click();
+
+      cy.getIframeBody().find("textarea").should("have.attr", "disabled");
+      cy.getIframeBody().find("[data-cy=locked-info]").should("be.visible");
+      cy.getIframeBody().find("[data-cy=locked-info]").should("include.text", "locked");
+      cy.getIframeBody().find("[data-cy=locked-info]").should("include.text", "Good guess");
+    });
+
+  });
+
   context("Authoring view", () => {
     it("handles pre-existing authored state", () => {
       phonePost("initInteractive", {
