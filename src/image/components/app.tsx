@@ -29,11 +29,13 @@ const baseAuthoringProps = {
       },
       url: {
         title: "Url",
-        type: "string"
+        type: "string",
+        format: "uri"
       },
       highResUrl: {
         title: "Url (high resolution image)",
-        type: "string"
+        type: "string",
+        format: "uri"
       },
       altText: {
         title: "Alt Text",
@@ -121,11 +123,10 @@ const baseAuthoringProps = {
   }
 };
 
-
 export const App = () => (
   <BaseApp<IAuthoredState>
     Runtime={Runtime}
     baseAuthoringProps={baseAuthoringProps}
-    disableAutoHeight={true}
+    disableAutoHeight={false}
   />
 );

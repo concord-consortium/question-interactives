@@ -15,17 +15,19 @@ export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
       case "fitWidth":
         return css.fitWidth;
       case "originalDimensions":
-        return;
+        return css.originalDimensions;
     }
   };
 
   const getOriginalImageSize = (e: any) => {
-    const aspectRatio = e.target.naturalWidth / e.target.naturalHeight;
-    setSupportedFeatures({
-      interactiveState: true,
-      authoredState: true,
-      aspectRatio
-    });
+    if (e.target && e.target.naturalWidth && e.target.naturalHeight > 0) {
+      const aspectRatio = e.target.naturalWidth / e.target.naturalHeight;
+      setSupportedFeatures({
+        interactiveState: true,
+        authoredState: true,
+        aspectRatio
+      });
+    }
   };
 
   return (
@@ -48,6 +50,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
           </a>
         </div>
       }
+      {authoredState.highResUrl && <div className={css.viewHighRes}>Zoom</div>}
     </div>
   );
 };
