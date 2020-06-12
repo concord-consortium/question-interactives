@@ -25,7 +25,7 @@ context("Test open response interactive", () => {
         expect(hint).eql({ text: "Hint" });
       });
 
-      cy.getIframeBody().find("#app").should("include.text", "Test prompt");
+      cy.getIframeBody().find("#app fieldset legend").should("include.text", "Test prompt");
 
       cy.getIframeBody().find("textarea").should("have.attr", "placeholder", "Default answer");
       cy.getIframeBody().find("textarea").should("have.value", "Test response");

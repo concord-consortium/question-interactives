@@ -11,7 +11,8 @@ describe("preprocessFormData helper", () => {
       choices: [
         {content: "A", correct: true} as IChoice,
         {content: "B", correct: true} as IChoice
-      ]
+      ],
+      layout: "vertical",
     });
     const choices = newData.choices!;
 
@@ -29,7 +30,8 @@ describe("preprocessFormData helper", () => {
       choices: [
         {id: "1", content: "A", correct: true},
         {id: "2", content: "B", correct: true}
-      ]
+      ],
+      layout: "vertical",
     })).toEqual({
       version: 1,
       questionType: "multiple_choice",
@@ -38,7 +40,8 @@ describe("preprocessFormData helper", () => {
       choices: [
         {id: "1", content: "A", correct: true},
         {id: "2", content: "B", correct: true}
-      ]
+      ],
+      layout: "vertical",
     });
   });
 });

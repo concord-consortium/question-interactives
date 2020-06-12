@@ -10,7 +10,8 @@ const authoredState = {
   choices: [
     {id: "id1", content: "Choice A"},
     {id: "id2", content: "Choice B"}
-  ]
+  ],
+  layout: "vertical",
 } as IAuthoredState;
 
 const interactiveState = {
@@ -89,6 +90,60 @@ describe("Runtime", () => {
       expect(setState).not.toHaveBeenCalled();
       wrapper.find("input[value='id2']").simulate("change", { target: { checked: true } });
       expect(setState).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("dropdown layout", () => {
+
+    const dropdownAuthoredState = {
+      version: 1,
+      prompt: "Test prompt",
+      choices: [
+        {id: "id1", content: "Choice A"},
+        {id: "id2", content: "Choice B"}
+      ],
+      layout: "dropdown",
+    } as IAuthoredState;
+
+    const dropdownInteractiveState = {
+      answerType: "multiple_choice_answer",
+      selectedChoiceIds: [ "id2" ],
+    } as IInteractiveState;
+
+    it("renders prompt, extra instructions and choices", () => {
+      const wrapper = shallow(<Runtime authoredState={dropdownAuthoredState} />);
+      expect(wrapper.text()).toEqual(expect.stringContaining(dropdownAuthoredState.prompt!));
+      expect(wrapper.text()).toEqual(expect.stringContaining(dropdownAuthoredState.choices[0].content!));
+      expect(wrapper.text()).toEqual(expect.stringContaining(dropdownAuthoredState.choices[1].content!));
+    });
+
+    it("renders dropdown select", () => {
+      const wrapper = shallow(<Runtime authoredState={dropdownAuthoredState} />);
+      expect(wrapper.find("option").length).toEqual(2);
+      expect(wrapper.find("option").first().text()).toEqual(expect.stringContaining(dropdownAuthoredState.choices[0].content!));
+    });
+
+    it("handles passed interactiveState", () => {
+      const wrapper = shallow(<Runtime authoredState={dropdownAuthoredState} interactiveState={dropdownInteractiveState} />);
+      expect(wrapper.find("select").props().value).toEqual("id2");
+    });
+
+    it("calls setInteractiveState when user selects an answer", () => {
+      const setState = jest.fn();
+      const wrapper = shallow(<Runtime authoredState={dropdownAuthoredState} interactiveState={dropdownInteractiveState} setInteractiveState={setState} />);
+      expect(wrapper.find("select").props().value).toEqual("id2");
+      wrapper.find('select').simulate('change', {target: {value : "id1"}});
+      const newState = setState.mock.calls[0][0](interactiveState);
+      expect(newState).toEqual({answerType: "multiple_choice_answer", selectedChoiceIds: ["id1"]});
+    });
+
+    describe("report mode", () => {
+
+      it("handles passed interactiveState", () => {
+        const wrapper = shallow(<Runtime authoredState={dropdownAuthoredState} interactiveState={dropdownInteractiveState} report={true} />);
+        expect(wrapper.find("select").props().disabled).toEqual(true);
+        expect(wrapper.find("select").props().value).toEqual("id2");
+      });
     });
   });
 });
