@@ -7,3 +7,5 @@ npm-error.log
 # Editors
 .idea
 
+# Cypress failed tests
+cypress/screenshots

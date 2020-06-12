@@ -52,12 +52,12 @@ context("Test multiple-choice interactive", () => {
 
       cy.getIframeBody().find("input[value='id1']").click();
       getAndClearLastPhoneMessage((state) => {
-        expect(state).eql({ selectedChoiceIds: [ "id1" ] });
+        expect(state).eql({ answerType: "multiple_choice_answer", selectedChoiceIds: [ "id1" ] });
       });
 
       cy.getIframeBody().find("input[value='id2']").click();
       getAndClearLastPhoneMessage((state) => {
-        expect(state).eql({ selectedChoiceIds: [ "id2" ] });
+        expect(state).eql({ answerType: "multiple_choice_answer", selectedChoiceIds: [ "id2" ] });
       });
     });
   });

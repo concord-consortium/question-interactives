@@ -5,7 +5,9 @@ import { useRequiredQuestion } from "../hooks/use-required-question";
 import { BaseAuthoring, IBaseAuthoringProps } from "./base-authoring";
 import { SubmitButton } from "./submit-button";
 import { LockedInfo } from "./locked-info";
-import { setSupportedFeatures, useAuthoredState, useInitMessage, useInteractiveState } from "@concord-consortium/lara-interactive-api";
+import {
+  IAuthoringMetadata, IRuntimeMetadata, setSupportedFeatures, useAuthoredState, useInitMessage, useInteractiveState
+} from "@concord-consortium/lara-interactive-api";
 
 import css from "./base-question-app.scss";
 
@@ -44,7 +46,8 @@ interface IProps<IAuthoredState, IInteractiveState> {
   isAnswered?: (state: IInteractiveState | null) => boolean;
 }
 
-export const BaseQuestionApp = <IAuthoredState extends IBaseQuestionAuthoredState, IInteractiveState extends IBaseQuestionInteractiveState>(
+export const BaseQuestionApp =
+  <IAuthoredState extends IAuthoringMetadata & IBaseQuestionAuthoredState, IInteractiveState extends IRuntimeMetadata & IBaseQuestionInteractiveState>(
   { Authoring, baseAuthoringProps, Runtime, isAnswered, disableAutoHeight, disableSubmitBtnRendering }: IProps<IAuthoredState, IInteractiveState>
 ) => {
   const container = useRef<HTMLDivElement>(null);
