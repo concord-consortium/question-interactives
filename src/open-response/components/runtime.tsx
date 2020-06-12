@@ -1,6 +1,7 @@
 import React from "react";
 import { IAuthoredState } from "./app";
 import { IInteractiveState } from "./app";
+import css from "./runtime.scss";
 
 interface IProps {
   authoredState: IAuthoredState;
@@ -16,8 +17,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   return (
-    <div>
-      { authoredState.prompt && <div>{ authoredState.prompt }</div> }
+    <fieldset>
+      { authoredState.prompt && <legend className={css.prompt}>{ authoredState.prompt }</legend> }
       <div>
         <textarea
           value={interactiveState?.answerText}
@@ -28,6 +29,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           placeholder={authoredState.defaultAnswer || "Type answer here"}
         />
       </div>
-    </div>
+    </fieldset>
   );
 };

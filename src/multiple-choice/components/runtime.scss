@@ -1,5 +1,62 @@
 @import "../../shared/styles/helpers";
 
+legend.prompt {     // clear bootstrap stuff
+  display: unset;
+  width: unset;
+  margin-bottom: unset;
+  font-size: unset;
+  border: unset;
+  padding-bottom: 5px;
+}
+
+.choices {
+
+  input[type=radio], input[type=checkbox] {
+    transform: scale(1.5);
+    margin: 4px 10px 0 5px;
+  }
+
+  &.horizontal {
+    display: flex;
+    flex-wrap: wrap;
+
+    div {
+      display: flex;
+      margin-right: 25px;
+    }
+  }
+
+  &.likert {
+    display: grid;
+    grid-template-columns: repeat( auto-fit, minmax(0px, 1fr) );
+
+    div {
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+
+      input[type=radio], input[type=checkbox] {
+        margin: 7px 0 4px;
+      }
+
+      label {
+        margin: 5px 0 0 0;
+      }
+    }
+  }
+
+  &.dropdown {
+    select {
+      margin: 5px;
+      padding: 2px;
+    }
+  }
+}
+
+label {
+  font-weight: normal;
+}
+
 .correctChoice {
   color: $correctColor;
 }

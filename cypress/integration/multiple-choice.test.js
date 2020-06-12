@@ -27,7 +27,7 @@ context("Test multiple-choice interactive", () => {
         expect(hint).eql({ text: "Hint" });
       });
 
-      cy.getIframeBody().find("#app").should("include.text", "Test prompt");
+      cy.getIframeBody().find("#app fieldset legend").should("include.text", "Test prompt");
       cy.getIframeBody().find("#app").should("include.text", "choice A");
       cy.getIframeBody().find("#app").should("include.text", "choice B");
 
@@ -59,6 +59,77 @@ context("Test multiple-choice interactive", () => {
       getAndClearLastPhoneMessage((state) => {
         expect(state).eql({ answerType: "multiple_choice_answer", selectedChoiceIds: [ "id2" ] });
       });
+    });
+  });
+
+  context("Dropdown layout", () => {
+    it("renders prompt, dropdown, and handles pre-existing interactive state", () => {
+      phonePost("initInteractive", {
+        mode: "runtime",
+        authoredState: {
+          prompt: "Test prompt",
+          hint: "Hint",
+          multipleAnswers: false,
+          choices: [
+            {id: "id1", content: "choice A"},
+            {id: "id2", content: "choice B"},
+          ],
+          layout: "dropdown"
+        },
+        interactiveState: {
+          selectedChoiceIds: [ "id2" ]
+        }
+      });
+
+      cy.getIframeBody().find("#app").should("include.text", "Test prompt");
+      cy.getIframeBody().find("#app option").should("include.text", "choice A");
+      cy.getIframeBody().find("#app option").should("include.text", "choice B");
+
+      cy.getIframeBody().find("select").should("have.value", "id2");
+    });
+  });
+
+  context("Horizontal and Likert layouts", () => {
+    it("renders prompt with correct horizontal style", () => {
+      phonePost("initInteractive", {
+        mode: "runtime",
+        authoredState: {
+          prompt: "Test prompt",
+          hint: "Hint",
+          multipleAnswers: false,
+          choices: [
+            {id: "id1", content: "choice A"},
+            {id: "id2", content: "choice B"},
+          ],
+          layout: "horizontal"
+        },
+        interactiveState: {
+          selectedChoiceIds: [ "id2" ]
+        }
+      });
+
+      cy.getIframeBody().find("[data-cy=choices-container]").should("have.css", "display", "flex");
+    });
+
+    it("renders prompt with correct likert style", () => {
+      phonePost("initInteractive", {
+        mode: "runtime",
+        authoredState: {
+          prompt: "Test prompt",
+          hint: "Hint",
+          multipleAnswers: false,
+          choices: [
+            {id: "id1", content: "choice A"},
+            {id: "id2", content: "choice B"},
+          ],
+          layout: "likert"
+        },
+        interactiveState: {
+          selectedChoiceIds: [ "id2" ]
+        }
+      });
+
+      cy.getIframeBody().find("[data-cy=choices-container]").should("have.css", "display", "grid");
     });
   });
 
