@@ -1,6 +1,6 @@
 import React from "react";
 import { shallow } from "enzyme";
-import { Runtime } from "./runtime";
+import { Runtime, getAspectRatio } from "./runtime";
 import { IAuthoredState, IInteractiveState } from "./app";
 
 const authoredState: IAuthoredState = {
@@ -35,5 +35,12 @@ describe("Runtime", () => {
   it("handles passed interactiveState", () => {
     const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} />);
     expect(wrapper.text()).toEqual(expect.stringContaining(interactiveState.lastViewedTimestamp.toString()));
+  });
+
+  it("parses aspect ratio", () => {
+    expect(getAspectRatio("2:1")).toEqual("2:1");
+    expect(getAspectRatio("1.5")).toEqual("150:100");
+    expect(getAspectRatio("")).toEqual("");
+    expect(getAspectRatio("abc")).toEqual("");
   });
 });

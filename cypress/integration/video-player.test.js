@@ -81,9 +81,9 @@ context("Test Video Player interactive", () => {
       });
       const app = cy.getIframeBody().find("#app");
       app.should("include.text", "Video Url");
-      app.should("include.text", "Caption Url");
+      app.should("include.text", "Closed Caption / Subtitles VTT File URL");
       app.should("include.text", "Poster / preview image");
-      app.should("include.text", "Prompt");
+      app.should("include.text", "Description");
       app.should("include.text", "Credit");
       app.should("include.text", "Credit Link");
       app.should("include.text", "Credit Link Display Text");

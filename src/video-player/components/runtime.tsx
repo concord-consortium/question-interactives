@@ -13,6 +13,23 @@ interface IProps {
   report?: boolean;
 }
 
+export const getAspectRatio = (aspectRatio: string) => {
+  if (aspectRatio.indexOf(':') > -1) {
+    // user supplied aspect ratio as a:b, so use it
+    return aspectRatio;
+  }
+  else {
+    if (aspectRatio.length === 0 || isNaN(+aspectRatio)) {
+      return "";
+    }
+    else {
+      // numeric - so make it into a:b format
+      const roundedAspect = Math.round(parseFloat(aspectRatio) * 100);
+      return `${roundedAspect}:100`;
+    }
+  }
+};
+
 // small sample mp4
 // "https://models-resources.s3.amazonaws.com/geniblocks/resources/fablevision/video/charcoal.mp4";
 // sample captions
@@ -68,7 +85,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       });
 
     if (authoredState.fixedAspectRatio) {
-      player.aspectRatio(getAspectRatio(authoredState.fixedAspectRatio));
+      const aspectRatio = getAspectRatio(authoredState.fixedAspectRatio);
+      if (aspectRatio.length > 0) {
+        player.aspectRatio(aspectRatio);
+      }
     }
     if (authoredState.fixedHeight) {
       player.height(authoredState.fixedHeight);
@@ -80,17 +100,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     });
 
     return player;
-  };
-
-  const getAspectRatio = (aspectRatio: string) => {
-    if (aspectRatio.indexOf(':') > -1) {
-      // user supplied aspect ratio as a:b, so use it
-      return aspectRatio;
-    } else {
-      // numeric - so make it into a:b format
-      const roundedAspect = Math.round(parseFloat(aspectRatio) * 100);
-      return `${roundedAspect}:100`;
-    }
   };
 
   const handlePlaying = (e: any) => {
