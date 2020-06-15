@@ -1,5 +1,6 @@
 import React, { useEffect, useRef } from "react";
 import { useAutoHeight } from "../hooks/use-auto-height";
+import { useShutterbug } from "../hooks/use-shutterbug";
 import { BaseAuthoring, IBaseAuthoringProps } from "./base-authoring";
 import { setSupportedFeatures, useAuthoredState, useInitMessage } from "@concord-consortium/lara-interactive-api";
 
@@ -36,6 +37,7 @@ export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps
   const initMessage = useInitMessage();
 
   useAutoHeight({ container, disabled: disableAutoHeight });
+  useShutterbug();
 
   useEffect(() => {
     setSupportedFeatures({
