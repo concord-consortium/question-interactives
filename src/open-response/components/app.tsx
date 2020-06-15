@@ -32,12 +32,8 @@ const baseAuthoringProps = {
         type: "string"
       },
       required: {
-        title: "Required",
+        title: "Required (Show submit and lock button)",
         type: "boolean"
-      },
-      predictionFeedback: {
-        title: "Prediction feedback (optional)",
-        type: "string"
       },
       hint: {
         title: "Hint",
@@ -47,10 +43,44 @@ const baseAuthoringProps = {
         type: "string",
         title: "Default answer"
       }
+    },
+    dependencies: {
+      required: {
+        oneOf: [
+          {
+            properties: {
+              required: {
+                enum: [
+                  false
+                ]
+              }
+            }
+          },
+          {
+            properties: {
+              required: {
+                enum: [
+                  true
+                ]
+              },
+              predictionFeedback: {
+                title: "Post-submission feedback (optional)",
+                type: "string"
+              }
+            }
+          }
+        ]
+      }
     }
   } as JSONSchema6,
 
   uiSchema: {
+    "ui:order": [
+      "prompt",
+      "required",
+      "predictionFeedback",
+      "*"
+    ],
     version: {
       "ui:widget": "hidden"
     },
