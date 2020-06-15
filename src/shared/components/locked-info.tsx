@@ -12,5 +12,5 @@ export const LockedInfo: React.FC = () => {
     // Question is not submitted, nothing to show.
     return null;
   }
-  return <div className={css.locked}>Your answer is now locked. <LockIcon className={css.mediumIcon} /></div>;
+  return <div className={css.locked}>Your answer has been submitted and is locked. <LockIcon className={css.mediumIcon} /></div>;
 };
