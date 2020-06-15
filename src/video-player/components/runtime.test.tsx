@@ -38,7 +38,6 @@ describe("Runtime", () => {
   });
 
   it("parses aspect ratio", () => {
-    const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} />);
     expect(getAspectRatio("2:1")).toEqual("2:1");
     expect(getAspectRatio("1.5")).toEqual("150:100");
     expect(getAspectRatio("")).toEqual("");
