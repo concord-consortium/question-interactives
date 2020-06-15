@@ -62,6 +62,71 @@ context("Test multiple-choice interactive", () => {
     });
   });
 
+  context("Submit button", () => {
+
+    it("renders a submit button if required: true", () => {
+      phonePost("initInteractive", {
+        mode: "runtime",
+        authoredState: {
+          prompt: "Test prompt",
+          multipleAnswers: false,
+          choices: [
+            {id: "id1", content: "choice A"},
+            {id: "id2", content: "choice B"},
+          ],
+          required: true,
+        }
+      });
+
+      cy.getIframeBody().find("[data-cy=lock-answer-button]").should("be.visible");
+      cy.getIframeBody().find("[data-cy=lock-answer-button]").should("include.text", "Submit");
+      cy.getIframeBody().find("[data-cy=lock-answer-button]").should("have.attr", "disabled");
+    });
+
+    it("locks the answer when Submit is clicked", () => {
+      phonePost("initInteractive", {
+        mode: "runtime",
+        authoredState: {
+          prompt: "Test prompt",
+          multipleAnswers: false,
+          choices: [
+            {id: "id1", content: "choice A"},
+            {id: "id2", content: "choice B"},
+          ],
+          required: true,
+        }
+      });
+
+      cy.getIframeBody().find("input[value='id1']").click();
+      cy.getIframeBody().find("[data-cy=lock-answer-button]").should("not.have.attr", "disabled");
+      cy.getIframeBody().find("[data-cy=lock-answer-button]").click();
+      cy.getIframeBody().find("input[value='id1']").should("have.attr", "disabled");
+      cy.getIframeBody().find("[data-cy=locked-info]").should("be.visible");
+      cy.getIframeBody().find("[data-cy=locked-info]").should("include.text", "locked");
+    });
+
+    it("shows feedback when Submit is clicked", () => {
+      phonePost("initInteractive", {
+        mode: "runtime",
+        authoredState: {
+          prompt: "Test prompt",
+          multipleAnswers: false,
+          choices: [
+            {id: "id1", content: "choice A"},
+            {id: "id2", content: "choice B"},
+          ],
+          required: true,
+          predictionFeedback: "Good guess"
+        }
+      });
+
+      cy.getIframeBody().find("input[value='id1']").click();
+      cy.getIframeBody().find("[data-cy=lock-answer-button]").click();
+      cy.getIframeBody().find("[data-cy=locked-info]").should("include.text", "Good guess");
+    });
+
+  });
+
   context("Dropdown layout", () => {
     it("renders prompt, dropdown, and handles pre-existing interactive state", () => {
       phonePost("initInteractive", {

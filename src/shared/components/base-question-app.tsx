@@ -15,6 +15,7 @@ import css from "./base-app.scss";
 interface IBaseQuestionAuthoredState extends IBaseAuthoredState {
   hint?: string;
   required?: boolean;
+  predictionFeedback?: string;
 }
 
 interface IBaseQuestionInteractiveState {
