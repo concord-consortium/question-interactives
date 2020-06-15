@@ -127,6 +127,6 @@ export const App = () => (
   <BaseApp<IAuthoredState>
     Runtime={Runtime}
     baseAuthoringProps={baseAuthoringProps}
-    disableAutoHeight={true}
+    disableAutoHeight={false}
   />
 );
