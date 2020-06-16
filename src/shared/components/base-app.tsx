@@ -37,7 +37,7 @@ export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps
   const initMessage = useInitMessage();
 
   useAutoHeight({ container, disabled: disableAutoHeight });
-  useShutterbug();
+  useShutterbug(css.runtime);
 
   useEffect(() => {
     setSupportedFeatures({
