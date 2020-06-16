@@ -13,6 +13,26 @@
 If you want to build a local version run `npm build`, it will create the files in the `dist` folder.
 You *do not* need to build to deploy the code, that is automatic. See more info in the Deployment section below.
 
+### LARA Interactive API
+
+The question interactives make use of the [LARA Interactive API](https://github.com/concord-consortium/lara/blob/master/lara-typescript/README.md#lara-interactive-api). To test the question interactives against a locally modified version of the LARA Interactive API:
+
+```
+cd [lara/lara-typescript]
+npm run lara-api:link      # creates global symlink for clients to link to
+cd [question-interactives]
+npm run lara-api:link      # symlinks the question-interactives to the global symlink
+```
+
+To restore use of the published version of the LARA Interactive API:
+
+```
+cd [question-interactives]
+npm run lara-api:unlink    # restores use of the published version for question-interactives
+cd [lara/lara-typescript]
+npm run lara-api:unlink    # removes the global symlink
+```
+
 ### Notes
 
 1. Make sure if you are using Visual Studio Code that you use the workspace version of TypeScript.
