@@ -72,7 +72,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       }, () => {
         const url = authoredState.videoUrl ? authoredState.videoUrl : "";
         player.src(url);
-        const aspectRatio = player.currentDimensions().width / player.currentDimensions().height;
+        const aspectRatio = player.currentDimensions().width / (player.currentDimensions().height + 100);
         setSupportedFeatures({
           interactiveState: true,
           authoredState: true,
