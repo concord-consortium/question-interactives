@@ -7,6 +7,8 @@ interface IConfig {
   disabled?: boolean;
 }
 
+// Note that current LARA does not accommodate switching from using setHeight to aspectRatio.
+// Once setHeight has been used, it is sticky and will persist.
 export const useAutoHeight = ({ container, disabled }: IConfig) => {
   useEffect(() => {
     if (disabled) {
