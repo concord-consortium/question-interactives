@@ -35,7 +35,8 @@ export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps
   const { authoredState, setAuthoredState } = useAuthoredState<IAuthoredState>();
   const initMessage = useInitMessage();
 
-  useAutoHeight({ container, disabled: disableAutoHeight });
+  const isAuthoringView = initMessage?.mode === "authoring";
+  useAutoHeight({ container, disabled: !isAuthoringView && disableAutoHeight });
 
   useEffect(() => {
     setSupportedFeatures({

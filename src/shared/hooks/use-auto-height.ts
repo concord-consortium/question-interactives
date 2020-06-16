@@ -31,5 +31,5 @@ export const useAutoHeight = ({ container, disabled }: IConfig) => {
     return () => {
       observer.disconnect();
     }
-  }, [container.current]);
+  }, [container.current, disabled]);
 };
