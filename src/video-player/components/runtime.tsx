@@ -36,6 +36,8 @@ export const getAspectRatio = (aspectRatio: string) => {
 // "https://models-resources.s3.amazonaws.com/question-interactives/test-captions.vtt";
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
+  const creditTextContainer = useRef<HTMLDivElement>(null);
+  const promptTextContainer = useRef<HTMLDivElement>(null);
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
   let viewedProgress = interactiveState?.percentageViewed || 0;
   let viewedTimestamp = interactiveState?.lastViewedTimestamp || 0;
@@ -72,7 +74,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       }, () => {
         const url = authoredState.videoUrl ? authoredState.videoUrl : "";
         player.src(url);
-        const aspectRatio = player.currentDimensions().width / (player.currentDimensions().height + 100);
+        const creditTextHeight = creditTextContainer.current?.clientHeight || 0;
+        const promptTextHeight = promptTextContainer.current?.clientHeight || 0;
+        const aspectRatio = player.currentDimensions().width / (player.currentDimensions().height + creditTextHeight + promptTextHeight);
         setSupportedFeatures({
           interactiveState: true,
           authoredState: true,
@@ -141,7 +145,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   return (
     <div className={css.runtime}>
-      { authoredState.prompt && <div className={css.prompt}>{ authoredState.prompt }</div> }
+      {authoredState.prompt && <div ref={promptTextContainer} className={css.prompt}>{ authoredState.prompt }</div> }
       <div className={`${css.videoPlayerContainer} last-viewed${viewedTimestamp}`}>
         <div className="video-player" data-vjs-player={true}>
           <video ref={playerRef} className="video-js vjs-big-play-centered vjs-fluid"
@@ -154,12 +158,14 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         </div>
       </div>
       {interactiveState?.lastViewedTimestamp && <div className={css.lastViewed}>{interactiveState.lastViewedTimestamp}</div>}
-      {authoredState.credit && <div className={css.credit}>{authoredState.credit}</div>}
-      {
-        authoredState.creditLink &&
-        <div className={css.creditLink}><a href={authoredState.creditLink} target="_blank">
-          {authoredState.creditLinkDisplayText ? authoredState.creditLinkDisplayText : authoredState.creditLink}
-        </a></div>}
+      <div ref={creditTextContainer}>
+        {authoredState.credit && <div className={css.credit}>{authoredState.credit}</div>}
+        {
+          authoredState.creditLink &&
+          <div className={css.creditLink}><a href={authoredState.creditLink} target="_blank">
+            {authoredState.creditLinkDisplayText ? authoredState.creditLinkDisplayText : authoredState.creditLink}
+            </a></div>}
+      </div>
     </div>
   );
 };
