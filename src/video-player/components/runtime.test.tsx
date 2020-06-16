@@ -1,15 +1,15 @@
 import React from "react";
 import { shallow } from "enzyme";
-import { Runtime } from "./runtime";
+import { Runtime, getAspectRatio } from "./runtime";
 import { IAuthoredState, IInteractiveState } from "./app";
 
 const authoredState: IAuthoredState = {
   version: 1,
   questionType: "iframe_interactive",
   prompt: "Test prompt",
-  videoUrl: "https://models-resources.s3.amazonaws.com/geniblocks/resources/fablevision/video/charcoal.mp4",
-  captionUrl: "https://models-resources.s3.amazonaws.com/question-interactives/test-captions.vtt",
-  poster: "https://models-resources.s3.amazonaws.com/geniblocks/resources/fablevision/rooms/missioncontrol.jpg",
+  videoUrl: "https://models-resources.concord.org/geniblocks/resources/fablevision/video/charcoal.mp4",
+  captionUrl: "https://models-resources.concord.org/question-interactives/test-captions.vtt",
+  poster: "https://models-resources.concord.org/geniblocks/resources/fablevision/rooms/missioncontrol.jpg",
   credit: "Concord.org",
   creditLink: "https://geniventure.concord.org",
   creditLinkDisplayText: "Geniventure",
@@ -35,5 +35,12 @@ describe("Runtime", () => {
   it("handles passed interactiveState", () => {
     const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} />);
     expect(wrapper.text()).toEqual(expect.stringContaining(interactiveState.lastViewedTimestamp.toString()));
+  });
+
+  it("parses aspect ratio", () => {
+    expect(getAspectRatio("2:1")).toEqual("2:1");
+    expect(getAspectRatio("1.5")).toEqual("150:100");
+    expect(getAspectRatio("")).toEqual("");
+    expect(getAspectRatio("abc")).toEqual("");
   });
 });

@@ -45,7 +45,7 @@ export const baseAuthoringProps = {
         type: "string"
       },
       captionUrl: {
-        title: "Caption Url",
+        title: "Closed Caption / Subtitles VTT File URL",
         type: "string"
       },
       poster: {
@@ -53,7 +53,7 @@ export const baseAuthoringProps = {
         type: "string"
       },
       prompt: {
-        title: "Prompt",
+        title: "Description",
         type: "string"
       },
       credit: {

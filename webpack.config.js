@@ -2,7 +2,7 @@
 
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+const path = require("path");
 
 module.exports = (env, argv) => {
   const devMode = argv.mode !== 'production';
@@ -16,6 +16,7 @@ module.exports = (env, argv) => {
       'fill-in-the-blank': './src/fill-in-the-blank/index.tsx',
       'scaffolded-question': './src/scaffolded-question/index.tsx',
       'video-player': './src/video-player/index.tsx',
+      'image': './src/image/index.tsx',
       'wrapper': './src/shared/wrapper.tsx'
     },
     mode: 'development',
@@ -89,6 +90,11 @@ module.exports = (env, argv) => {
       ]
     },
     resolve: {
+      alias: {
+        // prevent duplicate react versions when npm linking lara-interactive-api
+        // cf. https://github.com/facebook/react/issues/13991#issuecomment-435587809
+        react: path.resolve(__dirname, './node_modules/react'),
+      },
       extensions: [ '.ts', '.tsx', '.js' ]
     },
     stats: {
@@ -118,6 +124,11 @@ module.exports = (env, argv) => {
       new HtmlWebpackPlugin({
         chunks: ['video-player'],
         filename: 'video-player/index.html',
+        template: 'src/shared/index.html'
+      }),
+      new HtmlWebpackPlugin({
+        chunks: ['image'],
+        filename: 'image/index.html',
         template: 'src/shared/index.html'
       }),
       new HtmlWebpackPlugin({
