@@ -127,6 +127,7 @@ export const App = () => {
       Runtime={Runtime}
       baseAuthoringProps={baseAuthoringProps}
       isAnswered={isAnswered}
+      disableAutoHeight={true}
     />
   );
 }

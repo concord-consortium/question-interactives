@@ -16,10 +16,10 @@ export const LockedInfo: React.FC = () => {
 
   return (
     <div className={css.locked} data-cy="locked-info">
-      <div className={css.header}>Your answer is now locked. <LockIcon className={css.mediumIcon} /></div>
+      <div className={css.header}>Your answer has been submitted and is locked. <LockIcon className={css.mediumIcon} /></div>
       {
-      authoredState?.predictionFeedback &&
-      <div className={css.feedback}>{ authoredState.predictionFeedback }</div>
+        authoredState?.predictionFeedback &&
+        <div className={css.feedback}>{ authoredState.predictionFeedback }</div>
       }
     </div>
   );

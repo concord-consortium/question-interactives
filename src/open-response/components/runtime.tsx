@@ -26,7 +26,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           readOnly={readOnly}
           disabled={readOnly}
           rows={8}
-          placeholder={authoredState.defaultAnswer || "Type answer here"}
+          placeholder={authoredState.defaultAnswer || "Please type your answer here."}
         />
       </div>
     </fieldset>
