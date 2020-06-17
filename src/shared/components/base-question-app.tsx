@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import { useAutoHeight } from "../hooks/use-auto-height";
 import { useHint } from "../hooks/use-hint";
 import { useRequiredQuestion } from "../hooks/use-required-question";
+import { useShutterbug } from "../hooks/use-shutterbug";
 import { BaseAuthoring, IBaseAuthoringProps } from "./base-authoring";
 import { SubmitButton } from "./submit-button";
 import { LockedInfo } from "./locked-info";
@@ -53,6 +54,7 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
 
   useHint();
   useRequiredQuestion();
+  useShutterbug({ container: "." + css.runtime });
 
   useEffect(() => {
     setSupportedFeatures({

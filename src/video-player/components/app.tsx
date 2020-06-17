@@ -3,7 +3,6 @@ import { JSONSchema6 } from "json-schema";
 import { BaseQuestionApp } from "../../shared/components/base-question-app";
 import { Runtime } from "./runtime";
 import { IAuthoringInteractiveMetadata, IRuntimeInteractiveMetadata } from "@concord-consortium/lara-interactive-api";
-import Shutterbug from "shutterbug";
 
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
@@ -123,12 +122,6 @@ export const baseAuthoringProps = {
 const isAnswered = (interactiveState: IInteractiveState) => interactiveState?.percentageViewed > 0.95;
 
 export const App = () => {
-  useEffect(() => {
-    Shutterbug.enable("#app");
-    return () => {
-      Shutterbug.disable();
-    };
-  }, []);
   return (
     <BaseQuestionApp<IAuthoredState, IInteractiveState>
       Runtime={Runtime}
