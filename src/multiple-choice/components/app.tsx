@@ -10,7 +10,9 @@ import {
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
 
-export interface IChoice extends IAuthoringMultipleChoiceChoiceMetadata {}
+export interface IChoice extends IAuthoringMultipleChoiceChoiceMetadata {
+  choiceFeedback?: string;
+}
 
 export type ILayout = "vertical" | "horizontal" | "likert" | "dropdown";
 
@@ -19,6 +21,8 @@ export interface IAuthoredState extends IAuthoringMultipleChoiceMetadata {
   hint?: string;
   multipleAnswers?: boolean;
   layout?: ILayout;
+  enableCheckAnswer?: boolean;
+  customFeedback?: boolean;
   choices: IChoice[];
 }
 
@@ -43,6 +47,10 @@ export const baseAuthoringProps = {
       required: {
         title: "Required (Show submit and lock button)",
         type: "boolean"
+      },
+      enableCheckAnswer: {
+        title: "Allow users to check answers",
+        type: "boolean",
       },
       hint: {
         title: "Hint",
@@ -136,6 +144,64 @@ export const baseAuthoringProps = {
             }
           }
         ]
+      },
+      enableCheckAnswer: {
+        oneOf: [
+          {
+            properties: {
+              enableCheckAnswer: {
+                enum: [
+                  false
+                ]
+              }
+            }
+          },
+          {
+            properties: {
+              enableCheckAnswer: {
+                enum: [
+                  true
+                ]
+              },
+              customFeedback: {
+                title: "Show custom feedback for answers",
+                type: "boolean"
+              }
+            }
+          }
+        ]
+      },
+      customFeedback: {
+        oneOf: [
+          {
+            properties: {
+              customFeedback: {
+                enum: [
+                  false
+                ]
+              }
+            }
+          },
+          {
+            properties: {
+              customFeedback: {
+                enum: [
+                  true
+                ]
+              },
+              choices: {
+                items: {
+                  properties: {
+                    choiceFeedback: {
+                      type: "string",
+                      title: "Feedback for choice (optional)"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        ]
       }
     }
   } as JSONSchema6,
@@ -145,6 +211,8 @@ export const baseAuthoringProps = {
       "prompt",
       "required",
       "predictionFeedback",
+      "enableCheckAnswer",
+      "customFeedback",
       "*"
     ],
     version: {
