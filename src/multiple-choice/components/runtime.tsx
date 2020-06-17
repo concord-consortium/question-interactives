@@ -93,7 +93,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const renderSelect = () => {
     return (
-      <select value={selectedChoiceIds[0]} onChange={handleSelectChange} disabled={readOnly}>
+      <select value={selectedChoiceIds[0] || "placeholder"} onChange={handleSelectChange} disabled={readOnly}>
+        <option value="placeholder" disabled={true}>Select an option</option>
         {
           authoredState.choices && authoredState.choices.map(choice =>
             <option key={choice.id} value={choice.id}>{ choice.content }</option>
