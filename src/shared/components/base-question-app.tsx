@@ -53,7 +53,7 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
   useAutoHeight({ container, disabled: isRuntimeView && disableAutoHeight });
   useHint();
   useRequiredQuestion();
-  useShutterbug(css.runtime);
+  useShutterbug({ container: "." + css.runtime });
 
   useEffect(() => {
     setSupportedFeatures({
