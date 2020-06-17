@@ -34,7 +34,7 @@ interface IProps<IAuthoredState, IInteractiveState> {
   Authoring?: React.FC<IAuthoringComponentProps<IAuthoredState>>;
   baseAuthoringProps?: Omit<IBaseAuthoringProps<IAuthoredState>, "authoredState" | "setAuthoredState">;
   Runtime: React.FC<IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState>>;
-  disableAutoHeight?: boolean;
+  disableRuntimeAutoHeight?: boolean;
   disableSubmitBtnRendering?: boolean;
   // Note that isAnswered is required when `disableSubmitBtnRendering` is false.
   isAnswered?: (state: IInteractiveState | null) => boolean;
@@ -43,14 +43,14 @@ interface IProps<IAuthoredState, IInteractiveState> {
 // BaseApp for interactives that save interactive state and show in the report. E.g. open response, multiple choice.
 export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBaseQuestionAuthoredState,
   IInteractiveState extends IRuntimeMetadata & IBaseQuestionInteractiveState>(props: IProps<IAuthoredState, IInteractiveState>) => {
-  const { Authoring, baseAuthoringProps, Runtime, isAnswered, disableAutoHeight, disableSubmitBtnRendering } = props;
+  const { Authoring, baseAuthoringProps, Runtime, isAnswered, disableRuntimeAutoHeight, disableSubmitBtnRendering } = props;
   const container = useRef<HTMLDivElement>(null);
   const { authoredState, setAuthoredState } = useAuthoredState<IAuthoredState>();
   const { interactiveState, setInteractiveState } = useInteractiveState<IInteractiveState>();
   const initMessage = useInitMessage();
 
   const isAuthoringView = initMessage?.mode === "authoring";
-  useAutoHeight({ container, disabled: !isAuthoringView && disableAutoHeight });
+  useAutoHeight({ container, disabled: !isAuthoringView && disableRuntimeAutoHeight });
 
   useHint();
   useRequiredQuestion();
