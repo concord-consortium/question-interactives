@@ -21,7 +21,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
 
   const getOriginalImageSize = (e: any) => {
     if (e.target && e.target.naturalWidth && e.target.naturalHeight > 0) {
-      const creditTextHeight = creditTextContainer.current?.clientHeight || 10;
+      const creditTextHeight = creditTextContainer.current?.clientHeight || 0;
       const aspectRatio = e.target.naturalWidth / (e.target.naturalHeight + creditTextHeight);
       setSupportedFeatures({
         interactiveState: true,
