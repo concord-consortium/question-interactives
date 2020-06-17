@@ -134,7 +134,7 @@ context("Test multiple-choice interactive", () => {
       cy.getIframeBody().find("[data-cy=feedback-true]").should("include.text", "correct");
     });
 
-    it("shows appropritae choice feedback for multiple answers", () => {
+    it("shows appropriate choice feedback for multiple answers", () => {
       phonePost("initInteractive", {
         mode: "runtime",
         authoredState: {
@@ -232,6 +232,43 @@ context("Test multiple-choice interactive", () => {
       cy.getIframeBody().find("input[value='id1']").click();
       cy.getIframeBody().find("[data-cy=lock-answer-button]").click();
       cy.getIframeBody().find("[data-cy=locked-info]").should("include.text", "Good guess");
+    });
+
+    it("enables the Submit button correctly for dropdown questions", () => {
+      phonePost("initInteractive", {
+        mode: "runtime",
+        authoredState: {
+          prompt: "Test prompt",
+          multipleAnswers: false,
+          layout: "dropdown",
+          choices: [
+            {id: "id1", content: "choice A"},
+            {id: "id2", content: "choice B"},
+          ],
+          required: true,
+        }
+      });
+
+      cy.getIframeBody().find("[data-cy=lock-answer-button]").should("have.attr", "disabled");
+
+      phonePost("initInteractive", {
+        mode: "runtime",
+        authoredState: {
+          prompt: "Test prompt",
+          multipleAnswers: false,
+          layout: "dropdown",
+          choices: [
+            {id: "id1", content: "choice A"},
+            {id: "id2", content: "choice B"},
+          ],
+          required: true,
+        },
+        interactiveState: {
+          selectedChoiceIds: [ "id2" ]
+        }
+      });
+
+      cy.getIframeBody().find("[data-cy=lock-answer-button]").should("not.have.attr", "disabled");
     });
 
   });
