@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useRef } from "react";
 import { IAuthoredState } from "./app";
-import { setSupportedFeatures } from "@concord-consortium/lara-interactive-api";
+import { setSupportedFeatures, showModal } from "@concord-consortium/lara-interactive-api";
 import css from "./runtime.scss";
 
 interface IProps {
@@ -8,7 +8,14 @@ interface IProps {
   report?: boolean;
 }
 
+interface ImageSize {
+  width: number;
+  height: number;
+}
+
 export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
+
+  const imageSize = useRef<ImageSize>();
 
   const getImageLayout = () => {
     switch (authoredState.scaling) {
@@ -20,7 +27,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
   };
 
   const getOriginalImageSize = (e: any) => {
-    if (e.target && e.target.naturalWidth && e.target.naturalHeight > 0) {
+    if (e.target && e.target.naturalWidth && e.target.naturalHeight) {
+      imageSize.current = { width: e.target.naturalWidth, height: e.target.naturalHeight }
       const aspectRatio = e.target.naturalWidth / e.target.naturalHeight;
       setSupportedFeatures({
         interactiveState: true,
@@ -30,9 +38,20 @@ export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
     }
   };
 
+  const handleClick = () => {
+    const { url } = authoredState;
+    const size = imageSize.current?.width && imageSize.current?.height
+                  ? { width: imageSize.current.width, height: imageSize.current.height }
+                  : undefined;
+    const allowUpscale = authoredState.scaling === "fitWidth";
+    url && showModal({ uuid: "image", type: "lightbox", url,
+                        isImage: true, size, allowUpscale,
+                        title: `${authoredState.caption || ""} ${authoredState.credit || ""}` });
+  }
+
   return (
     <div className={css.runtime}>
-      <div className={`${css.imageContainer} ${getImageLayout()}`}>
+      <div className={`${css.imageContainer} ${getImageLayout()}`} onClick={handleClick}>
         <img
           src={authoredState.url}
           alt={authoredState.altText}
