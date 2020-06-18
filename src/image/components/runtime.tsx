@@ -2,20 +2,21 @@ import React, { useRef } from "react";
 import { IAuthoredState } from "./app";
 import { setSupportedFeatures, showModal } from "@concord-consortium/lara-interactive-api";
 import css from "./runtime.scss";
+import ZoomIcon from "../../shared/icons/zoom.svg";
 
 interface IProps {
   authoredState: IAuthoredState;
   report?: boolean;
 }
 
-interface ImageSize {
+interface IImageSize {
   width: number;
   height: number;
 }
 
 export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
 
-  const imageSize = useRef<ImageSize>();
+  const imageSize = useRef<IImageSize>();
 
   const getImageLayout = () => {
     switch (authoredState.scaling) {
@@ -39,12 +40,13 @@ export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
   };
 
   const handleClick = () => {
-    const { url } = authoredState;
+    const { url, highResUrl } = authoredState;
     const size = imageSize.current?.width && imageSize.current?.height
                   ? { width: imageSize.current.width, height: imageSize.current.height }
                   : undefined;
     const allowUpscale = authoredState.scaling === "fitWidth";
-    url && showModal({ uuid: "image", type: "lightbox", url,
+    const modalImageUrl = highResUrl ? highResUrl : url;
+    modalImageUrl && showModal({ uuid: "image", type: "lightbox", url: modalImageUrl,
                         isImage: true, size, allowUpscale,
                         title: `${authoredState.caption || ""} ${authoredState.credit || ""}` });
   }
@@ -69,7 +71,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
           </a>
         </div>
       }
-      {authoredState.highResUrl && <div className={css.viewHighRes}>Zoom</div>}
+      <div className={`${css.viewHighRes} .glyphicon-zoom-in`} onClick={handleClick}><ZoomIcon /></div>
     </div>
   );
 };
