@@ -58,7 +58,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
     const { creditLink, creditLinkDisplayText } = authoredState;
     return creditLink && (
       <div className={css.creditLink}>
-        <a href={creditLink} target="_blank">
+        <a href={creditLink} target="_blank" rel="noopener">
           {creditLinkDisplayText || creditLink}
         </a>
       </div>
