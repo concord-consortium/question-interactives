@@ -2,6 +2,7 @@ import React, { useRef } from "react";
 import { IAuthoredState } from "./app";
 import { setSupportedFeatures, showModal } from "@concord-consortium/lara-interactive-api";
 import ReactDOMServer from "react-dom/server";
+import { v4 as uuidv4 } from "uuid";
 import css from "./runtime.scss";
 import ZoomIcon from "../../shared/icons/zoom.svg";
 
@@ -46,18 +47,19 @@ export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
                   ? { width: imageSize.current.width, height: imageSize.current.height }
                   : undefined;
     const allowUpscale = authoredState.scaling === "fitWidth";
-    const modalImageUrl = highResUrl ? highResUrl : url;
-    const title = `<strong>${caption || ""}</strong> <em>${credit || ""}</em> ${creditLink && ReactDOMServer.renderToString(getCreditLink())}`;
-    modalImageUrl && showModal({ uuid: "image", type: "lightbox", url: modalImageUrl,
+    const modalImageUrl = highResUrl || url;
+    const uuid = uuidv4();
+    const title = `<strong>${caption || ""}</strong> <em>${credit || ""}</em> ${ReactDOMServer.renderToString(getCreditLink() || <span/>)}`;
+    modalImageUrl && showModal({ uuid, type: "lightbox", url: modalImageUrl,
                         isImage: true, size, allowUpscale, title });
   }
 
   const getCreditLink = () => {
     const { creditLink, creditLinkDisplayText } = authoredState;
-    return (
+    return creditLink && (
       <div className={css.creditLink}>
-        <a href={authoredState.creditLink} target="_blank">
-          {authoredState.creditLinkDisplayText ? authoredState.creditLinkDisplayText : authoredState.creditLink}
+        <a href={creditLink} target="_blank">
+          {creditLinkDisplayText || creditLink}
         </a>
       </div>
     )
@@ -75,9 +77,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
       </div>
       {authoredState.caption && <div className={css.caption}>{authoredState.caption}</div>}
       {authoredState.credit && <div className={css.credit}>{authoredState.credit}</div>}
-      {
-        authoredState.creditLink && getCreditLink()
-      }
+      {getCreditLink()}
       <div className={`${css.viewHighRes} .glyphicon-zoom-in`} onClick={handleClick}><ZoomIcon /></div>
     </div>
   );
