@@ -1,7 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { IAuthoredState, IChoice, IInteractiveState } from "./app";
+import CheckIcon from "../../shared/icons/correct.svg";
+import CrossIcon from "../../shared/icons/incorrect.svg";
 import css from "./runtime.scss";
+import buttonCss from "../../shared/styles/helpers.scss";
+
+const DEFAULT_INCORRECT = "Sorry, that is incorrect.";
+const DEFAULT_CORRECT = "Yes! You are correct.";
+const MULTI_CHOICE_INCOMPLETE = "You're on the right track, but you didn't select all the right answers yet.";
 
 interface IProps {
   authoredState: IAuthoredState;
@@ -13,6 +20,9 @@ interface IProps {
 const baseElementId = uuidv4();     // DOM id necessary to associate inputs and label-for
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
+
+  const [showAnswerFeedback, setShowAnswerFeedback] = useState(false);
+
   const type = authoredState.multipleAnswers ? "checkbox" : "radio";
   let selectedChoiceIds = interactiveState?.selectedChoiceIds || [];
   if (!authoredState.multipleAnswers && selectedChoiceIds.length > 1) {
@@ -21,6 +31,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     // Clear previous answer instead.
     selectedChoiceIds = [];
   }
+
+    // Question can be scored if it has at least one correct answer defined.
+  const isScorable = !!authoredState.choices && authoredState.choices.filter(c => c.correct).length > 0;
 
   const handleRadioCheckChange = (choiceId: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const checked = event.target.checked;
@@ -40,20 +53,17 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       }
     }
     setInteractiveState?.(prevState => ({...prevState, answerType: "multiple_choice_answer", selectedChoiceIds: newChoices }));
+    setShowAnswerFeedback(false);
   };
 
   const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newChoice = [ event.target.value ];
     setInteractiveState?.(prevState => ({...prevState, answerType: "multiple_choice_answer", selectedChoiceIds: newChoice }));
+    setShowAnswerFeedback(false);
   };
 
   const getChoiceClass = (choice: IChoice, checked: boolean) => {
-    if (!report) {
-      return undefined;
-    }
-    // Question is scored if it has at least one correct answer defined.
-    const questionScored = !!authoredState.choices && authoredState.choices.filter(c => c.correct).length > 0;
-    if (!questionScored) {
+    if (!report || !isScorable) {
       return undefined;
     }
     if (checked && choice.correct) {
@@ -93,7 +103,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const renderSelect = () => {
     return (
-      <select value={selectedChoiceIds[0]} onChange={handleSelectChange} disabled={readOnly}>
+      <select value={selectedChoiceIds[0] || "placeholder"} onChange={handleSelectChange} disabled={readOnly}>
+        <option value="placeholder" disabled={true}>Select an option</option>
         {
           authoredState.choices && authoredState.choices.map(choice =>
             <option key={choice.id} value={choice.id}>{ choice.content }</option>
@@ -103,18 +114,71 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     );
   }
 
+  const renderFeedback = () => {
+    let feedback = "";
+    let isCorrect = false;
+    if (!authoredState.multipleAnswers) {
+      const choice = authoredState.choices.find(c => c.id === selectedChoiceIds[0]);
+      if (!choice) return;
+      isCorrect = !!choice.correct;
+      if (authoredState.customFeedback && choice.choiceFeedback) {
+        feedback = choice.choiceFeedback;
+      } else {
+        feedback = choice.correct ? DEFAULT_CORRECT : DEFAULT_INCORRECT;
+      }
+    } else {
+      const correctChoices = authoredState.choices.filter(c => c.correct);
+      const correctUserChoices = authoredState.choices.filter(c => selectedChoiceIds.includes(c.id) && c.correct);
+      const incorrectUserChoices = authoredState.choices.filter(c => selectedChoiceIds.includes(c.id) && !c.correct);
+      if (correctUserChoices.length === correctChoices.length && incorrectUserChoices.length === 0) {
+        isCorrect = true;
+        feedback = DEFAULT_CORRECT;
+      } else if (incorrectUserChoices.length === 0) {
+        feedback = MULTI_CHOICE_INCOMPLETE;
+      } else {
+        const firstIncorrect = incorrectUserChoices[0];
+        if (authoredState.customFeedback && firstIncorrect.choiceFeedback) {
+          feedback = firstIncorrect.choiceFeedback;
+        } else {
+          feedback = DEFAULT_INCORRECT;
+        }
+      }
+    }
+    const symbolCss = `${css.symbol} ${isCorrect ? css.correctSymbol : css.incorrectSymbol}`;
+    const symbol = isCorrect ? <CheckIcon /> : <CrossIcon />;
+    return (
+      <div className={css.answerFeedback} data-cy={`feedback-${isCorrect}`}>
+        <div className={symbolCss}>{ symbol }</div>
+        <div className={css.feedback}>{ feedback }</div>
+      </div>
+    );
+  }
+
   const layout = authoredState.layout || "vertical";
+  const isAnswered = !!interactiveState?.selectedChoiceIds?.length;
+  const handleShowAnswerFeedback = () => setShowAnswerFeedback(!showAnswerFeedback);
 
   return (
-    <fieldset>
-      { authoredState.prompt && <legend className={css.prompt + " list-unstyled"}>{ authoredState.prompt }</legend> }
-      <div className={css.choices + " " + css[layout]} data-cy="choices-container">
-        {
-          authoredState.layout !== "dropdown"
-          ? renderRadioChecks()
-          : renderSelect()
-        }
-      </div>
-    </fieldset>
+    <div>
+      <fieldset>
+        { authoredState.prompt && <legend className={css.prompt + " list-unstyled"}>{ authoredState.prompt }</legend> }
+        <div className={css.choices + " " + css[layout]} data-cy="choices-container">
+          {
+            authoredState.layout !== "dropdown"
+            ? renderRadioChecks()
+            : renderSelect()
+          }
+        </div>
+      </fieldset>
+      {
+        showAnswerFeedback && !readOnly && renderFeedback()
+      }
+      { authoredState.enableCheckAnswer && !readOnly &&
+      <button className={buttonCss.laraButton} onClick={handleShowAnswerFeedback}
+          disabled={!isAnswered} data-cy="check-answer-button">
+        Check answer
+      </button>
+      }
+    </div>
   );
 };

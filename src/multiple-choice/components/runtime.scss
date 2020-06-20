@@ -64,3 +64,44 @@ label {
 .incorrectChoice {
   color: $incorrectColor;
 }
+
+.answerFeedback {
+  display: flex;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-top: 9px;
+
+  .symbol {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 28px;
+    color: white;
+    border-radius: 3px 0 0 3px;
+
+    svg {
+      width: 35px;
+    }
+
+    &.incorrectSymbol {
+      background-color: #da0006;
+      svg {
+        fill: #fee5e5;
+      }
+    }
+
+    &.correctSymbol {
+      background-color: #19b533;
+      svg {
+        fill: #e9fced;
+      }
+    }
+  }
+
+  .feedback {
+    display: flex;
+    align-items: center;
+    padding: 2px 8px;
+  }
+}

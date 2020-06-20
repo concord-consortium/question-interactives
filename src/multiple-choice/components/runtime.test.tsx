@@ -119,8 +119,9 @@ describe("Runtime", () => {
 
     it("renders dropdown select", () => {
       const wrapper = shallow(<Runtime authoredState={dropdownAuthoredState} />);
-      expect(wrapper.find("option").length).toEqual(2);
-      expect(wrapper.find("option").first().text()).toEqual(expect.stringContaining(dropdownAuthoredState.choices[0].content!));
+      expect(wrapper.find("option").length).toEqual(3);
+      expect(wrapper.find("option").first().text()).toEqual(expect.stringContaining("Select"));
+      expect(wrapper.find("option").at(1).text()).toEqual(expect.stringContaining(dropdownAuthoredState.choices[0].content!));
     });
 
     it("handles passed interactiveState", () => {

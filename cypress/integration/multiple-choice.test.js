@@ -62,6 +62,115 @@ context("Test multiple-choice interactive", () => {
     });
   });
 
+  context("Check answer button", () => {
+
+    it("renders a check answer button", () => {
+      phonePost("initInteractive", {
+        mode: "runtime",
+        authoredState: {
+          prompt: "Test prompt",
+          multipleAnswers: false,
+          choices: [
+            {id: "id1", content: "choice A"},
+            {id: "id2", content: "choice B"},
+          ],
+          enableCheckAnswer: true
+        }
+      });
+
+      cy.getIframeBody().find("[data-cy=check-answer-button]").should("be.visible");
+      cy.getIframeBody().find("[data-cy=check-answer-button]").should("include.text", "Check answer");
+      cy.getIframeBody().find("[data-cy=check-answer-button]").should("have.attr", "disabled");
+    });
+
+    it("shows correct answer when check answer is clicked", () => {
+      phonePost("initInteractive", {
+        mode: "runtime",
+        authoredState: {
+          prompt: "Test prompt",
+          multipleAnswers: false,
+          choices: [
+            {id: "id1", content: "choice A"},
+            {id: "id2", content: "choice B", correct: true},
+          ],
+          enableCheckAnswer: true
+        }
+      });
+
+      cy.getIframeBody().find("input[value='id1']").click();
+      cy.getIframeBody().find("[data-cy=check-answer-button]").should("not.have.attr", "disabled");
+
+      cy.getIframeBody().find("[data-cy=check-answer-button]").click();
+
+      cy.getIframeBody().find("[data-cy=feedback-false]").should("be.visible");
+
+      cy.getIframeBody().find("input[value='id2']").click();
+      cy.getIframeBody().find("[data-cy=check-answer-button]").click();
+
+      cy.getIframeBody().find("[data-cy=feedback-true]").should("be.visible");
+    });
+
+    it("shows custom choice feedback if authored", () => {
+      phonePost("initInteractive", {
+        mode: "runtime",
+        authoredState: {
+          prompt: "Test prompt",
+          multipleAnswers: false,
+          choices: [
+            {id: "id1", content: "choice A", choiceFeedback: "Custom"},
+            {id: "id2", content: "choice B", correct: true},
+          ],
+          enableCheckAnswer: true,
+          customFeedback: true
+        }
+      });
+
+      cy.getIframeBody().find("input[value='id1']").click();
+      cy.getIframeBody().find("[data-cy=check-answer-button]").click();
+      cy.getIframeBody().find("[data-cy=feedback-false]").should("include.text", "Custom");
+
+      cy.getIframeBody().find("input[value='id2']").click();
+      cy.getIframeBody().find("[data-cy=check-answer-button]").click();
+      cy.getIframeBody().find("[data-cy=feedback-true]").should("include.text", "correct");
+    });
+
+    it("shows appropriate choice feedback for multiple answers", () => {
+      phonePost("initInteractive", {
+        mode: "runtime",
+        authoredState: {
+          prompt: "Test prompt",
+          multipleAnswers: true,
+          choices: [
+            {id: "id1", content: "choice A", correct: true},
+            {id: "id2", content: "choice B", correct: true},
+            {id: "id3", content: "choice C"},
+            {id: "id4", content: "choice D", choiceFeedback: "Custom"},
+          ],
+          enableCheckAnswer: true,
+          customFeedback: true
+        }
+      });
+
+      cy.getIframeBody().find("input[value='id1']").click();
+      cy.getIframeBody().find("[data-cy=check-answer-button]").click();
+      cy.getIframeBody().find("[data-cy=feedback-false]").should("include.text", "right track");
+
+      cy.getIframeBody().find("input[value='id2']").click();
+      cy.getIframeBody().find("[data-cy=check-answer-button]").click();
+      cy.getIframeBody().find("[data-cy=feedback-true]").should("include.text", "correct");
+
+      cy.getIframeBody().find("input[value='id3']").click();
+      cy.getIframeBody().find("[data-cy=check-answer-button]").click();
+      cy.getIframeBody().find("[data-cy=feedback-false]").should("include.text", "incorrect");
+
+      cy.getIframeBody().find("input[value='id3']").click();
+      cy.getIframeBody().find("input[value='id4']").click();
+      cy.getIframeBody().find("[data-cy=check-answer-button]").click();
+      cy.getIframeBody().find("[data-cy=feedback-false]").should("include.text", "Custom");
+    });
+
+  });
+
   context("Submit button", () => {
 
     it("renders a submit button if required: true", () => {
@@ -123,6 +232,43 @@ context("Test multiple-choice interactive", () => {
       cy.getIframeBody().find("input[value='id1']").click();
       cy.getIframeBody().find("[data-cy=lock-answer-button]").click();
       cy.getIframeBody().find("[data-cy=locked-info]").should("include.text", "Good guess");
+    });
+
+    it("enables the Submit button correctly for dropdown questions", () => {
+      phonePost("initInteractive", {
+        mode: "runtime",
+        authoredState: {
+          prompt: "Test prompt",
+          multipleAnswers: false,
+          layout: "dropdown",
+          choices: [
+            {id: "id1", content: "choice A"},
+            {id: "id2", content: "choice B"},
+          ],
+          required: true,
+        }
+      });
+
+      cy.getIframeBody().find("[data-cy=lock-answer-button]").should("have.attr", "disabled");
+
+      phonePost("initInteractive", {
+        mode: "runtime",
+        authoredState: {
+          prompt: "Test prompt",
+          multipleAnswers: false,
+          layout: "dropdown",
+          choices: [
+            {id: "id1", content: "choice A"},
+            {id: "id2", content: "choice B"},
+          ],
+          required: true,
+        },
+        interactiveState: {
+          selectedChoiceIds: [ "id2" ]
+        }
+      });
+
+      cy.getIframeBody().find("[data-cy=lock-answer-button]").should("not.have.attr", "disabled");
     });
 
   });
