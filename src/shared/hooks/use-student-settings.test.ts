@@ -21,6 +21,11 @@ const watchStudentSettingsMock = watchStudentSettings as jest.Mock;
 const getStudentInfoAndSignInToFirestoreMock = getStudentInfoAndSignInToFirestore as jest.Mock;
 
 describe("useStudentSettings", () => {
+  beforeEach(() => {
+    watchStudentSettingsMock.mockClear();
+    getStudentInfoAndSignInToFirestoreMock.mockClear();
+  });
+
   it("returns student settings from Firestore", async () => {
     const HookWrapper = () => {
       return useStudentSettings();
@@ -29,8 +34,17 @@ describe("useStudentSettings", () => {
     const { result, waitForNextUpdate } = renderHook(HookWrapper);
     await waitForNextUpdate();
 
-    expect(watchStudentSettingsMock).toHaveBeenCalled();
+
     expect(getStudentInfoAndSignInToFirestoreMock).toHaveBeenCalled();
+
+    expect(watchStudentSettingsMock).toHaveBeenCalled();
+    // Check first argument of watchStudentSettingsMock call.
+    expect(watchStudentSettingsMock.mock.calls[0][0]).toEqual({
+      source: "test-portal.concord.org",
+      contextId: "class-id",
+      userId: "123"
+    });
+
     expect(result.current).toEqual({
       scaffoldedQuestionLevel: 3
     });
