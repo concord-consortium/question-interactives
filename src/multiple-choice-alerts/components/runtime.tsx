@@ -1,8 +1,13 @@
+/*
+  This is a modified version of the standard multiple choice question which uses the LARA interactive
+  API showModal() function to show feedback via modal alert rather than inline feedback. At this point
+  its sole purpose is to allow manual testing of the modal alert functionality.
+ */
+
 import React, { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { IAuthoredState, IChoice, IInteractiveState } from "./app";
-import CheckIcon from "../../shared/icons/correct.svg";
-import CrossIcon from "../../shared/icons/incorrect.svg";
+import { showModal } from "@concord-consortium/lara-interactive-api";
 import css from "./runtime.scss";
 import buttonCss from "../../shared/styles/helpers.scss";
 
@@ -114,7 +119,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     );
   }
 
-  const renderFeedback = () => {
+  const getFeedback = () => {
     let feedback = "";
     let isCorrect = false;
     if (!authoredState.multipleAnswers) {
@@ -144,19 +149,16 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         }
       }
     }
-    const symbolCss = `${css.symbol} ${isCorrect ? css.correctSymbol : css.incorrectSymbol}`;
-    const symbol = isCorrect ? <CheckIcon /> : <CrossIcon />;
-    return (
-      <div className={css.answerFeedback} data-cy={`feedback-${isCorrect}`}>
-        <div className={symbolCss}>{ symbol }</div>
-        <div className={css.feedback}>{ feedback }</div>
-      </div>
-    );
+    return { isCorrect, feedback };
   }
 
   const layout = authoredState.layout || "vertical";
   const isAnswered = !!interactiveState?.selectedChoiceIds?.length;
-  const handleShowAnswerFeedback = () => setShowAnswerFeedback(!showAnswerFeedback);
+  const handleShowAnswerFeedback = () => {
+    const feedbackResult = getFeedback();
+    const style = feedbackResult?.isCorrect ? "correct" : "incorrect";
+    showModal({ type: "alert", uuid: uuidv4(), style, text: feedbackResult?.feedback });
+  };
 
   return (
     <div>
@@ -170,9 +172,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           }
         </div>
       </fieldset>
-      {
-        showAnswerFeedback && !readOnly && renderFeedback()
-      }
       { authoredState.enableCheckAnswer && !readOnly &&
       <button className={buttonCss.laraButton} onClick={handleShowAnswerFeedback}
           disabled={!isAnswered} data-cy="check-answer-button">

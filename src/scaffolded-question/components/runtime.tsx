@@ -1,9 +1,10 @@
-import React from "react";
+import React, { useEffect } from "react";
 import { IframeRuntime } from "./iframe-runtime";
 import { IInteractiveState } from "./app";
 import { IAuthoredState } from "./app";
 import { SubmitButton } from "../../shared/components/submit-button";
 import { LockedInfo } from "../../shared/components/locked-info";
+import { useStudentSettings } from "../../shared/hooks/use-student-settings";
 import css from "./runtime.scss";
 
 interface IProps {
@@ -15,10 +16,16 @@ interface IProps {
 }
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
+  const studentSettings = useStudentSettings();
+  // 1 means that student get to the easiest question variant. 5 means that user is limited to the most difficult
+  // one (assuming there are 5 levels in total).
+  const minAllowedLevel = studentSettings?.scaffoldedQuestionLevel || 1;
+
   const subinteractives = authoredState.subinteractives || [];
   if (subinteractives.length === 0) {
     return <div>"No subquestions available. Please add them using authoring interface."</div>;
   }
+  const levelsCount = subinteractives.length;
 
   const currentSubintId = interactiveState?.currentSubinteractiveId;
   let currentInteractive = subinteractives.find(si => si.id === currentSubintId);
@@ -27,12 +34,13 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   }
 
   const currentSubintIndex = subinteractives.indexOf(currentInteractive);
+  const currentLevel = levelsCount - currentSubintIndex;
 
   const subStates = interactiveState?.subinteractiveStates;
   const subState = subStates && subStates[currentInteractive.id]
 
   const submitted = interactiveState?.submitted;
-  const hintAvailable = !submitted && (currentSubintIndex < subinteractives.length - 1);
+  const hintAvailable = !submitted && (currentLevel - 1 >= minAllowedLevel);
 
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
 

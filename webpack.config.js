@@ -12,6 +12,7 @@ module.exports = (env, argv) => {
     devtool: 'source-map',
     entry: {
       'multiple-choice': './src/multiple-choice/index.tsx',
+      'multiple-choice-alerts': './src/multiple-choice-alerts/index.tsx',
       'open-response': './src/open-response/index.tsx',
       'fill-in-the-blank': './src/fill-in-the-blank/index.tsx',
       'scaffolded-question': './src/scaffolded-question/index.tsx',
@@ -109,6 +110,11 @@ module.exports = (env, argv) => {
       new HtmlWebpackPlugin({
         chunks: ['multiple-choice'],
         filename: 'multiple-choice/index.html',
+        template: 'src/shared/index.html'
+      }),
+      new HtmlWebpackPlugin({
+        chunks: ['multiple-choice-alerts'],
+        filename: 'multiple-choice-alerts/index.html',
         template: 'src/shared/index.html'
       }),
       new HtmlWebpackPlugin({
