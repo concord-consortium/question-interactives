@@ -2,17 +2,25 @@ import React, { useEffect, useRef, useState } from "react";
 import { IframePhone } from "../../shared/types";
 import iframePhone from "iframe-phone";
 import css from "./iframe-runtime.scss";
-import { IHintRequest } from "@concord-consortium/lara-interactive-api";
+import { IHintRequest, log } from "@concord-consortium/lara-interactive-api";
+
+// This should be part of lara-interactive-api
+interface ILogRequest {
+  action: string;
+  data: object;
+}
 
 interface IProps {
   url: string;
   authoredState: any;
   interactiveState: any;
   setInteractiveState: (state: any) => void;
+  scaffoldedQuestionLevel: number;
   report?: boolean;
 }
 
-export const IframeRuntime: React.FC<IProps> = ({ url, authoredState, interactiveState, setInteractiveState, report }) => {
+export const IframeRuntime: React.FC<IProps> =
+  ({ url, authoredState, interactiveState, setInteractiveState, report, scaffoldedQuestionLevel }) => {
   const [ iframeHeight, setIframeHeight ] = useState(300);
   const [ hint, setHint ] = useState("");
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -31,6 +39,15 @@ export const IframeRuntime: React.FC<IProps> = ({ url, authoredState, interactiv
     });
     phone.addListener("hint", (newHint: IHintRequest) => {
       setHint(newHint.text || "");
+    });
+    phone.addListener("log", (logData: ILogRequest) => {
+      log(logData.action, {
+        ...logData.data,
+        scaffolded_question_level: scaffoldedQuestionLevel,
+        subinteractive_url: url,
+        subinteractive_type: authoredState.questionType,
+        subinteractive_sub_type: authoredState.questionSubType
+      });
     });
     phone.post("initInteractive", {
       mode: report ? "report" : "runtime",

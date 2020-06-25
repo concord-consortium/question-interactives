@@ -103,5 +103,11 @@ export const App = () => (
     Runtime={Runtime}
     baseAuthoringProps={baseAuthoringProps}
     disableSubmitBtnRendering={true}
+    // Disable default focus in, focus out and answer saved events logging. Scaffolded Question Runtime
+    // listens to subquestion logs and passes them to LARA (adding some context info). Logging answer text second time
+    // from the parent question creates more confusing event stream. Also, focus in and out events don't work too
+    // well, as iframe is not treated as input. So default focus in and out would be only triggered if user used
+    // hint or submit buttons. But these events also make event stream more confusing.
+    disableBasicLogging={true}
   />
 );

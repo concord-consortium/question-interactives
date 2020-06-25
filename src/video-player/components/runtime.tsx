@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import videojs from "video.js";
 import { IAuthoredState } from "./app";
 import { IInteractiveState } from "./app";
-import { setSupportedFeatures } from "@concord-consortium/lara-interactive-api";
+import { setSupportedFeatures, log } from "@concord-consortium/lara-interactive-api";
 import css from "./runtime.scss";
 import "./video-js.css";
 
@@ -107,7 +107,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     return player;
   };
 
-  const handlePlaying = (e: any) => {
+  const handlePlaying = () => {
     setHasStartedPlayback(true);
     // store current playback progress each second
     if (Math.trunc(getViewTime()) > saveStateInterval.current) {
@@ -116,8 +116,15 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
   };
 
-  const handleStop = (e: any) => {
+  const handlePlay = () => {
+    const percentageViewed = getViewPercentage();
+    log("video started", { videoUrl: authoredState.videoUrl, percentage_viewed: percentageViewed });
+  }
+
+  const handleStop = () => {
     updateState();
+    const percentageViewed = getViewPercentage();
+    log("video stopped", { video_url: authoredState.videoUrl, percentage_viewed: percentageViewed });
   };
 
   const updateState = () => {
@@ -144,10 +151,12 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       { authoredState.prompt && <div className={css.prompt}>{ authoredState.prompt }</div> }
       <div className={`${css.videoPlayerContainer} last-viewed${viewedTimestamp}`}>
         <div className="video-player" data-vjs-player={true}>
-          <video ref={playerRef} className="video-js vjs-big-play-centered vjs-fluid"
+          <video
+            ref={playerRef}
+            className="video-js vjs-big-play-centered vjs-fluid"
             poster={getPoster()}
             onTimeUpdate={readOnly ? undefined : handlePlaying}
-            onEnded={readOnly ? undefined : handleStop}
+            onPlay={handlePlay}
             onPause={readOnly ? undefined : handleStop}
             controls={!readOnly}
           />
