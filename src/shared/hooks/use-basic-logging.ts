@@ -5,7 +5,8 @@ interface IConfig {
   disabled?: boolean;
 }
 
-export const useBasicLogging = ({ disabled }: IConfig) => {
+export const useBasicLogging = (options?: IConfig) => {
+  const disabled = options?.disabled;
   const answerToLog = useRef<string | undefined>(undefined);
 
   useEffect(() => {
@@ -32,6 +33,8 @@ export const useBasicLogging = ({ disabled }: IConfig) => {
         }
       }
     };
+    // Note that difference between focusin/focusout and focus/blur is that focusin/focusout bubbles
+    // while focus/blur does not.
     window.addEventListener("focusin", focusIn);
     window.addEventListener("focusout", focusOut);
     return () => {
