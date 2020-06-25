@@ -5,6 +5,7 @@ import { BaseAuthoring, IBaseAuthoringProps } from "./base-authoring";
 import { setSupportedFeatures, useAuthoredState, useInitMessage } from "@concord-consortium/lara-interactive-api";
 
 import css from "./base-app.scss";
+import { useBasicLogging } from "../hooks/use-basic-logging";
 
 export type UpdateFunc<State> = (prevState: State | null) => State;
 
@@ -27,17 +28,20 @@ interface IProps<IAuthoredState> {
   baseAuthoringProps?: Omit<IBaseAuthoringProps<IAuthoredState>, "authoredState" | "setAuthoredState">;
   Runtime: React.FC<IRuntimeComponentProps<IAuthoredState>>;
   disableAutoHeight?: boolean;
+  disableBasicLogging?: boolean;
 }
 
 // BaseApp for interactives that don't save interactive state and don't show up in the report. E.g. image, video.
 export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps<IAuthoredState>) => {
-  const { Authoring, baseAuthoringProps, Runtime, disableAutoHeight } = props;
+  const { Authoring, baseAuthoringProps, Runtime, disableAutoHeight, disableBasicLogging } = props;
   const container = useRef<HTMLDivElement>(null);
   const { authoredState, setAuthoredState } = useAuthoredState<IAuthoredState>();
   const initMessage = useInitMessage();
+  const isRuntimeView = initMessage?.mode === "runtime";
 
   useAutoHeight({ container, disabled: disableAutoHeight });
   useShutterbug({ container: "." + css.runtime });
+  useBasicLogging({ disabled: disableBasicLogging || !isRuntimeView });
 
   useEffect(() => {
     setSupportedFeatures({

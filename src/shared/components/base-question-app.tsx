@@ -10,6 +10,7 @@ import {
   IAuthoringMetadata, IRuntimeMetadata, setSupportedFeatures, useAuthoredState, useInitMessage, useInteractiveState
 } from "@concord-consortium/lara-interactive-api";
 import { IBaseAuthoredState, UpdateFunc, IAuthoringComponentProps, IRuntimeComponentProps } from "./base-app";
+import { useBasicLogging } from "../hooks/use-basic-logging";
 
 import css from "./base-app.scss";
 
@@ -38,12 +39,13 @@ interface IProps<IAuthoredState, IInteractiveState> {
   disableSubmitBtnRendering?: boolean;
   // Note that isAnswered is required when `disableSubmitBtnRendering` is false.
   isAnswered?: (state: IInteractiveState | null) => boolean;
+  disableBasicLogging?: boolean;
 }
 
 // BaseApp for interactives that save interactive state and show in the report. E.g. open response, multiple choice.
 export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBaseQuestionAuthoredState,
   IInteractiveState extends IRuntimeMetadata & IBaseQuestionInteractiveState>(props: IProps<IAuthoredState, IInteractiveState>) => {
-  const { Authoring, baseAuthoringProps, Runtime, isAnswered, disableAutoHeight, disableSubmitBtnRendering } = props;
+  const { Authoring, baseAuthoringProps, Runtime, isAnswered, disableAutoHeight, disableSubmitBtnRendering, disableBasicLogging } = props;
   const container = useRef<HTMLDivElement>(null);
   const { authoredState, setAuthoredState } = useAuthoredState<IAuthoredState>();
   const { interactiveState, setInteractiveState } = useInteractiveState<IInteractiveState>();
@@ -54,6 +56,13 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
   useHint();
   useRequiredQuestion();
   useShutterbug({ container: "." + css.runtime });
+  const logging = useBasicLogging({ disabled: disableBasicLogging || !isRuntimeView });
+
+  const setInteractiveStateWithLogging = (updateFunc: UpdateFunc<IInteractiveState>) => {
+    setInteractiveState(updateFunc);
+    // Notify logging helper that answer has been updated by user. Only then it'll be logged on blur.
+    logging.onAnswerUpdate(updateFunc(interactiveState).answerText);
+  };
 
   useEffect(() => {
     setSupportedFeatures({
@@ -81,7 +90,7 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
     }
     return (
       <div className={css.runtime}>
-        <Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} />
+        <Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveStateWithLogging} />
         {
           !disableSubmitBtnRendering &&
           <div>
