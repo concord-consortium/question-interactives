@@ -1,6 +1,6 @@
 import { phonePost, phoneListen, getAndClearLastPhoneMessage } from "../support";
 
-context("Test open response interactive", () => {
+context("Test Scaffolded Question interactive", () => {
   beforeEach(() => {
     cy.visit("/wrapper.html?iframe=/scaffolded-question");
   });
@@ -79,7 +79,8 @@ context("Test open response interactive", () => {
               answerType: "open_response_answer",
               answerText: "Test subquestion answer"
             }
-          }
+          },
+          answerText: "[Level: 1] Test subquestion answer"
         });
       });
     });
