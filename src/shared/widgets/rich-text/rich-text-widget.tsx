@@ -21,19 +21,19 @@ export const RichTextWidget = (props: WidgetProps) => {
     };
   }, [editorRef.current]);
 
-  const handleFocus = useCallback(() => {
+  const handleFocus = () => {
     props.onFocus(props.id, slateToHtml(valueRef.current));
-  }, [valueRef.current]);
+  };
   const handleChange = (editorValue: any) => {
     setValue(editorValue);
     setChangeCount(count => count + 1);
   };
-  const handleBlur = useCallback(() => {
+  const handleBlur = () => {
     const htmlValue = slateToHtml(valueRef.current);
     // update the form on blur
     props.onChange(htmlValue);
     props.onBlur(props.id, htmlValue);
-  }, [valueRef.current]);
+  };
 
   // dynamically resize editor to fit content
   useEffect(() => {
