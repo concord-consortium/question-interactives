@@ -5,6 +5,7 @@ import CheckIcon from "../../shared/icons/correct.svg";
 import CrossIcon from "../../shared/icons/incorrect.svg";
 import css from "./runtime.scss";
 import buttonCss from "../../shared/styles/helpers.scss";
+import "./runtime.global.scss";
 
 const DEFAULT_INCORRECT = "Sorry, that is incorrect.";
 const DEFAULT_CORRECT = "Yes! You are correct.";
@@ -64,7 +65,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const getChoiceClass = (choice: IChoice, checked: boolean) => {
     if (!report || !isScorable) {
-      return undefined;
+      return "";
     }
     if (checked && choice.correct) {
       return css.correctChoice;
@@ -82,7 +83,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       const checked = selectedChoiceIds.indexOf(choice.id) !== -1;
       const inputId = baseElementId + choice.id;
       return (
-        <div key={choice.id} className={getChoiceClass(choice, checked)}>
+        <div key={choice.id} className={`radio-choice ${getChoiceClass(choice, checked)}`}>
           <input
             type={type}
             value={choice.id}
@@ -161,8 +162,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   return (
     <div>
       <fieldset>
-        { authoredState.prompt && <legend className={css.prompt + " list-unstyled"}>{ authoredState.prompt }</legend> }
-        <div className={css.choices + " " + css[layout]} data-cy="choices-container">
+        { authoredState.prompt &&
+          <legend className={css.prompt + " list-unstyled"}
+                  dangerouslySetInnerHTML={{ __html: authoredState.prompt }} /> }
+        <div className={css.choices + " " + (css[layout] || "")} data-cy="choices-container">
           {
             authoredState.layout !== "dropdown"
             ? renderRadioChecks()

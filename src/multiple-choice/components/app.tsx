@@ -222,10 +222,13 @@ export const baseAuthoringProps = {
       "ui:widget": "hidden"
     },
     prompt: {
-      "ui:widget": "textarea"
+      "ui:widget": "richtext"
     },
     hint: {
-      "ui:widget": "textarea"
+      "ui:widget": "richtext"
+    },
+    predictionFeedback: {
+      "ui:widget": "richtext"
     },
     choices: {
       items: {
