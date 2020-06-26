@@ -1,13 +1,9 @@
 import React from "react";
-import { IAuthoredState } from "./app";
-import { IInteractiveState } from "./app";
+import { IRuntimeQuestionComponentProps } from "../../shared/components/base-question-app";
+import { IAuthoredState, IInteractiveState } from "./types";
 import css from "./runtime.scss";
 
-interface IProps {
-  authoredState: IAuthoredState;
-  interactiveState?: IInteractiveState | null;
-  setInteractiveState?: (updateFunc: (prevState: IInteractiveState | null) => IInteractiveState) => void;
-  report?: boolean;
+interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {
 }
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
@@ -18,7 +14,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   return (
     <fieldset>
-      { authoredState.prompt && <legend className={css.prompt}>{ authoredState.prompt }</legend> }
+      { authoredState.prompt &&
+        <legend className={css.prompt}
+          dangerouslySetInnerHTML={{ __html: authoredState.prompt }} /> }
       <div>
         <textarea
           value={interactiveState?.answerText}
