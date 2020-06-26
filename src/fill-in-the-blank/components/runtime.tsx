@@ -1,55 +1,59 @@
-import React from "react";
-import { IAuthoredState, IBlankDef, IInteractiveState, IFilledBlank } from "./app";
+import React, { useEffect, useCallback, useRef } from "react";
+import { IRuntimeQuestionComponentProps } from "../../shared/components/base-question-app";
+import { blankRegexp, defaultBlankSize, IAuthoredState, IBlankDef, IFilledBlank, IInteractiveState } from "./types";
 import css from "./runtime.scss";
 
-interface IProps {
-  authoredState: IAuthoredState;
-  interactiveState?: IInteractiveState | null;
-  setInteractiveState?: (updateFunc: (prevState: IInteractiveState | null) => IInteractiveState) => void;
-  report?: boolean;
+interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {
   setNavigation?: (enableForwardNav: boolean, message: string) => void;
 }
 
-export const insertInputs = (prompt: string, blanks: IBlankDef[], userResponses: IFilledBlank[]) => {
-  if (blanks.length === 0) {
-    // Stop condition. No more blanks to test, return the current prompt.
-    return [ prompt ];
-  }
-  const blank = blanks[0];
-  const remainingBlanks = blanks.slice(1);
+const getInputClass = (report?: boolean, value?: string, matchTerm?: string) => {
+  if (!report || !matchTerm) return "";
+  return value === matchTerm ? css.correctAnswer : css.incorrectAnswer;
+}
 
-  const result: (string | {id: string, value?: string, size?: number, matchTerm?: string})[] = [];
-  const dividedPrompt = prompt.split(blank.id);
-  if (dividedPrompt.length === 1) {
-    // Blank not found in this prompt part. Try other blanks.
-    result.push(...insertInputs(prompt, remainingBlanks, userResponses));
-  }
-  if (dividedPrompt.length === 2) {
-    // Blank found in this prompt part.
-    result.push(...insertInputs(dividedPrompt[0], remainingBlanks, userResponses));
-    const response = userResponses.find(ur => ur.id === blank.id)?.response || "";
-    result.push({id: blank.id, value: response, size: blank.size, matchTerm: blank.matchTerm });
-    result.push(...insertInputs(dividedPrompt[1], remainingBlanks, userResponses));
-  }
-  if (dividedPrompt.length > 2) {
-    // Multiple blanks with the same ID found, incorrect state.
-    throw new Error("Invalid authored state: multiple blanks with the same ID.");
-  }
-  return result;
+const getBlankInfo = (blankId: string, blanks: IBlankDef[], userResponses: IFilledBlank[]) => {
+  return {
+    authorInfo: blanks.find(blank => blank.id === blankId),
+    userInfo: userResponses.find(blank => blank.id === blankId)
+  };
+}
+
+interface IReplaceBlanksWithValues {
+  prompt: string;
+  blanks: IBlankDef[];
+  responses: IFilledBlank[];
+}
+export const replaceBlanksWithValues = (args: IReplaceBlanksWithValues) => {
+  const { prompt, blanks, responses } = args;
+  return prompt.replace(blankRegexp, blankId => {
+    const { userInfo } = getBlankInfo(blankId, blanks, responses);
+    return `[ ${userInfo?.response || ""} ]`;
+  });
 };
 
-export const renderAnswerText = (prompt: string, blanks: IBlankDef[], userResponses: IFilledBlank[]) => {
-  return insertInputs(prompt, blanks, userResponses).map(stringOrObj => {
-    if (typeof stringOrObj === "object") {
-      return `[ ${stringOrObj.value || ""} ]`;
-    }
-    return stringOrObj;
-  }).join("");
+interface IReplaceBlanksWithInputs extends IReplaceBlanksWithValues{
+  report: boolean;
+  readOnly: boolean;
+}
+export const replaceBlanksWithInputs = (args: IReplaceBlanksWithInputs) => {
+  const { prompt, blanks, responses, report, readOnly } = args;
+  return prompt.replace(blankRegexp, blankId => {
+    const { authorInfo, userInfo } = getBlankInfo(blankId, blanks, responses);
+    const id = `id="${blankId}"`;
+    const _class = `class="${getInputClass(report, userInfo?.response, authorInfo?.matchTerm)}"`;
+    const value = `value="${userInfo?.response || ""}"`;
+    const size = `size="${authorInfo?.size || defaultBlankSize}"`;
+    const _readOnly = readOnly ? "readonly disabled" : "";
+    return `<input ${id} type="text" ${_class} ${value} ${size} ${_readOnly}/>`;
+  });
 };
+
+const handlers: Record<string, (event: any) => void> = {};
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
 
-  const handleChange = (blankId: string, event: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = useCallback((blankId: string, event: React.ChangeEvent<HTMLInputElement>) => {
     setInteractiveState?.(prevState => {
       const newState: IInteractiveState = {
         ...prevState,
@@ -64,47 +68,51 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       } else {
         newState.blanks.push(newResponse);
       }
-      newState.answerText = renderAnswerText(authoredState.prompt || "", authoredState.blanks || [], newState.blanks);
+      newState.answerText = replaceBlanksWithValues({
+                              prompt: authoredState.prompt || "",
+                              blanks: authoredState.blanks || [],
+                              responses: newState.blanks
+                            });
       return newState;
     });
-  };
+  }, [authoredState.prompt, authoredState.blanks]);
 
-  const getInputClass = (value?: string, matchTerm?: string) => {
-    if (!report || !matchTerm) {
-      return undefined;
-    }
-    return value === matchTerm ? css.correctAnswer : css.incorrectAnswer;
-  }
+  const domRef = useRef<HTMLDivElement | null>();
 
-  let content = [];
-  try {
-    content = insertInputs(authoredState.prompt || "", authoredState.blanks || [], interactiveState?.blanks || []);
-  } catch (e) {
-    return e.message;
-  }
+  useEffect(() => {
+    const blanks = authoredState.blanks || [];
+    blanks.forEach(blank => {
+      const input = domRef.current?.querySelector(`input[id="${blank.id}"]`);
+      if (input) {
+        handlers[blank.id] = (event: any) => handleChange(blank.id, event);
+        input.addEventListener("change", handlers[blank.id]);
+      }
+    });
+
+    return () => {
+      blanks.forEach(blank => {
+        const input = domRef.current?.querySelector(`input[id="${blank.id}"]`);
+        if (input) {
+          input.removeEventListener("change", handlers[blank.id]);
+          delete handlers[blank.id];
+        }
+      });
+    };
+    // no dependency array because inputs get regenerated on each render,
+    // so we need to add/remove listeners on each render as well.
+  });
 
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
-
+  const contents = replaceBlanksWithInputs({
+                    prompt: authoredState.prompt || "",
+                    blanks: authoredState.blanks || [],
+                    responses: interactiveState?.blanks || [],
+                    report: !!report,
+                    readOnly: !!readOnly
+                  });
   return (
-    <div>
-      {
-        content.map(element => {
-          if (typeof element === "string") {
-            return element;
-          } else {
-            return <input
-              className={getInputClass(element.value, element.matchTerm)}
-              type="text"
-              key={element.id}
-              value={element.value}
-              size={element.size}
-              onChange={readOnly ? undefined : handleChange.bind(null, element.id)}
-              readOnly={readOnly}
-              disabled={readOnly}
-            />
-          }
-        })
-      }
-    </div>
+    <div className="fill-in-the-blank"
+        ref={elt => domRef.current = elt}
+        dangerouslySetInnerHTML={{ __html: contents }} />
   );
 };

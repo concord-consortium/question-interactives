@@ -3,37 +3,10 @@ import { FormValidation } from "react-jsonschema-form";
 import { JSONSchema6 } from "json-schema";
 import { BaseQuestionApp } from "../../shared/components/base-question-app";
 import { Runtime } from "./runtime";
-import { IAuthoringInteractiveMetadata, IRuntimeInteractiveMetadata } from "@concord-consortium/lara-interactive-api";
+import { blankRegexp, defaultBlankSize, IAuthoredState, IInteractiveState } from "./types";
 
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
-
-export const defaultBlankSize = 20; // characters
-const blankRegexp = /\[blank-\w+\]/g; // will match [blank-1], [blank-test], [blank-second_option] etc.
-
-export interface IBlankDef {
-  id: string;
-  size: number;
-  matchTerm?: string;
-}
-
-export interface IAuthoredState extends IAuthoringInteractiveMetadata {
-  version: number;
-  prompt?: string;
-  hint?: string;
-  blanks?: IBlankDef[];
-  required?: boolean;
-}
-
-export interface IFilledBlank {
-  id: string;
-  response: string;
-}
-
-export interface IInteractiveState extends IRuntimeInteractiveMetadata {
-  blanks: IFilledBlank[];
-  submitted?: boolean;
-}
 
 export const baseAuthoringProps = {
   schema: {
@@ -92,10 +65,10 @@ export const baseAuthoringProps = {
       "ui:widget": "hidden"
     },
     prompt: {
-      "ui:widget": "textarea"
+      "ui:widget": "richtext"
     },
     hint: {
-      "ui:widget": "textarea"
+      "ui:widget": "richtext"
     },
     blanks: {
       "ui:options":  {
@@ -108,7 +81,7 @@ export const baseAuthoringProps = {
 
   validate: (formData: IAuthoredState, errors: FormValidation) => {
     if (formData.prompt) {
-      const sortedBlanks = (formData?.prompt?.match(blankRegexp) || []).sort();
+      const sortedBlanks = (formData.prompt.match(blankRegexp) || []).sort();
       for (let i = 0; i < sortedBlanks.length - 1; i++) {
         if (sortedBlanks[i] === sortedBlanks[i + 1]) {
           errors.prompt.addError(`The same blank ID used multiple times: ${sortedBlanks[i]}`);
@@ -152,4 +125,3 @@ export const App = () => (
     isAnswered={isAnswered}
   />
 );
-

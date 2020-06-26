@@ -69,6 +69,7 @@
   "devDependencies": {
     "@cypress/webpack-preprocessor": "^5.1.2",
     "@svgr/webpack": "^5.4.0",
+    "@testing-library/react": "^10.4.2",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/deep-equal": "^1.0.1",
     "@types/enzyme": "^3.10.5",
