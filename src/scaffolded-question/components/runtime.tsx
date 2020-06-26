@@ -83,6 +83,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       { authoredState.prompt && <div>{ authoredState.prompt }</div> }
       <IframeRuntime
         key={currentInteractive.id}
+        id={currentInteractive.id}
         url={currentInteractive.url}
         authoredState={currentInteractive.authoredState}
         interactiveState={subState}

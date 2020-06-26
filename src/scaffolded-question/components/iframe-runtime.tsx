@@ -12,6 +12,7 @@ interface ILogRequest {
 
 interface IProps {
   url: string;
+  id: string;
   authoredState: any;
   interactiveState: any;
   setInteractiveState: (state: any) => void;
@@ -20,7 +21,7 @@ interface IProps {
 }
 
 export const IframeRuntime: React.FC<IProps> =
-  ({ url, authoredState, interactiveState, setInteractiveState, report, scaffoldedQuestionLevel }) => {
+  ({ url, id, authoredState, interactiveState, setInteractiveState, report, scaffoldedQuestionLevel }) => {
   const [ iframeHeight, setIframeHeight ] = useState(300);
   const [ hint, setHint ] = useState("");
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -46,7 +47,8 @@ export const IframeRuntime: React.FC<IProps> =
         scaffolded_question_level: scaffoldedQuestionLevel,
         subinteractive_url: url,
         subinteractive_type: authoredState.questionType,
-        subinteractive_sub_type: authoredState.questionSubType
+        subinteractive_sub_type: authoredState.questionSubType,
+        subinteractive_id: id
       });
     });
     phone.post("initInteractive", {
