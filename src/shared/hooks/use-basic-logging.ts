@@ -15,22 +15,26 @@ export const useBasicLogging = (options?: IConfig) => {
     }
 
     const focusIn = (e: FocusEvent) => {
-      // event.relatedTarget === null means that user is most likely coming from outer window, and not changing focus
-      // within the interactive iframe (eg clicking various buttons). We want to log only "main" focus event.
-      if (!e.relatedTarget) {
-        log("focus in", { focus_target: (e.target as HTMLElement).tagName.toLowerCase() });
-      }
+      const target = (e.target as HTMLInputElement);
+      log("focus in", {
+        target_element: target.tagName.toLowerCase(),
+        target_id: target.id,
+        target_name: target.name,
+        target_value: target.value
+      });
     };
     const focusOut = (e: FocusEvent) => {
-      // event.relatedTarget === null means that user is most likely leaving to outer window, and not changing focus
-      // within the interactive iframe (eg clicking various buttons). We want to log only "main" blur event.
-      if (!e.relatedTarget) {
-        log("focus out");
-        if (answerToLog.current !== undefined) {
-          // LARA uses "answer saved" message for its basic questions too.
-          log("answer saved", { answer_text: answerToLog.current });
-          answerToLog.current = undefined;
-        }
+      const target = (e.target as HTMLInputElement);
+      log("focus out", {
+        target_element: target.tagName.toLowerCase(),
+        target_id: target.id,
+        target_name: target.name,
+        target_value: target.value
+      });
+      if (answerToLog.current !== undefined) {
+        // LARA uses "answer saved" message for its basic questions too.
+        log("answer saved", { answer_text: answerToLog.current });
+        answerToLog.current = undefined;
       }
     };
     // Note that difference between focusin/focusout and focus/blur is that focusin/focusout bubbles
