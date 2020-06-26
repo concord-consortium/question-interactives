@@ -66,7 +66,9 @@ export const IframeRuntime: React.FC<IProps> = ({ url, authoredState, interactiv
   return (
     <div>
       <iframe ref={iframeRef} src={url} width="100%" height={iframeHeight} frameBorder={0} />
-      { hint && <div className={css.hint}>{ hint }</div> }
+      { hint &&
+        <div className={css.hint}
+            dangerouslySetInnerHTML={{ __html: hint }} /> }
     </div>
   )
 };

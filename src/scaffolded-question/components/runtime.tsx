@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { IframeRuntime } from "./iframe-runtime";
 import { IInteractiveState } from "./app";
 import { IAuthoredState } from "./app";
@@ -70,7 +70,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   return (
     <div className={css.runtime}>
-      { authoredState.prompt && <div>{ authoredState.prompt }</div> }
+      { authoredState.prompt &&
+        <div dangerouslySetInnerHTML={{ __html: authoredState.prompt }} /> }
       <IframeRuntime
         key={currentInteractive.id}
         url={currentInteractive.url}
