@@ -1,5 +1,6 @@
 import React from "react";
 import LockIcon from "../icons/lock.svg";
+import { renderHTML } from "../utilities/render-html";
 import { useInteractiveState, useAuthoredState } from "@concord-consortium/lara-interactive-api";
 import css from "./locked-info.scss";
 
@@ -19,8 +20,9 @@ export const LockedInfo: React.FC = () => {
       <div className={css.header}>Your answer has been submitted and is locked. <LockIcon className={css.mediumIcon} /></div>
       {
         authoredState?.predictionFeedback &&
-        <div className={css.feedback}
-            dangerouslySetInnerHTML={{ __html: authoredState.predictionFeedback }} />
+          <div className={css.feedback}>
+            {renderHTML(authoredState.predictionFeedback)}
+          </div>
       }
     </div>
   );

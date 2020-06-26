@@ -1,5 +1,6 @@
 import React from "react";
 import { IRuntimeQuestionComponentProps } from "../../shared/components/base-question-app";
+import { renderHTML } from "../../shared/utilities/render-html";
 import { IAuthoredState, IInteractiveState } from "./types";
 import css from "./runtime.scss";
 
@@ -15,8 +16,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   return (
     <fieldset>
       { authoredState.prompt &&
-        <legend className={css.prompt}
-          dangerouslySetInnerHTML={{ __html: authoredState.prompt }} /> }
+        <legend className={css.prompt}>
+          {renderHTML(authoredState.prompt)}
+        </legend> }
       <div>
         <textarea
           value={interactiveState?.answerText}

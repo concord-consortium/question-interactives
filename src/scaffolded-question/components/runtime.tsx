@@ -5,6 +5,7 @@ import { IAuthoredState } from "./app";
 import { SubmitButton } from "../../shared/components/submit-button";
 import { LockedInfo } from "../../shared/components/locked-info";
 import { useStudentSettings } from "../../shared/hooks/use-student-settings";
+import { renderHTML } from "../../shared/utilities/render-html";
 import css from "./runtime.scss";
 
 interface IProps {
@@ -71,7 +72,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   return (
     <div className={css.runtime}>
       { authoredState.prompt &&
-        <div dangerouslySetInnerHTML={{ __html: authoredState.prompt }} /> }
+        <div>{renderHTML(authoredState.prompt)}</div> }
       <IframeRuntime
         key={currentInteractive.id}
         url={currentInteractive.url}

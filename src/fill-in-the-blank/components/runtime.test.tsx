@@ -37,11 +37,6 @@ const correctInteractiveState: IInteractiveState = {
   ]
 };
 
-/*
- * Note that we use the React Testing Library here instead of Enzyme because
- * Enzyme doesn't work with components that use dangerouslySetInnerHtml().
- */
-
 describe("Runtime", () => {
 
   it("renders prompt and inputs", () => {
@@ -129,40 +124,22 @@ describe("replaceBlanksWithValues helper", () => {
 
 describe("replaceBlanksWithInputs helper", () => {
   it("returns string containing input fields for user interaction", () => {
-    const result = replaceBlanksWithInputs({
-                    prompt: authoredState.prompt!,
-                    blanks: authoredState.blanks!,
-                    responses: interactiveState.blanks,
-                    report: false,
-                    readOnly: false
-                  });
-    const input1 = `<input id="[blank-1]" type="text" class="" value="Test response" size="10" />`;
-    const input2 = `<input id="[blank-2]" type="text" class="" value="" size="20" />`;
+    const result = replaceBlanksWithInputs(authoredState.prompt!);
+    const input1 = `<input id="[blank-1]"/>`;
+    const input2 = `<input id="[blank-2]"/>`;
     expect(result).toBe(`<p>Test prompt with ${input1} and ${input2}.</p>`);
   });
 
   it("returns string containing input fields for user interaction", () => {
-    const result = replaceBlanksWithInputs({
-                    prompt: authoredState.prompt!,
-                    blanks: authoredState.blanks!,
-                    responses: correctInteractiveState.blanks,
-                    report: true,
-                    readOnly: true
-                  });
-    const input1 = `<input id="[blank-1]" type="text" class="" value="Test response" size="10" readonly disabled/>`;
-    const input2 = `<input id="[blank-2]" type="text" class="correctAnswer" value="Expected answer" size="20" readonly disabled/>`;
+    const result = replaceBlanksWithInputs(authoredState.prompt!);
+    const input1 = `<input id="[blank-1]"/>`;
+    const input2 = `<input id="[blank-2]"/>`;
     expect(result).toBe(`<p>Test prompt with ${input1} and ${input2}.</p>`);
   });
   it("returns string containing input fields for user interaction", () => {
-    const result = replaceBlanksWithInputs({
-                    prompt: brokenAuthoredState.prompt!,
-                    blanks: brokenAuthoredState.blanks!,
-                    responses: [],
-                    report: false,
-                    readOnly: false
-                  });
-    const input1 = `<input id="[blank-1]" type="text" class="" value="" size="20" />`;
-    const input2 = `<input id="[blank-2]" type="text" class="" value="" size="20" />`;
+    const result = replaceBlanksWithInputs(brokenAuthoredState.prompt!);
+    const input1 = `<input id="[blank-1]"/>`;
+    const input2 = `<input id="[blank-2]"/>`;
     expect(result).toBe(`<p>Test prompt with ${input1} and ${input2}.</p>`);
   });
 });
