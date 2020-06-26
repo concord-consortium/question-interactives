@@ -3,12 +3,21 @@ import { useBasicLogging } from "./use-basic-logging";
 import { log } from "@concord-consortium/lara-interactive-api";
 
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
-  log: jest.fn()
+  log: jest.fn(),
+  useInteractiveState: () => ({
+    interactiveState: {
+      answerText: "test answer text"
+    }
+  })
 }));
 
 const logMock = log as jest.Mock;
 
 const input = document.createElement("input");
+input.type = "text";
+input.id = "input-id";
+input.name = "input-name";
+input.value = "input value";
 document.body.append(input);
 
 const triggerFocusIn = () => {
@@ -36,11 +45,24 @@ describe("useBasicLogging", () => {
 
     triggerFocusIn();
     expect(logMock).toHaveBeenCalledTimes(1);
-    expect(logMock).toHaveBeenCalledWith("focus in", { focus_target: "input" });
+    expect(logMock).toHaveBeenCalledWith("focus in", {
+      target_element: "input",
+      target_type: "text",
+      target_id: "input-id",
+      target_name: "input-name",
+      target_value: "input value"
+    });
 
     triggerFocusOut();
     expect(logMock).toHaveBeenCalledTimes(2);
-    expect(logMock).toHaveBeenCalledWith("focus out");
+    expect(logMock).toHaveBeenCalledWith("focus out", {
+      target_element: "input",
+      target_type: "text",
+      target_id: "input-id",
+      target_name: "input-name",
+      target_value: "input value",
+      answer_text: "test answer text"
+    });
 
     unmount();
     triggerFocusIn();
@@ -48,35 +70,6 @@ describe("useBasicLogging", () => {
     expect(logMock).toHaveBeenCalledTimes(2);
   });
 
-  it("should log an answerText on focusout event if answer has been updated", () => {
-    const HookWrapper = () => {
-      return useBasicLogging();
-    }
-    const { unmount, result } = renderHook(HookWrapper);
-    triggerFocusOut();
-    // "focus out" only, no "answer saved"
-    expect(logMock).toHaveBeenCalledTimes(1);
-    expect(logMock.mock.calls[0][0]).toEqual("focus out");
-
-    logMock.mockClear();
-    result.current.onAnswerUpdate("test answer");
-    triggerFocusOut();
-    expect(logMock).toHaveBeenCalledTimes(2);
-    expect(logMock).toHaveBeenCalledWith("answer saved", {answer_text: "test answer"});
-
-    logMock.mockClear();
-    triggerFocusOut();
-    // "focus out" only, no "answer saved"
-    expect(logMock).toHaveBeenCalledTimes(1);
-    expect(logMock.mock.calls[0][0]).toEqual("focus out");
-
-    logMock.mockClear();
-    unmount();
-    result.current.onAnswerUpdate("test answer");
-    triggerFocusOut();
-    // no logs after unmount.
-    expect(logMock).toHaveBeenCalledTimes(0);
-  });
 
   it("shouldn't do anything when it's disabled", () => {
     const HookWrapper = () => {

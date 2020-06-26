@@ -20,6 +20,7 @@ export const useBasicLogging = (options?: IConfig) => {
       const target = (e.target as HTMLInputElement);
       log("focus in", {
         target_element: target.tagName.toLowerCase(),
+        target_type: target.type,
         target_id: target.id,
         target_name: target.name,
         target_value: target.value
@@ -29,6 +30,7 @@ export const useBasicLogging = (options?: IConfig) => {
       const target = (e.target as HTMLInputElement);
       log("focus out", {
         target_element: target.tagName.toLowerCase(),
+        target_type: target.type,
         target_id: target.id,
         target_name: target.name,
         target_value: target.value,
