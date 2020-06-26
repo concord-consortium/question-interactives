@@ -113,37 +113,38 @@ context("Test Scaffolded Question interactive", () => {
       cy.wait(200);
 
       getAndClearAllPhoneMessage((messages) => {
-        expect(messages.length).eql(3);
+        expect(messages.length).eql(2);
 
         expect(messages[0]).eql({
           action: "focus in",
           data: {
-            focus_target: "textarea",
+            target_element: 'textarea',
+            target_type: 'textarea',
+            target_id: '',
+            target_name: '',
+            target_value: '',
             scaffolded_question_level: 1,
             subinteractive_url: "/open-response",
             subinteractive_type: "open_response",
-            subinteractive_sub_type: undefined
+            subinteractive_sub_type: undefined,
+            subinteractive_id: 'int1'
           }
         });
 
         expect(messages[1]).eql({
           action: "focus out",
           data: {
+            target_element: 'textarea',
+            target_type: 'textarea',
+            target_id: '',
+            target_name: '',
+            target_value: 'Test subquestion answer',
             scaffolded_question_level: 1,
             subinteractive_url: '/open-response',
             subinteractive_type: 'open_response',
-            subinteractive_sub_type: undefined
-          }
-        });
-
-        expect(messages[2]).eql({
-          action: "answer saved",
-          data: {
-            answer_text: "Test subquestion answer",
-            scaffolded_question_level: 1,
-            subinteractive_url: "/open-response",
-            subinteractive_type: "open_response",
-            subinteractive_sub_type: undefined
+            subinteractive_sub_type: undefined,
+            subinteractive_id: 'int1',
+            answer_text: 'Test subquestion answer'
           }
         });
       });
