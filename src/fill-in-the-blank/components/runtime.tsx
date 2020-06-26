@@ -1,4 +1,5 @@
 import React, { useEffect, useCallback, useRef } from "react";
+import striptags from "striptags";
 import { IRuntimeQuestionComponentProps } from "../../shared/components/base-question-app";
 import { blankRegexp, defaultBlankSize, IAuthoredState, IBlankDef, IFilledBlank, IInteractiveState } from "./types";
 import css from "./runtime.scss";
@@ -68,11 +69,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       } else {
         newState.blanks.push(newResponse);
       }
-      newState.answerText = replaceBlanksWithValues({
+      newState.answerText = striptags(replaceBlanksWithValues({
                               prompt: authoredState.prompt || "",
                               blanks: authoredState.blanks || [],
                               responses: newState.blanks
-                            });
+                            }));
       return newState;
     });
   }, [authoredState.prompt, authoredState.blanks]);

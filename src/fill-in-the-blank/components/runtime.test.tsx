@@ -78,7 +78,7 @@ describe("Runtime", () => {
     const newState = setState.mock.calls[0][0](interactiveState);
     expect(newState).toEqual({
       answerType: "interactive_state",
-      answerText: "<p>Test prompt with [ Test response ] and [ New response ].</p>",
+      answerText: "Test prompt with [ Test response ] and [ New response ].",
       blanks: [
         {id: "[blank-1]", response: "Test response"},
         {id: "[blank-2]", response: "New response"}
@@ -89,7 +89,7 @@ describe("Runtime", () => {
     const newerState = setState.mock.calls[1][0](newState);
     expect(newerState).toEqual({
       answerType: "interactive_state",
-      answerText: "<p>Test prompt with [ Test response ] and [ Newer response ].</p>",
+      answerText: "Test prompt with [ Test response ] and [ Newer response ].",
       blanks: [
         {id: "[blank-1]", response: "Test response"},
         {id: "[blank-2]", response: "Newer response"}
