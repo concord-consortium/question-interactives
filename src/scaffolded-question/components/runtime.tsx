@@ -74,7 +74,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           answerText: getAnswerText(currentLevel - 1, undefined) // new subinteractive state is not available yet
         };
       });
-      log("hint used", { current_level: currentLevel, new_level: currentLevel - 1,  });
+      log("scaffolded question hint used", { current_level: currentLevel, new_level: currentLevel - 1,  });
     }
   };
 
