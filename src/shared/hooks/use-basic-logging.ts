@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { log } from "@concord-consortium/lara-interactive-api";
+import { log, useInteractiveState } from "@concord-consortium/lara-interactive-api";
 
 interface IConfig {
   disabled?: boolean;
@@ -7,13 +7,15 @@ interface IConfig {
 
 export const useBasicLogging = (options?: IConfig) => {
   const disabled = options?.disabled;
-  const answerToLog = useRef<string | undefined>(undefined);
+  const { interactiveState } = useInteractiveState<{answerText?: string}>();
+  // Extract answerText and save it in ref, so focusOut can access the most recent value.
+  const answerText = useRef<string>();
+  answerText.current = interactiveState?.answerText || "";
 
   useEffect(() => {
     if (disabled) {
       return;
     }
-
     const focusIn = (e: FocusEvent) => {
       const target = (e.target as HTMLInputElement);
       log("focus in", {
@@ -29,13 +31,9 @@ export const useBasicLogging = (options?: IConfig) => {
         target_element: target.tagName.toLowerCase(),
         target_id: target.id,
         target_name: target.name,
-        target_value: target.value
+        target_value: target.value,
+        answer_text: answerText.current
       });
-      if (answerToLog.current !== undefined) {
-        // LARA uses "answer saved" message for its basic questions too.
-        log("answer saved", { answer_text: answerToLog.current });
-        answerToLog.current = undefined;
-      }
     };
     // Note that difference between focusin/focusout and focus/blur is that focusin/focusout bubbles
     // while focus/blur does not.
@@ -46,10 +44,4 @@ export const useBasicLogging = (options?: IConfig) => {
       window.removeEventListener("focusout", focusOut);
     }
   }, [disabled]);
-
-  return {
-    onAnswerUpdate: (newAnswer: string | undefined) => {
-      answerToLog.current = newAnswer;
-    }
-  }
 };

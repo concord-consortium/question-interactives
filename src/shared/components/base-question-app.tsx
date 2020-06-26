@@ -56,13 +56,7 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
   useHint();
   useRequiredQuestion();
   useShutterbug({ container: "." + css.runtime });
-  const logging = useBasicLogging({ disabled: disableBasicLogging || !isRuntimeView });
-
-  const setInteractiveStateWithLogging = (updateFunc: UpdateFunc<IInteractiveState>) => {
-    setInteractiveState(updateFunc);
-    // Notify logging helper that answer has been updated by user. Only then it'll be logged on blur.
-    logging.onAnswerUpdate(updateFunc(interactiveState).answerText);
-  };
+  useBasicLogging({ disabled: disableBasicLogging || !isRuntimeView });
 
   useEffect(() => {
     setSupportedFeatures({
@@ -90,7 +84,7 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
     }
     return (
       <div className={css.runtime}>
-        <Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveStateWithLogging} />
+        <Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} />
         {
           !disableSubmitBtnRendering &&
           <div>
