@@ -1,6 +1,6 @@
-import { phonePost, phoneListen, getAndClearLastPhoneMessage } from "../support";
+import { phonePost, phoneListen, getAndClearLastPhoneMessage, getAndClearAllPhoneMessage } from "../support";
 
-context("Test open response interactive", () => {
+context("Test Scaffolded Question interactive", () => {
   beforeEach(() => {
     cy.visit("/wrapper.html?iframe=/scaffolded-question");
   });
@@ -79,6 +79,72 @@ context("Test open response interactive", () => {
               answerType: "open_response_answer",
               answerText: "Test subquestion answer"
             }
+          },
+          answerText: "[Level: 1] Test subquestion answer"
+        });
+      });
+    });
+
+    it("logs events from subinteractives to parent", () => {
+      phonePost("initInteractive", {
+        mode: "runtime",
+        authoredState: {
+          version: 1,
+          prompt: "Test prompt",
+          hint: "Hint",
+          subinteractives: [
+            {
+              id: "int1",
+              url: "/open-response",
+              authoredState: {
+                version: 1,
+                prompt: "Subquestion prompt",
+                hint: "Subquestion hint",
+                questionType: "open_response"
+              }
+            }
+          ]
+        }
+      });
+      phoneListen("log");
+
+      cy.getNestedIframeBody().find("textarea").type("Test subquestion answer");
+      cy.focused().blur();
+      cy.wait(200);
+
+      getAndClearAllPhoneMessage((messages) => {
+        expect(messages.length).eql(2);
+
+        expect(messages[0]).eql({
+          action: "focus in",
+          data: {
+            target_element: 'textarea',
+            target_type: 'textarea',
+            target_id: '',
+            target_name: '',
+            target_value: '',
+            scaffolded_question_level: 1,
+            subinteractive_url: "/open-response",
+            subinteractive_type: "open_response",
+            subinteractive_sub_type: undefined,
+            subinteractive_id: 'int1'
+          }
+        });
+
+        expect(messages[1]).eql({
+          action: "focus out",
+          data: {
+            target_element: 'textarea',
+            target_type: 'textarea',
+            target_id: '',
+            target_name: '',
+            target_value: 'Test subquestion answer',
+            scaffolded_question_level: 1,
+            subinteractive_url: '/open-response',
+            subinteractive_type: 'open_response',
+            subinteractive_sub_type: undefined,
+            subinteractive_id: 'int1',
+            answer_text: 'Test subquestion answer'
           }
         });
       });

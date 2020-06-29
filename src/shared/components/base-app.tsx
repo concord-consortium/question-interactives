@@ -5,6 +5,7 @@ import { BaseAuthoring, IBaseAuthoringProps } from "./base-authoring";
 import { setSupportedFeatures, useAuthoredState, useInitMessage } from "@concord-consortium/lara-interactive-api";
 
 import css from "./base-app.scss";
+import { useBasicLogging } from "../hooks/use-basic-logging";
 
 export type UpdateFunc<State> = (prevState: State | null) => State;
 
@@ -35,9 +36,11 @@ export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps
   const container = useRef<HTMLDivElement>(null);
   const { authoredState, setAuthoredState } = useAuthoredState<IAuthoredState>();
   const initMessage = useInitMessage();
+  const isRuntimeView = initMessage?.mode === "runtime";
 
   useAutoHeight({ container, disabled: disableAutoHeight });
   useShutterbug({ container: "." + css.runtime });
+  useBasicLogging({ disabled: !isRuntimeView });
 
   useEffect(() => {
     setSupportedFeatures({

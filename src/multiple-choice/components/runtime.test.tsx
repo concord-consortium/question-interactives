@@ -47,10 +47,10 @@ describe("Runtime", () => {
     const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} />);
     wrapper.find("input[value='id1']").simulate("change", { target: { checked: true } });
     let newState = setState.mock.calls[0][0](interactiveState);
-    expect(newState).toEqual({answerType: "multiple_choice_answer", selectedChoiceIds: ["id1"]});
+    expect(newState).toEqual({answerType: "multiple_choice_answer", selectedChoiceIds: ["id1"], answerText: "Choice A"});
     wrapper.find("input[value='id2']").simulate("change", { target: { checked: true } });
     newState = setState.mock.calls[1][0](interactiveState);
-    expect(newState).toEqual({answerType: "multiple_choice_answer", selectedChoiceIds: ["id2"]});
+    expect(newState).toEqual({answerType: "multiple_choice_answer", selectedChoiceIds: ["id2"], answerText: "Choice B"});
   });
 
   it("calls setInteractiveState when user selects an answer - multiple answers enabled", () => {
@@ -58,12 +58,12 @@ describe("Runtime", () => {
     const wrapper = shallow(<Runtime authoredState={Object.assign({}, authoredState, {multipleAnswers: true})} interactiveState={interactiveState} setInteractiveState={setState}/>);
     wrapper.find("input[value='id1']").simulate("change", { target: { checked: true } });
     let newState = setState.mock.calls[0][0](interactiveState);
-    expect(newState).toEqual({answerType: "multiple_choice_answer", selectedChoiceIds: ["id2", "id1"]});
+    expect(newState).toEqual({answerType: "multiple_choice_answer", selectedChoiceIds: ["id2", "id1"], answerText: "Choice B, Choice A"});
     // Note that correct state below is an empty array. This is a controlled component, it doesn't have its own state,
     // so the previous click didn't really update interactiveState for it. We're just unchecking initially checked "id2".
     wrapper.find("input[value='id2']").simulate("change", { target: { checked: false } });
     newState = setState.mock.calls[1][0](interactiveState);
-    expect(newState).toEqual({answerType: "multiple_choice_answer", selectedChoiceIds: []});
+    expect(newState).toEqual({answerType: "multiple_choice_answer", selectedChoiceIds: [], answerText: ""});
   });
 
   describe("report mode", () => {
@@ -135,7 +135,7 @@ describe("Runtime", () => {
       expect(wrapper.find("select").props().value).toEqual("id2");
       wrapper.find('select').simulate('change', {target: {value : "id1"}});
       const newState = setState.mock.calls[0][0](interactiveState);
-      expect(newState).toEqual({answerType: "multiple_choice_answer", selectedChoiceIds: ["id1"]});
+      expect(newState).toEqual({answerType: "multiple_choice_answer", selectedChoiceIds: ["id1"], answerText: "Choice A"});
     });
 
     describe("report mode", () => {

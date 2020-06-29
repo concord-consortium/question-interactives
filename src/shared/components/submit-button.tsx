@@ -1,6 +1,6 @@
 import React from "react";
 import LockIcon from "../icons/lock.svg";
-import { useAuthoredState, useInteractiveState } from "@concord-consortium/lara-interactive-api";
+import { log, useAuthoredState, useInteractiveState } from "@concord-consortium/lara-interactive-api";
 import css from "../styles/helpers.scss";
 
 interface IProps {
@@ -11,7 +11,7 @@ interface IProps {
 // `submitted` property in its interactive state (student state).
 export const SubmitButton: React.FC<IProps> = ({ isAnswered }) => {
   const { authoredState } = useAuthoredState<{ required?: boolean }>();
-  const { interactiveState, setInteractiveState } = useInteractiveState<{ submitted?: boolean }>();
+  const { interactiveState, setInteractiveState } = useInteractiveState<{ submitted?: boolean, answerText?: string }>();
 
   if (!authoredState?.required || interactiveState?.submitted) {
     // Question is not required or has been already submitted.
@@ -20,6 +20,7 @@ export const SubmitButton: React.FC<IProps> = ({ isAnswered }) => {
 
   const handleSubmit = () => {
     setInteractiveState?.(prevState => ({...prevState, submitted: true }));
+    log("answer submitted", { answer_text: interactiveState?.answerText });
   };
 
   return (

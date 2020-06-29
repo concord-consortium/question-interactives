@@ -10,6 +10,7 @@ import {
   IAuthoringMetadata, IRuntimeMetadata, setSupportedFeatures, useAuthoredState, useInitMessage, useInteractiveState
 } from "@concord-consortium/lara-interactive-api";
 import { IBaseAuthoredState, UpdateFunc, IAuthoringComponentProps, IRuntimeComponentProps } from "./base-app";
+import { useBasicLogging } from "../hooks/use-basic-logging";
 
 import css from "./base-app.scss";
 
@@ -54,6 +55,7 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
   useHint();
   useRequiredQuestion();
   useShutterbug({ container: "." + css.runtime });
+  useBasicLogging({ disabled: !isRuntimeView });
 
   useEffect(() => {
     setSupportedFeatures({
