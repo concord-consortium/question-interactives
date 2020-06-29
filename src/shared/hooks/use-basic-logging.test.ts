@@ -1,5 +1,5 @@
 import { renderHook } from "@testing-library/react-hooks";
-import { useBasicLogging } from "./use-basic-logging";
+import { useBasicLogging, INTERSECTION_DELAY } from "./use-basic-logging";
 import { log } from "@concord-consortium/lara-interactive-api";
 
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
@@ -32,9 +32,24 @@ const triggerFocusOut = () => {
   input.dispatchEvent(event);
 };
 
+// Mock IntersectionObserver
+const intersectionObserverObserve = jest.fn();
+const intersectionObserverDisconnect = jest.fn();
+let intersectionObserverCallback: any = null;
+(window as any).IntersectionObserver = (callback: any, options: any) => {
+  intersectionObserverCallback = callback;
+  return {
+    observe: intersectionObserverObserve,
+    disconnect: intersectionObserverDisconnect
+  } as any as IntersectionObserver;
+};
+
 describe("useBasicLogging", () => {
   beforeEach(() => {
     logMock.mockClear();
+    intersectionObserverObserve.mockClear();
+    intersectionObserverDisconnect.mockClear();
+    intersectionObserverCallback = null;
   });
 
   it("should log focusin and focusout, and cleanup event listeners on unmount", () => {
@@ -68,6 +83,31 @@ describe("useBasicLogging", () => {
     triggerFocusIn();
     triggerFocusOut();
     expect(logMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("should scroll into view and out of view, and cleanup event listeners on unmount", (done) => {
+    const HookWrapper = () => {
+      return useBasicLogging();
+    }
+    const { unmount } = renderHook(HookWrapper);
+
+    setTimeout(() => {
+      expect(intersectionObserverObserve).toHaveBeenCalledWith(window.document.body);
+
+      intersectionObserverCallback([{isIntersecting: true}]);
+      expect(logMock).toHaveBeenCalledTimes(1);
+      expect(logMock).toHaveBeenCalledWith("scrolled into view");
+
+      intersectionObserverCallback([{isIntersecting: false}]);
+      expect(logMock).toHaveBeenCalledTimes(2);
+      expect(logMock).toHaveBeenCalledWith("scrolled out of view");
+
+      unmount();
+
+      expect(intersectionObserverDisconnect).toHaveBeenCalled();
+
+      done();
+    }, INTERSECTION_DELAY + 1);
   });
 
 
