@@ -28,12 +28,11 @@ interface IProps<IAuthoredState> {
   baseAuthoringProps?: Omit<IBaseAuthoringProps<IAuthoredState>, "authoredState" | "setAuthoredState">;
   Runtime: React.FC<IRuntimeComponentProps<IAuthoredState>>;
   disableAutoHeight?: boolean;
-  disableBasicLogging?: boolean;
 }
 
 // BaseApp for interactives that don't save interactive state and don't show up in the report. E.g. image, video.
 export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps<IAuthoredState>) => {
-  const { Authoring, baseAuthoringProps, Runtime, disableAutoHeight, disableBasicLogging } = props;
+  const { Authoring, baseAuthoringProps, Runtime, disableAutoHeight } = props;
   const container = useRef<HTMLDivElement>(null);
   const { authoredState, setAuthoredState } = useAuthoredState<IAuthoredState>();
   const initMessage = useInitMessage();
@@ -41,7 +40,7 @@ export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps
 
   useAutoHeight({ container, disabled: disableAutoHeight });
   useShutterbug({ container: "." + css.runtime });
-  useBasicLogging({ disabled: disableBasicLogging || !isRuntimeView });
+  useBasicLogging({ disabled: !isRuntimeView });
 
   useEffect(() => {
     setSupportedFeatures({
