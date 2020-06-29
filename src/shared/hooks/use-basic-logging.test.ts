@@ -1,5 +1,5 @@
 import { renderHook } from "@testing-library/react-hooks";
-import { useBasicLogging, INTERSECTION_DELAY } from "./use-basic-logging";
+import { useBasicLogging, _setIntersectionDelay } from "./use-basic-logging";
 import { log } from "@concord-consortium/lara-interactive-api";
 
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
@@ -43,6 +43,11 @@ let intersectionObserverCallback: any = null;
     disconnect: intersectionObserverDisconnect
   } as any as IntersectionObserver;
 };
+
+// Speed up tests.
+const intersectionObserverDelay = 1;
+_setIntersectionDelay(intersectionObserverDelay);
+
 
 describe("useBasicLogging", () => {
   beforeEach(() => {
@@ -107,7 +112,7 @@ describe("useBasicLogging", () => {
       expect(intersectionObserverDisconnect).toHaveBeenCalled();
 
       done();
-    }, INTERSECTION_DELAY + 1);
+    }, intersectionObserverDelay + 1);
   });
 
 

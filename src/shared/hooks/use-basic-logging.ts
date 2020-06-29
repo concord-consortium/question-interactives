@@ -7,12 +7,16 @@ interface IConfig {
 
 // Threshold used by IntersectionObserver to log when element scrolls into view. 0.8 means that event will be logged
 // when 80% of the question container is scrolled into viewport.
-export const INTERSECTION_THRESHOLD = 0.8;
+export const intersectionThreshold = 0.8;
 // Delay observing intersection. Otherwise lots of events will be triggered at the beginning when the page is still
 // loading and interactives are resizing. When IntersectionObserver starts observing, it triggers callback with
 // the initial state. So, researchers will have access to the initial visibility anyway and no info should be lost.
-// Don't use delay in Node.js / test environment.
-export const INTERSECTION_DELAY = typeof process === "undefined" ? 6000 : 1; // ms
+export let intersectionDelay = 6000; // ms
+
+// Useful in test environment.
+export const _setIntersectionDelay = (value: number) => {
+  intersectionDelay = value;
+};
 
 export const useBasicLogging = (options?: IConfig) => {
   const disabled = options?.disabled;
@@ -58,18 +62,19 @@ export const useBasicLogging = (options?: IConfig) => {
         log(entries[0].isIntersecting ? "scrolled into view" : "scrolled out of view");
       }
     }, {
-      threshold: INTERSECTION_THRESHOLD
+      threshold: intersectionThreshold
     });
     // Delay observing intersection. Otherwise lots of events will be triggered at the beginning when the page is still
     // loading and interactives are resizing. When IntersectionObserver starts observing, it triggers callback with
     // the initial state. So, researchers will have access to the initial visibility anyway and no info should be lost.
-    setTimeout(() => {
+    const timeoutId = window.setTimeout(() => {
       observer.observe(window.document.body);
-    }, INTERSECTION_DELAY);
+    }, intersectionDelay);
 
     return () => {
       window.removeEventListener("focusin", focusIn);
       window.removeEventListener("focusout", focusOut);
+      window.clearTimeout(timeoutId);
       observer.disconnect();
     }
   }, [disabled]);
