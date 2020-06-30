@@ -32,6 +32,9 @@ const triggerFocusOut = () => {
   input.dispatchEvent(event);
 };
 
+// IntersectionObserver is undefined in JSDOM.
+// However, we should include polyfill for Safari < v12.1. So, this line tests nicely if polyfill works.
+expect(window.IntersectionObserver).toBeDefined();
 // Mock IntersectionObserver
 const intersectionObserverObserve = jest.fn();
 const intersectionObserverDisconnect = jest.fn();

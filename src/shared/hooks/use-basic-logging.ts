@@ -1,3 +1,4 @@
+import "intersection-observer"; // polyfill, mostly to support Safari < v12.1
 import { useEffect, useRef } from "react";
 import { log, useInteractiveState } from "@concord-consortium/lara-interactive-api";
 
