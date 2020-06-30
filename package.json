@@ -123,6 +123,7 @@
     "firebase": "^7.15.2",
     "html-react-parser": "^0.13.0",
     "iframe-phone": "^1.2.1",
+    "intersection-observer": "^0.11.0",
     "jquery": "^3.5.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",

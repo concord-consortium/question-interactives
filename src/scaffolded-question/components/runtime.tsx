@@ -6,6 +6,7 @@ import { SubmitButton } from "../../shared/components/submit-button";
 import { LockedInfo } from "../../shared/components/locked-info";
 import { useStudentSettings } from "../../shared/hooks/use-student-settings";
 import { renderHTML } from "../../shared/utilities/render-html";
+import { log } from "@concord-consortium/lara-interactive-api";
 import css from "./runtime.scss";
 
 interface IProps {
@@ -48,10 +49,18 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   // User can submit answer only if any answer has been provided before.
   const isAnswered = !!subState;
 
+  const getAnswerText = (level: number, subinteractiveAnswerText: string | undefined) =>
+    `[Level: ${level}] ${subinteractiveAnswerText ? subinteractiveAnswerText : "no response"}`;
+
   const handleNewInteractiveState = (interactiveId: string, newInteractiveState: any) => {
     setInteractiveState?.((prevState: IInteractiveState) => {
       const updatedStates = {...prevState?.subinteractiveStates, [interactiveId]: newInteractiveState };
-      return {...prevState, answerType: "interactive_state", subinteractiveStates: updatedStates };
+      return {
+        ...prevState,
+        answerType: "interactive_state",
+        subinteractiveStates: updatedStates,
+        answerText: getAnswerText(currentLevel, newInteractiveState.answerText)
+      };
     });
   };
 
@@ -63,22 +72,25 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           ...prevState,
           answerType: "interactive_state",
           currentSubinteractiveId: newInteractive.id,
-          answerText: `Hint has been used ${ currentSubintIndex + 1 } times.`
+          answerText: getAnswerText(currentLevel - 1, undefined) // new subinteractive state is not available yet
         };
       });
+      log("scaffolded question hint used", { current_level: currentLevel, new_level: currentLevel - 1,  });
     }
   };
 
   return (
-    <div className={css.runtime}>
+    <div className={css.runtime} tabIndex={1}>
       { authoredState.prompt &&
         <div>{renderHTML(authoredState.prompt)}</div> }
       <IframeRuntime
         key={currentInteractive.id}
+        id={currentInteractive.id}
         url={currentInteractive.url}
         authoredState={currentInteractive.authoredState}
         interactiveState={subState}
         setInteractiveState={readOnly ? undefined : handleNewInteractiveState.bind(null, currentInteractive.id)}
+        scaffoldedQuestionLevel={currentLevel}
         report={readOnly}
       />
       {

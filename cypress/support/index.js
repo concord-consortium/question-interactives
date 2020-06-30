@@ -43,6 +43,10 @@ export const phoneListen = (type) => {
     cy.window().then(window => {
       phone.addListener(type, newState => {
         window.receivedMessage = newState;
+        if (!window.receivedMessages) {
+          window.receivedMessages = [];
+        }
+        window.receivedMessages.push(newState);
       });
     });
   });
@@ -56,5 +60,18 @@ export const getAndClearLastPhoneMessage = (callback) => {
     // Important - clear message so when getAndClearLastPhoneMessage is called again, it can wait for a new one
     // (using cy.window().should("have.property", "receivedMessage") call above) instead of returning stale message.
     delete window.receivedMessage;
+    delete window.receivedMessages;
+  });
+};
+
+export const getAndClearAllPhoneMessage = (callback) => {
+  // This will wait until window.receivedMessages is defined.
+  cy.window().should("have.property", "receivedMessages");
+  cy.window().then(window => {
+    callback(window.receivedMessages);
+    // Important - clear message so when getAndClearAllPhoneMessage is called again, it can wait for a new one
+    // (using cy.window().should("have.property", "receivedMessages") call above) instead of returning stale message.
+    delete window.receivedMessage;
+    delete window.receivedMessages;
   });
 };

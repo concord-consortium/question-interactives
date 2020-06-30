@@ -16,6 +16,12 @@ legend.prompt {     // clear bootstrap stuff
     margin: 4px 10px 0 5px;
   }
 
+  &.vertical {
+    div {
+      display: flex;
+    }
+  }
+
   &.horizontal {
     display: flex;
     flex-wrap: wrap;

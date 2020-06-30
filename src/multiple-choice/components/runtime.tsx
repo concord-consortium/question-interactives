@@ -7,6 +7,7 @@ import { renderHTML } from "../../shared/utilities/render-html";
 import buttonCss from "../../shared/styles/helpers.scss";
 import css from "./runtime.scss";
 import "./runtime.global.scss";
+import { log } from "@concord-consortium/lara-interactive-api";
 
 const DEFAULT_INCORRECT = "Sorry, that is incorrect.";
 const DEFAULT_CORRECT = "Yes! You are correct.";
@@ -37,6 +38,16 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     // Question can be scored if it has at least one correct answer defined.
   const isScorable = !!authoredState.choices && authoredState.choices.filter(c => c.correct).length > 0;
 
+  const getAnswerText = (choiceIds: string[]) => {
+    return choiceIds.map(choiceId => {
+      const choice = authoredState.choices.find(c => c.id === choiceId);
+      if (!choice) {
+        return "";
+      }
+      return choice.correct ? `(correct) ${choice.content}` : choice.content;
+    }).join(", ");
+  };
+
   const handleRadioCheckChange = (choiceId: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const checked = event.target.checked;
     let newChoices: string[];
@@ -54,13 +65,23 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         newChoices.splice(currentIdx, 1);
       }
     }
-    setInteractiveState?.(prevState => ({...prevState, answerType: "multiple_choice_answer", selectedChoiceIds: newChoices }));
+    setInteractiveState?.(prevState => ({
+      ...prevState,
+      answerType: "multiple_choice_answer",
+      selectedChoiceIds: newChoices,
+      answerText: getAnswerText(newChoices)
+    }));
     setShowAnswerFeedback(false);
   };
 
   const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newChoice = [ event.target.value ];
-    setInteractiveState?.(prevState => ({...prevState, answerType: "multiple_choice_answer", selectedChoiceIds: newChoice }));
+    setInteractiveState?.(prevState => ({
+      ...prevState,
+      answerType: "multiple_choice_answer",
+      selectedChoiceIds: newChoice,
+      answerText: getAnswerText(newChoice)
+    }));
     setShowAnswerFeedback(false);
   };
 
@@ -158,7 +179,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const layout = authoredState.layout || "vertical";
   const isAnswered = !!interactiveState?.selectedChoiceIds?.length;
-  const handleShowAnswerFeedback = () => setShowAnswerFeedback(!showAnswerFeedback);
+  const handleShowAnswerFeedback = () => {
+    setShowAnswerFeedback(!showAnswerFeedback);
+    log("answer feedback shown");
+  }
 
   return (
     <div>
