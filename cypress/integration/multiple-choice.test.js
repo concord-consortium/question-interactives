@@ -378,16 +378,16 @@ context("Test multiple-choice interactive", () => {
       });
       phoneListen("authoredState");
 
-      // cy.getIframeBody().find("#root_prompt").type("Test prompt");
-      // getAndClearLastPhoneMessage(state => {
-      //   expect(state.version).eql(1);
-      //   expect(state.prompt).eql("Test prompt");
-      // });
+      cy.getIframeBody().find("#root_prompt").type("Test prompt").tab();
+      getAndClearLastPhoneMessage(state => {
+        expect(state.version).eql(1);
+        expect(state.prompt).include("Test prompt");
+      }, 100);
 
-      // cy.getIframeBody().find("#root_hint").type("Hint");
-      // getAndClearLastPhoneMessage(state => {
-      //   expect(state.hint).eql("Hint");
-      // });
+      cy.getIframeBody().find("#root_hint").type("Hint").tab();
+      getAndClearLastPhoneMessage(state => {
+        expect(state.hint).include("Hint");
+      }, 100);
 
       cy.getIframeBody().find("#root_multipleAnswers").click();
       getAndClearLastPhoneMessage(state => {

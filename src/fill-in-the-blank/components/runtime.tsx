@@ -10,7 +10,7 @@ interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInterac
 }
 
 const getInputClass = (report?: boolean, value?: string, matchTerm?: string) => {
-  if (!report || !matchTerm) return "";
+  if (!report || !matchTerm) return undefined;
   return value === matchTerm ? css.correctAnswer : css.incorrectAnswer;
 }
 
@@ -40,7 +40,7 @@ export const replaceBlanksWithInputs = (prompt: string) => {
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
 
-  const readOnly = report || (authoredState.required && interactiveState?.submitted);
+  const readOnly = !!(report || (authoredState.required && interactiveState?.submitted));
 
   const handleChange = useCallback((blankId: string, value: string) => {
     setInteractiveState?.(prevState => {
@@ -77,7 +77,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         return (
           <input id={blankId} type="text"
             className={getInputClass(report, userInfo?.response, authorInfo?.matchTerm)}
-            value={userInfo?.response || ""}
+            value={userInfo?.response}
             size={authorInfo?.size || defaultBlankSize}
             readOnly={readOnly}
             disabled={readOnly}

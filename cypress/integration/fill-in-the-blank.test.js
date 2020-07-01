@@ -36,7 +36,7 @@ context("Test fill in the blank interactive", () => {
     });
 
     // This is separate from previous test to check dealing with initial, empty state.
-    it.skip("sends back interactive state to parent", () => {
+    it("sends back interactive state to parent", () => {
       phonePost("initInteractive", {
         mode: "runtime",
         authoredState: {
@@ -94,23 +94,23 @@ context("Test fill in the blank interactive", () => {
       cy.getIframeBody().find("#root_blanks_1_matchTerm").should("have.value", "test match term");
     });
 
-    it.skip("renders authoring form and sends back authored state", () => {
+    it("renders authoring form and sends back authored state", () => {
       phonePost("initInteractive", {
         mode: "authoring"
       });
       phoneListen("authoredState");
 
-      cy.getIframeBody().find("#root_prompt").type("Test prompt with [blank-1]");
+      cy.getIframeBody().find("#root_prompt").type("Test prompt with [blank-1]").tab();
       getAndClearLastPhoneMessage(state => {
         expect(state.version).eql(1);
-        expect(state.prompt).eql("Test prompt with [blank-1]");
+        expect(state.prompt).include("Test prompt with [blank-1]");
         expect(state.blanks.length).eql(1);
-      });
+      }, 100);
 
-      cy.getIframeBody().find("#root_hint").type("Hint");
+      cy.getIframeBody().find("#root_hint").type("Hint").tab();
       getAndClearLastPhoneMessage(state => {
-        expect(state.hint).eql("Hint");
-      });
+        expect(state.hint).include("Hint");
+      }, 100);
 
       cy.getIframeBody().find("#root_blanks_0_size").clear().type("15");
       getAndClearLastPhoneMessage(state => {
@@ -143,6 +143,7 @@ context("Test fill in the blank interactive", () => {
       cy.getIframeBody().find("input").eq(0).should("have.attr", "readonly");
       cy.getIframeBody().find("input").eq(0).should("have.attr", "disabled");
       cy.getIframeBody().find("input").eq(0).should("have.value", "Test response");
+      // inexplicably, this still manages to change the value despite being disabled and readonly
       // cy.getIframeBody().find("input").eq(0).type("New answer", { force: true });
       cy.getIframeBody().find("input").eq(0).should("have.value", "Test response");
     });
