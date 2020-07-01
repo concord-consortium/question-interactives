@@ -3,8 +3,10 @@ import { v4 as uuidv4 } from "uuid";
 import { IAuthoredState, IChoice, IInteractiveState } from "./app";
 import CheckIcon from "../../shared/icons/correct.svg";
 import CrossIcon from "../../shared/icons/incorrect.svg";
-import css from "./runtime.scss";
+import { renderHTML } from "../../shared/utilities/render-html";
 import buttonCss from "../../shared/styles/helpers.scss";
+import css from "./runtime.scss";
+import "./runtime.global.scss";
 import { log } from "@concord-consortium/lara-interactive-api";
 
 const DEFAULT_INCORRECT = "Sorry, that is incorrect.";
@@ -85,7 +87,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const getChoiceClass = (choice: IChoice, checked: boolean) => {
     if (!report || !isScorable) {
-      return undefined;
+      return "";
     }
     if (checked && choice.correct) {
       return css.correctChoice;
@@ -103,7 +105,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       const checked = selectedChoiceIds.indexOf(choice.id) !== -1;
       const inputId = baseElementId + choice.id;
       return (
-        <div key={choice.id} className={getChoiceClass(choice, checked)}>
+        <div key={choice.id} className={`radio-choice ${getChoiceClass(choice, checked)}`}>
           <input
             type={type}
             value={choice.id}
@@ -185,8 +187,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   return (
     <div>
       <fieldset>
-        { authoredState.prompt && <legend className={css.prompt + " list-unstyled"}>{ authoredState.prompt }</legend> }
-        <div className={css.choices + " " + css[layout]} data-cy="choices-container">
+        { authoredState.prompt &&
+          <legend className={css.prompt + " list-unstyled"}>
+            {renderHTML(authoredState.prompt)}
+          </legend> }
+        <div className={css.choices + " " + (css[layout] || "")} data-cy="choices-container">
           {
             authoredState.layout !== "dropdown"
             ? renderRadioChecks()

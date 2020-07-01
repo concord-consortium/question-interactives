@@ -41,6 +41,8 @@ module.exports = (env, argv) => {
           test: /\.tsx?$/,
           loader: 'ts-loader'
         },
+        // .css files are minimally processed because we have included
+        // files from libraries like bootstrap and video-js.
         {
           test: /\.css$/i,
           use: [
@@ -48,8 +50,21 @@ module.exports = (env, argv) => {
             'css-loader'
           ]
         },
+        // .global.scss files are processed as global CSS, i.e. not as CSS modules
+        {
+          test: /\.global.(sa|sc)ss$/i,
+          use: [
+            devMode ? 'style-loader' : MiniCssExtractPlugin.loader,
+            'css-loader',
+            'postcss-loader',
+            'sass-loader'
+          ]
+        },
+        // .scss files are processed as CSS modules. Some recommend a naming convention of
+        // .module.scss for CSS modules, but that would require renaming a bunch of files.
         {
           test: /\.(sa|sc)ss$/i,
+          exclude: /\.global.(sa|sc)ss$/i,
           use: [
             devMode ? 'style-loader' : MiniCssExtractPlugin.loader,
             {

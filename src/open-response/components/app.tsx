@@ -1,19 +1,8 @@
 import React from "react";
-import { BaseQuestionApp } from "../../shared/components/base-question-app";
-import { Runtime } from "./runtime";
 import { JSONSchema6 } from "json-schema";
-import { IAuthoringOpenResponseMetadata, IRuntimeOpenResponseMetadata } from "@concord-consortium/lara-interactive-api";
-
-// Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
-// TS interfaces are not available in runtime in contrast to JSON schema.
-
-export interface IAuthoredState extends IAuthoringOpenResponseMetadata {
-  version: number;
-  defaultAnswer?: string;
-  hint?: string;
-}
-
-export interface IInteractiveState extends IRuntimeOpenResponseMetadata {}
+import { BaseQuestionApp } from "../../shared/components/base-question-app";
+import { IAuthoredState, IInteractiveState } from "./types";
+import { Runtime } from "./runtime";
 
 const baseAuthoringProps = {
   schema: {
@@ -88,10 +77,13 @@ const baseAuthoringProps = {
       "ui:widget": "hidden"
     },
     prompt: {
-      "ui:widget": "textarea"
+      "ui:widget": "richtext"
     },
     hint: {
-      "ui:widget": "textarea"
+      "ui:widget": "richtext"
+    },
+    predictionFeedback: {
+      "ui:widget": "richtext"
     },
     defaultAnswer: {
       "ui:widget": "textarea"

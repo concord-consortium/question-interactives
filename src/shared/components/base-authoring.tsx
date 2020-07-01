@@ -2,6 +2,7 @@ import React, { useEffect, useRef } from "react";
 import Form, { Field, FormValidation, IChangeEvent, UiSchema } from "react-jsonschema-form";
 import { JSONSchema6 } from "json-schema";
 import { useDelayedValidation } from "../hooks/use-delayed-validation";
+import { RichTextWidget } from "../widgets/rich-text/rich-text-widget";
 
 import "../../shared/styles/boostrap-3.3.7.css"; // necessary to style react-jsonschema-form
 import css from "../../shared/styles/authoring.scss";
@@ -17,6 +18,11 @@ export interface IBaseAuthoringProps<IAuthoredState> {
   fields?: { [name: string]: Field };
   validate?: (formData: IAuthoredState, errors: FormValidation) => FormValidation;
 }
+
+// custom widgets
+const widgets = {
+  richtext: RichTextWidget
+};
 
 export const BaseAuthoring = <IAuthoredState,>({ authoredState, setAuthoredState, preprocessFormData, schema, uiSchema, fields, validate }: IBaseAuthoringProps<IAuthoredState>) => {
   const formRef = useRef<Form<IAuthoredState>>(null);
@@ -43,6 +49,7 @@ export const BaseAuthoring = <IAuthoredState,>({ authoredState, setAuthoredState
         ref={formRef}
         schema={schema}
         uiSchema={uiSchema}
+        widgets={widgets}
         formData={authoredState || {}}
         onChange={onChange}
         fields={fields}

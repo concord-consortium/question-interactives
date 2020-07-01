@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { renderHTML } from "../../shared/utilities/render-html";
 import { IframePhone } from "../../shared/types";
 import iframePhone from "iframe-phone";
 import css from "./iframe-runtime.scss";
@@ -85,7 +86,8 @@ export const IframeRuntime: React.FC<IProps> =
   return (
     <div>
       <iframe ref={iframeRef} src={url} width="100%" height={iframeHeight} frameBorder={0} />
-      { hint && <div className={css.hint}>{ hint }</div> }
+      { hint &&
+        <div className={css.hint}>{renderHTML(hint)}</div> }
     </div>
   )
 };

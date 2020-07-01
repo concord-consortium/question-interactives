@@ -1,3 +1,5 @@
+require('cypress-plugin-tab');
+
 // Taken from https://www.cypress.io/blog/2020/02/12/working-with-iframes-in-cypress/
 Cypress.Commands.add('getIframeBody', (iframeSelector = 'iframe') => {
   // get the iframe > document > body
@@ -52,7 +54,8 @@ export const phoneListen = (type) => {
   });
 };
 
-export const getAndClearLastPhoneMessage = (callback) => {
+export const getAndClearLastPhoneMessage = (callback, wait) => {
+  wait && cy.wait(wait);
   // This will wait until window.receivedMessage is defined.
   cy.window().should("have.property", "receivedMessage");
   cy.window().then(window => {

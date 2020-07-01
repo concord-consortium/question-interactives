@@ -1,10 +1,11 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { IframeRuntime } from "./iframe-runtime";
 import { IInteractiveState } from "./app";
 import { IAuthoredState } from "./app";
 import { SubmitButton } from "../../shared/components/submit-button";
 import { LockedInfo } from "../../shared/components/locked-info";
 import { useStudentSettings } from "../../shared/hooks/use-student-settings";
+import { renderHTML } from "../../shared/utilities/render-html";
 import { log } from "@concord-consortium/lara-interactive-api";
 import css from "./runtime.scss";
 
@@ -80,7 +81,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   return (
     <div className={css.runtime} tabIndex={1}>
-      { authoredState.prompt && <div>{ authoredState.prompt }</div> }
+      { authoredState.prompt &&
+        <div>{renderHTML(authoredState.prompt)}</div> }
       <IframeRuntime
         key={currentInteractive.id}
         id={currentInteractive.id}

@@ -24,7 +24,7 @@ interface IBaseQuestionInteractiveState {
   submitted?: boolean;
 }
 
-interface IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> extends IRuntimeComponentProps<IAuthoredState> {
+export interface IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> extends IRuntimeComponentProps<IAuthoredState> {
   interactiveState?: IInteractiveState | null,
   setInteractiveState?: (updateFunc: UpdateFunc<IInteractiveState>) => void;
   report?: boolean;

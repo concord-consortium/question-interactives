@@ -22,7 +22,8 @@ const interactiveState = {
 describe("Runtime", () => {
   it("renders prompt, extra instructions and choices", () => {
     const wrapper = shallow(<Runtime authoredState={authoredState} />);
-    expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.prompt!));
+    const prompt = wrapper.find("legend");
+    expect(prompt.html()).toEqual(expect.stringContaining(authoredState.prompt!));
     expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[0].content!));
     expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[1].content!));
   });
@@ -69,7 +70,8 @@ describe("Runtime", () => {
   describe("report mode", () => {
     it("renders prompt, extra instructions and *disabled* choices", () => {
       const wrapper = shallow(<Runtime authoredState={authoredState} report={true} />);
-      expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.prompt!));
+      const prompt = wrapper.find("legend");
+      expect(prompt.html()).toEqual(expect.stringContaining(authoredState.prompt!));
       expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[0].content!));
       expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[1].content!));
 
@@ -112,7 +114,8 @@ describe("Runtime", () => {
 
     it("renders prompt, extra instructions and choices", () => {
       const wrapper = shallow(<Runtime authoredState={dropdownAuthoredState} />);
-      expect(wrapper.text()).toEqual(expect.stringContaining(dropdownAuthoredState.prompt!));
+      const prompt = wrapper.find("legend");
+      expect(prompt.html()).toEqual(expect.stringContaining(dropdownAuthoredState.prompt!));
       expect(wrapper.text()).toEqual(expect.stringContaining(dropdownAuthoredState.choices[0].content!));
       expect(wrapper.text()).toEqual(expect.stringContaining(dropdownAuthoredState.choices[1].content!));
     });
