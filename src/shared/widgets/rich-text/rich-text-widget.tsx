@@ -13,6 +13,10 @@ export const RichTextWidget = (props: WidgetProps) => {
   const kInitialHeight = 50;
   const [height, setHeight] = useState(kInitialHeight);
 
+  const handleLoad = () => {
+    setChangeCount(count => count + 1);
+  }
+
   const handleEditorRef = useCallback((editor: any | null) => {
     editorRef.current = editor || undefined;
     if (editor) {
@@ -44,7 +48,7 @@ export const RichTextWidget = (props: WidgetProps) => {
         setHeight(desiredHeight);
       }
     }
-  }, [value]);
+  }, [editorRef.current, changeCount, value]);
 
   return (<>
     <SlateToolbar
@@ -62,6 +66,7 @@ export const RichTextWidget = (props: WidgetProps) => {
         className={`custom-rich-text-widget`}
         value={value}
         onEditorRef={handleEditorRef}
+        onLoad={handleLoad}
         onFocus={handleFocus}
         onValueChange={handleChange}
         onBlur={handleBlur} />
