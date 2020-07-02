@@ -49,9 +49,9 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
   const { authoredState, setAuthoredState } = useAuthoredState<IAuthoredState>();
   const { interactiveState, setInteractiveState } = useInteractiveState<IInteractiveState>();
   const initMessage = useInitMessage();
-
   const isLoading = !initMessage;
   const isRuntimeView = initMessage?.mode === "runtime";
+
   useAutoHeight({ container, disabled: isRuntimeView && disableAutoHeight || isLoading });
   useHint();
   useRequiredQuestion();
