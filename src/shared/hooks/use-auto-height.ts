@@ -1,4 +1,4 @@
-import { RefObject, useEffect } from "react";
+import { RefObject, useEffect, useRef } from "react";
 import ResizeObserver from "resize-observer-polyfill";
 import { setHeight } from "@concord-consortium/lara-interactive-api";
 
@@ -8,10 +8,15 @@ interface IConfig {
 }
 
 export const useAutoHeight = ({ container, disabled }: IConfig) => {
+  const setHeightCalled = useRef(false);
+
   useEffect(() => {
     if (disabled) {
-      // Sending empty string to LARA will disable height and start using aspect ratio again.
-      setHeight("");
+      if (setHeightCalled.current) {
+        // Sending empty string to LARA will disable height and start using aspect ratio again.
+        // If setHeight has been never called, it doesn't make sense to send this message to LARA.
+        setHeight("");
+      }
       return;
     }
     // TypeScript doesn't seem to have types of the native ResizeObserver yet. Use types coming from polyfill.
@@ -24,6 +29,7 @@ export const useAutoHeight = ({ container, disabled }: IConfig) => {
       const height = entry?.target?.scrollHeight;
       if (height && height > 0) {
         setHeight(Math.ceil(height));
+        setHeightCalled.current = true;
       }
     });
     if (container.current) {
