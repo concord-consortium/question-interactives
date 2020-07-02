@@ -6,8 +6,8 @@ export const useHint = () => {
   const { authoredState } = useAuthoredState<{ hint?: string }>();
 
   useEffect(() => {
-    if (setHint) {
-      setHint(authoredState?.hint || "");
+    if (authoredState && setHint) {
+      setHint(authoredState.hint || "");
     }
-  }, [authoredState?.hint]);
+  }, [authoredState]);
 };
