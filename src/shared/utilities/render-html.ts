@@ -12,6 +12,7 @@ interface DomElement {
     prev?: DomElement;
     type?: string;
 }
+// eslint-disable-next-line @typescript-eslint/ban-types
 export type ParseHTMLReplacer = (domNode: DomElement) => JSX.Element | object | void | undefined | null | false;
 
 export function renderHTML(html: string, replace?: ParseHTMLReplacer) {

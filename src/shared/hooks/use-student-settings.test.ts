@@ -29,7 +29,7 @@ describe("useStudentSettings", () => {
   it("returns student settings from Firestore", async () => {
     const HookWrapper = () => {
       return useStudentSettings();
-    }
+    };
 
     const { result, waitForNextUpdate } = renderHook(HookWrapper);
     await waitForNextUpdate();

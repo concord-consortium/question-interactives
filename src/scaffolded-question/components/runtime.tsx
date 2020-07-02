@@ -25,7 +25,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const subinteractives = authoredState.subinteractives || [];
   if (subinteractives.length === 0) {
-    return <div>"No subquestions available. Please add them using authoring interface."</div>;
+    return <div>No subquestions available. Please add them using authoring interface.</div>;
   }
   const levelsCount = subinteractives.length;
 
@@ -39,7 +39,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const currentLevel = levelsCount - currentSubintIndex;
 
   const subStates = interactiveState?.subinteractiveStates;
-  const subState = subStates && subStates[currentInteractive.id]
+  const subState = subStates && subStates[currentInteractive.id];
 
   const submitted = interactiveState?.submitted;
   const hintAvailable = !submitted && (currentLevel - 1 >= minAllowedLevel);

@@ -12,14 +12,14 @@ interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInterac
 const getInputClass = (report?: boolean, value?: string, matchTerm?: string) => {
   if (!report || !matchTerm) return undefined;
   return value === matchTerm ? css.correctAnswer : css.incorrectAnswer;
-}
+};
 
 const getBlankInfo = (blankId: string, blanks: IBlankDef[], userResponses: IFilledBlank[]) => {
   return {
     authorInfo: blanks.find(blank => blank.id === blankId),
     userInfo: userResponses.find(blank => blank.id === blankId)
   };
-}
+};
 
 interface IReplaceBlanksWithValues {
   prompt: string;
@@ -64,7 +64,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                             }));
       return newState;
     });
-  }, [authoredState.prompt, authoredState.blanks]);
+  }, [authoredState.prompt, authoredState.blanks, setInteractiveState]);
 
   const replaceInputs: ParseHTMLReplacer = domNode => {
     if (domNode.name === "input") {
@@ -77,7 +77,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         return (
           <input id={blankId} type="text"
             className={getInputClass(report, userInfo?.response, authorInfo?.matchTerm)}
-            value={userInfo?.response}
+            value={userInfo?.response || ""}
             size={authorInfo?.size || defaultBlankSize}
             readOnly={readOnly}
             disabled={readOnly}
@@ -86,7 +86,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         );
       }
     }
-  }
+  };
 
   const htmlContents = replaceBlanksWithInputs(authoredState.prompt || "");
   return (

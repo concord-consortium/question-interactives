@@ -41,7 +41,7 @@ export const BaseAuthoring = <IAuthoredState,>({ authoredState, setAuthoredState
   useEffect(() => {
     // Initial validation (if necessary).
     validate && triggerDelayedValidation();
-  }, []);
+  }, [validate, triggerDelayedValidation]);
 
   return (
     <div className={css.authoring}>

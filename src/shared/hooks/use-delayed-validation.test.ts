@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import { useRef } from "react";
 import { renderHook, act } from "@testing-library/react-hooks";
 import { useDelayedValidation } from "./use-delayed-validation";
 import Form from "react-jsonschema-form";
@@ -10,7 +10,7 @@ describe("useDelayedValidation", () => {
     const HookWrapper = () => {
       const formRef = useRef<Form<any>>(null);
       return useDelayedValidation({ formRef, delay: 123 });
-    }
+    };
     const { result } = renderHook(HookWrapper);
     act(() => {
       result.current();

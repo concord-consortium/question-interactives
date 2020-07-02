@@ -33,7 +33,7 @@ const Wrapper = () => {
 
   const iframeSrc = getURLParam("iframe") as string || "/multiple-choice";
   return <iframe ref={iframeRef} src={iframeSrc} width="100%" height={800} />;
-}
+};
 
 ReactDOM.render(
   <Wrapper />,

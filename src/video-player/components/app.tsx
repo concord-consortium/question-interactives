@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import { JSONSchema6 } from "json-schema";
 import { BaseQuestionApp } from "../../shared/components/base-question-app";
 import { Runtime } from "./runtime";
@@ -117,7 +117,7 @@ export const baseAuthoringProps = {
       "ui:help": "Specify a fixed height, or leave blank for responsive behavior"
     }
   },
-}
+};
 
 const isAnswered = (interactiveState: IInteractiveState) => interactiveState?.percentageViewed > 0.95;
 
@@ -130,4 +130,4 @@ export const App = () => {
       disableAutoHeight={true}
     />
   );
-}
+};

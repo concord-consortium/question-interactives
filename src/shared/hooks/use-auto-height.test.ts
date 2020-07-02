@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import { useRef } from "react";
 import { renderHook } from "@testing-library/react-hooks";
 import { useAutoHeight } from "./use-auto-height";
 
@@ -13,7 +13,7 @@ describe("useAutoHeight", () => {
     const HookWrapper = () => {
       const container = useRef<HTMLDivElement>(document.createElement("div"));
       useAutoHeight({ container });
-    }
+    };
     const { unmount } = renderHook(HookWrapper);
     expect(observeSpy).toHaveBeenCalled();
     unmount();
@@ -30,7 +30,7 @@ describe("useAutoHeight", () => {
     const HookWrapper = () => {
       const container = useRef<HTMLDivElement>(document.createElement("div"));
       useAutoHeight({ container, disabled: true });
-    }
+    };
     const { unmount } = renderHook(HookWrapper);
     expect(observeSpy).not.toHaveBeenCalled();
     unmount();

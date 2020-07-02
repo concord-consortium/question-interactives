@@ -18,7 +18,7 @@ const jwtResponse: IJwtResponse = {
       platform_user_id: 123
     }
   }
-}
+};
 
 const getFirebaseJwtMock = (getFirebaseJwt as jest.Mock);
 
@@ -112,6 +112,6 @@ describe("useStudentSettings and related Firestore helpers", () => {
       expect(getFirebaseJwtMock).toHaveBeenCalledTimes(1);
 
       expect(firebase.auth().signInWithCustomToken).toHaveBeenCalledWith("123.abc");
-    })
+    });
   });
 });

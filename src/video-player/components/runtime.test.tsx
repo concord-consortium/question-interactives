@@ -1,11 +1,10 @@
 import React from "react";
 import { shallow } from "enzyme";
 import { Runtime, getAspectRatio } from "./runtime";
-import { IAuthoredState, IInteractiveState } from "./app";
 
-const authoredState: IAuthoredState = {
+const authoredState = {
   version: 1,
-  questionType: "iframe_interactive",
+  questionType: "iframe_interactive" as const,
   prompt: "Test prompt",
   videoUrl: "https://models-resources.concord.org/geniblocks/resources/fablevision/video/charcoal.mp4",
   captionUrl: "https://models-resources.concord.org/question-interactives/test-captions.vtt",
@@ -16,19 +15,19 @@ const authoredState: IAuthoredState = {
   required: true
 };
 
-const interactiveState: IInteractiveState = {
-  answerType: "interactive_state",
+const interactiveState = {
+  answerType: "interactive_state" as const,
   percentageViewed: 0.2,
   lastViewedTimestamp: 1.2
-}
+};
 
 describe("Runtime", () => {
   it("renders prompt and video with credits", () => {
     const wrapper = shallow(<Runtime authoredState={authoredState} />);
-    expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.prompt!));
+    expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.prompt));
     expect(wrapper.find("video").length).toEqual(1);
-    expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.credit!));
-    expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.creditLinkDisplayText!));
+    expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.credit));
+    expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.creditLinkDisplayText));
     expect(wrapper.find(".video-js").prop("poster")).toEqual(authoredState.poster);
   });
 

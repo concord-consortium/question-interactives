@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import { useEffect } from "react";
 import { setNavigation, useAuthoredState, useInteractiveState, useInitMessage } from "@concord-consortium/lara-interactive-api";
 
 // This hook can be used by any interactive that defines `required` property in its authored state and

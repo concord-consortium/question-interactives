@@ -75,7 +75,7 @@ export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps
       case "runtime":
         return renderRuntime();
       default:
-        return "Loading..."
+        return "Loading...";
     }
   };
 

@@ -3,9 +3,9 @@ import { fireEvent, render } from "@testing-library/react";
 import { Runtime, replaceBlanksWithInputs, replaceBlanksWithValues } from "./runtime";
 import { IAuthoredState, IInteractiveState } from "./types";
 
-const authoredState: IAuthoredState = {
+const authoredState = {
   version: 1,
-  questionType: "iframe_interactive",
+  questionType: "iframe_interactive" as const,
   prompt: "<p>Test prompt with [blank-1] and [blank-2].</p>",
   blanks: [
     {id: "[blank-1]", size: 10},
@@ -13,9 +13,9 @@ const authoredState: IAuthoredState = {
   ]
 };
 
-const brokenAuthoredState: IAuthoredState = {
+const brokenAuthoredState = {
   version: 1,
-  questionType: "iframe_interactive",
+  questionType: "iframe_interactive" as const,
   prompt: "<p>Test prompt with [blank-1] and [blank-2].</p>",
   blanks: [
     {id: "[blank-3]", size: 10}
@@ -23,17 +23,9 @@ const brokenAuthoredState: IAuthoredState = {
 };
 
 const interactiveState: IInteractiveState = {
-  answerType: "interactive_state",
+  answerType: "interactive_state" as const,
   blanks: [
     {id: "[blank-1]", response: "Test response"}
-  ]
-};
-
-const correctInteractiveState: IInteractiveState = {
-  answerType: "interactive_state",
-  blanks: [
-    {id: "[blank-1]", response: "Test response"},
-    {id: "[blank-2]", response: "Expected answer"}
   ]
 };
 
@@ -114,8 +106,8 @@ describe("Runtime", () => {
 describe("replaceBlanksWithValues helper", () => {
   it("returns string containing input field values", () => {
     const result = replaceBlanksWithValues({
-                    prompt: authoredState.prompt!,
-                    blanks: authoredState.blanks!,
+                    prompt: authoredState.prompt,
+                    blanks: authoredState.blanks,
                     responses: interactiveState.blanks
                   });
     expect(result).toEqual("<p>Test prompt with [ Test response ] and [  ].</p>");
@@ -124,20 +116,20 @@ describe("replaceBlanksWithValues helper", () => {
 
 describe("replaceBlanksWithInputs helper", () => {
   it("returns string containing input fields for user interaction", () => {
-    const result = replaceBlanksWithInputs(authoredState.prompt!);
+    const result = replaceBlanksWithInputs(authoredState.prompt);
     const input1 = `<input id="[blank-1]"/>`;
     const input2 = `<input id="[blank-2]"/>`;
     expect(result).toBe(`<p>Test prompt with ${input1} and ${input2}.</p>`);
   });
 
   it("returns string containing input fields for user interaction", () => {
-    const result = replaceBlanksWithInputs(authoredState.prompt!);
+    const result = replaceBlanksWithInputs(authoredState.prompt);
     const input1 = `<input id="[blank-1]"/>`;
     const input2 = `<input id="[blank-2]"/>`;
     expect(result).toBe(`<p>Test prompt with ${input1} and ${input2}.</p>`);
   });
   it("returns string containing input fields for user interaction", () => {
-    const result = replaceBlanksWithInputs(brokenAuthoredState.prompt!);
+    const result = replaceBlanksWithInputs(brokenAuthoredState.prompt);
     const input1 = `<input id="[blank-1]"/>`;
     const input2 = `<input id="[blank-2]"/>`;
     expect(result).toBe(`<p>Test prompt with ${input1} and ${input2}.</p>`);

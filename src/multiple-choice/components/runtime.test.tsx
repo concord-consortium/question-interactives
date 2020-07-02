@@ -1,31 +1,30 @@
 import React from "react";
 import { shallow } from "enzyme";
 import { Runtime } from "./runtime";
-import { IAuthoredState, IInteractiveState } from "./app";
 
 const authoredState = {
   version: 1,
-  questionType: "multiple_choice",
+  questionType: "multiple_choice" as const,
   prompt: "Test prompt",
   choices: [
     {id: "id1", content: "Choice A"},
     {id: "id2", content: "Choice B"}
   ],
-  layout: "vertical",
-} as IAuthoredState;
+  layout: "vertical" as const
+};
 
 const interactiveState = {
-  answerType: "multiple_choice_answer",
+  answerType: "multiple_choice_answer" as const,
   selectedChoiceIds: [ "id2" ]
-} as IInteractiveState;
+};
 
 describe("Runtime", () => {
   it("renders prompt, extra instructions and choices", () => {
     const wrapper = shallow(<Runtime authoredState={authoredState} />);
     const prompt = wrapper.find("legend");
-    expect(prompt.html()).toEqual(expect.stringContaining(authoredState.prompt!));
-    expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[0].content!));
-    expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[1].content!));
+    expect(prompt.html()).toEqual(expect.stringContaining(authoredState.prompt));
+    expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[0].content));
+    expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[1].content));
   });
 
   it("renders radio buttons or checkboxes depending on multipleAnswers property", () => {
@@ -71,9 +70,9 @@ describe("Runtime", () => {
     it("renders prompt, extra instructions and *disabled* choices", () => {
       const wrapper = shallow(<Runtime authoredState={authoredState} report={true} />);
       const prompt = wrapper.find("legend");
-      expect(prompt.html()).toEqual(expect.stringContaining(authoredState.prompt!));
-      expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[0].content!));
-      expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[1].content!));
+      expect(prompt.html()).toEqual(expect.stringContaining(authoredState.prompt));
+      expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[0].content));
+      expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[1].content));
 
       expect(wrapper.find("input[value='id1']").props().disabled).toEqual(true);
       expect(wrapper.find("input[value='id2']").props().disabled).toEqual(true);
@@ -96,35 +95,35 @@ describe("Runtime", () => {
   });
 
   describe("dropdown layout", () => {
-
     const dropdownAuthoredState = {
       version: 1,
+      questionType: "multiple_choice" as const,
       prompt: "Test prompt",
       choices: [
         {id: "id1", content: "Choice A"},
         {id: "id2", content: "Choice B"}
       ],
-      layout: "dropdown",
-    } as IAuthoredState;
+      layout: "dropdown" as const,
+    };
 
     const dropdownInteractiveState = {
-      answerType: "multiple_choice_answer",
+      answerType: "multiple_choice_answer" as const,
       selectedChoiceIds: [ "id2" ],
-    } as IInteractiveState;
+    };
 
     it("renders prompt, extra instructions and choices", () => {
       const wrapper = shallow(<Runtime authoredState={dropdownAuthoredState} />);
       const prompt = wrapper.find("legend");
-      expect(prompt.html()).toEqual(expect.stringContaining(dropdownAuthoredState.prompt!));
-      expect(wrapper.text()).toEqual(expect.stringContaining(dropdownAuthoredState.choices[0].content!));
-      expect(wrapper.text()).toEqual(expect.stringContaining(dropdownAuthoredState.choices[1].content!));
+      expect(prompt.html()).toEqual(expect.stringContaining(dropdownAuthoredState.prompt));
+      expect(wrapper.text()).toEqual(expect.stringContaining(dropdownAuthoredState.choices[0].content));
+      expect(wrapper.text()).toEqual(expect.stringContaining(dropdownAuthoredState.choices[1].content));
     });
 
     it("renders dropdown select", () => {
       const wrapper = shallow(<Runtime authoredState={dropdownAuthoredState} />);
       expect(wrapper.find("option").length).toEqual(3);
       expect(wrapper.find("option").first().text()).toEqual(expect.stringContaining("Select"));
-      expect(wrapper.find("option").at(1).text()).toEqual(expect.stringContaining(dropdownAuthoredState.choices[0].content!));
+      expect(wrapper.find("option").at(1).text()).toEqual(expect.stringContaining(dropdownAuthoredState.choices[0].content));
     });
 
     it("handles passed interactiveState", () => {

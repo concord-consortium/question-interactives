@@ -8,7 +8,7 @@ import { IHintRequest, log } from "@concord-consortium/lara-interactive-api";
 // This should be part of lara-interactive-api
 interface ILogRequest {
   action: string;
-  data: object;
+  data: Record<string, unknown>;
 }
 
 interface IProps {
@@ -27,40 +27,53 @@ export const IframeRuntime: React.FC<IProps> =
   const [ hint, setHint ] = useState("");
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const phoneRef = useRef<IframePhone>();
-
-  const initInteractive = () => {
-    const phone = phoneRef.current;
-    if (!phone) {
-      return;
-    }
-    phone.addListener("interactiveState", (newInteractiveState: any) => {
-      setInteractiveState(newInteractiveState);
-    });
-    phone.addListener("height", (newHeight: number) => {
-      setIframeHeight(newHeight);
-    });
-    phone.addListener("hint", (newHint: IHintRequest) => {
-      setHint(newHint.text || "");
-    });
-    phone.addListener("log", (logData: ILogRequest) => {
-      log(logData.action, {
-        ...logData.data,
-        scaffolded_question_level: scaffoldedQuestionLevel,
-        subinteractive_url: url,
-        subinteractive_type: authoredState.questionType,
-        subinteractive_sub_type: authoredState.questionSubType,
-        subinteractive_id: id
-      });
-    });
-    phone.post("initInteractive", {
-      mode: report ? "report" : "runtime",
-      authoredState,
-      interactiveState
-    });
-  }
+  // Why is interativeState and setInteractiveState kept in refs? So it's not necessary to declare these variables as
+  // useEffect's dependencies. Theoretically this useEffect callback is perfectly fine either way, but since
+  // it reloads the iframe each time it's called, it's not a great experience for user when that happens while he is
+  // interacting with the iframe (e.g. typing in textarea). And interactiveState is being updated very often,
+  // as well as setInteractiveState that is generated during each render of the parent component.
+  const interactiveStateRef = useRef<any>(undefined);
+  const setInteractiveStateRef = useRef<((state: any) => void) | undefined>(undefined);
+  interactiveStateRef.current = interactiveState;
+  setInteractiveStateRef.current = setInteractiveState;
 
   useEffect(() => {
+    const initInteractive = () => {
+      const phone = phoneRef.current;
+      if (!phone) {
+        return;
+      }
+      phone.addListener("interactiveState", (newInteractiveState: any) => {
+        setInteractiveStateRef.current?.(newInteractiveState);
+      });
+      phone.addListener("height", (newHeight: number) => {
+        setIframeHeight(newHeight);
+      });
+      phone.addListener("hint", (newHint: IHintRequest) => {
+        setHint(newHint.text || "");
+      });
+      phone.addListener("log", (logData: ILogRequest) => {
+        log(logData.action, {
+          ...logData.data,
+          scaffolded_question_level: scaffoldedQuestionLevel,
+          subinteractive_url: url,
+          subinteractive_type: authoredState.questionType,
+          subinteractive_sub_type: authoredState.questionSubType,
+          subinteractive_id: id
+        });
+      });
+      phone.post("initInteractive", {
+        mode: report ? "report" : "runtime",
+        authoredState,
+        // This is a trick not to depend on interactiveState.
+        interactiveState: interactiveStateRef.current
+      });
+    };
+
     if (iframeRef.current) {
+      // Reload the iframe.
+      iframeRef.current.src = url;
+      // Re-init interactive, this time using a new mode (report or runtime).
       phoneRef.current = new iframePhone.ParentEndpoint(iframeRef.current, initInteractive);
     }
     // Cleanup.
@@ -68,20 +81,8 @@ export const IframeRuntime: React.FC<IProps> =
       if (phoneRef.current) {
         phoneRef.current.disconnect();
       }
-    }
-  }, [url]);
-
-  useEffect(() => {
-    if (phoneRef.current) {
-      phoneRef.current.disconnect();
-    }
-    if (iframeRef.current) {
-      // Reload the iframe.
-      iframeRef.current.src = url;
-      // Re-init interactive, this time using a new mode (report or runtime).
-      phoneRef.current = new iframePhone.ParentEndpoint(iframeRef.current, initInteractive);
-    }
-  }, [report])
+    };
+  }, [url, authoredState, report, id, scaffoldedQuestionLevel]);
 
   return (
     <div>
@@ -89,5 +90,5 @@ export const IframeRuntime: React.FC<IProps> =
       { hint &&
         <div className={css.hint}>{renderHTML(hint)}</div> }
     </div>
-  )
+  );
 };
