@@ -124,6 +124,7 @@
     "@concord-consortium/slate-editor": "^0.3.0",
     "deep-equal": "^2.0.3",
     "dompurify": "^2.0.12",
+    "drawing-tool": "^2.0.1",
     "firebase": "^7.15.2",
     "html-react-parser": "^0.13.0",
     "iframe-phone": "^1.2.1",
