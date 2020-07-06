@@ -50,21 +50,26 @@ export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
     const allowUpscale = authoredState.scaling === "fitWidth";
     const modalImageUrl = highResUrl || url;
     const uuid = uuidv4();
-    const title = `<strong>${caption || ""}</strong> <em>${credit || ""}</em> ${ReactDOMServer.renderToString(getCreditLink() || <span/>)}`;
+    const title = `<strong>${caption || ""}</strong> <em>${credit || ""}</em> ${ReactDOMServer.renderToString(getCreditLink(false) || <span/>)}`;
     modalImageUrl && showModal({ uuid, type: "lightbox", url: modalImageUrl,
                         isImage: true, size, allowUpscale, title });
     log("image zoomed in", { url });
   };
 
-  const getCreditLink = () => {
+  const getCreditLink = (displayBlock = true) => {
     const { creditLink, creditLinkDisplayText } = authoredState;
-    return creditLink && (
-      <div className={css.creditLink}>
-        <a href={creditLink} target="_blank" rel="noreferrer noopener">
-          {creditLinkDisplayText || creditLink}
-        </a>
-      </div>
-    );
+    const link = <a href={creditLink} target="_blank" rel="noreferrer noopener">
+                  {creditLinkDisplayText || creditLink}
+                </a>
+    if (displayBlock === true) {
+      return creditLink && (
+        <div className={css.creditLink}>
+          {link}
+        </div>
+      )
+    } else {
+      return creditLink && link
+    }
   };
 
   return (
