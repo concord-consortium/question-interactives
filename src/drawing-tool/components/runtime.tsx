@@ -37,7 +37,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     const windowWidth = window.innerWidth;
 
     const stampCollections: StampCollections = {};
-    authoredState.stampCollections.forEach(collection => {
+    authoredState.stampCollections?.forEach(collection => {
       const baseName = collection.name || collection.collection.charAt(0).toUpperCase() + collection.collection.slice(1);
       let name = baseName;
       let i = 0;
