@@ -7,11 +7,18 @@ import { BaseQuestionApp } from "../../shared/components/base-question-app";
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
 
+interface StampCollection {
+  collection: "molecules" | "ngsaObjects" | "custom";
+  name?: string;
+  stamps?: string[];
+}
+
 export interface IAuthoredState extends IAuthoringOpenResponseMetadata {
   version: number;
   backgroundImageUrl?: string;
   imageFit: string;
   imagePosition: string;
+  stampCollections: StampCollection[];
 }
 
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {}
@@ -19,6 +26,91 @@ export interface IInteractiveState extends IRuntimeInteractiveMetadata {}
 const baseAuthoringProps = {
   schema: {
     type: "object",
+    definitions: {
+      stampCollection: {
+        title: "Stamp collection",
+        type: "object",
+        properties: {
+          collection: {
+            type: "string",
+            enum: [
+              "molecules",
+              "ngsaObjects",
+              "custom"
+            ],
+            enumNames: [
+              "Molecules (predefined)",
+              "NGSA Objects (predefined)",
+              "Custom"
+            ],
+            default: "molecules"
+          }
+        },
+        required: [
+          "collection"
+        ],
+        dependencies: {
+          collection: {
+            oneOf: [
+              {
+                properties: {
+                  collection: {
+                    enum: [
+                      "molecules"
+                    ]
+                  },
+                  name: {
+                    title: "Collection title",
+                    type: "string",
+                    default: "Molecules"
+                  }
+                }
+              },
+              {
+                properties: {
+                  collection: {
+                    enum: [
+                      "ngsaObjects"
+                    ]
+                  },
+                  name: {
+                    title: "Collection title",
+                    type: "string",
+                    default: "Objects"
+                  }
+                }
+              },
+              {
+                properties: {
+                  collection: {
+                    enum: [
+                      "custom"
+                    ]
+                  },
+                  name: {
+                    title: "Collection title",
+                    type: "string",
+                    default: "My Stamps"
+                  },
+                  stamps: {
+                    title: "Stamps",
+                    type: "array",
+                    items: {
+                      type: "string",
+                      default: "https://"
+                    },
+                    default: ["https://"]
+                  }
+                },
+                required: [
+                  "name"
+                ]
+              }
+            ]
+          }
+        }
+      },
+    },
     properties: {
       version: {
         type: "number",
@@ -56,6 +148,13 @@ const baseAuthoringProps = {
           "Center",
           "Top-left"
         ]
+      },
+      stampCollections: {
+        type: "array",
+        title: "Stamp collections",
+        items: {
+          "$ref": "#/definitions/stampCollection"
+        }
       }
     }
   } as JSONSchema6,
@@ -73,7 +172,13 @@ const baseAuthoringProps = {
     imagePosition: {
       "ui:widget": "radio"
     }
-  }
+  },
+
+  // Can't get defaults to work with custom stamps, so validating would be ugly and confusing for users until
+  // they enter the required properties after they select a custom stamp, so skipping this for now.
+  // validate: (formData: IAuthoredState, errors: FormValidation) => {
+  //   return errors;
+  // }
 };
 
 const isAnswered = (interactiveState: IInteractiveState | null) => !!interactiveState?.answerText;
