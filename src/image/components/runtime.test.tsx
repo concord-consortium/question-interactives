@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { shallow } from "enzyme";
 import { Runtime } from "./runtime";
 import { IAuthoredState } from "./app";
@@ -31,7 +31,8 @@ const naturalWidthImageAuthoredState: IAuthoredState = {
 
 describe("Runtime", () => {
   it("renders image and all other supplied fields", () => {
-    const wrapper = shallow(<Runtime authoredState={authoredState} />);
+    const container = useRef<HTMLDivElement>(document.createElement("div"));
+    const wrapper = shallow(<Runtime authoredState={authoredState} baseContainer={container}/>);
 
     expect(wrapper.text()).toEqual(expect.stringContaining("Image showing the CC Logo"));
     expect(wrapper.text()).toEqual(expect.stringContaining("Copyright Concord Consortium"));
@@ -43,7 +44,8 @@ describe("Runtime", () => {
 
   });
   it("renders image at native resolution when specified", () => {
-    const wrapper = shallow(<Runtime authoredState={naturalWidthImageAuthoredState} />);
+    const container = useRef<HTMLDivElement>(document.createElement("div"));
+    const wrapper = shallow(<Runtime authoredState={naturalWidthImageAuthoredState} baseContainer={container}/>);
 
     expect(wrapper.find("img").at(0).hasClass(css.originalDimensions));
 

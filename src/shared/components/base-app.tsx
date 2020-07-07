@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, RefObject } from "react";
 import { useAutoHeight } from "../hooks/use-auto-height";
 import { useShutterbug } from "../hooks/use-shutterbug";
 import { BaseAuthoring, IBaseAuthoringProps } from "./base-authoring";
@@ -20,6 +20,7 @@ export interface IAuthoringComponentProps<IAuthoredState> {
 
 export interface IRuntimeComponentProps<IAuthoredState> {
   authoredState: IAuthoredState;
+  baseContainer?: RefObject<HTMLDivElement>;
 }
 
 interface IProps<IAuthoredState> {
@@ -64,7 +65,7 @@ export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps
     }
     return (
       <div className={css.runtime}>
-        <Runtime authoredState={authoredState} />
+        <Runtime authoredState={authoredState} baseContainer={container} />
       </div>
     );
   };
