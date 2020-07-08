@@ -125,6 +125,10 @@ const baseAuthoringProps = {
         title: "Prompt",
         type: "string"
       },
+      required: {
+        title: "Required (Show submit and lock button)",
+        type: "boolean"
+      },
       hint: {
         title: "Hint",
         type: "string"

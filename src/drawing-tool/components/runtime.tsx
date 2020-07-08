@@ -28,6 +28,8 @@ interface DrawingToolOpts {
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
 
+  const readOnly = !!(report || (authoredState.required && interactiveState?.submitted));
+
   // equivalent to componentDidLoad
   useEffect(() => {
     const windowWidth = window.innerWidth;
@@ -54,7 +56,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     });
 
     const drawingToolOpts: DrawingToolOpts = {
-      width: windowWidth - kToolbarWidth - 5,
+      width: windowWidth - kToolbarWidth - 10,
       height: kToolbarHeight
     }
 
@@ -85,6 +87,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
 
     drawingTool.on('drawing:changed', () => {
+      if (readOnly) return;
       const userState = drawingTool.save();
       setInteractiveState?.(prevState => ({
         ...prevState,
@@ -97,7 +100,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   return (
     <div>
       { authoredState.prompt && <div>{renderHTML(authoredState.prompt)}</div>}
-      <div id="drawing-tool-container" className={css.runtime} />
+      <div className={css.drawingtoolWrapper}>
+        { readOnly && <div className={css.clickShield} /> }
+        <div id="drawing-tool-container" className={css.runtime} />
+      </div>
     </div>
   );
 };
