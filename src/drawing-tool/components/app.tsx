@@ -15,6 +15,7 @@ interface StampCollection {
 
 export interface IAuthoredState extends IAuthoringOpenResponseMetadata {
   version: number;
+  hint?: string;
   backgroundImageUrl?: string;
   imageFit: string;
   imagePosition: string;
@@ -116,6 +117,18 @@ const baseAuthoringProps = {
         type: "number",
         default: 1
       },
+      questionType: {
+        type: "string",
+        default: "drawing_tool"
+      },
+      prompt: {
+        title: "Prompt",
+        type: "string"
+      },
+      hint: {
+        title: "Hint",
+        type: "string"
+      },
       backgroundImageUrl: {
         title: "Background Image URL",
         type: "string",
@@ -162,6 +175,12 @@ const baseAuthoringProps = {
   uiSchema: {
     version: {
       "ui:widget": "hidden"
+    },
+    questionType: {
+      "ui:widget": "hidden"
+    },
+    prompt: {
+      "ui:widget": "richtext"
     },
     backgroundImageUrl: {
       "ui:help": "Path to hosted image file (jpg, png, gif, etc)"

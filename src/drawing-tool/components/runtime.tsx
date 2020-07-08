@@ -4,6 +4,7 @@ import 'drawing-tool/dist/drawing-tool.css';
 import { IAuthoredState, IInteractiveState } from "./app";
 import css from "./runtime.scss";
 import predefinedStampCollections from "./stamp-collections";
+import { renderHTML } from "../../shared/utilities/render-html";
 
 const kToolbarWidth = 40;
 const kToolbarHeight = 600;
@@ -13,11 +14,6 @@ interface IProps {
   interactiveState?: IInteractiveState | null;
   setInteractiveState?: (updateFunc: (prevState: IInteractiveState | null) => IInteractiveState) => void;
   report?: boolean;
-}
-
-interface IImageSize {
-  width: number;
-  height: number;
 }
 
 interface StampCollections {
@@ -99,6 +95,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   }, []);
 
   return (
-    <div id="drawing-tool-container" className={css.runtime} />
+    <div>
+      { authoredState.prompt && <div>{renderHTML(authoredState.prompt)}</div>}
+      <div id="drawing-tool-container" className={css.runtime} />
+    </div>
   );
 };
