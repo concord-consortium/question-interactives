@@ -61,7 +61,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
     const link = <a href={creditLink} target="_blank" rel="noreferrer noopener">
                   {creditLinkDisplayText || creditLink}
                 </a>
-    if (displayBlock === true) {
+    if (displayBlock) {
       return creditLink && (
         <div className={css.creditLink}>
           {link}
