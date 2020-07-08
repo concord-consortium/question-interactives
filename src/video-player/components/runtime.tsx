@@ -45,7 +45,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   // Keep viewedTimestamp in ref, so the useEffect below doesn"t need to list it in its dependency array, and doesn't
   // get triggered each time viewedTimestamp is updated. Its callback treats this value as an initial value.
-  // We don"t want to reload video player each time new timestamp is saved.
+  // We don't want to reload video player each time new timestamp is saved.
   const viewedTimestampRef = useRef<number>();
   viewedTimestampRef.current = viewedTimestamp;
 
