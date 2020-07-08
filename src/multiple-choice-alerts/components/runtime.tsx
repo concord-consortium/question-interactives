@@ -4,7 +4,7 @@
   its sole purpose is to allow manual testing of the modal alert functionality.
  */
 
-import React  from "react";
+import React from "react";
 import { v4 as uuidv4 } from "uuid";
 import { IAuthoredState, IChoice, IInteractiveState } from "./app";
 import { showModal } from "@concord-consortium/lara-interactive-api";
