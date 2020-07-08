@@ -32,8 +32,8 @@ export const IframeRuntime: React.FC<IProps> =
   // it reloads the iframe each time it's called, it's not a great experience for user when that happens while he is
   // interacting with the iframe (e.g. typing in textarea). And interactiveState is being updated very often,
   // as well as setInteractiveState that is generated during each render of the parent component.
-  const interactiveStateRef = useRef<any>(undefined);
-  const setInteractiveStateRef = useRef<((state: any) => void) | undefined>(undefined);
+  const interactiveStateRef = useRef<any>(interactiveState);
+  const setInteractiveStateRef = useRef<((state: any) => void)>(setInteractiveState);
   interactiveStateRef.current = interactiveState;
   setInteractiveStateRef.current = setInteractiveState;
 
