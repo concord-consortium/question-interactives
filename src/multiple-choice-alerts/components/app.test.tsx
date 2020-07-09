@@ -19,7 +19,7 @@ describe("preprocessFormData helper", () => {
       ],
       layout: "vertical",
     });
-    const choices = newData.choices!;
+    const choices = newData.choices;
 
     expect(choices[0].id).toBeDefined();
     expect(choices[1].id).toBeDefined();

@@ -44,7 +44,7 @@ export const getStudentInfoAndSignInToFirestore = async () => {
     }
   }
   return studentInfo;
-}
+};
 
 export const getFirestore = () => {
   if (!dbInstance) {

@@ -16,5 +16,5 @@ export const useShutterbug = ({ container }: IConfig) => {
     return () => {
       Shutterbug.disable();
     };
-  }, []);
+  }, [container]);
 };

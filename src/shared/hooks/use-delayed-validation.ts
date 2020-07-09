@@ -17,4 +17,4 @@ export const useDelayedValidation = (config: IConfig) => {
     window.clearTimeout(timer.current);
     timer.current = window.setTimeout(() => config.formRef.current?.submit(), config.delay || defaultDelay);
   };
-}
+};

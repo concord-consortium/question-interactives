@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useEffect, useRef, useState } from "react";
+import React, { ChangeEvent, useEffect, useRef, useState, useCallback } from "react";
 import { FieldProps } from "react-jsonschema-form";
 import { IframePhone } from "../../shared/types";
 import iframePhone from "iframe-phone";
@@ -26,7 +26,7 @@ const availableInteractives = [
     url: window.location.href.replace(scaffoldedQuestionSegment, "multiple-choice"),
     name: "Multiple choice"
   }
-]
+];
 
 export const IframeAuthoring: React.FC<FieldProps> = props => {
   const { onChange, formData } = props;
@@ -54,7 +54,7 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
     setAuthoringOpened(!authoringOpened);
   };
 
-  const initInteractive = () => {
+  const initInteractive = useCallback(() => {
     const phone = phoneRef.current;
     if (!phone) {
       return;
@@ -71,9 +71,10 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
       mode: "authoring",
       authoredState
     });
-  };
+  }, [id, url, onChange, authoredState]);
 
   useEffect(() => {
+
     // Trigger reload ONLY if URL has changed or authored state is different than current iframe state.
     // This can happen when iframes are reordered using react-jsochschema-form array controls. More details in the
     // initial comment about `iframeCurrentAuthoredState`. `deepEqual` is used, as when `===` was used, sometimes iframe
@@ -84,7 +85,7 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
       iframeRef.current.src = url;
       phoneRef.current = new iframePhone.ParentEndpoint(iframeRef.current, initInteractive);
     }
-  }, [url, authoredState]);
+  }, [url, authoredState, initInteractive]);
 
   return (
     <div className={css.iframeAuthoring}>
@@ -101,5 +102,5 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
         </div>
       }
     </div>
-  )
+  );
 };

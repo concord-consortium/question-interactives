@@ -32,7 +32,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
 
   const getOriginalImageSize = (e: any) => {
     if (e.target && e.target.naturalWidth && e.target.naturalHeight) {
-      imageSize.current = { width: e.target.naturalWidth, height: e.target.naturalHeight }
+      imageSize.current = { width: e.target.naturalWidth, height: e.target.naturalHeight };
       const aspectRatio = e.target.naturalWidth / e.target.naturalHeight;
       setSupportedFeatures({
         interactiveState: true,
@@ -54,17 +54,17 @@ export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
     modalImageUrl && showModal({ uuid, type: "lightbox", url: modalImageUrl,
                         isImage: true, size, allowUpscale, title });
     log("image zoomed in", { url });
-  }
+  };
 
   const getCreditLink = () => {
     const { creditLink, creditLinkDisplayText } = authoredState;
     return creditLink && (
       <div className={css.creditLink}>
-        <a href={creditLink} target="_blank" rel="noopener">
+        <a href={creditLink} target="_blank" rel="noreferrer noopener">
           {creditLinkDisplayText || creditLink}
         </a>
       </div>
-    )
+    );
   };
 
   return (

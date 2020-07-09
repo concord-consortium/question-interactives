@@ -4,7 +4,7 @@
   its sole purpose is to allow manual testing of the modal alert functionality.
  */
 
-import React, { useState } from "react";
+import React from "react";
 import { v4 as uuidv4 } from "uuid";
 import { IAuthoredState, IChoice, IInteractiveState } from "./app";
 import { showModal } from "@concord-consortium/lara-interactive-api";
@@ -25,9 +25,6 @@ interface IProps {
 const baseElementId = uuidv4();     // DOM id necessary to associate inputs and label-for
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
-
-  const [showAnswerFeedback, setShowAnswerFeedback] = useState(false);
-
   const type = authoredState.multipleAnswers ? "checkbox" : "radio";
   let selectedChoiceIds = interactiveState?.selectedChoiceIds || [];
   if (!authoredState.multipleAnswers && selectedChoiceIds.length > 1) {
@@ -58,13 +55,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       }
     }
     setInteractiveState?.(prevState => ({...prevState, answerType: "multiple_choice_answer", selectedChoiceIds: newChoices }));
-    setShowAnswerFeedback(false);
   };
 
   const handleSelectChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
     const newChoice = [ event.target.value ];
     setInteractiveState?.(prevState => ({...prevState, answerType: "multiple_choice_answer", selectedChoiceIds: newChoice }));
-    setShowAnswerFeedback(false);
   };
 
   const getChoiceClass = (choice: IChoice, checked: boolean) => {
@@ -104,7 +99,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         </div>
       );
     });
-  }
+  };
 
   const renderSelect = () => {
     return (
@@ -117,7 +112,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         }
       </select>
     );
-  }
+  };
 
   const getFeedback = () => {
     let feedback = "";
@@ -150,7 +145,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       }
     }
     return { isCorrect, feedback };
-  }
+  };
 
   const layout = authoredState.layout || "vertical";
   const isAnswered = !!interactiveState?.selectedChoiceIds?.length;

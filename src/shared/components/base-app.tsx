@@ -36,9 +36,10 @@ export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps
   const container = useRef<HTMLDivElement>(null);
   const { authoredState, setAuthoredState } = useAuthoredState<IAuthoredState>();
   const initMessage = useInitMessage();
+  const isLoading = !initMessage;
   const isRuntimeView = initMessage?.mode === "runtime";
 
-  useAutoHeight({ container, disabled: disableAutoHeight });
+  useAutoHeight({ container, disabled: isRuntimeView && disableAutoHeight || isLoading });
   useShutterbug({ container: "." + css.runtime });
   useBasicLogging({ disabled: !isRuntimeView });
 
@@ -75,7 +76,7 @@ export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps
       case "runtime":
         return renderRuntime();
       default:
-        return "Loading..."
+        return "Loading...";
     }
   };
 

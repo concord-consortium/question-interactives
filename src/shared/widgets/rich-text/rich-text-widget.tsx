@@ -8,6 +8,7 @@ import "./rich-text-widget.scss";
 export const RichTextWidget = (props: WidgetProps) => {
   const [value, valueRef, setValue] = useRefState(htmlToSlate(props.value || ""));
   const [changeCount, setChangeCount] = useState(0);
+  const { id } = props;
   const editorRef = useRef<any>();
   const kExtraHeight = 30;
   const kInitialHeight = 50;
@@ -15,15 +16,15 @@ export const RichTextWidget = (props: WidgetProps) => {
 
   const handleLoad = () => {
     setChangeCount(count => count + 1);
-  }
+  };
 
   const handleEditorRef = useCallback((editor: any | null) => {
     editorRef.current = editor || undefined;
     if (editor) {
       // associate label with edit field
-      (editor as any).el.id = props.id;
-    };
-  }, [editorRef.current]);
+      (editor as any).el.id = id;
+    }
+  }, [id]);
 
   const handleFocus = () => {
     props.onFocus(props.id, slateToHtml(valueRef.current));
@@ -48,7 +49,7 @@ export const RichTextWidget = (props: WidgetProps) => {
         setHeight(desiredHeight);
       }
     }
-  }, [editorRef.current, changeCount, value]);
+  }, [changeCount, value, height]);
 
   return (<>
     <SlateToolbar

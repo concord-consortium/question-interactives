@@ -122,7 +122,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         </div>
       );
     });
-  }
+  };
 
   const renderSelect = () => {
     return (
@@ -135,7 +135,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         }
       </select>
     );
-  }
+  };
 
   const renderFeedback = () => {
     let feedback = "";
@@ -175,14 +175,14 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         <div className={css.feedback}>{ feedback }</div>
       </div>
     );
-  }
+  };
 
   const layout = authoredState.layout || "vertical";
   const isAnswered = !!interactiveState?.selectedChoiceIds?.length;
   const handleShowAnswerFeedback = () => {
     setShowAnswerFeedback(!showAnswerFeedback);
     log("answer feedback shown");
-  }
+  };
 
   return (
     <div>

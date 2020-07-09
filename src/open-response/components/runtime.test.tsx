@@ -1,39 +1,38 @@
 import React from "react";
 import { shallow } from "enzyme";
 import { Runtime } from "./runtime";
-import { IAuthoredState, IInteractiveState } from "./types";
 
 const authoredState = {
   version: 1,
-  questionType: "open_response",
+  questionType: "open_response" as const,
   prompt: "Test prompt",
   hint: "hint",
   required: false,
   defaultAnswer: ""
-} as IAuthoredState;
+};
 
 const authoredRichState = {
   ...authoredState,
   prompt: "<p><strong>Rich</strong> <em>text</em> <u>prompt</u>"
-}
+};
 
 const interactiveState = {
-  answerType: "open_response_answer",
+  answerType: "open_response_answer" as const,
   answerText: "Test answer",
-} as IInteractiveState;
+};
 
 describe("Runtime", () => {
   it("renders prompt and textarea", () => {
     const wrapper = shallow(<Runtime authoredState={authoredState} />);
     const prompt = wrapper.find("legend");
-    expect(prompt.html()).toEqual(expect.stringContaining(authoredState.prompt!));
+    expect(prompt.html()).toEqual(expect.stringContaining(authoredState.prompt));
     expect(wrapper.find("textarea").length).toEqual(1);
   });
 
   it("renders rich text prompt and textarea", () => {
     const wrapper = shallow(<Runtime authoredState={authoredRichState} />);
     const prompt = wrapper.find("legend");
-    expect(prompt.html()).toEqual(expect.stringContaining(authoredRichState.prompt!));
+    expect(prompt.html()).toEqual(expect.stringContaining(authoredRichState.prompt));
     expect(wrapper.find("textarea").length).toEqual(1);
   });
 
@@ -54,7 +53,7 @@ describe("Runtime", () => {
     it("renders prompt and *disabled* textarea", () => {
       const wrapper = shallow(<Runtime authoredState={authoredState} report={true} />);
       const prompt = wrapper.find("legend");
-      expect(prompt.html()).toEqual(expect.stringContaining(authoredState.prompt!));
+      expect(prompt.html()).toEqual(expect.stringContaining(authoredState.prompt));
       expect(wrapper.find("textarea").props().disabled).toEqual(true);
     });
 

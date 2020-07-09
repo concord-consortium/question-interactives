@@ -14,7 +14,7 @@ interface IProps {
 }
 
 export const getAspectRatio = (aspectRatio: string) => {
-  if (aspectRatio.indexOf(':') > -1) {
+  if (aspectRatio.indexOf(":") > -1) {
     // user supplied aspect ratio as a:b, so use it
     return aspectRatio;
   }
@@ -37,36 +37,25 @@ export const getAspectRatio = (aspectRatio: string) => {
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
-  let viewedProgress = interactiveState?.percentageViewed || 0;
-  let viewedTimestamp = interactiveState?.lastViewedTimestamp || 0;
+  const viewedProgress = interactiveState?.percentageViewed || 0;
+  const viewedTimestamp = interactiveState?.lastViewedTimestamp || 0;
   const playerRef = useRef<HTMLVideoElement>(null);
   const saveStateInterval = useRef<number>(0);
   const [hasStartedPlayback, setHasStartedPlayback] = useState(viewedTimestamp > 0 || viewedProgress > 0);
-  useEffect(() => {
-    const player = loadPlayer();
-    return () => {
-      player.dispose();
-    };
-  }, []);
-  const getViewTime = () => {
-    if (playerRef.current) {
-      return playerRef.current.currentTime;
-    }
-    else return 0;
-  };
-  const getViewPercentage = () => {
-    if (playerRef.current) {
-      return playerRef.current.currentTime / playerRef.current.duration;
-    }
-    else return 0;
-  };
 
-  const loadPlayer = () => {
+  // Keep viewedTimestamp in ref, so the useEffect below doesn"t need to list it in its dependency array, and doesn't
+  // get triggered each time viewedTimestamp is updated. Its callback treats this value as an initial value.
+  // We don't want to reload video player each time new timestamp is saved.
+  const viewedTimestampRef = useRef<number>();
+  viewedTimestampRef.current = viewedTimestamp;
+
+  useEffect(() => {
     const player: videojs.Player = videojs(playerRef.current,
       {
         controls: true,
-        fluid: authoredState.fixedAspectRatio || authoredState.fixedHeight ? false : true,
+        fluid: !(authoredState.fixedAspectRatio || authoredState.fixedHeight),
         // This is a new property not supported by the current types
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         crossOrigin: "anonymous"
       }, () => {
@@ -80,11 +69,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         });
         if (authoredState.captionUrl) {
           player.addRemoteTextTrack({
-            kind: 'captions',
-            language: 'en',
-            label: 'English',
+            kind: "captions",
+            language: "en",
+            label: "English",
             src: authoredState.captionUrl,
-            'default': true
+            "default": true
           }, false);
         }
       });
@@ -99,12 +88,30 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       player.height(authoredState.fixedHeight);
     }
     player.ready(() => {
-      if (viewedTimestamp) {
-        player.currentTime(viewedTimestamp);
+      if (viewedTimestampRef.current) {
+        player.currentTime(viewedTimestampRef.current);
       }
     });
 
-    return player;
+    return () => {
+      player.dispose();
+    };
+  }, [authoredState]);
+
+  const getViewTime = () => {
+    if (playerRef.current) {
+      return playerRef.current.currentTime;
+    } else {
+      return 0;
+    }
+  };
+
+  const getViewPercentage = () => {
+    if (playerRef.current) {
+      return playerRef.current.currentTime / playerRef.current.duration;
+    } else {
+      return 0;
+    }
   };
 
   const handlePlaying = () => {
@@ -119,7 +126,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const handlePlay = () => {
     const percentageViewed = getViewPercentage();
     log("video started", { videoUrl: authoredState.videoUrl, percentage_viewed: percentageViewed });
-  }
+  };
 
   const handleStop = () => {
     updateState();
@@ -128,14 +135,12 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const updateState = () => {
-    viewedTimestamp = getViewTime();
-    viewedProgress = getViewPercentage();
     setInteractiveState?.(prevState => ({
       ...prevState,
       answerType: "interactive_state",
       answerText: `Percentage viewed: ${viewedProgress}`,
-      percentageViewed: viewedProgress,
-      lastViewedTimestamp: viewedTimestamp
+      percentageViewed: getViewPercentage(),
+      lastViewedTimestamp: getViewTime()
     }));
   };
 
@@ -143,7 +148,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     if (!hasStartedPlayback) {
       return authoredState.poster;
     }
-    else return;
   };
 
   return (
@@ -166,7 +170,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       {authoredState.credit && <div className={css.credit}>{authoredState.credit}</div>}
       {
         authoredState.creditLink &&
-        <div className={css.creditLink}><a href={authoredState.creditLink} target="_blank">
+        <div className={css.creditLink}><a href={authoredState.creditLink} target="_blank" rel="noreferrer">
           {authoredState.creditLinkDisplayText ? authoredState.creditLinkDisplayText : authoredState.creditLink}
         </a></div>}
     </div>

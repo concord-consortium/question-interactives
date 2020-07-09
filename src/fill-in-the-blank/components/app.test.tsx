@@ -1,4 +1,3 @@
-import React from "react";
 import { baseAuthoringProps } from "./app";
 import { defaultBlankSize } from "./types";
 import { FormValidation } from "react-jsonschema-form";
@@ -70,5 +69,5 @@ describe("validation helper", () => {
 
     baseAuthoringProps.validate({ version: 1, questionType: "iframe_interactive", prompt: "test [blank-1], [blank-2], and [blank-1]"}, errors);
     expect(errors.prompt.addError).toHaveBeenCalledWith("The same blank ID used multiple times: [blank-1]");
-  })
+  });
 });

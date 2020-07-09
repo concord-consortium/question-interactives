@@ -63,7 +63,7 @@ describe("useBasicLogging", () => {
   it("should log focusin and focusout, and cleanup event listeners on unmount", () => {
     const HookWrapper = () => {
       return useBasicLogging();
-    }
+    };
     const { unmount } = renderHook(HookWrapper);
 
     triggerFocusIn();
@@ -96,7 +96,7 @@ describe("useBasicLogging", () => {
   it("should scroll into view and out of view, and cleanup event listeners on unmount", (done) => {
     const HookWrapper = () => {
       return useBasicLogging();
-    }
+    };
     const { unmount } = renderHook(HookWrapper);
 
     setTimeout(() => {
@@ -122,7 +122,7 @@ describe("useBasicLogging", () => {
   it("shouldn't do anything when it's disabled", () => {
     const HookWrapper = () => {
       return useBasicLogging({ disabled: true });
-    }
+    };
     renderHook(HookWrapper);
     triggerFocusIn();
     expect(logMock).toHaveBeenCalledTimes(0);

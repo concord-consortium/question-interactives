@@ -77,6 +77,6 @@ export const useBasicLogging = (options?: IConfig) => {
       window.removeEventListener("focusout", focusOut);
       window.clearTimeout(timeoutId);
       observer.disconnect();
-    }
+    };
   }, [disabled]);
 };
