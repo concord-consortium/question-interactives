@@ -14,7 +14,10 @@ const authoredStateSample = {
 
 
 context("Test Video Player interactive", () => {
+  let i = 0;
+
   beforeEach(() => {
+    if (i++ > 0) cy.wait(3000);
     cy.visit("/wrapper.html?iframe=/video-player");
   });
 
@@ -63,14 +66,14 @@ context("Test Video Player interactive", () => {
       });
       phoneListen("interactiveState");
       cy.getIframeBody().find(".vjs-big-play-button").click();
+      cy.getIframeBody().find(".vjs-text-track-cue").should("include.text", "This is a drake");
+      cy.getIframeBody().find(".vjs-current-time-display").should("include.text", "0:01");
+      cy.getIframeBody().find(".vjs-poster.vjs-hidden").should("exist");
+
       getAndClearLastPhoneMessage((state) => {
         expect(state.lastViewedTimestamp).greaterThan(1.0);
-
-        cy.getIframeBody().find(".vjs-text-track-cue").should("include.text", "This is a drake");
-        cy.getIframeBody().find(".vjs-current-time-display").should("include.text", "0:01");
-        cy.getIframeBody().find(".vjs-poster.vjs-hidden").should("exist");
-
-      });
+        // must wait for video to finish apparently
+      }, 15000);
     });
   });
   context("Authoring view", () => {
