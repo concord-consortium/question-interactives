@@ -1,7 +1,10 @@
 import { phonePost, phoneListen, getAndClearLastPhoneMessage } from "../support";
 
 context("Test multiple-choice interactive", () => {
+  let i = 0;
+
   beforeEach(() => {
+    if (i++ > 0) cy.wait(3000);
     cy.visit("/wrapper.html?iframe=/multiple-choice");
   });
 
@@ -392,7 +395,7 @@ context("Test multiple-choice interactive", () => {
       cy.getIframeBody().find("#root_multipleAnswers").click();
       getAndClearLastPhoneMessage(state => {
         expect(state.multipleAnswers).eql(true);
-      });
+      }, 100);
 
       cy.getIframeBody().find(".btn-add").click();
       cy.getIframeBody().find("#root_choices_0_content").clear();
@@ -401,7 +404,7 @@ context("Test multiple-choice interactive", () => {
       getAndClearLastPhoneMessage(state => {
         expect(state.choices[0].content).eql("Choice A");
         expect(state.choices[0].correct).eql(true);
-      });
+      }, 100);
 
       cy.getIframeBody().find(".btn-add").click();
       cy.getIframeBody().find("#root_choices_1_content").clear();
@@ -409,7 +412,7 @@ context("Test multiple-choice interactive", () => {
       getAndClearLastPhoneMessage(state => {
         expect(state.choices[1].content).eql("Choice B");
         expect(state.choices[1].correct).eql(false);
-      });
+      }, 100);
     });
   });
 

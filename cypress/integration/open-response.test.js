@@ -1,7 +1,10 @@
 import { phonePost, phoneListen, getAndClearLastPhoneMessage } from "../support";
 
 context("Test open response interactive", () => {
+  let i = 0;
+
   beforeEach(() => {
+    if (i++ > 0) cy.wait(3000);
     cy.visit("/wrapper.html?iframe=/open-response");
   });
 

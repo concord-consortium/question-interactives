@@ -10,12 +10,11 @@ before_install:
 install:
 - travis_retry gem install s3_website -v 3.4.0
 - travis_retry npm ci
-- travis_retry cypress install
 script:
+- npm run start &
 - npm run build
 - npm run test:coverage -- --runInBand
-- npm run start &
 - wait-on http://localhost:8080
 - $(npm bin)/cypress run --config video=false
-after_script:
+after_success:
 - ./s3_deploy.sh

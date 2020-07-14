@@ -1,7 +1,10 @@
 import { phonePost, phoneListen, getAndClearLastPhoneMessage, getAndClearAllPhoneMessage } from "../support";
 
 context("Test scaffolded question interactive", () => {
+  let i = 0;
+
   beforeEach(() => {
+    if (i++ > 0) cy.wait(4000);
     cy.visit("/wrapper.html?iframe=/scaffolded-question");
   });
 
@@ -195,12 +198,12 @@ context("Test scaffolded question interactive", () => {
       getAndClearLastPhoneMessage(state => {
         expect(state.version).eql(1);
         expect(state.prompt).include("Test prompt");
-      }, 100);
+      }, 200);
 
       cy.getIframeBody().find("#root_hint").type("Hint").tab();
       getAndClearLastPhoneMessage(state => {
         expect(state.hint).include("Hint");
-      });
+      }, 200);
 
       cy.getIframeBody().find(".btn-add").click();
       cy.getIframeBody().find("[data-cy=select-subquestion]").select("Open response");
@@ -209,7 +212,7 @@ context("Test scaffolded question interactive", () => {
       cy.getNestedIframeBody().find("#root_prompt").type("Test subquestion prompt").tab();
       getAndClearLastPhoneMessage(state => {
         expect(state.subinteractives[0].authoredState.prompt).include("Test subquestion prompt");
-      }, 100);
+      }, 200);
     });
 
     // This tests specifically a bug that was present and it's pretty subtle.
