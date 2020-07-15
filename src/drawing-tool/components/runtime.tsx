@@ -1,10 +1,11 @@
-import React, { useRef, useEffect } from "react";
+import React from "react";
 import DrawingTool from "drawing-tool";
 import 'drawing-tool/dist/drawing-tool.css';
 import { IAuthoredState, IInteractiveState } from "./app";
 import css from "./runtime.scss";
 import predefinedStampCollections from "./stamp-collections";
 import { renderHTML } from "../../shared/utilities/render-html";
+import { useOnMount } from "../../shared/hooks/use-on-mount";
 
 const kToolbarWidth = 40;
 const kToolbarHeight = 600;
@@ -30,8 +31,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const readOnly = !!(report || (authoredState.required && interactiveState?.submitted));
 
-  // equivalent to componentDidLoad
-  useEffect(() => {
+  useOnMount(() => {
     const windowWidth = window.innerWidth;
 
     const stampCollections: StampCollections = {};
@@ -95,7 +95,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         answerType: "interactive_state"
       }));
     });
-  }, []);
+  });
 
   return (
     <div>
