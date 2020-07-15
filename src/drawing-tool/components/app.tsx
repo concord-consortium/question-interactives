@@ -1,7 +1,7 @@
 import React from "react";
 import { Runtime } from "./runtime";
 import { JSONSchema6 } from "json-schema";
-import { IAuthoringOpenResponseMetadata, IRuntimeInteractiveMetadata } from "@concord-consortium/lara-interactive-api";
+import { IRuntimeInteractiveMetadata, IAuthoringInteractiveMetadata } from "@concord-consortium/lara-interactive-api";
 import { BaseQuestionApp } from "../../shared/components/base-question-app";
 
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
@@ -13,7 +13,7 @@ interface StampCollection {
   stamps?: string[];
 }
 
-export interface IAuthoredState extends IAuthoringOpenResponseMetadata {
+export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   version: number;
   hint?: string;
   backgroundImageUrl?: string;
@@ -119,7 +119,7 @@ const baseAuthoringProps = {
       },
       questionType: {
         type: "string",
-        default: "drawing_tool"
+        default: "iframe_interactive"
       },
       prompt: {
         title: "Prompt",

@@ -2,7 +2,7 @@ import { phonePost, phoneListen, getAndClearLastPhoneMessage } from "../support"
 
 const authoredStateWithoutStamps = {
   version: 1,
-  questionType: "open_response",
+  questionType: "iframe_interactve",
   imageFit: "shrinkBackgroundToCanvas",
   imagePosition: "center",
   stampCollections: []
@@ -10,7 +10,7 @@ const authoredStateWithoutStamps = {
 
 const authoredStateWithStamps = {
   version: 1,
-  questionType: "open_response",
+  questionType: "iframe_interactve",
   imageFit: "shrinkBackgroundToCanvas",
   imagePosition: "center",
   stampCollections: [{
