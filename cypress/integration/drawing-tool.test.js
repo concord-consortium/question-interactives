@@ -1,4 +1,4 @@
-import { phonePost, phoneListen, getAndClearLastPhoneMessage } from "../support";
+import { phonePost } from "../support";
 
 const authoredStateWithoutStamps = {
   version: 1,

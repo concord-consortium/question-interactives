@@ -23,6 +23,6 @@ const predefinedStampCollections = {
     "https://interactions-resources.concord.org/stamps/new-phone.svg",
     "https://interactions-resources.concord.org/stamps/broken-phone.svg"
   ]
-}
+};
 
 export default predefinedStampCollections;

@@ -39,7 +39,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       const baseName = collection.name || collection.collection.charAt(0).toUpperCase() + collection.collection.slice(1);
       let name = baseName;
       let i = 0;
-      while (!!stampCollections[name]) {
+      while (stampCollections[name]) {
         name = `${baseName} ${++i}`;
       }
       let stamps: string[];
@@ -58,7 +58,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     const drawingToolOpts: DrawingToolOpts = {
       width: windowWidth - kToolbarWidth - 10,
       height: kToolbarHeight
-    }
+    };
 
     if (Object.keys(stampCollections).length > 0) {
       drawingToolOpts.stamps = stampCollections;
@@ -70,7 +70,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       const imageOpts = {
         src: authoredState.backgroundImageUrl,
         position: authoredState.imagePosition
-      }
+      };
 
       if (authoredState.imageFit === "resizeCanvasToBackground") {
         imageOpts.position = "center";      // anything else is an invalid combo
@@ -93,7 +93,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         ...prevState,
         answerText: userState,
         answerType: "interactive_state"
-      }))
+      }));
     });
   }, []);
 
