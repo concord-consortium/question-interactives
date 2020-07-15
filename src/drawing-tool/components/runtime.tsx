@@ -1,11 +1,10 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
 import DrawingTool from "drawing-tool";
 import 'drawing-tool/dist/drawing-tool.css';
 import { IAuthoredState, IInteractiveState } from "./app";
 import css from "./runtime.scss";
 import predefinedStampCollections from "./stamp-collections";
 import { renderHTML } from "../../shared/utilities/render-html";
-import { useOnMount } from "../../shared/hooks/use-on-mount";
 
 const kToolbarWidth = 40;
 const kToolbarHeight = 600;
@@ -31,7 +30,21 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const readOnly = !!(report || (authoredState.required && interactiveState?.submitted));
 
-  useOnMount(() => {
+  // need a wrapper as `useRef` expects (state) => void
+  const handleSetInteractiveState = (userState: string) => {
+    setInteractiveState?.(prevState => ({
+      ...prevState,
+      drawingState: userState,
+      answerType: "interactive_state"
+    }));
+  };
+  // useRef to avoid passing interactiveState into useEffect, or it will reload on every drawing edit
+  const interactiveStateRef = useRef<any>(interactiveState);
+  const setInteractiveStateRef = useRef<((state: any) => void)>(handleSetInteractiveState);
+  interactiveStateRef.current = interactiveState;
+  setInteractiveStateRef.current = handleSetInteractiveState;
+
+  useEffect(() => {
     const windowWidth = window.innerWidth;
 
     const stampCollections: StampCollections = {};
@@ -82,20 +95,16 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       });
     }
 
-    if (interactiveState) {
-      drawingTool.load(interactiveState.answerText, null, true);
+    if (interactiveStateRef.current) {
+      drawingTool.load(interactiveStateRef.current.drawingState, null, true);
     }
 
     drawingTool.on('drawing:changed', () => {
       if (readOnly) return;
       const userState = drawingTool.save();
-      setInteractiveState?.(prevState => ({
-        ...prevState,
-        drawingState: userState,
-        answerType: "interactive_state"
-      }));
+      setInteractiveStateRef.current(userState);
     });
-  });
+  }, [authoredState, report, readOnly]);
 
   return (
     <div>
