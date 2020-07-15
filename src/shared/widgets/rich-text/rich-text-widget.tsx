@@ -6,17 +6,17 @@ import "@concord-consortium/slate-editor/build/index.css";
 import "./rich-text-widget.scss";
 
 export const RichTextWidget = (props: WidgetProps) => {
+  const { id, onFocus, onChange, onBlur } = props;
   const [value, valueRef, setValue] = useRefState(htmlToSlate(props.value || ""));
   const [changeCount, setChangeCount] = useState(0);
-  const { id } = props;
   const editorRef = useRef<any>();
   const kExtraHeight = 30;
   const kInitialHeight = 50;
   const [height, setHeight] = useState(kInitialHeight);
 
-  const handleLoad = () => {
+  const handleLoad = useCallback(() => {
     setChangeCount(count => count + 1);
-  };
+  }, []);
 
   const handleEditorRef = useCallback((editor: any | null) => {
     editorRef.current = editor || undefined;
@@ -26,19 +26,19 @@ export const RichTextWidget = (props: WidgetProps) => {
     }
   }, [id]);
 
-  const handleFocus = () => {
-    props.onFocus(props.id, slateToHtml(valueRef.current));
-  };
-  const handleChange = (editorValue: any) => {
+  const handleFocus = useCallback(() => {
+    onFocus(id, slateToHtml(valueRef.current));
+  }, [id, onFocus, valueRef]);
+
+  const handleChange = useCallback((editorValue: any) => {
     setValue(editorValue);
     setChangeCount(count => count + 1);
-  };
-  const handleBlur = () => {
-    const htmlValue = slateToHtml(valueRef.current);
-    // update the form on blur
-    props.onChange(htmlValue);
-    props.onBlur(props.id, htmlValue);
-  };
+    onChange(slateToHtml(editorValue));
+  }, [onChange, setValue]);
+
+  const handleBlur = useCallback(() => {
+    onBlur(id, slateToHtml(valueRef.current));
+  }, [id, onBlur, valueRef]);
 
   // dynamically resize editor to fit content
   useEffect(() => {
