@@ -22,7 +22,9 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   stampCollections: StampCollection[];
 }
 
-export interface IInteractiveState extends IRuntimeInteractiveMetadata {}
+export interface IInteractiveState extends IRuntimeInteractiveMetadata {
+  drawingState: string;
+}
 
 const baseAuthoringProps = {
   schema: {

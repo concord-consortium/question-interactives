@@ -91,7 +91,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       const userState = drawingTool.save();
       setInteractiveState?.(prevState => ({
         ...prevState,
-        answerText: userState,
+        drawingState: userState,
         answerType: "interactive_state"
       }));
     });
