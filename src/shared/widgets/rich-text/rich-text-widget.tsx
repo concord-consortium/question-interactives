@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { useDebouncedCallback } from 'use-debounce';
 import { WidgetProps } from "react-jsonschema-form";
 import { getContentHeight, htmlToSlate, SlateEditor, slateToHtml, SlateToolbar } from "@concord-consortium/slate-editor";
 import { useRefState } from "../../hooks/use-ref-state";
@@ -14,11 +13,6 @@ export const RichTextWidget = (props: WidgetProps) => {
   const kExtraHeight = 30;
   const kInitialHeight = 50;
   const [height, setHeight] = useState(kInitialHeight);
-
-  const kDebounceOnChangeDelay = 2000;
-  const [debounceOnChange, , flushOnChange] = useDebouncedCallback((editorValue: any) => {
-    onChange(slateToHtml(editorValue));
-  }, kDebounceOnChangeDelay);
 
   const handleLoad = useCallback(() => {
     setChangeCount(count => count + 1);
@@ -35,16 +29,16 @@ export const RichTextWidget = (props: WidgetProps) => {
   const handleFocus = useCallback(() => {
     onFocus(id, slateToHtml(valueRef.current));
   }, [id, onFocus, valueRef]);
+
   const handleChange = useCallback((editorValue: any) => {
     setValue(editorValue);
     setChangeCount(count => count + 1);
-    debounceOnChange(editorValue);
-  }, [debounceOnChange, setValue]);
+    onChange(slateToHtml(editorValue));
+  }, [onChange, setValue]);
+
   const handleBlur = useCallback(() => {
-    // flush any pending changes
-    flushOnChange();
     onBlur(id, slateToHtml(valueRef.current));
-  }, [flushOnChange, id, onBlur, valueRef]);
+  }, [id, onBlur, valueRef]);
 
   // dynamically resize editor to fit content
   useEffect(() => {
