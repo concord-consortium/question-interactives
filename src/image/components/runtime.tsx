@@ -59,16 +59,16 @@ export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
   const getCreditLink = (displayBlock = true) => {
     const { creditLink, creditLinkDisplayText } = authoredState;
     const link = <a href={creditLink} target="_blank" rel="noreferrer noopener">
-                  {creditLinkDisplayText || creditLink}
-                </a>
+      {creditLinkDisplayText || creditLink}
+    </a>;
     if (displayBlock) {
       return creditLink && (
         <div className={css.creditLink}>
           {link}
         </div>
-      )
+      );
     } else {
-      return creditLink && link
+      return creditLink && link;
     }
   };
 
