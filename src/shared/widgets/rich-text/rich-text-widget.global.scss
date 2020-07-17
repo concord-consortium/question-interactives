@@ -1,0 +1,16 @@
+.custom-rich-text-widget {
+  height: 100%;
+  overflow: hidden;
+}
+
+.modal-dialog {
+  .dialog {
+    .content {
+      .label {
+        padding: 0;
+        font-size: inherit;
+        font-weight: normal;
+      }
+    }
+  }
+}

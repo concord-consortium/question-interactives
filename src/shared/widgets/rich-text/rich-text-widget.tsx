@@ -3,7 +3,9 @@ import { WidgetProps } from "react-jsonschema-form";
 import { getContentHeight, htmlToSlate, SlateEditor, slateToHtml, SlateToolbar } from "@concord-consortium/slate-editor";
 import { useRefState } from "../../hooks/use-ref-state";
 import "@concord-consortium/slate-editor/build/index.css";
-import "./rich-text-widget.scss";
+import "./rich-text-widget.global.scss";
+
+const kThemeColor = "#34a5be";
 
 export const RichTextWidget = (props: WidgetProps) => {
   const { id, onFocus, onChange, onBlur } = props;
@@ -53,8 +55,10 @@ export const RichTextWidget = (props: WidgetProps) => {
 
   return (<>
     <SlateToolbar
-      colors={{ fill: "#666666", background: "#FFFFFF"}}
-      selectedColors={{ fill: "#FFFFFF", background: "#666666" }}
+      colors={{
+        buttonColors: { fill: "#666666", background: "#FFFFFF" },
+        selectedColors: { fill: "#FFFFFF", background: "#666666" },
+        themeColor: kThemeColor }}
       order={["bold", "italic", "underlined", "deleted", "superscript", "subscript", "color",
               "image", "link",
               "heading1", "heading2", "heading3", "block-quote", "ordered-list", "bulleted-list"]}
