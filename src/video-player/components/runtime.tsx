@@ -163,7 +163,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         log(logMessage, { videoUrl: authoredState.videoUrl, percentage_viewed: percentageViewed });
       }
       if (captionsTrackRef.current && captionsTrackRef.current.mode !== captionDisplayState) {
-        log(`Video captions toggled: ${captionsTrackRef.current.mode}`, { videoIrl: authoredState.videoUrl });
+        log(`video captions toggled: ${captionsTrackRef.current.mode}`, { videoIrl: authoredState.videoUrl });
         setCaptionDisplayState(captionsTrackRef.current.mode);
       }
     }
