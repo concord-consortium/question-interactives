@@ -88,7 +88,6 @@
     "copy-webpack-plugin": "^5.1.1",
     "css-loader": "^3.5.3",
     "cypress": "^4.10.0",
-    "cypress-plugin-tab": "^1.0.5",
     "enzyme": "^3.11.0",
     "enzyme-adapter-react-16": "^1.15.2",
     "eslint": "^7.3.1",
@@ -121,7 +120,7 @@
   },
   "dependencies": {
     "@concord-consortium/lara-interactive-api": "0.5.0-pre.3",
-    "@concord-consortium/slate-editor": "^0.3.0",
+    "@concord-consortium/slate-editor": "^0.4.2",
     "deep-equal": "^2.0.3",
     "dompurify": "^2.0.12",
     "drawing-tool": "^2.0.1",

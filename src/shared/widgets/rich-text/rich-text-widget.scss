@@ -1,4 +1,21 @@
-.custom-rich-text-widget {
-  height: 100%;
-  overflow: hidden;
+.customRichTextWidget {
+
+  :global .modal-dialog {
+    margin: 0;
+
+    .dialog {
+      .content {
+        .label {
+          padding: 0;
+          font-size: inherit;
+          font-weight: normal;
+        }
+      }
+    }
+  }
+
+  .customRichTextEditor {
+    height: 100%;
+    overflow: hidden;
+  }
 }
