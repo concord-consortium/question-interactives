@@ -18,6 +18,7 @@ module.exports = (env, argv) => {
       'scaffolded-question': './src/scaffolded-question/index.tsx',
       'video-player': './src/video-player/index.tsx',
       'image': './src/image/index.tsx',
+      'drawing-tool': './src/drawing-tool/index.tsx',
       'wrapper': './src/shared/wrapper.tsx'
     },
     mode: 'development',
@@ -150,6 +151,11 @@ module.exports = (env, argv) => {
       new HtmlWebpackPlugin({
         chunks: ['image'],
         filename: 'image/index.html',
+        template: 'src/shared/index.html'
+      }),
+      new HtmlWebpackPlugin({
+        chunks: ['drawing-tool'],
+        filename: 'drawing-tool/index.html',
         template: 'src/shared/index.html'
       }),
       new HtmlWebpackPlugin({

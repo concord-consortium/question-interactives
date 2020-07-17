@@ -1,0 +1,22 @@
+@import "../../shared/styles/helpers";
+
+.drawingtoolWrapper {
+  position: relative;
+  height: 600px;
+  width: 100%;
+}
+
+.runtime, .clickShield {
+  position: absolute;
+  left: -18px;
+  top: 0;
+}
+
+.clickShield {
+  right: -12px;
+  height: 100%;
+  background-color: #DDD;
+  opacity: 0.2;
+  z-index: 1010;      // drawing-tool buttons are z-index 1000...
+}
+
