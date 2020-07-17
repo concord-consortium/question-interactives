@@ -6,7 +6,6 @@ import CrossIcon from "../../shared/icons/incorrect.svg";
 import { renderHTML } from "../../shared/utilities/render-html";
 import buttonCss from "../../shared/styles/helpers.scss";
 import css from "./runtime.scss";
-import "./runtime.global.scss";
 import { log } from "@concord-consortium/lara-interactive-api";
 
 const DEFAULT_INCORRECT = "Sorry, that is incorrect.";

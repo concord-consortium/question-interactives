@@ -107,3 +107,9 @@ legend.prompt {     // clear bootstrap stuff
     padding: 2px 8px;
   }
 }
+
+:global .radio-choice {
+  label {
+    font-weight: normal;
+  }
+}
