@@ -1,5 +1,3 @@
-require('cypress-plugin-tab');
-
 // Taken from https://www.cypress.io/blog/2020/02/12/working-with-iframes-in-cypress/
 Cypress.Commands.add('getIframeBody', (iframeSelector = 'iframe') => {
   // get the iframe > document > body
