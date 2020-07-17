@@ -83,8 +83,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           // Store a ref to the captions track s we can check visibility later. There is no easy toggle event for captions show/hide
           captionsTrackRef.current = player.textTracks()[0];
           if (captionsTrackRef.current) {
-            captionsTrackRef.current.addEventListener("cuechange", (cue) => {
-              log("cue change", { videoUrl: authoredState.videoUrl });
+            captionsTrackRef.current.addEventListener("cuechange", () => {
+              const currentCue = captionsTrackRef.current?.activeCues?.length && captionsTrackRef.current?.activeCues.length > 0 && captionsTrackRef.current?.activeCues[0];
+              log("cue change", { videoUrl: authoredState.videoUrl, currentCue: (currentCue as VTTCue).text });
             });
           }
         }
@@ -131,7 +132,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     if (captionsTrackRef.current) {
       setCaptionDisplayState(captionsTrackRef.current.mode);
     }
-    updateState();
+    updateState(false, null);
   };
 
   const handlePlay = () => {
@@ -146,7 +147,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     updateState(true, "video stopped");
   };
 
-  const updateState = (forceSave = false, logMessage = "") => {
+  const updateState = (forceSave: boolean, logMessage: string | null) => {
     // store current playback progress each second
     const updateIntervalReady = Math.trunc(getViewTime()) > saveStateInterval.current;
     if (updateIntervalReady || forceSave) {
@@ -159,11 +160,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         percentageViewed,
         lastViewedTimestamp: getViewTime()
       }));
-      if (logMessage.length > 0) {
+      if (logMessage) {
         log(logMessage, { videoUrl: authoredState.videoUrl, percentage_viewed: percentageViewed });
       }
       if (captionsTrackRef.current && captionsTrackRef.current.mode !== captionDisplayState) {
-        log(`video captions toggled: ${captionsTrackRef.current.mode}`, { videoIrl: authoredState.videoUrl });
+        log(`video captions toggled: ${captionsTrackRef.current.mode}`, { videoUrl: authoredState.videoUrl });
         setCaptionDisplayState(captionsTrackRef.current.mode);
       }
     }
