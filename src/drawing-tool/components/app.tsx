@@ -206,7 +206,7 @@ const baseAuthoringProps = {
   // }
 };
 
-const isAnswered = (interactiveState: IInteractiveState | null) => !!interactiveState?.answerText;
+const isAnswered = (interactiveState: IInteractiveState | null) => !!interactiveState?.drawingState;
 
 export const App = () => (
   <BaseQuestionApp<IAuthoredState, IInteractiveState>
