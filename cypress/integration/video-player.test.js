@@ -17,7 +17,7 @@ context("Test Video Player interactive", () => {
   let i = 0;
 
   beforeEach(() => {
-    if (i++ > 0) cy.wait(3000);
+    if (i++ > 0) cy.wait(4000);
     cy.visit("/wrapper.html?iframe=/video-player");
   });
 
@@ -70,10 +70,10 @@ context("Test Video Player interactive", () => {
       cy.getIframeBody().find(".vjs-current-time-display").should("include.text", "0:01");
       cy.getIframeBody().find(".vjs-poster.vjs-hidden").should("exist");
 
-      getAndClearLastPhoneMessage((state) => {
+      getAndClearLastPhoneMessage(state => {
         expect(state.lastViewedTimestamp).greaterThan(1.0);
         // must wait for video to finish apparently
-      }, 15000);
+      }, 22000);
     });
   });
   context("Authoring view", () => {
