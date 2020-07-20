@@ -30,6 +30,9 @@ export const getAspectRatio = (aspectRatio: string) => {
   }
 };
 
+// If we want to allow authors to choose whether to show/hide captions by default, make this authorable
+const captionsOnByDefault = true;
+
 // small sample mp4
 // "https://models-resources.s3.amazonaws.com/geniblocks/resources/fablevision/video/charcoal.mp4";
 // sample captions
@@ -40,7 +43,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const viewedProgress = interactiveState?.percentageViewed || 0;
   const viewedTimestamp = interactiveState?.lastViewedTimestamp || 0;
   const playerRef = useRef<HTMLVideoElement>(null);
+  const captionsTrackRef = useRef<TextTrack | null>(null);
   const saveStateInterval = useRef<number>(0);
+  const [captionDisplayState, setCaptionDisplayState] = useState("showing");
   const [hasStartedPlayback, setHasStartedPlayback] = useState(viewedTimestamp > 0 || viewedProgress > 0);
 
   // Keep viewedTimestamp in ref, so the useEffect below doesn"t need to list it in its dependency array, and doesn't
@@ -67,14 +72,22 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           authoredState: true,
           aspectRatio
         });
-        if (authoredState.captionUrl) {
+        if (authoredState.captionUrl && player.textTracks().length === 0) {
           player.addRemoteTextTrack({
             kind: "captions",
             language: "en",
             label: "English",
             src: authoredState.captionUrl,
-            "default": true
+            default: captionsOnByDefault
           }, false);
+          // Store a ref to the captions track s we can check visibility later. There is no easy toggle event for captions show/hide
+          captionsTrackRef.current = player.textTracks()[0];
+          if (captionsTrackRef.current) {
+            captionsTrackRef.current.addEventListener("cuechange", () => {
+              const currentCue = captionsTrackRef.current?.activeCues?.length && captionsTrackRef.current?.activeCues.length > 0 && captionsTrackRef.current?.activeCues[0];
+              log("cue change", { videoUrl: authoredState.videoUrl, currentCue: (currentCue as VTTCue).text });
+            });
+          }
         }
       });
 
@@ -116,32 +129,45 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const handlePlaying = () => {
     setHasStartedPlayback(true);
-    // store current playback progress each second
-    if (Math.trunc(getViewTime()) > saveStateInterval.current) {
-      saveStateInterval.current += 1;
-      updateState();
+    if (captionsTrackRef.current) {
+      setCaptionDisplayState(captionsTrackRef.current.mode);
     }
+    updateState(false, null);
   };
 
   const handlePlay = () => {
-    const percentageViewed = getViewPercentage();
-    log("video started", { videoUrl: authoredState.videoUrl, percentage_viewed: percentageViewed });
+    updateState(true, "video started");
+  };
+
+  const handleSeek = () => {
+    updateState(true, "video time scrubber used");
   };
 
   const handleStop = () => {
-    updateState();
-    const percentageViewed = getViewPercentage();
-    log("video stopped", { video_url: authoredState.videoUrl, percentage_viewed: percentageViewed });
+    updateState(true, "video stopped");
   };
 
-  const updateState = () => {
-    setInteractiveState?.(prevState => ({
-      ...prevState,
-      answerType: "interactive_state",
-      answerText: `Percentage viewed: ${viewedProgress}`,
-      percentageViewed: getViewPercentage(),
-      lastViewedTimestamp: getViewTime()
-    }));
+  const updateState = (forceSave: boolean, logMessage: string | null) => {
+    // store current playback progress each second
+    const updateIntervalReady = Math.trunc(getViewTime()) > saveStateInterval.current;
+    if (updateIntervalReady || forceSave) {
+      const percentageViewed = getViewPercentage();
+      saveStateInterval.current += 1;
+      setInteractiveState?.(prevState => ({
+        ...prevState,
+        answerType: "interactive_state",
+        answerText: `Percentage viewed: ${viewedProgress}`,
+        percentageViewed,
+        lastViewedTimestamp: getViewTime()
+      }));
+      if (logMessage) {
+        log(logMessage, { videoUrl: authoredState.videoUrl, percentage_viewed: percentageViewed });
+      }
+      if (captionsTrackRef.current && captionsTrackRef.current.mode !== captionDisplayState) {
+        log(`video captions toggled: ${captionsTrackRef.current.mode}`, { videoUrl: authoredState.videoUrl });
+        setCaptionDisplayState(captionsTrackRef.current.mode);
+      }
+    }
   };
 
   const getPoster = () => {
@@ -162,6 +188,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             onTimeUpdate={readOnly ? undefined : handlePlaying}
             onPlay={handlePlay}
             onPause={readOnly ? undefined : handleStop}
+            onSeeked={handleSeek}
             controls={!readOnly}
           />
         </div>
