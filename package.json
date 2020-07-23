@@ -120,7 +120,7 @@
   },
   "dependencies": {
     "@concord-consortium/lara-interactive-api": "0.5.0-pre.3",
-    "@concord-consortium/slate-editor": "^0.4.2",
+    "@concord-consortium/slate-editor": "^0.5.0",
     "deep-equal": "^2.0.3",
     "dompurify": "^2.0.12",
     "drawing-tool": "^2.0.1",
