@@ -1,16 +1,8 @@
-@import "../../shared/styles/helpers";
-
-.runtime {
-  button {
-    @include lara-button;
-    margin: 5px;
-    svg {
-      // icon
-      margin-left: 5px;
-    }
-  }
-
-  .buttons {
-    float: right;
-  }
+legend.prompt {     // clear bootstrap stuff
+  display: unset;
+  width: unset;
+  margin-bottom: unset;
+  font-size: unset;
+  border: unset;
+  padding-bottom: 5px;
 }

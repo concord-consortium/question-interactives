@@ -1,31 +1,8 @@
 import React from "react";
 import { JSONSchema6 } from "json-schema";
 import { BaseQuestionApp } from "../../shared/components/base-question-app";
+import { IAuthoredState, IInteractiveState } from "./types";
 import { Runtime } from "./runtime";
-import { IframeAuthoring } from "./iframe-authoring";
-import {
-  IAuthoringInteractiveMetadata, IRuntimeInteractiveMetadata
-} from "@concord-consortium/lara-interactive-api";
-
-// Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
-// TS interfaces are not available in runtime in contrast to JSON schema.
-
-export interface IAuthoredState extends IAuthoringInteractiveMetadata {
-  version: number;
-  subinteractives?: {
-    id: string;
-    url: string;
-    authoredState: any;
-  }[]
-}
-
-export interface IInteractiveState extends IRuntimeInteractiveMetadata {
-  subinteractiveStates: {
-    [id: string]: any;
-  },
-  currentSubinteractiveId: string;
-  submitted: boolean;
-}
 
 const baseAuthoringProps = {
   schema: {
@@ -37,38 +14,62 @@ const baseAuthoringProps = {
       },
       questionType: {
         type: "string",
-        default: "iframe_interactive"
+        default: "open_response"
       },
       prompt: {
         title: "Prompt",
         type: "string"
       },
       required: {
-        title: "Required",
+        title: "Required (Show submit and lock button)",
         type: "boolean"
       },
-      subinteractives: {
-        type: "array",
-        title: "Subquestions",
-        items: {
-          type: "object",
-          properties: {
-            id: {
-              type: "string"
-            },
-            url: {
-              type: "string"
-            },
-            authoredState: {
-              type: "any"
+      hint: {
+        title: "Hint",
+        type: "string"
+      },
+      defaultAnswer: {
+        type: "string",
+        title: "Default answer"
+      }
+    },
+    dependencies: {
+      required: {
+        oneOf: [
+          {
+            properties: {
+              required: {
+                enum: [
+                  false
+                ]
+              }
+            }
+          },
+          {
+            properties: {
+              required: {
+                enum: [
+                  true
+                ]
+              },
+              predictionFeedback: {
+                title: "Post-submission feedback (optional)",
+                type: "string"
+              }
             }
           }
-        }
+        ]
       }
     }
   } as JSONSchema6,
 
   uiSchema: {
+    "ui:order": [
+      "prompt",
+      "required",
+      "predictionFeedback",
+      "*"
+    ],
     version: {
       "ui:widget": "hidden"
     },
@@ -78,22 +79,24 @@ const baseAuthoringProps = {
     prompt: {
       "ui:widget": "richtext"
     },
-    subinteractives: {
-      items: {
-        "ui:field": "iframeAuthoring"
-      }
-    }
-  },
-
-  fields: {
-    iframeAuthoring: IframeAuthoring
+    hint: {
+      "ui:widget": "richtext"
+    },
+    predictionFeedback: {
+      "ui:widget": "richtext"
+    },
+    defaultAnswer: {
+      "ui:widget": "textarea"
+    },
   }
 };
+
+const isAnswered = (interactiveState: IInteractiveState | null) => !!interactiveState?.answerText;
 
 export const App = () => (
   <BaseQuestionApp<IAuthoredState, IInteractiveState>
     Runtime={Runtime}
     baseAuthoringProps={baseAuthoringProps}
-    disableSubmitBtnRendering={true}
+    isAnswered={isAnswered}
   />
 );

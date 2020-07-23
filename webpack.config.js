@@ -19,6 +19,7 @@ module.exports = (env, argv) => {
       'video-player': './src/video-player/index.tsx',
       'image': './src/image/index.tsx',
       'drawing-tool': './src/drawing-tool/index.tsx',
+      'image-question-iframe': './src/image-question-iframe/index.tsx',
       'image-question': './src/image-question/index.tsx',
       'wrapper': './src/shared/wrapper.tsx'
     },
@@ -162,6 +163,11 @@ module.exports = (env, argv) => {
       new HtmlWebpackPlugin({
         chunks: ['image-question'],
         filename: 'image-question/index.html',
+        template: 'src/shared/index.html'
+      }),
+      new HtmlWebpackPlugin({
+        chunks: ['image-question-iframe'],
+        filename: 'image-question-iframe/index.html',
         template: 'src/shared/index.html'
       }),
       new HtmlWebpackPlugin({
