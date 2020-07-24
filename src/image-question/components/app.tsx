@@ -1,12 +1,36 @@
 import React from "react";
 import { JSONSchema6 } from "json-schema";
 import { BaseQuestionApp } from "../../shared/components/base-question-app";
-import { IAuthoredState, IInteractiveState } from "./types";
+import { IRuntimeInteractiveMetadata, IAuthoringInteractiveMetadata } from "@concord-consortium/lara-interactive-api";
 import { Runtime } from "./runtime";
+import { StampCollection } from "../../drawing-tool/components/app";
+import { drawingToolAuthoringProps, stampCollectionDefinition, drawingToolAuthoringSchema } from "../../drawing-tool/components/app";
+
+
+export interface IAuthoredState extends IAuthoringInteractiveMetadata {
+  version: number;
+  hint?: string;
+  backgroundImageUrl?: string;
+  imageFit: string;
+  imagePosition: string;
+  stampCollections: StampCollection[];
+  questionType: "iframe_interactive";
+  answerType: string;
+  defaultAnswer: string;
+}
+
+export interface IInteractiveState extends IRuntimeInteractiveMetadata {
+  drawingState: string;
+  answerType: "interactive_state";
+  answerText: string;
+}
 
 const baseAuthoringProps = {
   schema: {
     type: "object",
+    definitions: {
+      stampCollection: stampCollectionDefinition,
+    },
     properties: {
       version: {
         type: "number",
@@ -14,7 +38,7 @@ const baseAuthoringProps = {
       },
       questionType: {
         type: "string",
-        default: "open_response"
+        default: "image_question"
       },
       prompt: {
         title: "Prompt",
@@ -31,7 +55,8 @@ const baseAuthoringProps = {
       defaultAnswer: {
         type: "string",
         title: "Default answer"
-      }
+      },
+      ...drawingToolAuthoringProps
     },
     dependencies: {
       required: {
@@ -70,15 +95,6 @@ const baseAuthoringProps = {
       "predictionFeedback",
       "*"
     ],
-    version: {
-      "ui:widget": "hidden"
-    },
-    questionType: {
-      "ui:widget": "hidden"
-    },
-    prompt: {
-      "ui:widget": "richtext"
-    },
     hint: {
       "ui:widget": "richtext"
     },
@@ -88,6 +104,7 @@ const baseAuthoringProps = {
     defaultAnswer: {
       "ui:widget": "textarea"
     },
+    ...drawingToolAuthoringSchema
   }
 };
 
