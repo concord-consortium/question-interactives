@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { IRuntimeQuestionComponentProps } from "../../shared/components/base-question-app";
 import { renderHTML } from "../../shared/utilities/render-html";
 import { IAuthoredState, IInteractiveState } from "./app";
@@ -11,15 +11,37 @@ interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInterac
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
-  const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInteractiveState?.(prevState => ({...prevState, drawingState: "", answerType: "interactive_state", answerText: event.target.value }));
-  };
-  const drawingState: IDrawingAuthoredState = {
+  const drawingAuthoredState: IDrawingAuthoredState = {
     version: authoredState.version,
     imageFit: authoredState.imageFit,
     imagePosition: authoredState.imagePosition,
     stampCollections: authoredState.stampCollections,
     questionType: "iframe_interactive"
+  };
+
+  const _drawState = (interactiveState?.drawingState) ? interactiveState?.drawingState : "";
+  const _textState = (interactiveState?.answerText) ? interactiveState?.answerText : "";
+
+  const drawingStateRef = useRef<any>({ drawingState: _drawState });
+  const textStateRef = useRef<any>(_textState);
+
+  const handleDrawingChange = (userState: string) => {
+    drawingStateRef.current = { drawingState: userState };
+    handleSetState();
+  };
+
+  const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    textStateRef.current = event.target.value;
+    handleSetState();
+  };
+
+  const handleSetState = () => {
+    setInteractiveState?.(prevState => ({
+      ...prevState,
+      drawingState: drawingStateRef.current,
+      answerType: "interactive_state",
+      answerText: textStateRef.current
+    }));
   };
 
   return (
@@ -31,14 +53,14 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       <div>
         <textarea
           value={interactiveState?.answerText}
-          onChange={readOnly ? undefined : handleChange}
+          onChange={readOnly ? undefined : handleTextChange}
           readOnly={readOnly}
           disabled={readOnly}
           rows={8}
           placeholder={authoredState.defaultAnswer || "Please type your answer here."}
         />
       </div>
-      <DrawingToolRuntime authoredState={drawingState} />
+      <DrawingToolRuntime authoredState={drawingAuthoredState} interactiveState={drawingStateRef.current} onDrawingChange={handleDrawingChange} />
     </fieldset>
   );
 };

@@ -104,6 +104,12 @@ const baseAuthoringProps = {
     defaultAnswer: {
       "ui:widget": "textarea"
     },
+    questionType: {
+      "ui:widget": "hidden"
+    },
+    version: {
+      "ui:widget": "hidden"
+    },
     ...drawingToolAuthoringSchema
   }
 };
