@@ -120,6 +120,11 @@ context("Test open response interactive", () => {
         expect(state.prompt).include("Test prompt");
       }, 100);
 
+      cy.getIframeBody().find("#root_hint").type("h{backspace}");
+      getAndClearLastPhoneMessage(state => {
+        expect(state.hint).eql("");
+      }, 100);
+
       cy.getIframeBody().find("#root_hint").type("Hint");
       getAndClearLastPhoneMessage(state => {
         expect(state.hint).include("Hint");

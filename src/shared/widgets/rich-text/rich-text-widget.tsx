@@ -7,6 +7,14 @@ import css from "./rich-text-widget.scss";
 
 const kThemeColor = "#34a5be";
 
+function exportHtml(value: any) {
+  const html = slateToHtml(value);
+  // convert empty paragraph to empty string
+  return (/<p>\s*<\/p>/i.test(html))
+          ? ""
+          : html;
+}
+
 export const RichTextWidget = (props: WidgetProps) => {
   const { id, onFocus, onChange, onBlur } = props;
   const [value, valueRef, setValue] = useRefState(htmlToSlate(props.value || ""));
@@ -29,17 +37,17 @@ export const RichTextWidget = (props: WidgetProps) => {
   }, [id]);
 
   const handleFocus = useCallback(() => {
-    onFocus(id, slateToHtml(valueRef.current));
+    onFocus(id, exportHtml(valueRef.current));
   }, [id, onFocus, valueRef]);
 
   const handleChange = useCallback((editorValue: any) => {
     setValue(editorValue);
     setChangeCount(count => count + 1);
-    onChange(slateToHtml(editorValue));
+    onChange(exportHtml(editorValue));
   }, [onChange, setValue]);
 
   const handleBlur = useCallback(() => {
-    onBlur(id, slateToHtml(valueRef.current));
+    onBlur(id, exportHtml(valueRef.current));
   }, [id, onBlur, valueRef]);
 
   // dynamically resize editor to fit content
