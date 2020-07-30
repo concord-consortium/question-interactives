@@ -9,7 +9,7 @@ import { renderHTML } from "../../shared/utilities/render-html";
 const kToolbarWidth = 40;
 const kToolbarHeight = 600;
 
-interface IProps {
+export interface IProps {
   authoredState: IAuthoredState;
   interactiveState?: IInteractiveState | null;
   setInteractiveState?: (updateFunc: (prevState: IInteractiveState | null) => IInteractiveState) => void;
@@ -27,9 +27,22 @@ interface DrawingToolOpts {
   stamps?: StampCollections;
 }
 
+const usePrevious = (value: any) => {
+  const ref = React.useRef();
+  React.useEffect(function() {
+    ref.current = value;
+  }, [value]);
+  return ref.current;
+};
+
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report, onDrawingChange }) => {
 
   const readOnly = !!(report || (authoredState.required && interactiveState?.submitted));
+  const prevInteractiveState = usePrevious(interactiveState);
+  const prevAuthoredState = usePrevious(authoredState);
+
+  console.log("interactiveState:", prevInteractiveState === interactiveState);
+  console.log("authoredState:", prevAuthoredState === authoredState);
 
   // need a wrapper as `useRef` expects (state) => void
   const handleSetInteractiveState = (userState: string) => {
@@ -51,6 +64,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   setInteractiveStateRef.current = handleSetInteractiveState;
 
   useEffect(() => {
+    console.log(">> draw tool runtime useEffect");
     const windowWidth = window.innerWidth;
 
     const stampCollections: StampCollections = {};
@@ -112,6 +126,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     });
   }, [authoredState, report, readOnly]);
 
+  console.log("rendering in draw tool");
   return (
     <div>
       { authoredState.prompt && <div>{renderHTML(authoredState.prompt)}</div>}

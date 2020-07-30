@@ -109,6 +109,7 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
   };
 
   const renderMode = () => {
+    console.log("renderMode: ", initMessage?.mode);
     switch (initMessage?.mode) {
       case "authoring":
         return renderAuthoring();

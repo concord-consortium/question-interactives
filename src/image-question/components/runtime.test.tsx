@@ -40,6 +40,11 @@ describe("Runtime", () => {
     expect(wrapper.find("textarea").length).toEqual(1);
   });
 
+  it("renders drawing tool", () => {
+    const wrapper = shallow(<Runtime authoredState={authoredRichState} />);
+    expect(wrapper.find("div").length).toEqual(1);
+  });
+
   it("handles passed interactiveState", () => {
     const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} />);
     expect(wrapper.find("textarea").props().value).toEqual(interactiveState.answerText);
@@ -50,7 +55,7 @@ describe("Runtime", () => {
     const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} />);
     wrapper.find("textarea").simulate("change", { target: { value: "new answer" } });
     const newState = setState.mock.calls[0][0](interactiveState);
-    expect(newState).toEqual({answerType: "open_response_answer", answerText: "new answer"});
+    expect(newState).toEqual({answerType: "interactive_state", drawingState: {drawingState: ""}, answerText: "new answer"});
   });
 
   describe("report mode", () => {
@@ -64,11 +69,5 @@ describe("Runtime", () => {
       expect(wrapper.find("textarea").props().value).toEqual(interactiveState.answerText);
     });
 
-    it("never calls setInteractiveState when user selects an answer", () => {
-      const setState = jest.fn();
-      const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} report={true} />);
-      wrapper.find("textarea").simulate("change", { target: { value: "diff answer" } });
-      expect(setState).not.toHaveBeenCalled();
-    });
   });
 });

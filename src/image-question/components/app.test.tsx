@@ -46,11 +46,10 @@ describe("Open response question", () => {
   });
   useAuthoredStateMock.mockReturnValue(authoredState);
   useInteractiveStateMock.mockReturnValue(interactiveState);
-
-  it("renders a rich text editor in authoring mode", async () => {
+  it("renders in authoring mode", async () => {
     const { container, findByLabelText } = render(<App />);
     expect(container).toBeDefined();
     const promptEditor = await findByLabelText("Prompt");
-    expect(promptEditor.className.includes("slate-editor")).toBe(true);
+    expect(promptEditor.className.includes("form-control")).toBe(true);
   });
 });
