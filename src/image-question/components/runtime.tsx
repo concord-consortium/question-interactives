@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { IRuntimeQuestionComponentProps } from "../../shared/components/base-question-app";
 import { renderHTML } from "../../shared/utilities/render-html";
 import { IAuthoredState, IInteractiveState } from "./app";
@@ -28,27 +28,27 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     questionType: "iframe_interactive"
   }), [imageFit, imagePosition, stampCollections, version]);
 
-  const [drawState, setDrawState] = useState<IPartialDrawingInteractiveState>({
-                                      drawingState: interactiveState?.drawingState || "" });
+  const drawStateRef = useRef<IPartialDrawingInteractiveState>({
+                          drawingState: interactiveState?.drawingState || "" });
   const [textState, setTextState] = useState<string>(interactiveState?.answerText || "");
 
-  const handleSetInteractiveState = () => {
+  const handleSetInteractiveState = (newTextState?: string) => {
     setInteractiveState?.((prevState: any) => ({
       ...prevState,
-      drawingState: drawState.drawingState,
+      drawingState: drawStateRef.current.drawingState,
       answerType: "interactive_state",
-      answerText: textState
+      answerText: newTextState ?? textState
     }));
   };
 
   const handleDrawingChange = (userState: string) => {
-    setDrawState({ drawingState: userState });
+    drawStateRef.current = { drawingState: userState };
     handleSetInteractiveState();
   };
 
   const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setTextState(event.target.value);
-    handleSetInteractiveState();
+    handleSetInteractiveState(event.target.value);
   };
 
   return (
@@ -59,7 +59,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         </legend> }
       <DrawingToolRuntime
         authoredState={drawingAuthoredState}
-        interactiveState={drawState as IDrawingInteractiveState}
+        interactiveState={drawStateRef.current as IDrawingInteractiveState}
         onDrawingChange={handleDrawingChange} />
       <div>
         <textarea

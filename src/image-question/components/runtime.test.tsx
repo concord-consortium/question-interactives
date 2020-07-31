@@ -55,7 +55,7 @@ describe("Runtime", () => {
     const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} />);
     wrapper.find("textarea").simulate("change", { target: { value: "new answer" } });
     const newState = setState.mock.calls[0][0](interactiveState);
-    expect(newState).toEqual({answerType: "interactive_state", drawingState: {drawingState: ""}, answerText: "new answer"});
+    expect(newState).toEqual({answerType: "interactive_state", drawingState: "", answerText: "new answer"});
   });
 
   describe("report mode", () => {
