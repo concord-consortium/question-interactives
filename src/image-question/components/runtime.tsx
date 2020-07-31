@@ -62,6 +62,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         interactiveState={drawStateRef.current as IDrawingInteractiveState}
         onDrawingChange={handleDrawingChange} />
       <div>
+        {authoredState.answerPrompt && <div className={css.answerPrompt}>{authoredState.answerPrompt}</div>}
         <textarea
           value={textState}
           onChange={readOnly ? undefined : handleTextChange}

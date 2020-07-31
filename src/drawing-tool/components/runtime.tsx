@@ -83,7 +83,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       drawingToolOpts.stamps = stampCollections;
     }
 
-    console.log("*** DrawingToolRuntime.useEffect [new DrawingTool] ***");
     const drawingTool = new DrawingTool("#drawing-tool-container", drawingToolOpts);
 
     if (authoredState.backgroundImageUrl) {
@@ -113,7 +112,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     });
   }, [authoredState, report, readOnly]);
 
-  console.log("*** DrawingTool.render() ***");
   return (
     <div>
       { authoredState.prompt && <div>{renderHTML(authoredState.prompt)}</div>}

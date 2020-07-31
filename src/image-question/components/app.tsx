@@ -15,6 +15,7 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   imagePosition: string;
   stampCollections: StampCollection[];
   questionType: "iframe_interactive";
+  answerPrompt?: string;
   answerType: string;
   defaultAnswer: string;
 }
@@ -44,19 +45,19 @@ const baseAuthoringProps = {
         title: "Prompt",
         type: "string"
       },
+      ...drawingToolAuthoringProps,
+      answerPrompt: {
+        title: "Answer prompt",
+        type: "string"
+      },
       required: {
         title: "Required (Show submit and lock button)",
         type: "boolean"
       },
-      hint: {
-        title: "Hint",
-        type: "string"
-      },
       defaultAnswer: {
         type: "string",
         title: "Default answer"
-      },
-      ...drawingToolAuthoringProps
+      }
     },
     dependencies: {
       required: {
@@ -89,13 +90,7 @@ const baseAuthoringProps = {
   } as JSONSchema6,
 
   uiSchema: {
-    "ui:order": [
-      "prompt",
-      "required",
-      "predictionFeedback",
-      "*"
-    ],
-    hint: {
+    prompt: {
       "ui:widget": "richtext"
     },
     predictionFeedback: {
