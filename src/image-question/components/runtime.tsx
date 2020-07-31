@@ -1,96 +1,74 @@
-import React, { useRef, useCallback, useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { IRuntimeQuestionComponentProps } from "../../shared/components/base-question-app";
 import { renderHTML } from "../../shared/utilities/render-html";
 import { IAuthoredState, IInteractiveState } from "./app";
 import css from "./runtime.scss";
 import { Runtime as DrawingToolRuntime } from "../../drawing-tool/components/runtime";
 import { IAuthoredState as IDrawingAuthoredState } from "../../drawing-tool/components/app";
-import { IProps as IDrawingToolProps } from "../../drawing-tool/components/runtime";
+import { IInteractiveState as IDrawingInteractiveState } from "../../drawing-tool/components/app";
+
+// https://stackoverflow.com/a/52703444
+type OptionalExceptFor<T, TRequired extends keyof T> = Partial<T> & Pick<T, TRequired>;
+type IPartialDrawingInteractiveState = OptionalExceptFor<IDrawingInteractiveState, "drawingState">;
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {
 }
 
-const usePrevious = (value: any) => {
-  const ref = React.useRef();
-  React.useEffect(function() {
-    ref.current = value;
-  }, [value]);
-  return ref.current;
-};
+const kGlobalDefaultAnswer = "Please type your answer here.";
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
-  const readOnly = report || (authoredState.required && interactiveState?.submitted);
+  const { version, imageFit, imagePosition, required, stampCollections } = authoredState;
+  const readOnly = report || (required && interactiveState?.submitted);
 
-  const drawingAuthoredStateRef = useRef<IDrawingAuthoredState>({
-    version: authoredState.version,
-    imageFit: authoredState.imageFit,
-    imagePosition: authoredState.imagePosition,
-    stampCollections: authoredState.stampCollections,
+  const drawingAuthoredState = useMemo<IDrawingAuthoredState>(() => ({
+    version,
+    imageFit,
+    imagePosition,
+    stampCollections,
     questionType: "iframe_interactive"
-  });
+  }), [imageFit, imagePosition, stampCollections, version]);
 
-  const drawingAuthoredState = useMemo(() => drawingAuthoredStateRef.current, []);
+  const [drawState, setDrawState] = useState<IPartialDrawingInteractiveState>({
+                                      drawingState: interactiveState?.drawingState || "" });
+  const [textState, setTextState] = useState<string>(interactiveState?.answerText || "");
 
-  const prevDrawingAuthoringState = usePrevious(drawingAuthoredStateRef.current);
-
-  console.log("drawingAuthoringState comparison:", prevDrawingAuthoringState === drawingAuthoredStateRef.current);
-
-  const _drawState = (interactiveState?.drawingState) ? interactiveState?.drawingState : "";
-  const _textState = (interactiveState?.answerText) ? interactiveState?.answerText : "";
-
-  const drawingStateRef = useRef<any>({ drawingState: _drawState });
-  const textStateRef = useRef<any>(_textState);
-
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const setInteractiveStateCallback = useCallback((intState) => { setInteractiveState?.(intState);}, []);
-
-  const handleSetInteractiveState = useCallback(() => {
-    console.log("I'm handleSetInteractiveState");
-    setInteractiveStateCallback?.((prevState: any) => ({
+  const handleSetInteractiveState = () => {
+    setInteractiveState?.((prevState: any) => ({
       ...prevState,
-      drawingState: drawingStateRef.current,
+      drawingState: drawState.drawingState,
       answerType: "interactive_state",
-      answerText: textStateRef.current
+      answerText: textState
     }));
-  }, [setInteractiveStateCallback]);
-
-  const handleDrawingChange = useCallback((userState: string) => {
-    drawingStateRef.current = { drawingState: userState };
-    console.log("I'm handleDrawingChanged");
-    handleSetInteractiveState();
-  }, [handleSetInteractiveState]);
-
-  const handleTextChange = useCallback((event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    textStateRef.current = event.target.value;
-    console.log("I'm handleTextChanged");
-    handleSetInteractiveState();
-  }, [handleSetInteractiveState]);
-
-  const areEqual = (prevProps: IDrawingToolProps, nextProps: IDrawingToolProps) => {
-    debugger;
-    console.log("authoredState:", prevProps.authoredState === nextProps.authoredState);
-    console.log("interactiveState:", prevProps.interactiveState === nextProps.interactiveState);
-    console.log("onDrawingChange:", prevProps.onDrawingChange === nextProps.onDrawingChange);
-    return true;
   };
 
-  console.log("rendering in image question");
-  const DrawToolMemo = React.memo(DrawingToolRuntime, areEqual);
+  const handleDrawingChange = (userState: string) => {
+    setDrawState({ drawingState: userState });
+    handleSetInteractiveState();
+  };
+
+  const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    setTextState(event.target.value);
+    handleSetInteractiveState();
+  };
+
   return (
     <fieldset>
       { authoredState.prompt &&
         <legend className={css.prompt}>
           {renderHTML(authoredState.prompt)}
         </legend> }
-        <DrawToolMemo authoredState={drawingAuthoredState} interactiveState={drawingStateRef.current} onDrawingChange={handleDrawingChange} />
+      <DrawingToolRuntime
+        authoredState={drawingAuthoredState}
+        interactiveState={drawState as IDrawingInteractiveState}
+        onDrawingChange={handleDrawingChange} />
       <div>
         <textarea
-          value={textStateRef.current}
+          value={textState}
           onChange={readOnly ? undefined : handleTextChange}
           readOnly={readOnly}
           disabled={readOnly}
           rows={8}
-          placeholder={authoredState.defaultAnswer || "Please type your answer here."}
+          placeholder={authoredState.defaultAnswer || kGlobalDefaultAnswer}
         />
       </div>
 

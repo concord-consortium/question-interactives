@@ -14,7 +14,7 @@ export interface IProps {
   interactiveState?: IInteractiveState | null;
   setInteractiveState?: (updateFunc: (prevState: IInteractiveState | null) => IInteractiveState) => void;
   report?: boolean;
-  onDrawingChange?: any;
+  onDrawingChange?: (userState: string) => void;
 }
 
 interface StampCollections {
@@ -27,22 +27,9 @@ interface DrawingToolOpts {
   stamps?: StampCollections;
 }
 
-const usePrevious = (value: any) => {
-  const ref = React.useRef();
-  React.useEffect(function() {
-    ref.current = value;
-  }, [value]);
-  return ref.current;
-};
-
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report, onDrawingChange }) => {
 
   const readOnly = !!(report || (authoredState.required && interactiveState?.submitted));
-  const prevInteractiveState = usePrevious(interactiveState);
-  const prevAuthoredState = usePrevious(authoredState);
-
-  console.log("interactiveState:", prevInteractiveState === interactiveState);
-  console.log("authoredState:", prevAuthoredState === authoredState);
 
   // need a wrapper as `useRef` expects (state) => void
   const handleSetInteractiveState = (userState: string) => {
@@ -64,7 +51,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   setInteractiveStateRef.current = handleSetInteractiveState;
 
   useEffect(() => {
-    console.log(">> draw tool runtime useEffect");
     const windowWidth = window.innerWidth;
 
     const stampCollections: StampCollections = {};
@@ -97,6 +83,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       drawingToolOpts.stamps = stampCollections;
     }
 
+    console.log("*** DrawingToolRuntime.useEffect [new DrawingTool] ***");
     const drawingTool = new DrawingTool("#drawing-tool-container", drawingToolOpts);
 
     if (authoredState.backgroundImageUrl) {
@@ -126,7 +113,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     });
   }, [authoredState, report, readOnly]);
 
-  console.log("rendering in draw tool");
+  console.log("*** DrawingTool.render() ***");
   return (
     <div>
       { authoredState.prompt && <div>{renderHTML(authoredState.prompt)}</div>}
