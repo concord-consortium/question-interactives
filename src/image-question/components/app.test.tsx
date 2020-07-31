@@ -50,6 +50,6 @@ describe("Open response question", () => {
     const { container, findByLabelText } = render(<App />);
     expect(container).toBeDefined();
     const promptEditor = await findByLabelText("Prompt");
-    expect(promptEditor.className.includes("form-control")).toBe(true);
+    expect(promptEditor.className.includes("slate-editor")).toBe(true);
   });
 });
