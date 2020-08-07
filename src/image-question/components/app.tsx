@@ -18,6 +18,7 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   answerPrompt?: string;
   answerType: string;
   defaultAnswer: string;
+  modalSupported?: boolean;
 }
 
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
