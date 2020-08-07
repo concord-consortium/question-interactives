@@ -2,7 +2,7 @@ import React, { useRef, useEffect, useState } from "react";
 import videojs from "video.js";
 import { IAuthoredState } from "./app";
 import { IInteractiveState } from "./app";
-import { setSupportedFeatures, log } from "@concord-consortium/lara-interactive-api";
+import { log } from "@concord-consortium/lara-interactive-api";
 import css from "./runtime.scss";
 import "./video-js.css";
 
@@ -66,12 +66,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       }, () => {
         const url = authoredState.videoUrl ? authoredState.videoUrl : "";
         player.src(url);
-        const aspectRatio = player.currentDimensions().width / player.currentDimensions().height;
-        setSupportedFeatures({
-          interactiveState: true,
-          authoredState: true,
-          aspectRatio
-        });
+
         if (authoredState.captionUrl && player.textTracks().length === 0) {
           player.addRemoteTextTrack({
             kind: "captions",

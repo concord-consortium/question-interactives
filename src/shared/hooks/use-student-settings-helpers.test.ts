@@ -15,10 +15,15 @@ const jwtResponse: IJwtResponse = {
     domain: "test-portal.concord.org",
     claims: {
       class_hash: "class-id",
-      platform_user_id: 123
-    }
-  }
+      platform_user_id: 123,
+      offering_id: 1,
+      platform_id: "test platform",
+      user_id: "123",
+      user_type: "learner"
+    } as any
+  } as any
 };
+
 
 const getFirebaseJwtMock = (getFirebaseJwt as jest.Mock);
 
