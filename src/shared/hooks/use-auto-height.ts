@@ -34,22 +34,15 @@ export const useAutoHeight = ({ container, disabled }: IConfig) => {
       }
     });
 
-    let prevOverflowStyle: string | null = null;
-    if (container) {
-      // Set overflow=hidden style to make sure that scrollHeight reports correct value. See: https://www.pivotaltracker.com/story/show/174256088
-      prevOverflowStyle = container.style.overflow;
-      container.style.overflow = "hidden";
-      observer.observe(container);
-    }
+    // Set overflow=hidden style to make sure that scrollHeight reports correct value. See: https://www.pivotaltracker.com/story/show/174256088
+    const prevOverflowStyle = container.style.overflow;
+    container.style.overflow = "hidden";
+    observer.observe(container);
     // Cleanup function.
     return () => {
       observer.disconnect();
-      if (container) {
-        if (prevOverflowStyle !== null) {
-          container.style.overflow = prevOverflowStyle;
-        }
-        observer.observe(container);
-      }
+      container.style.overflow = prevOverflowStyle;
+      observer.observe(container);
     };
   }, [container, disabled]);
 };
