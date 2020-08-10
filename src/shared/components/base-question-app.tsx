@@ -52,7 +52,7 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
   const isLoading = !initMessage;
   const isRuntimeView = initMessage?.mode === "runtime";
 
-  useAutoHeight({ container, disabled: isRuntimeView && disableAutoHeight || isLoading });
+  useAutoHeight({ container: container.current, disabled: isRuntimeView && disableAutoHeight || isLoading });
   useHint();
   useRequiredQuestion();
   useShutterbug({ container: "." + css.runtime });
