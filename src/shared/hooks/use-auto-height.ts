@@ -1,9 +1,9 @@
-import { RefObject, useEffect, useRef } from "react";
+import { useEffect, useRef } from "react";
 import ResizeObserver from "resize-observer-polyfill";
 import { setHeight } from "@concord-consortium/lara-interactive-api";
 
 interface IConfig {
-  container: RefObject<HTMLDivElement>;
+  container: HTMLDivElement | null;
   disabled?: boolean;
 }
 
@@ -11,7 +11,7 @@ export const useAutoHeight = ({ container, disabled }: IConfig) => {
   const setHeightCalled = useRef(false);
 
   useEffect(() => {
-    if (disabled) {
+    if (disabled || !container) {
       if (setHeightCalled.current) {
         // Sending empty string to LARA will disable height and start using aspect ratio again.
         // If setHeight has been never called, it doesn't make sense to send this message to LARA.
@@ -26,18 +26,23 @@ export const useAutoHeight = ({ container, disabled }: IConfig) => {
       const entry = entries[0];
       // scrollHeight describes min height of the container necessary to avoid scrollbars.
       // It works better than offsetHeight (e.g. when we have some elements with `float:right` css props).
+      // Note that this works correctly in all browsers only when CSS overflow is set to "hidden".
       const height = entry?.target?.scrollHeight;
       if (height && height > 0) {
         setHeight(Math.ceil(height));
         setHeightCalled.current = true;
       }
     });
-    if (container.current) {
-      observer.observe(container.current);
-    }
+
+    // Set overflow=hidden style to make sure that scrollHeight reports correct value. See: https://www.pivotaltracker.com/story/show/174256088
+    const prevOverflowStyle = container.style.overflow;
+    container.style.overflow = "hidden";
+    observer.observe(container);
     // Cleanup function.
     return () => {
       observer.disconnect();
+      container.style.overflow = prevOverflowStyle;
+      observer.observe(container);
     };
   }, [container, disabled]);
 };

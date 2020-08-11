@@ -39,7 +39,7 @@ export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps
   const isLoading = !initMessage;
   const isRuntimeView = initMessage?.mode === "runtime";
 
-  useAutoHeight({ container, disabled: isRuntimeView && disableAutoHeight || isLoading });
+  useAutoHeight({ container: container.current, disabled: isRuntimeView && disableAutoHeight || isLoading });
   useShutterbug({ container: "." + css.runtime });
   useBasicLogging({ disabled: !isRuntimeView });
 
