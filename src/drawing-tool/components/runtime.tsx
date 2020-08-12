@@ -9,11 +9,12 @@ import { renderHTML } from "../../shared/utilities/render-html";
 const kToolbarWidth = 40;
 const kToolbarHeight = 600;
 
-interface IProps {
+export interface IProps {
   authoredState: IAuthoredState;
   interactiveState?: IInteractiveState | null;
   setInteractiveState?: (updateFunc: (prevState: IInteractiveState | null) => IInteractiveState) => void;
   report?: boolean;
+  onDrawingChange?: (userState: string) => void;
 }
 
 interface StampCollections {
@@ -26,17 +27,22 @@ interface DrawingToolOpts {
   stamps?: StampCollections;
 }
 
-export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
+export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report, onDrawingChange }) => {
 
   const readOnly = !!(report || (authoredState.required && interactiveState?.submitted));
 
   // need a wrapper as `useRef` expects (state) => void
   const handleSetInteractiveState = (userState: string) => {
-    setInteractiveState?.(prevState => ({
-      ...prevState,
-      drawingState: userState,
-      answerType: "interactive_state"
-    }));
+    if (onDrawingChange) {
+      // handle the change in a parent component
+      onDrawingChange(userState);
+    } else {
+      setInteractiveState?.(prevState => ({
+        ...prevState,
+        drawingState: userState,
+        answerType: "interactive_state"
+      }));
+    }
   };
   // useRef to avoid passing interactiveState into useEffect, or it will reload on every drawing edit
   const interactiveStateRef = useRef<any>(interactiveState);
