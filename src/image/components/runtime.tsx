@@ -5,7 +5,7 @@ import ReactDOMServer from "react-dom/server";
 import { v4 as uuidv4 } from "uuid";
 import { log } from "@concord-consortium/lara-interactive-api";
 import css from "./runtime.scss";
-import ZoomIcon from "../../shared/icons/zoom.svg";
+import ZoomIcon from "../../shared/icons/zoom-in.svg";
 
 interface IProps {
   authoredState: IAuthoredState;

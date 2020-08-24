@@ -6,6 +6,9 @@ import css from "./runtime.scss";
 import { Runtime as DrawingToolRuntime } from "../../drawing-tool/components/runtime";
 import { IAuthoredState as IDrawingAuthoredState } from "../../drawing-tool/components/app";
 import { IInteractiveState as IDrawingInteractiveState } from "../../drawing-tool/components/app";
+import { showModal } from "@concord-consortium/lara-interactive-api";
+import ZoomIcon from "../../shared/icons/zoom.svg";
+import { v4 as uuidv4 } from "uuid";
 
 // https://stackoverflow.com/a/52703444
 type OptionalExceptFor<T, TRequired extends keyof T> = Partial<T> & Pick<T, TRequired>;
@@ -17,7 +20,7 @@ interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInterac
 const kGlobalDefaultAnswer = "Please type your answer here.";
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
-  const { version, imageFit, imagePosition, required, stampCollections } = authoredState;
+  const { version, imageFit, imagePosition, required, stampCollections, modalSupported } = authoredState;
   const readOnly = report || (required && interactiveState?.submitted);
 
   const drawingAuthoredState = useMemo<IDrawingAuthoredState>(() => ({
@@ -51,6 +54,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     handleSetInteractiveState(event.target.value);
   };
 
+  const handleModal = () => {
+    const uuid = uuidv4();
+    showModal({ uuid, type: "lightbox", url: window.location.href });
+  };
+
   return (
     <fieldset>
       { authoredState.prompt &&
@@ -73,7 +81,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           placeholder={authoredState.defaultAnswer || kGlobalDefaultAnswer}
         />
       </div>
-
+      {modalSupported && <div className={`${css.viewHighRes} .glyphicon-zoom-in`} onClick={handleModal}><ZoomIcon /></div>}
     </fieldset>
   );
 };
