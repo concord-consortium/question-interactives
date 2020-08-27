@@ -47,9 +47,9 @@ describe("Open response question", () => {
   useAuthoredStateMock.mockReturnValue(authoredState);
   useInteractiveStateMock.mockReturnValue(interactiveState);
   it("renders in authoring mode", async () => {
-    const { container, findByLabelText } = render(<App />);
+    const { container } = render(<App />);
     expect(container).toBeDefined();
-    const promptEditor = await findByLabelText("Prompt");
-    expect(promptEditor.className.includes("slate-editor")).toBe(true);
+    const promptEditor = await container.querySelector("#root_prompt");
+    expect(promptEditor?.className.includes("slate-editor")).toBe(true);
   });
 });
