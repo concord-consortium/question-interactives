@@ -18,10 +18,10 @@ $themeColor2: #34a5be;
 
 // Based on LARA btn mixin from mw-runtime-base.scss (after little cleanup).
 @mixin lara-button($color1: $themeColor1, $color2: $themeColor2) {
-  font-size: 15px;
+  font-size: 20px;
   font-weight: 500;
   color: #fcfcfc;
-  padding: 9px 13px;
+  padding: 5px 10px;
   // Color-dependent rules:
   background: $color1;
   background-image: linear-gradient(to bottom, $color1, $color2);
