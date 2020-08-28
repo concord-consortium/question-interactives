@@ -253,7 +253,7 @@ context("Test scaffolded question interactive", () => {
       cy.getIframeBody().find("[data-cy=subquestion-authoring]").eq(1).click();
 
       // 2. Edit second question.
-      cy.wait(200);
+      cy.wait(1000);
       cy.getNestedIframeBody("iframe", "#int2").find("#root_prompt").clear();
       cy.wait(200);
       cy.getNestedIframeBody("iframe", "#int2").find("#root_prompt").type("x");

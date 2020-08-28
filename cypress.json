@@ -3,6 +3,7 @@
   "video": false,
   "fixturesFolder": false,
   "defaultCommandTimeout": 8000,
+  "retries": 2,
   "chromeWebSecurity": false,
   "modifyObstructiveCode": false
 }
