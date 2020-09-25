@@ -18,7 +18,8 @@ interface IImageSize {
 }
 
 export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
-
+  const { url, highResUrl, altText,
+    caption, credit, creditLink, creditLinkDisplayText, scaling, modalSupported, isShowingModal } = authoredState;
   const imageSize = useRef<IImageSize>();
 
   const getImageLayout = () => {
@@ -43,11 +44,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
   };
 
   const handleClick = () => {
-    const { url, highResUrl, credit, caption } = authoredState;
     const size = imageSize.current?.width && imageSize.current?.height
                   ? { width: imageSize.current.width, height: imageSize.current.height }
                   : undefined;
-    const allowUpscale = authoredState.scaling === "fitWidth";
+    const allowUpscale = scaling === "fitWidth";
     const modalImageUrl = highResUrl || url;
     const uuid = uuidv4();
     const title = `<strong>${caption || ""}</strong> <em>${credit || ""}</em> ${ReactDOMServer.renderToString(getCreditLink(false) || <span/>)}`;
@@ -56,8 +56,13 @@ export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
     log("image zoomed in", { url });
   };
 
+  const handleModal = () => {
+    const uuid = uuidv4();
+    showModal({uuid, type: "lightbox", url: window.location.href + "?highres"});
+  };
+
   const getCreditLink = (displayBlock = true) => {
-    const { creditLink, creditLinkDisplayText } = authoredState;
+    // const { creditLink, creditLinkDisplayText } = authoredState;
     const link = <a href={creditLink} target="_blank" rel="noreferrer noopener">
       {creditLinkDisplayText || creditLink}
     </a>;
@@ -74,18 +79,21 @@ export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
 
   return (
     <div className={css.runtime}>
-      <div className={`${css.imageContainer} ${getImageLayout()}`} onClick={handleClick}>
+      <div className={`${css.imageContainer} ${getImageLayout()}`} onClick={modalSupported ? handleModal : handleClick}>
         <img
-          src={authoredState.url}
-          alt={authoredState.altText}
-          title={authoredState.altText}
+          src={isShowingModal && highResUrl ? highResUrl : url}
+          alt={altText}
+          title={altText}
           onLoad={getOriginalImageSize}
         />
       </div>
-      {authoredState.caption && <div className={css.caption}>{authoredState.caption}</div>}
-      {authoredState.credit && <div className={css.credit}>{authoredState.credit}</div>}
+      {caption && <div className={css.caption}>{caption}</div>}
+      {credit && <div className={css.credit}>{credit}</div>}
       {getCreditLink()}
-      <div className={`${css.viewHighRes} .glyphicon-zoom-in`} onClick={handleClick}><ZoomIcon /></div>
+      {modalSupported && <div className={`${css.viewHighRes} .glyphicon-zoom-in`} onClick={handleModal}><ZoomIcon /></div>}
+      {!modalSupported &&
+        <div className={`${css.viewHighRes} .glyphicon-zoom-in`} onClick={handleClick}><ZoomIcon /></div>
+      }
     </div>
   );
 };
