@@ -15,11 +15,11 @@ const authoredState = {
   required: true
 };
 
-const interactiveState = {
-  answerType: "interactive_state" as const,
-  percentageViewed: 0.2,
-  lastViewedTimestamp: 1.2
-};
+// const interactiveState = {
+//   answerType: "interactive_state" as const,
+//   percentageViewed: 0.2,
+//   lastViewedTimestamp: 1.2
+// };
 
 describe("Runtime", () => {
   it("renders prompt and video with credits", () => {
