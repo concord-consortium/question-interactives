@@ -11,8 +11,10 @@ import {
 } from "@concord-consortium/lara-interactive-api";
 import { IBaseAuthoredState, UpdateFunc, IAuthoringComponentProps, IRuntimeComponentProps } from "./base-app";
 import { useBasicLogging } from "../hooks/use-basic-logging";
-
+import {useLinkedInteractives} from "../hooks/use-linked-interactives";
+import {ILinkedInteractiveProp} from "../hooks/use-linked-interactives-authoring";
 import css from "./base-app.scss";
+
 
 interface IBaseQuestionAuthoredState extends IBaseAuthoredState {
   hint?: string;
@@ -39,12 +41,13 @@ interface IProps<IAuthoredState, IInteractiveState> {
   disableSubmitBtnRendering?: boolean;
   // Note that isAnswered is required when `disableSubmitBtnRendering` is false.
   isAnswered?: (state: IInteractiveState | null) => boolean;
+  linkedInteractiveProps?: ILinkedInteractiveProp[];
 }
 
 // BaseApp for interactives that save interactive state and show in the report. E.g. open response, multiple choice.
 export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBaseQuestionAuthoredState,
   IInteractiveState extends IRuntimeMetadata & IBaseQuestionInteractiveState>(props: IProps<IAuthoredState, IInteractiveState>) => {
-  const { Authoring, baseAuthoringProps, Runtime, isAnswered, disableAutoHeight, disableSubmitBtnRendering } = props;
+  const { Authoring, baseAuthoringProps, Runtime, isAnswered, disableAutoHeight, disableSubmitBtnRendering, linkedInteractiveProps } = props;
   const container = useRef<HTMLDivElement>(null);
   const { authoredState, setAuthoredState } = useAuthoredState<IAuthoredState>();
   const { interactiveState, setInteractiveState } = useInteractiveState<IInteractiveState>();
@@ -57,6 +60,7 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
   useRequiredQuestion();
   useShutterbug({ container: "." + css.runtime });
   useBasicLogging({ disabled: !isRuntimeView });
+  useLinkedInteractives(linkedInteractiveProps?.map(li => li.label));
 
   useEffect(() => {
     setSupportedFeatures({
@@ -74,7 +78,12 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
       return <Authoring authoredState={authoredState} setAuthoredState={setAuthoredState} />;
     }
     if (!Authoring && baseAuthoringProps) {
-      return <BaseAuthoring {...baseAuthoringProps} authoredState={authoredState} setAuthoredState={setAuthoredState} />;
+      return <BaseAuthoring
+        {...baseAuthoringProps}
+        linkedInteractiveProps={linkedInteractiveProps}
+        authoredState={authoredState}
+        setAuthoredState={setAuthoredState}
+      />;
     }
   };
 

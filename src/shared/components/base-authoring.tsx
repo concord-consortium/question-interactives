@@ -3,7 +3,7 @@ import Form, { Field, FormValidation, IChangeEvent, UiSchema } from "react-jsons
 import { JSONSchema6 } from "json-schema";
 import { useDelayedValidation } from "../hooks/use-delayed-validation";
 import { RichTextWidget } from "../widgets/rich-text/rich-text-widget";
-
+import { ILinkedInteractiveProp, useLinkedInteractivesAuthoring } from "../hooks/use-linked-interactives-authoring";
 import "../../shared/styles/boostrap-3.3.7.css"; // necessary to style react-jsonschema-form
 import css from "../../shared/styles/authoring.scss";
 
@@ -17,6 +17,7 @@ export interface IBaseAuthoringProps<IAuthoredState> {
   // react-jsonschema-form additional fields.
   fields?: { [name: string]: Field };
   validate?: (formData: IAuthoredState, errors: FormValidation) => FormValidation;
+  linkedInteractiveProps?: ILinkedInteractiveProp[];
 }
 
 // custom widgets
@@ -24,7 +25,7 @@ const widgets = {
   richtext: RichTextWidget
 };
 
-export const BaseAuthoring = <IAuthoredState,>({ authoredState, setAuthoredState, preprocessFormData, schema, uiSchema, fields, validate }: IBaseAuthoringProps<IAuthoredState>) => {
+export const BaseAuthoring = <IAuthoredState,>({ authoredState, setAuthoredState, preprocessFormData, schema, uiSchema, fields, validate, linkedInteractiveProps }: IBaseAuthoringProps<IAuthoredState>) => {
   const formRef = useRef<Form<IAuthoredState>>(null);
   const triggerDelayedValidation = useDelayedValidation({ formRef });
 
@@ -43,11 +44,14 @@ export const BaseAuthoring = <IAuthoredState,>({ authoredState, setAuthoredState
     validate && triggerDelayedValidation();
   }, [validate, triggerDelayedValidation]);
 
+  // This hook provides list of interactives on a given page and saving of the linked interactive IDs.
+  const schemaWithInteractives = useLinkedInteractivesAuthoring({ linkedInteractiveProps, schema });
+
   return (
     <div className={css.authoring}>
       <Form
         ref={formRef}
-        schema={schema}
+        schema={schemaWithInteractives}
         uiSchema={uiSchema}
         widgets={widgets}
         formData={authoredState || {}}

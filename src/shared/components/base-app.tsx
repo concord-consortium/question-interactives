@@ -3,9 +3,10 @@ import { useAutoHeight } from "../hooks/use-auto-height";
 import { useShutterbug } from "../hooks/use-shutterbug";
 import { BaseAuthoring, IBaseAuthoringProps } from "./base-authoring";
 import { setSupportedFeatures, useAuthoredState, useInitMessage } from "@concord-consortium/lara-interactive-api";
-
-import css from "./base-app.scss";
 import { useBasicLogging } from "../hooks/use-basic-logging";
+import {useLinkedInteractives} from "../hooks/use-linked-interactives";
+import {ILinkedInteractiveProp} from "../hooks/use-linked-interactives-authoring";
+import css from "./base-app.scss";
 
 export type UpdateFunc<State> = (prevState: State | null) => State;
 
@@ -28,11 +29,12 @@ interface IProps<IAuthoredState> {
   baseAuthoringProps?: Omit<IBaseAuthoringProps<IAuthoredState>, "authoredState" | "setAuthoredState">;
   Runtime: React.FC<IRuntimeComponentProps<IAuthoredState>>;
   disableAutoHeight?: boolean;
+  linkedInteractiveProps?: ILinkedInteractiveProp[];
 }
 
 // BaseApp for interactives that don't save interactive state and don't show up in the report. E.g. image, video.
 export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps<IAuthoredState>) => {
-  const { Authoring, baseAuthoringProps, Runtime, disableAutoHeight } = props;
+  const { Authoring, baseAuthoringProps, Runtime, disableAutoHeight, linkedInteractiveProps } = props;
   const container = useRef<HTMLDivElement>(null);
   const { authoredState, setAuthoredState } = useAuthoredState<IAuthoredState>();
   const initMessage = useInitMessage();
@@ -42,6 +44,7 @@ export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps
   useAutoHeight({ container: container.current, disabled: isRuntimeView && disableAutoHeight || isLoading });
   useShutterbug({ container: "." + css.runtime });
   useBasicLogging({ disabled: !isRuntimeView });
+  useLinkedInteractives(linkedInteractiveProps?.map(li => li.label));
 
   useEffect(() => {
     setSupportedFeatures({

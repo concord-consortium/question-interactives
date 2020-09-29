@@ -122,6 +122,7 @@
     "@concord-consortium/lara-interactive-api": "0.5.0-pre.4",
     "@concord-consortium/slate-editor": "^0.6.0",
     "deep-equal": "^2.0.3",
+    "deepmerge": "^4.2.2",
     "dompurify": "^2.0.14",
     "drawing-tool": "^2.0.1",
     "firebase": "^7.19.0",
