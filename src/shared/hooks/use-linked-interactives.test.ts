@@ -85,7 +85,7 @@ describe("useLinkedInteractives", () => {
     expect(updatedState2).toEqual({ linkedInteractive1: "new ID 1", linkedInteractive2: "new ID 2" });
   });
 
-  it("do nothing if the mode is not authoring or runtime", () => {
+  it("does nothing if the mode is not authoring or runtime", () => {
     initMessage = {
       mode: "report",
       linkedInteractives: [
