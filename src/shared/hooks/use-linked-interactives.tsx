@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useAuthoredState, useInitMessage } from "@concord-consortium/lara-interactive-api";
 
-// This hook accepts list of props that are pointing to other interactives and ensures the most recent ID
+// This hook accepts a list of props that are pointing to other interactives and ensures the most recent ID
 // coming from LARA is being used. Note that ID might change when activity is copied or when interactive is removed.
 // It works both in authoring and runtime mode.
 export const useLinkedInteractives = (linkedInteractiveNames: string[] | undefined) => {
