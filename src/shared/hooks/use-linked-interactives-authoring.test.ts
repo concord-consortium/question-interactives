@@ -73,7 +73,7 @@ describe("useLinkedInteractives", () => {
     });
   });
 
-  it("does not calls setLinkedInteractives when it's not necessary (linkedInteractives array and authoredState are matching)", () => {
+  it("does not call setLinkedInteractives when it's not necessary (linkedInteractives array and authoredState are matching)", () => {
     initMessage = {
       mode: "authoring",
       linkedInteractives: [{id: "ID1", label: "linkedInteractive1"}]
