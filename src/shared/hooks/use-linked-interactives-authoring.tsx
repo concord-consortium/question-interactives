@@ -68,7 +68,7 @@ export const useLinkedInteractivesAuthoring = ({ linkedInteractiveProps, schema 
     }
   }, [authoredState, cachedLinkedInteractives, currentLinkedInteractives, initMessage?.mode, linkedInteractiveProps]);
 
-  // Get the interactive list that are on the same page.
+  // Get the list of interactives that are on the same page.
   const interactiveItemId = initMessage?.mode === "authoring" && initMessage.interactiveItemId;
   useEffect(() => {
     if (linkedInteractiveProps && initMessage?.mode === "authoring") {
