@@ -15,7 +15,7 @@ export interface IProps {
   schema: JSONSchema6;
 }
 
-type AuthoredState = {[key: string]: any};
+type AuthoredState = Record<string, any>;
 const emptyArray: ILinkedInteractive[] = [];
 
 
