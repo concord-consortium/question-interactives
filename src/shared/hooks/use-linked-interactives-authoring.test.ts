@@ -93,7 +93,7 @@ describe("useLinkedInteractives", () => {
     expect(setLinkedInteractivesMock).not.toHaveBeenCalled();
   });
 
-  it("monitors authoredState updates and calls setLinkedInteractives when necessary - 1", () => {
+  it("monitors authoredState updates and calls setLinkedInteractives when necessary - 1", async () => {
     initMessage = {
       mode: "authoring",
       linkedInteractives: []

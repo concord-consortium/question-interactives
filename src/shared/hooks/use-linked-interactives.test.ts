@@ -32,11 +32,9 @@ describe("useLinkedInteractives", () => {
       return useLinkedInteractives([ "linkedInteractive1", "linkedInteractive2" ]);
     };
     renderHook(HookWrapper);
-    expect(setAuthoredState).toHaveBeenCalledTimes(2);
-    const updatedState1 = setAuthoredState.mock.calls[0][0](authoredState);
-    const updatedState2 = setAuthoredState.mock.calls[1][0](updatedState1);
-    expect(updatedState1).toEqual({ linkedInteractive1: undefined, linkedInteractive2: "ID 2" });
-    expect(updatedState2).toEqual({ linkedInteractive1: undefined, linkedInteractive2: undefined });
+    expect(setAuthoredState).toHaveBeenCalledTimes(1);
+    const updatedState = setAuthoredState.mock.calls[0][0](authoredState);
+    expect(updatedState).toEqual({ linkedInteractive1: undefined, linkedInteractive2: undefined });
   });
 
   it("overwrites linked interactive IDs in authored state if linkedInteractives array is defined - 1", () => {
@@ -53,12 +51,14 @@ describe("useLinkedInteractives", () => {
     const HookWrapper = () => {
       return useLinkedInteractives([ "linkedInteractive1", "linkedInteractive2" ]);
     };
-    renderHook(HookWrapper);
-    expect(setAuthoredState).toHaveBeenCalledTimes(2);
-    const updatedState1 = setAuthoredState.mock.calls[0][0](authoredState);
-    const updatedState2 = setAuthoredState.mock.calls[1][0](updatedState1);
-    expect(updatedState1).toEqual({ linkedInteractive1: "new ID 1", linkedInteractive2: "ID 2" });
-    expect(updatedState2).toEqual({ linkedInteractive1: "new ID 1", linkedInteractive2: undefined });
+    const { rerender } = renderHook(HookWrapper);
+    expect(setAuthoredState).toHaveBeenCalledTimes(1);
+    const updatedState = setAuthoredState.mock.calls[0][0](authoredState);
+    expect(updatedState).toEqual({ linkedInteractive1: "new ID 1", linkedInteractive2: undefined });
+
+    // Check if the update happens only once.
+    rerender();
+    expect(setAuthoredState).toHaveBeenCalledTimes(1);
   });
 
   it("overwrites linked interactive IDs in authored state if linkedInteractives array is defined - 2", () => {
@@ -77,12 +77,14 @@ describe("useLinkedInteractives", () => {
     const HookWrapper = () => {
       return useLinkedInteractives([ "linkedInteractive1", "linkedInteractive2" ]);
     };
-    renderHook(HookWrapper);
-    expect(setAuthoredState).toHaveBeenCalledTimes(2);
-    const updatedState1 = setAuthoredState.mock.calls[0][0](authoredState);
-    const updatedState2 = setAuthoredState.mock.calls[1][0](updatedState1);
-    expect(updatedState1).toEqual({ linkedInteractive1: "new ID 1", linkedInteractive2: "ID 2" });
-    expect(updatedState2).toEqual({ linkedInteractive1: "new ID 1", linkedInteractive2: "new ID 2" });
+    const { rerender } = renderHook(HookWrapper);
+    expect(setAuthoredState).toHaveBeenCalledTimes(1);
+    const updatedState = setAuthoredState.mock.calls[0][0](authoredState);
+    expect(updatedState).toEqual({ linkedInteractive1: "new ID 1", linkedInteractive2: "new ID 2" });
+
+    // Check if the update happens only once.
+    rerender();
+    expect(setAuthoredState).toHaveBeenCalledTimes(1);
   });
 
   it("does nothing if the mode is not authoring or runtime", () => {
