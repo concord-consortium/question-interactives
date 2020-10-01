@@ -132,6 +132,7 @@
     "jquery": "^3.5.1",
     "react": "^16.13.1",
     "react-dom": "^16.13.1",
+    "react-hooks-use-previous": "^1.1.1",
     "react-jsonschema-form": "^1.8.1",
     "resize-observer-polyfill": "^1.5.1",
     "shutterbug": "^1.3.0",

@@ -109,9 +109,16 @@ describe("useLinkedInteractives", () => {
         schema: {}
       });
     };
-    renderHook(HookWrapper);
+    const { rerender } = renderHook(HookWrapper);
+    expect(setLinkedInteractivesMock).not.toHaveBeenCalled(); // Nothing should happen during initial render!
+    rerender();
+    expect(setLinkedInteractivesMock).not.toHaveBeenCalled(); // Still nothing, authored state wasn't updated.
+    authoredState = {
+      linkedInteractive1: "ID2"
+    };
+    rerender();
     expect(setLinkedInteractivesMock).toHaveBeenCalledWith({
-      linkedInteractives: [{id: "ID1", label: "linkedInteractive1"}]
+      linkedInteractives: [{id: "ID2", label: "linkedInteractive1"}]
     });
   });
 
@@ -121,7 +128,7 @@ describe("useLinkedInteractives", () => {
       linkedInteractives: [{id: "ID1", label: "linkedInteractive1"}]
     };
     authoredState = {
-      linkedInteractive1: undefined
+      linkedInteractive1: "ID2"
     };
     const HookWrapper = () => {
       return useLinkedInteractivesAuthoring({
@@ -131,7 +138,14 @@ describe("useLinkedInteractives", () => {
         schema: {}
       });
     };
-    renderHook(HookWrapper);
+    const { rerender } = renderHook(HookWrapper);
+    expect(setLinkedInteractivesMock).not.toHaveBeenCalled(); // Nothing should happen during initial render!
+    rerender();
+    expect(setLinkedInteractivesMock).not.toHaveBeenCalled(); // Still nothing, authored state wasn't updated.
+    authoredState = {
+      linkedInteractive1: undefined
+    };
+    rerender();
     expect(setLinkedInteractivesMock).toHaveBeenCalledWith({
       linkedInteractives: []
     });
@@ -153,9 +167,16 @@ describe("useLinkedInteractives", () => {
         schema: {}
       });
     };
-    renderHook(HookWrapper);
+    const { rerender } = renderHook(HookWrapper);
+    expect(setLinkedInteractivesMock).not.toHaveBeenCalled(); // Nothing should happen during initial render!
+    rerender();
+    expect(setLinkedInteractivesMock).not.toHaveBeenCalled(); // Still nothing, authored state wasn't updated.
+    authoredState = {
+      linkedInteractive1: "new ID 2"
+    };
+    rerender();
     expect(setLinkedInteractivesMock).toHaveBeenCalledWith({
-      linkedInteractives: [{id: "new ID", label: "linkedInteractive1"}]
+      linkedInteractives: [{id: "new ID 2", label: "linkedInteractive1"}]
     });
   });
 });

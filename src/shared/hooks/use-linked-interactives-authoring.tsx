@@ -4,6 +4,7 @@ import { JSONSchema6 } from "json-schema";
 import {
   useAuthoredState, useInitMessage, getInteractiveList, ILinkedInteractive, setLinkedInteractives
 } from "@concord-consortium/lara-interactive-api";
+import usePrevious from "react-hooks-use-previous";
 
 export interface ILinkedInteractiveProp {
   label: string;
@@ -33,18 +34,24 @@ const useLinkedInteractivesInAuthoredState = (linkedInteractiveProps?: ILinkedIn
   const initMessage = useInitMessage<AuthoredState>();
   const [ cachedLinkedInteractives, setCachedLinkedInteractives ] = useState<ILinkedInteractive[]>();
   const { authoredState } = useAuthoredState<AuthoredState>();
+  const previousAuthoredState = usePrevious<AuthoredState | null>(authoredState, null);
 
   // Note that initMessage.linkedInteractives is never updated, even after setLinkedInteractives is sent.
   // So, cachedLinkedInteractives is used to keep the most recent value after updates.
   const currentLinkedInteractives = cachedLinkedInteractives || (initMessage?.mode === "authoring" && initMessage?.linkedInteractives) || emptyArray;
 
   useEffect(() => {
-    if (linkedInteractiveProps && authoredState && initMessage?.mode === "authoring") {
+    if (linkedInteractiveProps && previousAuthoredState && authoredState && initMessage?.mode === "authoring") {
       let newArray: ILinkedInteractive[] | null = null;
       let anyUpdate = false;
       linkedInteractiveProps.forEach(li => {
         const name = li.label;
         const authoredStateVal = authoredState[name];
+        if (authoredStateVal === previousAuthoredState[name]) {
+          // Do nothing, the value hasn't changed between renders.
+          // This is very important, as it'll prevent overwriting linkedInteractives on the initial load.
+          return;
+        }
         const linkedInteractive = currentLinkedInteractives.find(l => l.label === name);
         if (!linkedInteractive && authoredStateVal !== undefined) {
           // Add a new item.
@@ -71,7 +78,7 @@ const useLinkedInteractivesInAuthoredState = (linkedInteractiveProps?: ILinkedIn
         setLinkedInteractives({linkedInteractives: newArray}); // Send to LARA
       }
     }
-  }, [authoredState, cachedLinkedInteractives, currentLinkedInteractives, initMessage?.mode, linkedInteractiveProps]);
+  }, [authoredState, previousAuthoredState, cachedLinkedInteractives, currentLinkedInteractives, initMessage?.mode, linkedInteractiveProps]);
 };
 
 // Get the list of interactives that are on the same page.
