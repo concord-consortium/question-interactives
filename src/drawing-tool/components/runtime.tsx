@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import DrawingTool from "drawing-tool";
 import 'drawing-tool/dist/drawing-tool.css';
 import { IAuthoredState, IInteractiveState } from "./app";
@@ -15,6 +15,7 @@ export interface IProps {
   setInteractiveState?: (updateFunc: (prevState: IInteractiveState | null) => IInteractiveState) => void;
   report?: boolean;
   onDrawingChange?: (userState: string) => void;
+  snapshotBackgroundUrl?: string; // useful when DrawingToolRuntime is used within ImageQuestionRuntime
 }
 
 interface StampCollections {
@@ -27,8 +28,7 @@ interface DrawingToolOpts {
   stamps?: StampCollections;
 }
 
-export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report, onDrawingChange }) => {
-
+export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, snapshotBackgroundUrl, setInteractiveState, report, onDrawingChange }) => {
   const readOnly = !!(report || (authoredState.required && interactiveState?.submitted));
 
   // need a wrapper as `useRef` expects (state) => void
@@ -45,10 +45,31 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
   };
   // useRef to avoid passing interactiveState into useEffect, or it will reload on every drawing edit
-  const interactiveStateRef = useRef<any>(interactiveState);
-  const setInteractiveStateRef = useRef<((state: any) => void)>(handleSetInteractiveState);
-  interactiveStateRef.current = interactiveState;
-  setInteractiveStateRef.current = handleSetInteractiveState;
+  const initialInteractiveStateRef = useRef<any>(interactiveState);
+  const setinitialInteractiveStateRef = useRef<((state: any) => void)>(handleSetInteractiveState);
+  const initialSnapshotBgUrlRef = useRef(snapshotBackgroundUrl);
+  initialInteractiveStateRef.current = interactiveState;
+  initialSnapshotBgUrlRef.current = snapshotBackgroundUrl;
+  setinitialInteractiveStateRef.current = handleSetInteractiveState;
+
+  const drawingToolRef = useRef<any>();
+
+  const setBackgroundImage = useCallback((bgProps: { backgroundImageUrl?: string; imagePosition?: string; imageFit?: string}) => {
+    if (!drawingToolRef.current || !bgProps.backgroundImageUrl) {
+      return;
+    }
+    const imageOpts = {
+      src: bgProps.backgroundImageUrl,
+      position: bgProps.imagePosition
+    };
+    if (bgProps.imageFit === "resizeCanvasToBackground") {
+      imageOpts.position = "center"; // anything else is an invalid combo
+    }
+    drawingToolRef.current.pauseHistory();
+    drawingToolRef.current.setBackgroundImage(imageOpts, bgProps.imageFit, () => {
+      drawingToolRef.current.unpauseHistory();
+    });
+  }, []);
 
   useEffect(() => {
     const windowWidth = window.innerWidth;
@@ -83,34 +104,35 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       drawingToolOpts.stamps = stampCollections;
     }
 
-    const drawingTool = new DrawingTool("#drawing-tool-container", drawingToolOpts);
+    drawingToolRef.current = new DrawingTool("#drawing-tool-container", drawingToolOpts);
 
-    if (authoredState.backgroundImageUrl) {
-      const imageOpts = {
-        src: authoredState.backgroundImageUrl,
-        position: authoredState.imagePosition
-      };
-
-      if (authoredState.imageFit === "resizeCanvasToBackground") {
-        imageOpts.position = "center";      // anything else is an invalid combo
-      }
-
-      drawingTool.pauseHistory();
-      drawingTool.setBackgroundImage(imageOpts, authoredState.imageFit, () => {
-        drawingTool.unpauseHistory();
+    // Snapshot background has higher priority than authored background.
+    if (initialSnapshotBgUrlRef.current) {
+      setBackgroundImage({
+        backgroundImageUrl: initialSnapshotBgUrlRef.current,
+        imageFit: "shrinkBackgroundToCanvas"
       });
+    } else if (authoredState.backgroundImageUrl) {
+      setBackgroundImage(authoredState);
     }
 
-    if (interactiveStateRef.current) {
-      drawingTool.load(interactiveStateRef.current.drawingState, null, true);
+    if (initialInteractiveStateRef.current) {
+      drawingToolRef.current.load(initialInteractiveStateRef.current.drawingState, null, true);
     }
 
-    drawingTool.on('drawing:changed', () => {
+    drawingToolRef.current.on('drawing:changed', () => {
       if (readOnly) return;
-      const userState = drawingTool.save();
-      setInteractiveStateRef.current(userState);
+      const userState = drawingToolRef.current.save();
+      setinitialInteractiveStateRef.current(userState);
     });
-  }, [authoredState, report, readOnly]);
+  }, [authoredState, report, readOnly, setBackgroundImage]);
+
+  useEffect(() => {
+    setBackgroundImage({
+      backgroundImageUrl: snapshotBackgroundUrl,
+      imageFit: "shrinkBackgroundToCanvas"
+    });
+  }, [setBackgroundImage, snapshotBackgroundUrl]);
 
   return (
     <div>
