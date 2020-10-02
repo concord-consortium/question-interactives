@@ -6,7 +6,6 @@ import { Runtime } from "./runtime";
 import { StampCollection } from "../../drawing-tool/components/app";
 import { drawingToolAuthoringProps, stampCollectionDefinition, drawingToolAuthoringSchema } from "../../drawing-tool/components/app";
 
-
 export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   version: number;
   hint?: string;
@@ -19,6 +18,8 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   answerType: string;
   defaultAnswer: string;
   modalSupported?: boolean;
+  useSnapshot?: boolean;
+  snapshotTarget?: string;
 }
 
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
@@ -58,6 +59,16 @@ const baseAuthoringProps = {
       defaultAnswer: {
         type: "string",
         title: "Default answer"
+      },
+      useSnapshot: {
+        title: "Use snapshot button",
+        type: "boolean"
+      },
+      snapshotTarget: {
+        title: "Snapshot target",
+        type: "string",
+        enum: [],
+        enumNames: []
       }
     },
     dependencies: {
@@ -117,5 +128,6 @@ export const App = () => (
     Runtime={Runtime}
     baseAuthoringProps={baseAuthoringProps}
     isAnswered={isAnswered}
+    linkedInteractiveProps={[{ label: "snapshotTarget", supportsSnapshots: true }]}
   />
 );

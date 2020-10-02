@@ -1,7 +1,6 @@
 import React from "react";
 import { render } from "@testing-library/react";
-import { useAuthoredState, useInitMessage, useInteractiveState
-        } from "@concord-consortium/lara-interactive-api";
+import { useAuthoredState, useInitMessage, useInteractiveState } from "@concord-consortium/lara-interactive-api";
 import { App } from "./app";
 import { IAuthoredState, IInteractiveState } from "./types";
 
@@ -11,7 +10,8 @@ jest.mock("@concord-consortium/lara-interactive-api", () => ({
   useInitMessage: jest.fn(),
   useAuthoredState: jest.fn(),
   useInteractiveState: jest.fn(),
-  setSupportedFeatures: jest.fn()
+  setSupportedFeatures: jest.fn(),
+  getInteractiveList: jest.fn(() => new Promise(() => { /* never resolve */ }))
 }));
 
 const useInitMessageMock = useInitMessage as jest.Mock;
@@ -32,7 +32,7 @@ const interactiveState = {
   answerText: "Test answer",
 } as IInteractiveState;
 
-describe("Open response question", () => {
+describe("Image question", () => {
   beforeEach(() => {
     // JSDOM doesn't support selection yet, but Slate handles a null return
     // cf. https://github.com/jsdom/jsdom/issues/317#ref-commit-30bedcf

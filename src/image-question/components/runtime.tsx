@@ -2,13 +2,13 @@ import React, { useMemo, useRef, useState } from "react";
 import { IRuntimeQuestionComponentProps } from "../../shared/components/base-question-app";
 import { renderHTML } from "../../shared/utilities/render-html";
 import { IAuthoredState, IInteractiveState } from "./app";
-import css from "./runtime.scss";
 import { Runtime as DrawingToolRuntime } from "../../drawing-tool/components/runtime";
 import { IAuthoredState as IDrawingAuthoredState } from "../../drawing-tool/components/app";
 import { IInteractiveState as IDrawingInteractiveState } from "../../drawing-tool/components/app";
 import { showModal } from "@concord-consortium/lara-interactive-api";
 import ZoomIcon from "../../shared/icons/zoom.svg";
 import { v4 as uuidv4 } from "uuid";
+import css from "./runtime.scss";
 
 // https://stackoverflow.com/a/52703444
 type OptionalExceptFor<T, TRequired extends keyof T> = Partial<T> & Pick<T, TRequired>;
@@ -82,6 +82,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         />
       </div>
       {modalSupported && <div className={`${css.viewHighRes} .glyphicon-zoom-in`} onClick={handleModal}><ZoomIcon /></div>}
+
+      <p>Snapshot target: { authoredState.snapshotTarget }</p>
     </fieldset>
   );
 };

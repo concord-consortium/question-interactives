@@ -3,6 +3,13 @@ import { mount, shallow } from "enzyme";
 import { BaseAuthoring } from "./base-authoring";
 import { JSONSchema6 } from "json-schema";
 import Form from "react-jsonschema-form";
+import { useLinkedInteractivesAuthoring } from "../hooks/use-linked-interactives-authoring";
+
+jest.mock("../hooks/use-linked-interactives-authoring", () => ({
+  useLinkedInteractivesAuthoring: jest.fn((props: any) => props.schema)
+}));
+
+const useLinkedInteractivesAuthoringMock = useLinkedInteractivesAuthoring as jest.Mock;
 
 interface ITestAuthoredState {
   version: number;
@@ -29,6 +36,10 @@ const authoredState = {
 };
 
 describe("BaseAuthoring", () => {
+  beforeEach(() => {
+    useLinkedInteractivesAuthoringMock.mockClear();
+  });
+
   it("renders react-jsonschema-form and passes the authoredState", () => {
     const setState = jest.fn();
     const uiSchema = {};
@@ -77,5 +88,14 @@ describe("BaseAuthoring", () => {
       version: 1,
       testValue: "New test value!!!"
     });
+  });
+
+  it("uses useLinkedInteractivesHook", () => {
+    mount(<BaseAuthoring<ITestAuthoredState>
+        authoredState={authoredState}
+        setAuthoredState={jest.fn()}
+        schema={schema}
+    />);
+    expect(useLinkedInteractivesAuthoringMock).toHaveBeenCalled();
   });
 });
