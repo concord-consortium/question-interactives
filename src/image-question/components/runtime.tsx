@@ -4,17 +4,12 @@ import { renderHTML } from "../../shared/utilities/render-html";
 import { IAuthoredState, IInteractiveState } from "./app";
 import { Runtime as DrawingToolRuntime } from "../../drawing-tool/components/runtime";
 import { IAuthoredState as IDrawingAuthoredState } from "../../drawing-tool/components/app";
-import { IInteractiveState as IDrawingInteractiveState } from "../../drawing-tool/components/app";
 import { showModal, getInteractiveSnapshot } from "@concord-consortium/lara-interactive-api";
 import { v4 as uuidv4 } from "uuid";
 import ZoomIcon from "../../shared/icons/zoom.svg";
 import CameraIcon from "../../shared/icons/camera.svg";
 import css from "./runtime.scss";
 import cssHelpers from "../../shared/styles/helpers.scss";
-
-// https://stackoverflow.com/a/52703444
-type OptionalExceptFor<T, TRequired extends keyof T> = Partial<T> & Pick<T, TRequired>;
-type IPartialDrawingInteractiveState = OptionalExceptFor<IDrawingInteractiveState, "drawingState">;
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {
 }

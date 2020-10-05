@@ -46,11 +46,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, sna
   };
   // useRef to avoid passing interactiveState into useEffect, or it will reload on every drawing edit
   const initialInteractiveStateRef = useRef<any>(interactiveState);
-  const setinitialInteractiveStateRef = useRef<((state: any) => void)>(handleSetInteractiveState);
+  const setInteractiveStateRef = useRef<((state: any) => void)>(handleSetInteractiveState);
   const initialSnapshotBgUrlRef = useRef(snapshotBackgroundUrl);
   initialInteractiveStateRef.current = interactiveState;
   initialSnapshotBgUrlRef.current = snapshotBackgroundUrl;
-  setinitialInteractiveStateRef.current = handleSetInteractiveState;
+  setInteractiveStateRef.current = handleSetInteractiveState;
 
   const drawingToolRef = useRef<any>();
 
@@ -123,7 +123,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, sna
     drawingToolRef.current.on('drawing:changed', () => {
       if (readOnly) return;
       const userState = drawingToolRef.current.save();
-      setinitialInteractiveStateRef.current(userState);
+      setInteractiveStateRef.current(userState);
     });
   }, [authoredState, report, readOnly, setBackgroundImage]);
 

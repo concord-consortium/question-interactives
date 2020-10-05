@@ -3,7 +3,6 @@ import { shallow } from "enzyme";
 import { Runtime } from "./runtime";
 import { IAuthoredState, IInteractiveState } from "./app";
 import { getInteractiveSnapshot } from "@concord-consortium/lara-interactive-api";
-import {act} from "react-dom/test-utils";
 
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
   getInteractiveSnapshot: jest.fn(() => new Promise(resolve => resolve({success: true, snapshotUrl: "http://snapshot/123" })))
