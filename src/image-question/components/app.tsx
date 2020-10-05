@@ -25,7 +25,8 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
   drawingState: string;
   answerType: "interactive_state";
-  answerText: string;
+  answerText?: string;
+  snapshotUrl?: string;
 }
 
 const baseAuthoringProps = {
