@@ -64,7 +64,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
     showModal({uuid, type: "lightbox", url: window.location.href + "?highres"});
   };
 
-  const handleClick = initMsg?.hostFeatures.modalDialog.imageLightbox
+  const handleClick = initMsg?.hostFeatures?.modalDialog?.imageLightbox
                         ? showImageLightbox
                         : showInteractiveLightbox;
 
