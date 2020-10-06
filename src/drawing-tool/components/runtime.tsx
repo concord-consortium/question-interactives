@@ -1,10 +1,13 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import DrawingTool from "drawing-tool";
 import 'drawing-tool/dist/drawing-tool.css';
 import { IAuthoredState, IInteractiveState } from "./app";
 import css from "./runtime.scss";
 import predefinedStampCollections from "./stamp-collections";
 import { renderHTML } from "../../shared/utilities/render-html";
+import {getInteractiveSnapshot} from "@concord-consortium/lara-interactive-api";
+import cssHelpers from "../../shared/styles/helpers.scss";
+import CameraIcon from "../../shared/icons/camera.svg";
 
 const kToolbarWidth = 40;
 const kToolbarHeight = 600;
@@ -14,8 +17,7 @@ export interface IProps {
   interactiveState?: IInteractiveState | null;
   setInteractiveState?: (updateFunc: (prevState: IInteractiveState | null) => IInteractiveState) => void;
   report?: boolean;
-  onDrawingChange?: (userState: string) => void;
-  snapshotBackgroundUrl?: string; // useful when DrawingToolRuntime is used within ImageQuestionRuntime
+  onDrawingChange?: (userState: Partial<IInteractiveState>) => void;
 }
 
 interface StampCollections {
@@ -28,48 +30,30 @@ interface DrawingToolOpts {
   stamps?: StampCollections;
 }
 
-export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, snapshotBackgroundUrl, setInteractiveState, report, onDrawingChange }) => {
+export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report, onDrawingChange }) => {
   const readOnly = !!(report || (authoredState.required && interactiveState?.submitted));
+  const [ snapshotInProgress, setSnapshotInProgress ] = useState(false);
 
   // need a wrapper as `useRef` expects (state) => void
-  const handleSetInteractiveState = (userState: string) => {
+  const handleSetInteractiveState = (newState: Partial<IInteractiveState>) => {
     if (onDrawingChange) {
       // handle the change in a parent component
-      onDrawingChange(userState);
+      onDrawingChange(newState);
     } else {
       setInteractiveState?.(prevState => ({
         ...prevState,
-        drawingState: userState,
+        ...newState,
         answerType: "interactive_state"
       }));
     }
   };
   // useRef to avoid passing interactiveState into useEffect, or it will reload on every drawing edit
-  const initialInteractiveStateRef = useRef<any>(interactiveState);
+  const initialInteractiveStateRef = useRef<IInteractiveState | null | undefined>(interactiveState);
   const setInteractiveStateRef = useRef<((state: any) => void)>(handleSetInteractiveState);
-  const initialSnapshotBgUrlRef = useRef(snapshotBackgroundUrl);
   initialInteractiveStateRef.current = interactiveState;
-  initialSnapshotBgUrlRef.current = snapshotBackgroundUrl;
   setInteractiveStateRef.current = handleSetInteractiveState;
 
   const drawingToolRef = useRef<any>();
-
-  const setBackgroundImage = useCallback((bgProps: { backgroundImageUrl?: string; imagePosition?: string; imageFit?: string}) => {
-    if (!drawingToolRef.current || !bgProps.backgroundImageUrl) {
-      return;
-    }
-    const imageOpts = {
-      src: bgProps.backgroundImageUrl,
-      position: bgProps.imagePosition
-    };
-    if (bgProps.imageFit === "resizeCanvasToBackground") {
-      imageOpts.position = "center"; // anything else is an invalid combo
-    }
-    drawingToolRef.current.pauseHistory();
-    drawingToolRef.current.setBackgroundImage(imageOpts, bgProps.imageFit, () => {
-      drawingToolRef.current.unpauseHistory();
-    });
-  }, []);
 
   useEffect(() => {
     const windowWidth = window.innerWidth;
@@ -106,41 +90,68 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, sna
 
     drawingToolRef.current = new DrawingTool("#drawing-tool-container", drawingToolOpts);
 
-    // Snapshot background has higher priority than authored background.
-    if (initialSnapshotBgUrlRef.current) {
-      setBackgroundImage({
-        backgroundImageUrl: initialSnapshotBgUrlRef.current,
-        imageFit: "shrinkBackgroundToCanvas"
-      });
-    } else if (authoredState.backgroundImageUrl) {
-      setBackgroundImage(authoredState);
-    }
-
     if (initialInteractiveStateRef.current) {
       drawingToolRef.current.load(initialInteractiveStateRef.current.drawingState, null, true);
     }
 
     drawingToolRef.current.on('drawing:changed', () => {
       if (readOnly) return;
-      const userState = drawingToolRef.current.save();
-      setInteractiveStateRef.current(userState);
+      setInteractiveStateRef.current({ drawingState: drawingToolRef.current.save() });
     });
-  }, [authoredState, report, readOnly, setBackgroundImage]);
+  }, [authoredState, report, readOnly]);
 
   useEffect(() => {
-    setBackgroundImage({
-      backgroundImageUrl: snapshotBackgroundUrl,
-      imageFit: "shrinkBackgroundToCanvas"
+    if (!drawingToolRef.current) {
+      return;
+    }
+    const imageOpts = {
+      src: interactiveState?.userBackgroundImageUrl || authoredState.backgroundImageUrl,
+      position: authoredState.imagePosition
+    };
+    if (authoredState.imageFit === "resizeCanvasToBackground") {
+      imageOpts.position = "center"; // anything else is an invalid combo
+    }
+    drawingToolRef.current.pauseHistory();
+    drawingToolRef.current.setBackgroundImage(imageOpts, authoredState.imageFit, () => {
+      drawingToolRef.current.unpauseHistory();
     });
-  }, [setBackgroundImage, snapshotBackgroundUrl]);
+  }, [interactiveState?.userBackgroundImageUrl, authoredState]);
+
+  const handleSnapshot = async () => {
+    if (authoredState.snapshotTarget) {
+      setSnapshotInProgress(true);
+      const response = await getInteractiveSnapshot({ interactiveItemId: authoredState.snapshotTarget });
+      setSnapshotInProgress(false);
+      if (response.success && response.snapshotUrl) {
+        handleSetInteractiveState({ userBackgroundImageUrl: response.snapshotUrl });
+      } else {
+        window.alert("Snapshot has failed. Please try again.");
+      }
+    }
+  };
+
+  const useSnapshot = authoredState?.backgroundSource === "snapshot";
 
   return (
     <div>
-      { authoredState.prompt && <div>{renderHTML(authoredState.prompt)}</div>}
+      {/* Drawing Tool UI: */}
+      { authoredState.prompt && <div>{renderHTML(authoredState.prompt)}</div> }
       <div className={css.drawingtoolWrapper}>
         { readOnly && <div className={css.clickShield} /> }
         <div id="drawing-tool-container" className={css.runtime} />
       </div>
+      {/* Snapshot UI: */}
+      {
+        useSnapshot && authoredState.snapshotTarget &&
+        <button className={cssHelpers.laraButton} onClick={handleSnapshot} disabled={snapshotInProgress} data-test="snapshot-btn">
+          <CameraIcon className={cssHelpers.smallIcon} /> { interactiveState?.userBackgroundImageUrl ? "Replace snapshot" : "Take a snapshot" }
+        </button>
+      }
+      { snapshotInProgress && <p>Please wait while the snapshot is being taken...</p> }
+      {
+        useSnapshot && authoredState.snapshotTarget === undefined &&
+        <p className={css.warn}>Snapshot won&apos;t work, as the target interactive is not selected</p>
+      }
     </div>
   );
 };

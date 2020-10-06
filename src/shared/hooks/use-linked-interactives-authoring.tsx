@@ -19,6 +19,21 @@ export interface IProps {
 type AuthoredState = Record<string, any>;
 const emptyArray: ILinkedInteractive[] = [];
 
+const getNestedObject = (object: Record<string, any>, targetProp: string): Record<string, any> | undefined => {
+  for (const prop in object) {
+    if (prop === targetProp) {
+      return object[prop];
+    }
+  }
+  const nestedResults = Object.keys(object)
+    .map(key => typeof object[key] === "object" ? getNestedObject(object[key], targetProp) : undefined)
+    .filter(result => result !== undefined);
+  if (nestedResults.length > 0) {
+    return nestedResults[0];
+  } else {
+    return undefined;
+  }
+};
 
 export const useLinkedInteractivesAuthoring = ({ linkedInteractiveProps, schema }: IProps) => {
   // This hook provides two separate features in fact. But it doesn't make sense to use one without another,
@@ -90,32 +105,26 @@ const useLinkedInteractivesInSchema = (schema: JSONSchema6, linkedInteractivePro
   useEffect(() => {
     if (linkedInteractiveProps && initMessage?.mode === "authoring") {
       linkedInteractiveProps.forEach(li => {
-        const name = li.label;
-        if (schema?.properties?.[name]) {
-          getInteractiveList({scope: "page", supportsSnapshots: li.supportsSnapshots}).then(response => {
-            const otherInteractives = response.interactives.filter(int => int.id !== interactiveItemId);
-            const ids = otherInteractives.map(int => int.id);
-            const names = otherInteractives.map(int => int.name ? `${int.id} (${int.name})` : int.id);
-            setInteractiveList(prevIntList => Object.assign({}, prevIntList, {[li.label]: {names, ids}}));
-          });
-        }
+        getInteractiveList({scope: "page", supportsSnapshots: li.supportsSnapshots}).then(response => {
+          const otherInteractives = response.interactives.filter(int => int.id !== interactiveItemId);
+          const ids = otherInteractives.map(int => int.id);
+          const names = otherInteractives.map(int => int.name ? `${int.id} (${int.name})` : int.id);
+          setInteractiveList(prevIntList => Object.assign({}, prevIntList, {[li.label]: {names, ids}}));
+        });
       });
     }
   }, [initMessage?.mode, interactiveItemId, linkedInteractiveProps, schema?.properties]);
 
-  // Generate new schema with interactives list.
-  let schemaWithInteractives = schema;
+  // Generate new schema with the list of interactives.
+  const schemaWithInteractives = deepmerge({}, schema); // deep clone using deepmerge
   linkedInteractiveProps?.forEach(li => {
     const name = li.label;
-    if (schema?.properties?.[name]) {
-      schemaWithInteractives = deepmerge(schemaWithInteractives, {
-        properties: {
-          [name]: {
-            enum: interactiveList[name]?.ids,
-            enumNames: interactiveList[name]?.names
-          }
-        }
-      });
+    // Why nested object? Property can be either in the schema top-level or nested within other properties
+    // or dependency tree.
+    const propDefinition = getNestedObject(schemaWithInteractives, name);
+    if (propDefinition) {
+      propDefinition.enum = interactiveList[name]?.ids;
+      propDefinition.enumNames = interactiveList[name]?.names;
     }
   });
 

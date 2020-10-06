@@ -1,33 +1,19 @@
-import React, { useMemo, useState } from "react";
+import React from "react";
 import { IRuntimeQuestionComponentProps } from "../../shared/components/base-question-app";
-import { renderHTML } from "../../shared/utilities/render-html";
 import { IAuthoredState, IInteractiveState } from "./app";
 import { Runtime as DrawingToolRuntime } from "../../drawing-tool/components/runtime";
-import { IAuthoredState as IDrawingAuthoredState } from "../../drawing-tool/components/app";
-import { showModal, getInteractiveSnapshot } from "@concord-consortium/lara-interactive-api";
+import { showModal } from "@concord-consortium/lara-interactive-api";
 import { v4 as uuidv4 } from "uuid";
 import ZoomIcon from "../../shared/icons/zoom.svg";
-import CameraIcon from "../../shared/icons/camera.svg";
 import css from "./runtime.scss";
-import cssHelpers from "../../shared/styles/helpers.scss";
 
-interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {
-}
+interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
 
 const kGlobalDefaultAnswer = "Please type your answer here.";
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
-  const { version, imageFit, imagePosition, required, stampCollections, modalSupported } = authoredState;
+  const { required, modalSupported } = authoredState;
   const readOnly = report || (required && interactiveState?.submitted);
-  const [ snapshotInProgress, setSnapshotInProgress ] = useState(false);
-
-  const drawingAuthoredState = useMemo<IDrawingAuthoredState>(() => ({
-    version,
-    imageFit,
-    imagePosition,
-    stampCollections,
-    questionType: "iframe_interactive"
-  }), [imageFit, imagePosition, stampCollections, version]);
 
   const handleSetInteractiveState = (newState: Partial<IInteractiveState>) => {
     setInteractiveState?.((prevState: IInteractiveState) => ({
@@ -35,10 +21,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       ...newState,
       answerType: "interactive_state"
     }));
-  };
-
-  const handleDrawingChange = (userState: string) => {
-    handleSetInteractiveState({ drawingState: userState });
   };
 
   const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -50,30 +32,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     showModal({ uuid, type: "lightbox", url: window.location.href });
   };
 
-  const handleSnapshot = async () => {
-    if (authoredState.snapshotTarget) {
-      setSnapshotInProgress(true);
-      const response = await getInteractiveSnapshot({ interactiveItemId: authoredState.snapshotTarget });
-      setSnapshotInProgress(false);
-      if (response.success && response.snapshotUrl) {
-        handleSetInteractiveState({ snapshotUrl: response.snapshotUrl });
-      } else {
-        window.alert("Snapshot has failed. Please try again.");
-      }
-    }
-  };
-
   return (
     <fieldset>
-      { authoredState.prompt &&
-        <legend className={css.prompt}>
-          {renderHTML(authoredState.prompt)}
-        </legend> }
       <DrawingToolRuntime
-        authoredState={drawingAuthoredState}
-        interactiveState={{ drawingState: interactiveState?.drawingState || "", answerType: "interactive_state"}}
-        snapshotBackgroundUrl={interactiveState?.snapshotUrl}
-        onDrawingChange={handleDrawingChange}
+        authoredState={authoredState}
+        interactiveState={interactiveState}
         report={report} />
       <div>
         {authoredState.answerPrompt && <div className={css.answerPrompt}>{authoredState.answerPrompt}</div>}
@@ -87,17 +50,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         />
       </div>
       {modalSupported && <div className={`${css.viewHighRes} .glyphicon-zoom-in`} onClick={handleModal}><ZoomIcon /></div>}
-      {
-        authoredState.useSnapshot && authoredState.snapshotTarget &&
-        <button className={cssHelpers.laraButton} onClick={handleSnapshot} disabled={snapshotInProgress} data-test="snapshot-btn">
-          <CameraIcon className={cssHelpers.smallIcon} /> { interactiveState?.snapshotUrl ? "Replace snapshot" : "Take a snapshot" }
-        </button>
-      }
-      { snapshotInProgress && <p>Please wait while the snapshot is being taken...</p> }
-      {
-        authoredState.useSnapshot && authoredState.snapshotTarget === undefined &&
-        <p className={css.warn}>Snapshot won&apos;t work, as the target interactive is not selected</p>
-      }
     </fieldset>
   );
 };
