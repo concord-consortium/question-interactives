@@ -1,6 +1,8 @@
 import React, { useRef } from "react";
 import { IAuthoredState } from "./app";
-import { setSupportedFeatures, showModal } from "@concord-consortium/lara-interactive-api";
+import {
+  IRuntimeInitInteractive, setSupportedFeatures, showModal, useInitMessage
+} from "@concord-consortium/lara-interactive-api";
 import ReactDOMServer from "react-dom/server";
 import { v4 as uuidv4 } from "uuid";
 import { log } from "@concord-consortium/lara-interactive-api";
@@ -19,7 +21,8 @@ interface IImageSize {
 
 export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
   const { url, highResUrl, altText,
-    caption, credit, creditLink, creditLinkDisplayText, scaling, modalSupported, isShowingModal } = authoredState;
+    caption, credit, creditLink, creditLinkDisplayText, scaling, isShowingModal } = authoredState;
+  const initMsg = useInitMessage() as IRuntimeInitInteractive;
   const imageSize = useRef<IImageSize>();
 
   const getImageLayout = () => {
@@ -43,7 +46,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
     }
   };
 
-  const handleClick = () => {
+  const showImageLightbox = () => {
     const size = imageSize.current?.width && imageSize.current?.height
                   ? { width: imageSize.current.width, height: imageSize.current.height }
                   : undefined;
@@ -56,10 +59,14 @@ export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
     log("image zoomed in", { url });
   };
 
-  const handleModal = () => {
+  const showInteractiveLightbox = () => {
     const uuid = uuidv4();
     showModal({uuid, type: "lightbox", url: window.location.href + "?highres"});
   };
+
+  const handleClick = initMsg?.hostFeatures.modalDialog.imageLightbox
+                        ? showImageLightbox
+                        : showInteractiveLightbox;
 
   const getCreditLink = (displayBlock = true) => {
     // const { creditLink, creditLinkDisplayText } = authoredState;
@@ -79,7 +86,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
 
   return (
     <div className={css.runtime}>
-      <div className={`${css.imageContainer} ${getImageLayout()}`} onClick={modalSupported ? handleModal : handleClick}>
+      <div className={`${css.imageContainer} ${getImageLayout()}`} onClick={handleClick}>
         <img
           src={isShowingModal && highResUrl ? highResUrl : url}
           alt={altText}
@@ -90,10 +97,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
       {caption && <div className={css.caption}>{caption}</div>}
       {credit && <div className={css.credit}>{credit}</div>}
       {getCreditLink()}
-      {modalSupported && <div className={`${css.viewHighRes} .glyphicon-zoom-in`} onClick={handleModal}><ZoomIcon /></div>}
-      {!modalSupported &&
-        <div className={`${css.viewHighRes} .glyphicon-zoom-in`} onClick={handleClick}><ZoomIcon /></div>
-      }
+      <div className={`${css.viewHighRes} .glyphicon-zoom-in`} onClick={handleClick}><ZoomIcon /></div>
     </div>
   );
 };
