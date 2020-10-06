@@ -37,6 +37,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       <DrawingToolRuntime
         authoredState={authoredState}
         interactiveState={interactiveState}
+        setInteractiveState={setInteractiveState}
         report={report} />
       <div>
         {authoredState.answerPrompt && <div className={css.answerPrompt}>{authoredState.answerPrompt}</div>}

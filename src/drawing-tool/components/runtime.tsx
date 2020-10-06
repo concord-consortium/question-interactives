@@ -17,7 +17,6 @@ export interface IProps {
   interactiveState?: IInteractiveState | null;
   setInteractiveState?: (updateFunc: (prevState: IInteractiveState | null) => IInteractiveState) => void;
   report?: boolean;
-  onDrawingChange?: (userState: Partial<IInteractiveState>) => void;
 }
 
 interface StampCollections {
@@ -30,22 +29,17 @@ interface DrawingToolOpts {
   stamps?: StampCollections;
 }
 
-export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report, onDrawingChange }) => {
+export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const readOnly = !!(report || (authoredState.required && interactiveState?.submitted));
   const [ snapshotInProgress, setSnapshotInProgress ] = useState(false);
 
   // need a wrapper as `useRef` expects (state) => void
   const handleSetInteractiveState = (newState: Partial<IInteractiveState>) => {
-    if (onDrawingChange) {
-      // handle the change in a parent component
-      onDrawingChange(newState);
-    } else {
-      setInteractiveState?.(prevState => ({
-        ...prevState,
-        ...newState,
-        answerType: "interactive_state"
-      }));
-    }
+    setInteractiveState?.(prevState => ({
+      ...prevState,
+      ...newState,
+      answerType: "interactive_state"
+    }));
   };
   // useRef to avoid passing interactiveState into useEffect, or it will reload on every drawing edit
   const initialInteractiveStateRef = useRef<IInteractiveState | null | undefined>(interactiveState);
@@ -100,22 +94,31 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     });
   }, [authoredState, report, readOnly]);
 
+  let backgroundImgSrc: string | undefined;
+  if (authoredState.backgroundSource === "url") {
+    backgroundImgSrc = authoredState.backgroundImageUrl;
+  } else if (authoredState.backgroundSource === "upload" || authoredState.backgroundSource === "snapshot") {
+    backgroundImgSrc = interactiveState?.userBackgroundImageUrl;
+  }
+  const bgPosition = authoredState.imagePosition || "center";
+  const bgFit = authoredState.imageFit || "shrinkBackgroundToCanvas";
+
   useEffect(() => {
     if (!drawingToolRef.current) {
       return;
     }
     const imageOpts = {
-      src: interactiveState?.userBackgroundImageUrl || authoredState.backgroundImageUrl,
-      position: authoredState.imagePosition
+      src: backgroundImgSrc, // not that undefined / null is a valid source to remove background
+      position: bgPosition
     };
-    if (authoredState.imageFit === "resizeCanvasToBackground") {
+    if (bgFit === "resizeCanvasToBackground") {
       imageOpts.position = "center"; // anything else is an invalid combo
     }
     drawingToolRef.current.pauseHistory();
-    drawingToolRef.current.setBackgroundImage(imageOpts, authoredState.imageFit, () => {
+    drawingToolRef.current.setBackgroundImage(imageOpts, bgFit, () => {
       drawingToolRef.current.unpauseHistory();
     });
-  }, [interactiveState?.userBackgroundImageUrl, authoredState]);
+  }, [backgroundImgSrc, bgPosition, bgFit]);
 
   const handleSnapshot = async () => {
     if (authoredState.snapshotTarget) {
