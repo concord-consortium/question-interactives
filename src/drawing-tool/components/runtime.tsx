@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, {useCallback, useEffect, useRef, useState} from "react";
 import DrawingTool from "drawing-tool";
 import 'drawing-tool/dist/drawing-tool.css';
 import { IAuthoredState, IInteractiveState } from "./app";
@@ -49,6 +49,32 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const drawingToolRef = useRef<any>();
 
+  const setBackground = useCallback((userBackgroundImageUrl: string | undefined) => {
+    if (!drawingToolRef.current) {
+      return;
+    }
+    let backgroundImgSrc: string | undefined;
+    if (authoredState.backgroundSource === "url") {
+      backgroundImgSrc = authoredState.backgroundImageUrl;
+    } else if (authoredState.backgroundSource === "upload" || authoredState.backgroundSource === "snapshot") {
+      backgroundImgSrc = userBackgroundImageUrl;
+    }
+
+    const bgPosition = authoredState.imagePosition || "center";
+    const bgFit = authoredState.imageFit || "shrinkBackgroundToCanvas";
+    const imageOpts = {
+      src: backgroundImgSrc, // not that undefined / null is a valid value (used to remove background)
+      position: bgPosition
+    };
+    if (bgFit === "resizeCanvasToBackground") {
+      imageOpts.position = "center"; // anything else is an invalid combo
+    }
+    drawingToolRef.current.pauseHistory();
+    drawingToolRef.current.setBackgroundImage(imageOpts, bgFit, () => {
+      drawingToolRef.current.unpauseHistory();
+    });
+  }, [authoredState.backgroundImageUrl, authoredState.backgroundSource, authoredState.imageFit, authoredState.imagePosition]);
+
   useEffect(() => {
     const windowWidth = window.innerWidth;
 
@@ -85,40 +111,21 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     drawingToolRef.current = new DrawingTool("#drawing-tool-container", drawingToolOpts);
 
     if (initialInteractiveStateRef.current) {
-      drawingToolRef.current.load(initialInteractiveStateRef.current.drawingState, null, true);
+      drawingToolRef.current.load(initialInteractiveStateRef.current.drawingState, () => {
+        // Load finished callback. Set manually background that is stored outside in the interactive or authored state.
+        setBackground(initialInteractiveStateRef.current?.userBackgroundImageUrl);
+      }, true);
     }
 
     drawingToolRef.current.on('drawing:changed', () => {
       if (readOnly) return;
       setInteractiveStateRef.current({ drawingState: drawingToolRef.current.save() });
     });
-  }, [authoredState, report, readOnly]);
-
-  let backgroundImgSrc: string | undefined;
-  if (authoredState.backgroundSource === "url") {
-    backgroundImgSrc = authoredState.backgroundImageUrl;
-  } else if (authoredState.backgroundSource === "upload" || authoredState.backgroundSource === "snapshot") {
-    backgroundImgSrc = interactiveState?.userBackgroundImageUrl;
-  }
-  const bgPosition = authoredState.imagePosition || "center";
-  const bgFit = authoredState.imageFit || "shrinkBackgroundToCanvas";
+  }, [authoredState, report, readOnly, setBackground]);
 
   useEffect(() => {
-    if (!drawingToolRef.current) {
-      return;
-    }
-    const imageOpts = {
-      src: backgroundImgSrc, // not that undefined / null is a valid source to remove background
-      position: bgPosition
-    };
-    if (bgFit === "resizeCanvasToBackground") {
-      imageOpts.position = "center"; // anything else is an invalid combo
-    }
-    drawingToolRef.current.pauseHistory();
-    drawingToolRef.current.setBackgroundImage(imageOpts, bgFit, () => {
-      drawingToolRef.current.unpauseHistory();
-    });
-  }, [backgroundImgSrc, bgPosition, bgFit]);
+    setBackground(interactiveState?.userBackgroundImageUrl);
+  }, [interactiveState?.userBackgroundImageUrl, setBackground]);
 
   const handleSnapshot = async () => {
     if (authoredState.snapshotTarget) {
