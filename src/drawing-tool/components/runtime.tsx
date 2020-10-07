@@ -8,6 +8,7 @@ import { renderHTML } from "../../shared/utilities/render-html";
 import {getInteractiveSnapshot} from "@concord-consortium/lara-interactive-api";
 import cssHelpers from "../../shared/styles/helpers.scss";
 import CameraIcon from "../../shared/icons/camera.svg";
+import { copyImageToS3, copyLocalImageToS3 } from "../../shared/utilities/copy-image-to-s3";
 
 const kToolbarWidth = 40;
 const kToolbarHeight = 600;
@@ -32,6 +33,9 @@ interface DrawingToolOpts {
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const readOnly = !!(report || (authoredState.required && interactiveState?.submitted));
   const [ snapshotInProgress, setSnapshotInProgress ] = useState(false);
+  const [ uploadControlsVisible, setUploadControlsVisible ] = useState(false);
+  const [ uploadInProgress, setUploadInProgress ] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // need a wrapper as `useRef` expects (state) => void
   const handleSetInteractiveState = (newState: Partial<IInteractiveState>) => {
@@ -140,7 +144,66 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
   };
 
+  const handleUploadBtnClick = () => {
+    setUploadControlsVisible(true);
+  };
+  
+  const uploadFile = (fileOrUrl: File | string) => {
+    setUploadControlsVisible(false);
+    setUploadInProgress(true);
+    // Always copy image to S3 using Shutterbug, so it works even when the image disappears from the external location.
+    // Local image could be theoretically stored as dataSrc but it might be too big for Firestore storage that
+    // is used by ActivityPlayer. So, copying to S3 is a safer option.
+    let uploadPromise;
+    if (typeof fileOrUrl === "string") {
+      uploadPromise = copyImageToS3(fileOrUrl);
+    } else {
+      uploadPromise = copyLocalImageToS3(fileOrUrl);
+    }
+    uploadPromise
+      .then(url => {
+        handleSetInteractiveState({ userBackgroundImageUrl: url });
+      })
+      .catch((error) => {
+        window.alert(error);
+        console.error(error);
+      })
+      .finally(() => {
+        setUploadInProgress(false);
+      });
+  };
+
+  const handleFileUpload = () => {
+    const file = fileInputRef.current?.files?.[0];
+    if (file) {
+      uploadFile(file);
+    }
+  };
+
+  const handleFileDrop = (event: React.DragEvent) => {
+    const file = event.dataTransfer?.files?.[0];
+    if (file) {
+      // Local file dropped.
+      uploadFile(file);
+    } else {
+      // URL dragged.
+      const items = event.dataTransfer?.items;
+      const item = Array.from(items).find(i => i.kind === "string" && i.type.match(/^text\/uri-list/));
+      item?.getAsString(src => {
+        uploadFile(src);
+      });
+    }
+    cancelEvent(event);
+  };
+
+  // Necessary to make file drop work.
+  const cancelEvent = (event: React.DragEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
   const useSnapshot = authoredState?.backgroundSource === "snapshot";
+  const useUpload = authoredState?.backgroundSource === "upload";
 
   return (
     <div>
@@ -161,6 +224,26 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       {
         useSnapshot && authoredState.snapshotTarget === undefined &&
         <p className={css.warn}>Snapshot won&apos;t work, as no target interactive is selected</p>
+      }
+      {/* Upload UI: */}
+      {
+        useUpload && !uploadControlsVisible && !uploadInProgress &&
+        <button className={cssHelpers.laraButton} onClick={handleUploadBtnClick} data-test="upload-btn">
+          Upload image
+        </button>
+      }
+      {
+        uploadControlsVisible &&
+        <div>
+          <div className={css.dropArea} onDrop={handleFileDrop} onDragEnter={cancelEvent} onDragOver={cancelEvent}>Drop an image here or click the button below to choose an image</div>
+          <input ref={fileInputRef} type="file" onChange={handleFileUpload} />
+        </div>
+      }
+      {
+        uploadInProgress &&
+        <div className={css.uploadInfo}>
+          Please wait while image is being uploaded...
+        </div>
       }
     </div>
   );
