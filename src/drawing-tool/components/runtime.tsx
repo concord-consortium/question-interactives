@@ -154,13 +154,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     // Always copy image to S3 using Shutterbug, so it works even when the image disappears from the external location.
     // Local image could be theoretically stored as dataSrc but it might be too big for Firestore storage that
     // is used by ActivityPlayer. So, copying to S3 is a safer option.
-    let uploadPromise;
-    if (typeof fileOrUrl === "string") {
-      uploadPromise = copyImageToS3(fileOrUrl);
-    } else {
-      uploadPromise = copyLocalImageToS3(fileOrUrl);
-    }
-    uploadPromise
+    (typeof fileOrUrl === "string" ? copyImageToS3(fileOrUrl) : copyLocalImageToS3(fileOrUrl))
       .then(url => {
         handleSetInteractiveState({ userBackgroundImageUrl: url });
       })
