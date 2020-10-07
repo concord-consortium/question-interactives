@@ -63,7 +63,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     const bgPosition = authoredState.imagePosition || "center";
     const bgFit = authoredState.imageFit || "shrinkBackgroundToCanvas";
     const imageOpts = {
-      src: backgroundImgSrc, // not that undefined / null is a valid value (used to remove background)
+      src: backgroundImgSrc, // note that undefined / null is a valid value (used to remove background)
       position: bgPosition
     };
     if (bgFit === "resizeCanvasToBackground") {
@@ -160,7 +160,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       { snapshotInProgress && <p>Please wait while the snapshot is being taken...</p> }
       {
         useSnapshot && authoredState.snapshotTarget === undefined &&
-        <p className={css.warn}>Snapshot won&apos;t work, as the target interactive is not selected</p>
+        <p className={css.warn}>Snapshot won&apos;t work, as no target interactive is selected</p>
       }
     </div>
   );

@@ -285,7 +285,7 @@ export const baseAuthoringProps = {
       "ui:widget": "radio"
     }
   },
-  // Can"t get defaults to work with custom stamps, so validating would be ugly and confusing for users until
+  // Can't get defaults to work with custom stamps, so validating would be ugly and confusing for users until
   // they enter the required properties after they select a custom stamp, so skipping this for now.
   // validate: (formData: IAuthoredState, errors: FormValidation) => {
   //   return errors;
