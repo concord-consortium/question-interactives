@@ -1,54 +1,30 @@
 import React from "react";
 import { JSONSchema6 } from "json-schema";
 import { BaseQuestionApp } from "../../shared/components/base-question-app";
-import { IRuntimeInteractiveMetadata, IAuthoringInteractiveMetadata } from "@concord-consortium/lara-interactive-api";
 import { Runtime } from "./runtime";
-import { StampCollection } from "../../drawing-tool/components/app";
-import { drawingToolAuthoringProps, stampCollectionDefinition, drawingToolAuthoringSchema } from "../../drawing-tool/components/app";
+import {
+  baseAuthoringProps as drawingToolBaseAuthoringProps, IAuthoredState as IDrawingToolAuthoredState,
+  IInteractiveState as IDrawingToolInteractiveState
+} from "../../drawing-tool/components/app";
+import deepmerge from "deepmerge";
 
-export interface IAuthoredState extends IAuthoringInteractiveMetadata {
-  version: number;
-  hint?: string;
-  backgroundImageUrl?: string;
-  imageFit: string;
-  imagePosition: string;
-  stampCollections: StampCollection[];
-  questionType: "iframe_interactive";
+export interface IAuthoredState extends IDrawingToolAuthoredState {
   answerPrompt?: string;
-  answerType: string;
-  defaultAnswer: string;
+  defaultAnswer?: string;
   modalSupported?: boolean;
-  useSnapshot?: boolean;
-  snapshotTarget?: string;
 }
 
-export interface IInteractiveState extends IRuntimeInteractiveMetadata {
-  drawingState: string;
-  answerType: "interactive_state";
+export interface IInteractiveState extends IDrawingToolInteractiveState {
   answerText?: string;
-  snapshotUrl?: string;
 }
 
-const baseAuthoringProps = {
+const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
   schema: {
-    type: "object",
-    definitions: {
-      stampCollection: stampCollectionDefinition,
-    },
     properties: {
       version: {
         type: "number",
         default: 1
       },
-      questionType: {
-        type: "string",
-        default: "image_question"
-      },
-      prompt: {
-        title: "Prompt",
-        type: "string"
-      },
-      ...drawingToolAuthoringProps,
       answerPrompt: {
         title: "Answer prompt",
         type: "string"
@@ -60,67 +36,23 @@ const baseAuthoringProps = {
       defaultAnswer: {
         type: "string",
         title: "Default answer"
-      },
-      useSnapshot: {
-        title: "Use snapshot button",
-        type: "boolean"
-      },
-      snapshotTarget: {
-        title: "Snapshot target",
-        type: "string",
-        enum: [],
-        enumNames: []
-      }
-    },
-    dependencies: {
-      required: {
-        oneOf: [
-          {
-            properties: {
-              required: {
-                enum: [
-                  false
-                ]
-              }
-            }
-          },
-          {
-            properties: {
-              required: {
-                enum: [
-                  true
-                ]
-              },
-              predictionFeedback: {
-                title: "Post-submission feedback (optional)",
-                type: "string"
-              }
-            }
-          }
-        ]
       }
     }
   } as JSONSchema6,
 
   uiSchema: {
-    prompt: {
-      "ui:widget": "richtext"
-    },
-    predictionFeedback: {
-      "ui:widget": "richtext"
-    },
+    "ui:order": [
+      "prompt", "required", "predictionFeedback", "hint", "backgroundSource", "snapshotTarget", "backgroundImageUrl",
+      "imageFit", "imagePosition",  "stampCollections", "answerPrompt", "defaultAnswer", "version", "questionType"
+    ],
     defaultAnswer: {
       "ui:widget": "textarea"
-    },
-    questionType: {
-      "ui:widget": "hidden"
-    },
-    version: {
-      "ui:widget": "hidden"
-    },
-    ...drawingToolAuthoringSchema
+    }
   }
-};
+}, {
+  // Just overwrite array, don't merge values.
+  arrayMerge: (destinationArray, sourceArray) => sourceArray
+});
 
 const isAnswered = (interactiveState: IInteractiveState | null) => !!interactiveState?.answerText;
 

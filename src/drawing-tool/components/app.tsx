@@ -4,7 +4,7 @@ import { JSONSchema6 } from "json-schema";
 import { IRuntimeInteractiveMetadata, IAuthoringInteractiveMetadata } from "@concord-consortium/lara-interactive-api";
 import { BaseQuestionApp } from "../../shared/components/base-question-app";
 
-// Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
+// Note that TS interfaces should match JSON schema. Currently there"s no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
 
 export interface StampCollection {
@@ -16,14 +16,20 @@ export interface StampCollection {
 export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   version: number;
   hint?: string;
-  backgroundImageUrl?: string;
-  imageFit: string;
-  imagePosition: string;
-  stampCollections: StampCollection[];
+  prompt?: string;
+  required?: boolean;
+  predictionFeedback?: string;
+  backgroundSource?: "url" | "upload" | "snapshot";
+  backgroundImageUrl?: string; // predefined by author
+  snapshotTarget?: string;
+  imageFit?: string;
+  imagePosition?: string;
+  stampCollections?: StampCollection[];
 }
 
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
-  drawingState: string;
+  drawingState?: string;
+  userBackgroundImageUrl?: string; // snapshot or upload done by student
 }
 
 export const stampCollectionDefinition = {
@@ -110,12 +116,7 @@ export const stampCollectionDefinition = {
   }
 };
 
-export const drawingToolAuthoringProps = {
-  backgroundImageUrl: {
-    title: "Background Image URL",
-    type: "string",
-    format: "uri"
-  },
+const backgroundProps = {
   imageFit: {
     title: "Background image fit",
     type: "string",
@@ -143,29 +144,10 @@ export const drawingToolAuthoringProps = {
       "Center",
       "Top-left"
     ]
-  },
-  stampCollections: {
-    type: "array",
-    title: "Stamp collections",
-    items: {
-      "$ref": "#/definitions/stampCollection"
-    }
   }
 };
 
-export const drawingToolAuthoringSchema = {
-  backgroundImageUrl: {
-    "ui:help": "Path to hosted image file (jpg, png, gif, etc)"
-  },
-  imageFit: {
-    "ui:widget": "radio"
-  },
-  imagePosition: {
-    "ui:widget": "radio"
-  }
-};
-
-const baseAuthoringProps = {
+export const baseAuthoringProps = {
   schema: {
     type: "object",
     definitions: {
@@ -192,11 +174,98 @@ const baseAuthoringProps = {
         title: "Hint",
         type: "string"
       },
-      ...drawingToolAuthoringProps
+      stampCollections: {
+        type: "array",
+        title: "Stamp collections",
+        items: {
+          "$ref": "#/definitions/stampCollection"
+        }
+      },
+      backgroundSource: {
+        title: "Background source",
+        type: "string",
+        enum: [
+          "url",
+          "upload",
+          "snapshot"
+        ],
+        enumNames: [
+          "URL",
+          "Upload",
+          "Snapshot"
+        ]
+      }
+    },
+    dependencies: {
+      backgroundSource: {
+        oneOf: [
+          {
+            properties: {
+              backgroundSource: {
+                enum: [ "url" ]
+              },
+              backgroundImageUrl: {
+                title: "Background Image URL",
+                type: "string",
+                format: "uri"
+              },
+              ...backgroundProps
+            }
+          },
+          {
+            properties: {
+              backgroundSource: {
+                enum: [ "upload" ]
+              },
+              ...backgroundProps
+            }
+          },
+          {
+            properties: {
+              backgroundSource: {
+                enum: [ "snapshot" ]
+              },
+              snapshotTarget: {
+                title: "Snapshot target",
+                type: "string",
+                enum: [],
+                enumNames: []
+              },
+              ...backgroundProps
+            }
+          }
+        ]
+      },
+      required: {
+        oneOf: [
+          {
+            properties: {
+              required: {
+                enum: [ false ]
+              }
+            }
+          },
+          {
+            properties: {
+              required: {
+                enum: [ true ]
+              },
+              predictionFeedback: {
+                title: "Post-submission feedback (optional)",
+                type: "string"
+              }
+            }
+          }
+        ]
+      },
     }
   } as JSONSchema6,
 
   uiSchema: {
+    "ui:order": [
+      "prompt", "required", "predictionFeedback", "hint", "backgroundSource", "snapshotTarget", "backgroundImageUrl",
+      "imageFit", "imagePosition",  "stampCollections", "version", "questionType"
+    ],
     version: {
       "ui:widget": "hidden"
     },
@@ -206,9 +275,16 @@ const baseAuthoringProps = {
     prompt: {
       "ui:widget": "richtext"
     },
-    ...drawingToolAuthoringSchema
+    backgroundImageUrl: {
+      "ui:help": "Path to hosted image file (jpg, png, gif, etc)"
+    },
+    imageFit: {
+      "ui:widget": "radio"
+    },
+    imagePosition: {
+      "ui:widget": "radio"
+    }
   },
-
   // Can't get defaults to work with custom stamps, so validating would be ugly and confusing for users until
   // they enter the required properties after they select a custom stamp, so skipping this for now.
   // validate: (formData: IAuthoredState, errors: FormValidation) => {
@@ -224,5 +300,6 @@ export const App = () => (
     baseAuthoringProps={baseAuthoringProps}
     disableAutoHeight={false}
     isAnswered={isAnswered}
+    linkedInteractiveProps={[{ label: "snapshotTarget", supportsSnapshots: true }]}
   />
 );
