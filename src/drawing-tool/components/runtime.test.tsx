@@ -58,6 +58,6 @@ describe("Runtime", () => {
     const wrapper = shallow(<Runtime authoredState={authoredStateWithoutSnapshotTarget} interactiveState={interactiveState} />);
 
     expect(wrapper.find("[data-test='snapshot-btn']").length).toEqual(0);
-    expect(wrapper.text()).toEqual(expect.stringContaining("Snapshot won't work, as the target interactive is not selected"));
+    expect(wrapper.text()).toEqual(expect.stringContaining("Snapshot won't work, as no target interactive is selected"));
   });
 });
