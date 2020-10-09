@@ -2,7 +2,6 @@ import React, { useRef } from "react";
 import { IAuthoredState } from "./app";
 import { setSupportedFeatures, showModal } from "@concord-consortium/lara-interactive-api";
 import ReactDOMServer from "react-dom/server";
-import { v4 as uuidv4 } from "uuid";
 import { log } from "@concord-consortium/lara-interactive-api";
 import css from "./runtime.scss";
 import ZoomIcon from "../../shared/icons/zoom-in.svg";
@@ -17,9 +16,8 @@ interface IImageSize {
   height: number;
 }
 
-export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
-  const { url, highResUrl, altText,
-    caption, credit, creditLink, creditLinkDisplayText, scaling, modalSupported, isShowingModal } = authoredState;
+export const Runtime: React.FC<IProps> = ({ authoredState }) => {
+  const { url, highResUrl, altText, caption, credit, creditLink, creditLinkDisplayText, scaling } = authoredState;
   const imageSize = useRef<IImageSize>();
 
   const getImageLayout = () => {
@@ -44,21 +42,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
   };
 
   const handleClick = () => {
-    const size = imageSize.current?.width && imageSize.current?.height
-                  ? { width: imageSize.current.width, height: imageSize.current.height }
-                  : undefined;
     const allowUpscale = scaling === "fitWidth";
     const modalImageUrl = highResUrl || url;
-    const uuid = uuidv4();
     const title = `<strong>${caption || ""}</strong> <em>${credit || ""}</em> ${ReactDOMServer.renderToString(getCreditLink(false) || <span/>)}`;
-    modalImageUrl && showModal({ uuid, type: "lightbox", url: modalImageUrl,
-                        isImage: true, size, allowUpscale, title });
+    modalImageUrl && showModal({ type: "lightbox", url: modalImageUrl, isImage: true, allowUpscale, title });
     log("image zoomed in", { url });
-  };
-
-  const handleModal = () => {
-    const uuid = uuidv4();
-    showModal({uuid, type: "lightbox", url: window.location.href + "?highres"});
   };
 
   const getCreditLink = (displayBlock = true) => {
@@ -79,9 +67,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
 
   return (
     <div className={css.runtime}>
-      <div className={`${css.imageContainer} ${getImageLayout()}`} onClick={modalSupported ? handleModal : handleClick}>
+      <div className={`${css.imageContainer} ${getImageLayout()}`} onClick={handleClick}>
         <img
-          src={isShowingModal && highResUrl ? highResUrl : url}
+          src={url}
           alt={altText}
           title={altText}
           onLoad={getOriginalImageSize}
@@ -90,10 +78,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, report }) => {
       {caption && <div className={css.caption}>{caption}</div>}
       {credit && <div className={css.credit}>{credit}</div>}
       {getCreditLink()}
-      {modalSupported && <div className={`${css.viewHighRes} .glyphicon-zoom-in`} onClick={handleModal}><ZoomIcon /></div>}
-      {!modalSupported &&
-        <div className={`${css.viewHighRes} .glyphicon-zoom-in`} onClick={handleClick}><ZoomIcon /></div>
-      }
+      <div className={`${css.viewHighRes} .glyphicon-zoom-in`} onClick={handleClick}><ZoomIcon /></div>
     </div>
   );
 };

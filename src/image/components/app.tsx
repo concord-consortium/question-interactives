@@ -17,8 +17,6 @@ export interface IAuthoredState {
   creditLinkDisplayText?: string;
   allowLightbox?: boolean;
   scaling?: "fitWidth" | "originalDimensions";
-  modalSupported?: boolean;
-  isShowingModal?: boolean;
 }
 
 const baseAuthoringProps = {
