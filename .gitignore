@@ -3,9 +3,12 @@ dist
 node_modules
 npm-error.log
 .DS_Store
+.yalc
+yalc.lock
 
 # Editors
 .idea
+.vscode
 
 # Cypress failed tests
 cypress/screenshots

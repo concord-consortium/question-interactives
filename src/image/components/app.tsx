@@ -17,8 +17,7 @@ export interface IAuthoredState {
   creditLinkDisplayText?: string;
   allowLightbox?: boolean;
   scaling?: "fitWidth" | "originalDimensions";
-  modalSupported?: boolean;
-  isShowingModal?: boolean;
+  isShowingModal?: boolean; // TODO: move this to initInteractive message
 }
 
 const baseAuthoringProps = {
