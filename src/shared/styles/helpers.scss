@@ -59,6 +59,9 @@ $themeColor2: #34a5be;
 
 .laraButton {
   @include lara-button;
+  & + & {
+    margin-left: 10px;
+  }
 }
 
 .smallIcon {

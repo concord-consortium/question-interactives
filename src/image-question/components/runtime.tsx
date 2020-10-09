@@ -1,56 +1,100 @@
-import React from "react";
+import React, { useState } from "react";
 import { IRuntimeQuestionComponentProps } from "../../shared/components/base-question-app";
 import { IAuthoredState, IInteractiveState } from "./app";
-import { Runtime as DrawingToolRuntime } from "../../drawing-tool/components/runtime";
 import { showModal } from "@concord-consortium/lara-interactive-api";
-import { v4 as uuidv4 } from "uuid";
-import ZoomIcon from "../../shared/icons/zoom.svg";
+import { TakeSnapshot } from "../../drawing-tool/components/take-snapshot";
+import { UploadBackground } from "../../drawing-tool/components/upload-background";
+import { getURLParam } from "../../shared/utilities/get-url-param";
+import { DrawingTool } from "../../drawing-tool/components/drawing-tool";
+import { renderHTML } from "../../shared/utilities/render-html";
 import css from "./runtime.scss";
+import cssHelpers from "../../shared/styles/helpers.scss";
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
 
 const kGlobalDefaultAnswer = "Please type your answer here.";
+const drawingToolDialogUrlParam = "drawingToolDialog";
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
-  const { required, modalSupported } = authoredState;
-  const readOnly = report || (required && interactiveState?.submitted);
+  const readOnly = report || (authoredState.required && interactiveState?.submitted);
+  const [ controlsHidden, setControlsHidden ] = useState(false);
+  const drawingToolDialog = getURLParam(drawingToolDialogUrlParam);
+  const useSnapshot = authoredState?.backgroundSource === "snapshot";
+  const useUpload = authoredState?.backgroundSource === "upload";
 
-  const handleSetInteractiveState = (newState: Partial<IInteractiveState>) => {
+  const openDrawingToolDialog = () => {
+    setControlsHidden(false);
+    showModal({ type: "dialog", url: window.location.href + "?" + drawingToolDialogUrlParam });
+  };
+
+  const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInteractiveState?.((prevState: IInteractiveState) => ({
       ...prevState,
-      ...newState,
+      answerText: event.target.value,
       answerType: "interactive_state"
     }));
   };
 
-  const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    handleSetInteractiveState({ answerText: event.target.value });
+  const hideControls = () => {
+    setControlsHidden(true);
   };
 
-  const handleModal = () => {
-    const uuid = uuidv4();
-    showModal({ uuid, type: "lightbox", url: window.location.href });
-  };
+  const renderInline = () => (
+    // Render answer prompt and answer text in inline mode to replicate LARA's Image Question UI
+    <div>
+      { authoredState.prompt && <div>{renderHTML(authoredState.prompt)}</div> }
+      { authoredState.answerPrompt && <div>{renderHTML(authoredState.answerPrompt)}</div> }
+      <div className={css.studentAnswerText}>{ interactiveState?.answerText }</div>
+      {
+        !readOnly &&
+        <div>
+          {
+            useSnapshot &&
+            <TakeSnapshot
+              authoredState={authoredState}
+              interactiveState={interactiveState}
+              setInteractiveState={setInteractiveState}
+              onUploadStart={hideControls}
+              onUploadComplete={openDrawingToolDialog}
+            />
+          }
+          {
+            useUpload &&
+            <UploadBackground
+              setInteractiveState={setInteractiveState}
+              onUploadStart={hideControls}
+              onUploadComplete={openDrawingToolDialog} />
+          }
+          {
+            !controlsHidden && interactiveState?.userBackgroundImageUrl &&
+            <button className={cssHelpers.laraButton} onClick={openDrawingToolDialog} data-test="edit-btn">
+              Edit
+            </button>
+          }
+        </div>
+      }
+    </div>
+  );
 
-  return (
-    <fieldset>
-      <DrawingToolRuntime
+  const renderDialog = () => (
+    <div>
+      { authoredState.prompt && <div>{renderHTML(authoredState.prompt)}</div> }
+      <DrawingTool
         authoredState={authoredState}
         interactiveState={interactiveState}
         setInteractiveState={setInteractiveState}
-        report={report} />
+      />
       <div>
-        {authoredState.answerPrompt && <div className={css.answerPrompt}>{authoredState.answerPrompt}</div>}
+        { authoredState.answerPrompt && <div className={css.answerPrompt}>{renderHTML(authoredState.answerPrompt)}</div> }
         <textarea
           value={interactiveState?.answerText || ""}
-          onChange={readOnly ? undefined : handleTextChange}
-          readOnly={readOnly}
-          disabled={readOnly}
+          onChange={handleTextChange}
           rows={8}
           placeholder={authoredState.defaultAnswer || kGlobalDefaultAnswer}
         />
       </div>
-      {modalSupported && <div className={`${css.viewHighRes} .glyphicon-zoom-in`} onClick={handleModal}><ZoomIcon /></div>}
-    </fieldset>
+    </div>
   );
+
+  return drawingToolDialog ? renderDialog() : renderInline();
 };

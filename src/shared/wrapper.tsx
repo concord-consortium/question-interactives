@@ -2,16 +2,7 @@ import React, { useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import iframePhone from "iframe-phone";
 import { IframePhone } from "./types";
-
-export const getURLParam = (name: string) => {
-  const url = (self || window).location.href;
-  name = name.replace(/[[]]/g, "\\$&");
-  const regex = new RegExp(`[#?&]${name}(=([^&#]*)|&|#|$)`);
-  const results = regex.exec(url);
-  if (!results) return null;
-  if (!results[2]) return true;
-  return decodeURIComponent(results[2].replace(/\+/g, " "));
-};
+import { getURLParam } from "./utilities/get-url-param";
 
 // Note that this app/component is mostly used by Cypress tests. It can also be used to tests / develop things manually,
 // for example using browser console.

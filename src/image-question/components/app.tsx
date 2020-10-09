@@ -11,7 +11,6 @@ import deepmerge from "deepmerge";
 export interface IAuthoredState extends IDrawingToolAuthoredState {
   answerPrompt?: string;
   defaultAnswer?: string;
-  modalSupported?: boolean;
 }
 
 export interface IInteractiveState extends IDrawingToolInteractiveState {
@@ -45,6 +44,9 @@ const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
       "prompt", "required", "predictionFeedback", "hint", "backgroundSource", "snapshotTarget", "backgroundImageUrl",
       "imageFit", "imagePosition",  "stampCollections", "answerPrompt", "defaultAnswer", "version", "questionType"
     ],
+    answerPrompt: {
+      "ui:widget": "richtext"
+    },
     defaultAnswer: {
       "ui:widget": "textarea"
     }
