@@ -14,7 +14,7 @@ jest.mock("@concord-consortium/lara-interactive-api", () => ({
 const getInteractiveSnapshotMock = getInteractiveSnapshot as jest.Mock;
 const closeModalMock = closeModal as jest.Mock;
 
-jest.mock("Shutterbug", () => ({
+jest.mock("shutterbug", () => ({
   snapshot: jest.fn((options: any) => options.done("https://mock-snapshot.com/123.png"))
 }));
 const ShutterbugSnapshotMock = Shutterbug.snapshot as jest.Mock;
