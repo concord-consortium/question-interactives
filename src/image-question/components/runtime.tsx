@@ -118,14 +118,17 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   );
 
   const renderDialog = () => (
-    <div>
-      { authoredState.prompt && <div>{renderHTML(authoredState.prompt)}</div> }
-      <DrawingTool
-        authoredState={authoredState}
-        interactiveState={interactiveState}
-        setInteractiveState={setInteractiveState}
-      />
-      <div>
+    <div className={css.dialogContent}>
+      <div className={css.drawingTool}>
+        <DrawingTool
+          authoredState={authoredState}
+          interactiveState={interactiveState}
+          setInteractiveState={setInteractiveState}
+        />
+      </div>
+      <div className={css.dialogRightPanel}>
+        { authoredState.prompt && <div>{renderHTML(authoredState.prompt)}</div> }
+        <hr />
         { authoredState.answerPrompt && <div className={css.answerPrompt}>{renderHTML(authoredState.answerPrompt)}</div> }
         <textarea
           value={interactiveState?.answerText || ""}
@@ -135,10 +138,12 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         />
       </div>
       <div className={css.closeDialogSection}>
-        <button className={cssHelpers.laraButton} onClick={handleClose} data-test="close-dialog-btn" disabled={savingAnnotatedImage}>
-          Close
-        </button>
-        { savingAnnotatedImage && <div>Please wait while your drawing is being saved...</div> }
+        { savingAnnotatedImage ?
+          <div>Please wait while your drawing is being saved...</div> :
+          <button className={cssHelpers.laraButton} onClick={handleClose} data-test="close-dialog-btn">
+            Close
+          </button>
+        }
       </div>
     </div>
   );
