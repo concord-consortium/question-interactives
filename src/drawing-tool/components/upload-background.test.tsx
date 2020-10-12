@@ -12,6 +12,10 @@ jest.mock("../../shared/utilities/copy-image-to-s3", () => ({
 const copyImageToS3Mock = copyImageToS3 as jest.Mock;
 const copyLocalImageToS3Mock = copyLocalImageToS3 as jest.Mock;
 
+const authoredState = {
+  version: 1,
+  questionType: "iframe_interactive" as const
+};
 
 describe("UploadBackground", () => {
   beforeEach(() => {
@@ -21,7 +25,7 @@ describe("UploadBackground", () => {
 
   it("renders upload button", () => {
     const setMock = jest.fn();
-    const wrapper = mount(<UploadBackground setInteractiveState={setMock} />);
+    const wrapper = mount(<UploadBackground authoredState={authoredState} setInteractiveState={setMock} />);
 
     expect(wrapper.find("[data-test='upload-btn']").length).toEqual(1);
     wrapper.find("[data-test='upload-btn']").simulate("click");
@@ -30,7 +34,7 @@ describe("UploadBackground", () => {
 
   it("lets user upload local file", () => {
     const setMock = jest.fn();
-    const wrapper = mount(<UploadBackground setInteractiveState={setMock} />);
+    const wrapper = mount(<UploadBackground authoredState={authoredState} setInteractiveState={setMock} />);
     wrapper.find("[data-test='upload-btn']").simulate("click");
     expect(wrapper.find("[data-test='upload-btn']").length).toEqual(0);
 
@@ -49,7 +53,7 @@ describe("UploadBackground", () => {
 
   it("lets user upload image by dropping external URL", () => {
     const setMock = jest.fn();
-    const wrapper = mount(<UploadBackground setInteractiveState={setMock} />);
+    const wrapper = mount(<UploadBackground authoredState={authoredState} setInteractiveState={setMock} />);
 
     expect(wrapper.find("[data-test='upload-btn']").length).toEqual(1);
     wrapper.find("[data-test='upload-btn']").simulate("click");

@@ -20,7 +20,7 @@ const useInteractiveStateMock = useInteractiveState as jest.Mock;
 
 const authoredState = {
   version: 1,
-  questionType: "iframe_interactive" as const,
+  questionType: "image_question" as const,
   prompt: "Test prompt",
   hint: "hint",
   required: false,
@@ -28,7 +28,7 @@ const authoredState = {
 } as IAuthoredState;
 
 const interactiveState = {
-  answerType: "interactive_state" as const,
+  answerType: "image_question_answer" as const,
   answerText: "Test answer",
 } as IInteractiveState;
 

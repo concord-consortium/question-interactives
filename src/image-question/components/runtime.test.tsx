@@ -22,7 +22,7 @@ const ShutterbugSnapshotMock = Shutterbug.snapshot as jest.Mock;
 
 const authoredState = {
   version: 1,
-  questionType: "iframe_interactive" as const,
+  questionType: "image_question" as const,
   prompt: "<p><strong>Rich</strong> <em>text</em> <u>prompt</u>",
   answerPrompt: "<p><strong>Rich</strong> <em>text</em> <u> answer prompt</u>",
   hint: "hint",
@@ -35,7 +35,7 @@ const authoredState = {
 
 const interactiveState = {
   drawingState: "",
-  answerType: "interactive_state" as const,
+  answerType: "image_question_answer" as const,
   answerText: "Test answer",
 };
 
@@ -95,7 +95,7 @@ describe("Runtime", () => {
       const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} />);
       wrapper.find("textarea").simulate("change", { target: { value: "new answer" } });
       const newState = setState.mock.calls[0][0](interactiveState);
-      expect(newState).toEqual({answerType: "interactive_state", drawingState: "", answerText: "new answer"});
+      expect(newState).toEqual({answerType: "image_question_answer", drawingState: "", answerText: "new answer"});
     });
 
     it("renders a close button that closes the dialog and does NOT save annotated image PNG if there were no changes to drawing", () => {
@@ -116,7 +116,7 @@ describe("Runtime", () => {
       expect(closeModalMock).toHaveBeenCalled();
       expect(setState).toHaveBeenCalled();
       const newState = setState.mock.calls[0][0](interactiveState);
-      expect(newState.annotatedImageUrl).toEqual("https://mock-snapshot.com/123.png");
+      expect(newState.answerImageUrl).toEqual("https://mock-snapshot.com/123.png");
     });
   });
 

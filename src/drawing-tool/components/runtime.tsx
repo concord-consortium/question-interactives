@@ -27,7 +27,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       }
       {
         !readOnly && useUpload &&
-        <UploadBackground setInteractiveState={setInteractiveState} />
+        <UploadBackground authoredState={authoredState} setInteractiveState={setInteractiveState} />
       }
     </div>
   );

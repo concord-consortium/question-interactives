@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef } from "react";
 import DrawingToolLib from "drawing-tool";
-import { IAuthoredState, IInteractiveState } from "./app";
+import { IGenericAuthoredState, IGenericInteractiveState } from "./types";
 import predefinedStampCollections from "./stamp-collections";
 import 'drawing-tool/dist/drawing-tool.css';
 import css from "./runtime.scss";
@@ -10,9 +10,9 @@ const kDrawingToolPreferredWidth = 600; // in practice it can be smaller if ther
 const kDrawingToolHeight = 600;
 
 export interface IProps {
-  authoredState: IAuthoredState;
-  interactiveState?: IInteractiveState | null;
-  setInteractiveState?: (updateFunc: (prevState: IInteractiveState | null) => IInteractiveState) => void;
+  authoredState: IGenericAuthoredState; // so it works with DrawingTool and ImageQuestion
+  interactiveState?: IGenericInteractiveState | null;
+  setInteractiveState?: (updateFunc: (prevState: IGenericInteractiveState | null) => IGenericInteractiveState) => void;
   readOnly?: boolean;
 }
 
@@ -36,15 +36,15 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
   const containerRef = useRef<HTMLDivElement>(null);
 
   // need a wrapper as `useRef` expects (state) => void
-  const handleSetInteractiveState = (newState: Partial<IInteractiveState>) => {
+  const handleSetInteractiveState = (newState: Partial<IGenericInteractiveState>) => {
     setInteractiveState?.(prevState => ({
       ...prevState,
       ...newState,
-      answerType: "interactive_state"
+      answerType: authoredState.questionType === "image_question" ? "image_question_answer" : "interactive_state"
     }));
   };
   // useRef to avoid passing interactiveState into useEffect, or it will reload on every drawing edit
-  const initialInteractiveStateRef = useRef<IInteractiveState | null | undefined>(interactiveState);
+  const initialInteractiveStateRef = useRef<IGenericInteractiveState | null | undefined>(interactiveState);
   const setInteractiveStateRef = useRef<((state: any) => void)>(handleSetInteractiveState);
   initialInteractiveStateRef.current = interactiveState;
   setInteractiveStateRef.current = handleSetInteractiveState;

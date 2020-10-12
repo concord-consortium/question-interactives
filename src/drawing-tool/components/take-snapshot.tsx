@@ -1,15 +1,15 @@
 import React, { useState } from "react";
 import 'drawing-tool/dist/drawing-tool.css';
-import { IAuthoredState, IInteractiveState } from "./app";
 import css from "./runtime.scss";
 import cssHelpers from "../../shared/styles/helpers.scss";
 import CameraIcon from "../../shared/icons/camera.svg";
 import { getInteractiveSnapshot } from "@concord-consortium/lara-interactive-api";
+import { IGenericAuthoredState, IGenericInteractiveState } from "./types";
 
 export interface IProps {
-  authoredState: IAuthoredState;
-  interactiveState?: IInteractiveState | null;
-  setInteractiveState?: (updateFunc: (prevState: IInteractiveState | null) => IInteractiveState) => void;
+  authoredState: IGenericAuthoredState; // so it works with DrawingTool and ImageQuestion
+  interactiveState?: IGenericInteractiveState | null;
+  setInteractiveState?: (updateFunc: (prevState: IGenericInteractiveState | null) => IGenericInteractiveState) => void;
   onUploadStart?: () => void;
   onUploadComplete?: (result: { success: boolean }) => void;
 }
@@ -27,7 +27,7 @@ export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState
         setInteractiveState?.(prevState => ({
           ...prevState,
           userBackgroundImageUrl: response.snapshotUrl,
-          answerType: "interactive_state"
+          answerType: authoredState.questionType === "image_question" ? "image_question_answer" : "interactive_state"
         }));
         onUploadComplete?.({ success: true });
       } else {

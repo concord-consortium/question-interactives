@@ -44,7 +44,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     setInteractiveState?.((prevState: IInteractiveState) => ({
       ...prevState,
       answerText: event.target.value,
-      answerType: "interactive_state"
+      answerType: "image_question_answer"
     }));
   };
 
@@ -64,8 +64,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       done: (snapshotUrl: string) => {
         setInteractiveState?.((prevState: IInteractiveState) => ({
           ...prevState,
-          annotatedImageUrl: snapshotUrl,
-          answerType: "interactive_state"
+          answerImageUrl: snapshotUrl,
+          answerType: "image_question_answer"
         }));
         closeModal({});
       },
@@ -83,7 +83,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     // Render answer prompt and answer text in inline mode to replicate LARA's Image Question UI
     <div>
       { authoredState.prompt && <div>{renderHTML(authoredState.prompt)}</div> }
-      { interactiveState?.annotatedImageUrl && <div><img src={interactiveState?.annotatedImageUrl} className={css.annotatedImageUrl} alt="user work" /></div> }
+      { interactiveState?.answerImageUrl && <div><img src={interactiveState?.answerImageUrl} className={css.answerImageUrl} alt="user work" /></div> }
       { authoredState.answerPrompt && <div>{renderHTML(authoredState.answerPrompt)}</div> }
       <div className={css.studentAnswerText}>{ interactiveState?.answerText }</div>
       {
@@ -102,6 +102,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           {
             useUpload &&
             <UploadBackground
+              authoredState={authoredState}
               setInteractiveState={setInteractiveState}
               onUploadStart={hideControls}
               onUploadComplete={snapshotOrUploadFinished} />
