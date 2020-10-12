@@ -1,16 +1,23 @@
 import React from "react";
 import { shallow } from "enzyme";
 import { Runtime } from "./runtime";
-import { IAuthoredState, IInteractiveState } from "./app";
-import { getInteractiveSnapshot } from "@concord-consortium/lara-interactive-api";
+import { getInteractiveSnapshot, closeModal } from "@concord-consortium/lara-interactive-api";
 import { TakeSnapshot } from "../../drawing-tool/components/take-snapshot";
 import { UploadBackground } from "../../drawing-tool/components/upload-background";
 import { DrawingTool } from "../../drawing-tool/components/drawing-tool";
+import Shutterbug  from "shutterbug";
 
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
-  getInteractiveSnapshot: jest.fn(() => new Promise(resolve => resolve({success: true, snapshotUrl: "http://snapshot/123" })))
+  getInteractiveSnapshot: jest.fn(() => new Promise(resolve => resolve({success: true, snapshotUrl: "http://snapshot/123" }))),
+  closeModal: jest.fn()
 }));
 const getInteractiveSnapshotMock = getInteractiveSnapshot as jest.Mock;
+const closeModalMock = closeModal as jest.Mock;
+
+jest.mock("Shutterbug", () => ({
+  snapshot: jest.fn((options: any) => options.done("https://mock-snapshot.com/123.png"))
+}));
+const ShutterbugSnapshotMock = Shutterbug.snapshot as jest.Mock;
 
 
 const authoredState = {
@@ -35,6 +42,8 @@ const interactiveState = {
 describe("Runtime", () => {
   beforeEach(() => {
     getInteractiveSnapshotMock.mockClear();
+    closeModalMock.mockClear();
+    ShutterbugSnapshotMock.mockClear();
     delete (window as any).location;
     (window as any).location = {
       href: "http://example.org/"
@@ -87,6 +96,27 @@ describe("Runtime", () => {
       wrapper.find("textarea").simulate("change", { target: { value: "new answer" } });
       const newState = setState.mock.calls[0][0](interactiveState);
       expect(newState).toEqual({answerType: "interactive_state", drawingState: "", answerText: "new answer"});
+    });
+
+    it("renders a close button that closes the dialog and does NOT save annotated image PNG if there were no changes to drawing", () => {
+      const setState = jest.fn();
+      const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} />);
+      wrapper.find("[data-test='close-dialog-btn']").simulate("click");
+      expect(closeModalMock).toHaveBeenCalled();
+      expect(ShutterbugSnapshotMock).not.toHaveBeenCalled();
+    });
+
+    it("renders a close button that closes the dialog and saves annotated image PNG if there were changes to drawing", () => {
+      const setState = jest.fn();
+      const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} />);
+      const newInteractiveState = {...interactiveState, drawingState: "new drawing state!"}; // this will trigger saving of the annotated image PNG
+      wrapper.setProps({ authoredState, setInteractiveState: setState, interactiveState: newInteractiveState });
+      wrapper.find("[data-test='close-dialog-btn']").simulate("click");
+      expect(ShutterbugSnapshotMock).toHaveBeenCalled();
+      expect(closeModalMock).toHaveBeenCalled();
+      expect(setState).toHaveBeenCalled();
+      const newState = setState.mock.calls[0][0](interactiveState);
+      expect(newState.annotatedImageUrl).toEqual("https://mock-snapshot.com/123.png");
     });
   });
 

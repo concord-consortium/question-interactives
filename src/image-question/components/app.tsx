@@ -15,6 +15,7 @@ export interface IAuthoredState extends IDrawingToolAuthoredState {
 
 export interface IInteractiveState extends IDrawingToolInteractiveState {
   answerText?: string;
+  annotatedImageUrl?: string;
 }
 
 const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {

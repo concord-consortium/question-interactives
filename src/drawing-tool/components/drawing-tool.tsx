@@ -25,6 +25,11 @@ interface DrawingToolOpts {
   stamps?: StampCollections;
 }
 
+const drawingToolContainerId = "drawing-tool-container";
+// This relies on DrwaingTool internals obviously. Let's keep it at least in a single place. If it ever changes,
+// it'll be easier to update selectors and find usages.
+export const drawingToolCanvasSelector = `#${drawingToolContainerId} canvas.lower-canvas`;
+
 export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, readOnly }) => {
   // need a wrapper as `useRef` expects (state) => void
   const handleSetInteractiveState = (newState: Partial<IInteractiveState>) => {
@@ -123,7 +128,7 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
   return (
     <div className={css.drawingtoolWrapper}>
       { readOnly && <div className={css.clickShield} /> }
-      <div id="drawing-tool-container" className={css.runtime} />
+      <div id={drawingToolContainerId} className={css.runtime} />
     </div>
   );
 };
