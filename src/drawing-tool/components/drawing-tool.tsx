@@ -1,17 +1,18 @@
 import React, { useCallback, useEffect, useRef } from "react";
 import DrawingToolLib from "drawing-tool";
-import { IAuthoredState, IInteractiveState } from "./app";
+import { getAnswerType, IGenericAuthoredState, IGenericInteractiveState } from "./types";
 import predefinedStampCollections from "./stamp-collections";
 import 'drawing-tool/dist/drawing-tool.css';
 import css from "./runtime.scss";
 
-const kToolbarWidth = 40;
-const kToolbarHeight = 600;
+const kToolbarWidth = 40; // Drawing Tool buttons are 40x40
+const kDrawingToolPreferredWidth = 600; // in practice it can be smaller if there's not enough space
+const kDrawingToolHeight = 600;
 
 export interface IProps {
-  authoredState: IAuthoredState;
-  interactiveState?: IInteractiveState | null;
-  setInteractiveState?: (updateFunc: (prevState: IInteractiveState | null) => IInteractiveState) => void;
+  authoredState: IGenericAuthoredState; // so it works with DrawingTool and ImageQuestion
+  interactiveState?: IGenericInteractiveState | null;
+  setInteractiveState?: (updateFunc: (prevState: IGenericInteractiveState | null) => IGenericInteractiveState) => void;
   readOnly?: boolean;
 }
 
@@ -25,22 +26,28 @@ interface DrawingToolOpts {
   stamps?: StampCollections;
 }
 
+const drawingToolContainerId = "drawing-tool-container";
+// This relies on DrawingTool internals obviously. Let's keep it at least in a single place. If it ever changes,
+// it'll be easier to update selectors and find usages.
+export const drawingToolCanvasSelector = `#${drawingToolContainerId} canvas.lower-canvas`;
+
 export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, readOnly }) => {
+  const drawingToolRef = useRef<any>();
+  const containerRef = useRef<HTMLDivElement>(null);
+
   // need a wrapper as `useRef` expects (state) => void
-  const handleSetInteractiveState = (newState: Partial<IInteractiveState>) => {
+  const handleSetInteractiveState = (newState: Partial<IGenericInteractiveState>) => {
     setInteractiveState?.(prevState => ({
       ...prevState,
       ...newState,
-      answerType: "interactive_state"
+      answerType: getAnswerType(authoredState.questionType)
     }));
   };
   // useRef to avoid passing interactiveState into useEffect, or it will reload on every drawing edit
-  const initialInteractiveStateRef = useRef<IInteractiveState | null | undefined>(interactiveState);
+  const initialInteractiveStateRef = useRef<IGenericInteractiveState | null | undefined>(interactiveState);
   const setInteractiveStateRef = useRef<((state: any) => void)>(handleSetInteractiveState);
   initialInteractiveStateRef.current = interactiveState;
   setInteractiveStateRef.current = handleSetInteractiveState;
-
-  const drawingToolRef = useRef<any>();
 
   const setBackground = useCallback((userBackgroundImageUrl: string | undefined) => {
     if (!drawingToolRef.current) {
@@ -69,8 +76,6 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
   }, [authoredState.backgroundImageUrl, authoredState.backgroundSource, authoredState.imageFit, authoredState.imagePosition]);
 
   useEffect(() => {
-    const windowWidth = window.innerWidth;
-
     const stampCollections: StampCollections = {};
     authoredState.stampCollections?.forEach(collection => {
       const baseName = collection.name || collection.collection.charAt(0).toUpperCase() + collection.collection.slice(1);
@@ -92,9 +97,13 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
       }
     });
 
+    // window.innerWidth should never be used in practice. It's here just to make TypeScript happy
+    // and/or handle some unexpected edge case where containerRef is really undefined.
+    const availableWidth = containerRef.current?.clientWidth || window.innerWidth;
     const drawingToolOpts: DrawingToolOpts = {
-      width: windowWidth - kToolbarWidth - 10,
-      height: kToolbarHeight
+      // Drawing Tool width and height describe canvas dimensions. They do NOT include toolbar dimensions.
+      width: Math.min(kDrawingToolPreferredWidth, availableWidth - kToolbarWidth),
+      height: kDrawingToolHeight
     };
 
     if (Object.keys(stampCollections).length > 0) {
@@ -121,9 +130,9 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
   }, [interactiveState?.userBackgroundImageUrl, setBackground]);
 
   return (
-    <div className={css.drawingtoolWrapper}>
+    <div ref={containerRef} className={css.drawingtoolWrapper}>
       { readOnly && <div className={css.clickShield} /> }
-      <div id="drawing-tool-container" className={css.runtime} />
+      <div id={drawingToolContainerId} className={css.runtime} />
     </div>
   );
 };

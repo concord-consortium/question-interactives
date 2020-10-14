@@ -2,20 +2,29 @@ import React from "react";
 import { JSONSchema6 } from "json-schema";
 import { BaseQuestionApp } from "../../shared/components/base-question-app";
 import { Runtime } from "./runtime";
+import { IAuthoringImageQuestionMetadata, IRuntimeImageQuestionMetadata } from "@concord-consortium/lara-interactive-api";
 import {
-  baseAuthoringProps as drawingToolBaseAuthoringProps, IAuthoredState as IDrawingToolAuthoredState,
-  IInteractiveState as IDrawingToolInteractiveState
-} from "../../drawing-tool/components/app";
+  IAuthoredState as IDrawingToolAuthoredState, IInteractiveState as IDrawingToolInteractiveState
+} from "../../drawing-tool/components/types";
+import { baseAuthoringProps as drawingToolBaseAuthoringProps } from "../../drawing-tool/components/app";
 import deepmerge from "deepmerge";
 
-export interface IAuthoredState extends IDrawingToolAuthoredState {
-  answerPrompt?: string;
+export interface IAuthoredStateBase extends IAuthoringImageQuestionMetadata {
+  // IRuntimeImageQuestionMetadata adds:
+  // - answerType: "image_question"
+  // - answerPrompt?: string;
   defaultAnswer?: string;
 }
+// Final IAuthoredState is combination of properties above and DrawingTool authored state (without questionType).
+export type IAuthoredState = IAuthoredStateBase & Omit<IDrawingToolAuthoredState, "questionType">;
 
-export interface IInteractiveState extends IDrawingToolInteractiveState {
-  answerText?: string;
+export interface IBaseInteractiveState extends IRuntimeImageQuestionMetadata {
+  // IRuntimeImageQuestionMetadata adds:
+  // - answerType: "image_question_interactive"
+  // - answerImageUrl?: string;
+  // - answerText?: string;
 }
+export type IInteractiveState = IBaseInteractiveState & Omit<IDrawingToolInteractiveState, "answerType">;
 
 const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
   schema: {
@@ -23,6 +32,10 @@ const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
       version: {
         type: "number",
         default: 1
+      },
+      questionType: {
+        type: "string",
+        default: "image_question"
       },
       answerPrompt: {
         title: "Answer prompt",

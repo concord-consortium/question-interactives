@@ -8,12 +8,11 @@
 
 .runtime, .clickShield {
   position: absolute;
-  left: -18px;
+  left: 0;
   top: 0;
 }
 
 .clickShield {
-  right: -12px;
   height: 100%;
   background-color: #DDD;
   opacity: 0.2;

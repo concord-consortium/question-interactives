@@ -1,37 +1,11 @@
 import React from "react";
 import { Runtime } from "./runtime";
 import { JSONSchema6 } from "json-schema";
-import { IRuntimeInteractiveMetadata, IAuthoringInteractiveMetadata } from "@concord-consortium/lara-interactive-api";
 import { BaseQuestionApp } from "../../shared/components/base-question-app";
+import { IAuthoredState, IInteractiveState } from "./types";
 
 // Note that TS interfaces should match JSON schema. Currently there"s no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
-
-export interface StampCollection {
-  collection: "molecules" | "ngsaObjects" | "custom";
-  name?: string;
-  stamps?: string[];
-}
-
-export interface IAuthoredState extends IAuthoringInteractiveMetadata {
-  version: number;
-  hint?: string;
-  prompt?: string;
-  required?: boolean;
-  predictionFeedback?: string;
-  backgroundSource?: "url" | "upload" | "snapshot";
-  backgroundImageUrl?: string; // predefined by author
-  snapshotTarget?: string;
-  imageFit?: string;
-  imagePosition?: string;
-  stampCollections?: StampCollection[];
-}
-
-export interface IInteractiveState extends IRuntimeInteractiveMetadata {
-  drawingState?: string;
-  userBackgroundImageUrl?: string; // snapshot or upload done by student
-}
-
 export const stampCollectionDefinition = {
   title: "Stamp collection",
   type: "object",

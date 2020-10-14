@@ -1,18 +1,19 @@
 import React, { useState } from "react";
 import 'drawing-tool/dist/drawing-tool.css';
-import { IInteractiveState } from "./app";
 import UploadIcon from "../../shared/icons/upload.svg";
 import { copyImageToS3, copyLocalImageToS3 } from "../../shared/utilities/copy-image-to-s3";
 import css from "./runtime.scss";
 import cssHelpers from "../../shared/styles/helpers.scss";
+import { getAnswerType, IGenericAuthoredState, IGenericInteractiveState } from "./types";
 
 export interface IProps {
-  setInteractiveState?: (updateFunc: (prevState: IInteractiveState | null) => IInteractiveState) => void;
+  authoredState: IGenericAuthoredState;
+  setInteractiveState?: (updateFunc: (prevState: IGenericInteractiveState | null) => IGenericInteractiveState) => void;
   onUploadStart?: () => void;
   onUploadComplete?: (result: { success: boolean }) => void;
 }
 
-export const UploadBackground: React.FC<IProps> = ({ setInteractiveState, onUploadStart, onUploadComplete }) => {
+export const UploadBackground: React.FC<IProps> = ({ authoredState, setInteractiveState, onUploadStart, onUploadComplete }) => {
   const [ uploadControlsVisible, setUploadControlsVisible ] = useState(false);
   const [ uploadInProgress, setUploadInProgress ] = useState(false);
 
@@ -32,7 +33,7 @@ export const UploadBackground: React.FC<IProps> = ({ setInteractiveState, onUplo
         setInteractiveState?.(prevState => ({
           ...prevState,
           userBackgroundImageUrl: url,
-          answerType: "interactive_state"
+          answerType: getAnswerType(authoredState.questionType)
         }));
         onUploadComplete?.({ success: true });
       })

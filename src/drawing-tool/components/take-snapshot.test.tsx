@@ -1,7 +1,7 @@
 import React from "react";
 import { shallow } from "enzyme";
 import { TakeSnapshot } from "./take-snapshot";
-import { IAuthoredState, IInteractiveState } from "./app";
+import { IAuthoredState, IInteractiveState } from "./types";
 import { getInteractiveSnapshot } from "@concord-consortium/lara-interactive-api";
 
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
