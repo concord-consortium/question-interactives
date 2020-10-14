@@ -1,6 +1,6 @@
 import React from "react";
 import 'drawing-tool/dist/drawing-tool.css';
-import { IAuthoredState, IInteractiveState } from "./app";
+import { IAuthoredState, IInteractiveState } from "./types";
 import { renderHTML } from "../../shared/utilities/render-html";
 import { UploadBackground } from "./upload-background";
 import { TakeSnapshot } from "./take-snapshot";

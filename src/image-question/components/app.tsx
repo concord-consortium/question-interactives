@@ -4,9 +4,9 @@ import { BaseQuestionApp } from "../../shared/components/base-question-app";
 import { Runtime } from "./runtime";
 import { IAuthoringImageQuestionMetadata, IRuntimeImageQuestionMetadata } from "@concord-consortium/lara-interactive-api";
 import {
-  baseAuthoringProps as drawingToolBaseAuthoringProps, IAuthoredState as IDrawingToolAuthoredState,
-  IInteractiveState as IDrawingToolInteractiveState
-} from "../../drawing-tool/components/app";
+  IAuthoredState as IDrawingToolAuthoredState, IInteractiveState as IDrawingToolInteractiveState
+} from "../../drawing-tool/components/types";
+import { baseAuthoringProps as drawingToolBaseAuthoringProps } from "../../drawing-tool/components/app";
 import deepmerge from "deepmerge";
 
 export interface IAuthoredStateBase extends IAuthoringImageQuestionMetadata {

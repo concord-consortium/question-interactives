@@ -1,7 +1,7 @@
 import React from "react";
 import { shallow } from "enzyme";
 import { Runtime } from "./runtime";
-import { IAuthoredState, IInteractiveState } from "./app";
+import { IAuthoredState, IInteractiveState } from "./types";
 import { TakeSnapshot } from "./take-snapshot";
 import { UploadBackground } from "./upload-background";
 

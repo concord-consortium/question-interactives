@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef } from "react";
 import DrawingToolLib from "drawing-tool";
-import { IGenericAuthoredState, IGenericInteractiveState } from "./types";
+import { getAnswerType, IGenericAuthoredState, IGenericInteractiveState } from "./types";
 import predefinedStampCollections from "./stamp-collections";
 import 'drawing-tool/dist/drawing-tool.css';
 import css from "./runtime.scss";
@@ -27,7 +27,7 @@ interface DrawingToolOpts {
 }
 
 const drawingToolContainerId = "drawing-tool-container";
-// This relies on DrwaingTool internals obviously. Let's keep it at least in a single place. If it ever changes,
+// This relies on DrawingTool internals obviously. Let's keep it at least in a single place. If it ever changes,
 // it'll be easier to update selectors and find usages.
 export const drawingToolCanvasSelector = `#${drawingToolContainerId} canvas.lower-canvas`;
 
@@ -40,7 +40,7 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
     setInteractiveState?.(prevState => ({
       ...prevState,
       ...newState,
-      answerType: authoredState.questionType === "image_question" ? "image_question_answer" : "interactive_state"
+      answerType: getAnswerType(authoredState.questionType)
     }));
   };
   // useRef to avoid passing interactiveState into useEffect, or it will reload on every drawing edit

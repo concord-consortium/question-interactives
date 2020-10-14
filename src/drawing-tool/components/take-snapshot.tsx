@@ -4,7 +4,7 @@ import css from "./runtime.scss";
 import cssHelpers from "../../shared/styles/helpers.scss";
 import CameraIcon from "../../shared/icons/camera.svg";
 import { getInteractiveSnapshot } from "@concord-consortium/lara-interactive-api";
-import { IGenericAuthoredState, IGenericInteractiveState } from "./types";
+import { getAnswerType, IGenericAuthoredState, IGenericInteractiveState } from "./types";
 
 export interface IProps {
   authoredState: IGenericAuthoredState; // so it works with DrawingTool and ImageQuestion
@@ -27,7 +27,7 @@ export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState
         setInteractiveState?.(prevState => ({
           ...prevState,
           userBackgroundImageUrl: response.snapshotUrl,
-          answerType: authoredState.questionType === "image_question" ? "image_question_answer" : "interactive_state"
+          answerType: getAnswerType(authoredState.questionType)
         }));
         onUploadComplete?.({ success: true });
       } else {

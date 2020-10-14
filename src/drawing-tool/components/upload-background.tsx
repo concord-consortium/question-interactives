@@ -4,7 +4,7 @@ import UploadIcon from "../../shared/icons/upload.svg";
 import { copyImageToS3, copyLocalImageToS3 } from "../../shared/utilities/copy-image-to-s3";
 import css from "./runtime.scss";
 import cssHelpers from "../../shared/styles/helpers.scss";
-import { IGenericAuthoredState, IGenericInteractiveState } from "./types";
+import { getAnswerType, IGenericAuthoredState, IGenericInteractiveState } from "./types";
 
 export interface IProps {
   authoredState: IGenericAuthoredState;
@@ -33,7 +33,7 @@ export const UploadBackground: React.FC<IProps> = ({ authoredState, setInteracti
         setInteractiveState?.(prevState => ({
           ...prevState,
           userBackgroundImageUrl: url,
-          answerType: authoredState.questionType === "image_question" ? "image_question_answer" : "interactive_state"
+          answerType: getAnswerType(authoredState.questionType)
         }));
         onUploadComplete?.({ success: true });
       })
