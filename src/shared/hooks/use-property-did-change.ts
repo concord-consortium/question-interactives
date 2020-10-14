@@ -7,7 +7,7 @@ const loading = "loading";
 // There's an assumption that the object can be initially unavailable (undefined) and this should not affect
 // the result. This hook will detect change of the property, not property and object combination.
 // It's useful for observing interactive state properties.
-export const usePropertyUpdate = (object: any, propertyName: string) => {
+export const usePropertyDidChange = (object: any, propertyName: string) => {
   const [ result, setResult ] = useState(false);
   const previousDrawingToolState = usePrevious<string | undefined>(object ? object[propertyName] : loading, loading);
   const currentDrawingToolState = object ? object.drawingState : loading;

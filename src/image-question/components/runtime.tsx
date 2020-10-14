@@ -10,7 +10,7 @@ import { renderHTML } from "../../shared/utilities/render-html";
 import Shutterbug from "shutterbug";
 import css from "./runtime.scss";
 import cssHelpers from "../../shared/styles/helpers.scss";
-import { usePropertyUpdate } from "../../shared/hooks/use-property-update";
+import { usePropertyDidChange } from "../../shared/hooks/use-property-did-change";
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
 
@@ -25,7 +25,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const useSnapshot = authoredState?.backgroundSource === "snapshot";
   const useUpload = authoredState?.backgroundSource === "upload";
   // Used to request or skip PNG saving when user closes the dialog.
-  const drawingStateUpdated = usePropertyUpdate(interactiveState, "drawingState");
+  const drawingStateUpdated = usePropertyDidChange(interactiveState, "drawingState");
 
   const snapshotOrUploadFinished = ({ success }: { success: boolean }) => {
     setControlsHidden(false);

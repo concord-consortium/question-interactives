@@ -1,11 +1,11 @@
 import { renderHook } from "@testing-library/react-hooks";
-import { usePropertyUpdate } from "./use-property-update";
+import { usePropertyDidChange } from "./use-property-did-change";
 
-describe("usePropertyUpdate", () => {
+describe("usePropertyDidChange", () => {
   it("detects changes correctly", () => {
     const propName = "testProp";
     const HookWrapper = (props: { state: any }) => {
-      return usePropertyUpdate(props.state, propName);
+      return usePropertyDidChange(props.state, propName);
     };
     const { result, rerender } = renderHook(HookWrapper, { initialProps: { state: undefined }});
     expect(result.current).toEqual(false); // state loading, no changes
