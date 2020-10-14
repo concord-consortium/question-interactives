@@ -35,8 +35,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const openDrawingToolDialog = () => {
-    // notCloseable: true disabled click-to-close backdrop and X icon in the corner. Dialog can be closed only
-    // manually by calling closeModal() from one of our own widgets.
+    // notCloseable: true disabled click-to-close backdrop and X icon in the corner.
+    // Dialog can be closed only via closeModal API.
     showModal({ type: "dialog", url: window.location.href + "?" + drawingToolDialogUrlParam, notCloseable: true });
   };
 
