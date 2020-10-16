@@ -7,10 +7,12 @@ import { UploadBackground } from "../../drawing-tool/components/upload-backgroun
 import { getURLParam } from "../../shared/utilities/get-url-param";
 import { DrawingTool, drawingToolCanvasSelector } from "../../drawing-tool/components/drawing-tool";
 import { renderHTML } from "../../shared/utilities/render-html";
+import { UpdateFunc } from "../../shared/components/base-app";
 import Shutterbug from "shutterbug";
+import PencilIcon from "../../shared/icons/pencil.svg";
 import css from "./runtime.scss";
 import cssHelpers from "../../shared/styles/helpers.scss";
-import { usePropertyDidChange } from "../../shared/hooks/use-property-did-change";
+
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
 
@@ -20,12 +22,9 @@ const drawingToolDialogUrlParam = "drawingToolDialog";
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
   const [ controlsHidden, setControlsHidden ] = useState(false);
+  const [ drawingStateUpdated, setDrawingStateUpdated ] = useState(false);
   const [ savingAnnotatedImage, setSavingAnnotatedImage ] = useState(false);
   const drawingToolDialog = getURLParam(drawingToolDialogUrlParam);
-  const useSnapshot = authoredState?.backgroundSource === "snapshot";
-  const useUpload = authoredState?.backgroundSource === "upload";
-  // Used to request or skip PNG saving when user closes the dialog.
-  const drawingStateUpdated = usePropertyDidChange(interactiveState, "drawingState");
 
   const snapshotOrUploadFinished = ({ success }: { success: boolean }) => {
     setControlsHidden(false);
@@ -38,6 +37,14 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     // notCloseable: true disabled click-to-close backdrop and X icon in the corner.
     // Dialog can be closed only via closeModal API.
     showModal({ type: "dialog", url: window.location.href + "?" + drawingToolDialogUrlParam, notCloseable: true });
+  };
+
+  const handleDrawingToolSetIntState = (updateFunc: UpdateFunc<IInteractiveState>) => {
+    setInteractiveState?.(updateFunc);
+    const newDrawingState = updateFunc(interactiveState || null).drawingState;
+    if (newDrawingState !== interactiveState?.drawingState) {
+      setDrawingStateUpdated(true);
+    }
   };
 
   const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
@@ -79,18 +86,24 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     });
   };
 
-  const renderInline = () => (
+  const renderInline = () => {
+    const renderSnapshot = authoredState?.backgroundSource === "snapshot";
+    const renderUpload = authoredState?.backgroundSource === "upload";
+    const renderMakeDrawing = !renderSnapshot && !renderUpload;
+    const previousAnswerAvailable = interactiveState?.userBackgroundImageUrl || interactiveState?.answerImageUrl;
+    const authoredBackgroundUrl = authoredState?.backgroundSource === "url" && authoredState.backgroundImageUrl;
+    const inlineImage = interactiveState?.answerImageUrl || interactiveState?.userBackgroundImageUrl || authoredBackgroundUrl;
     // Render answer prompt and answer text in inline mode to replicate LARA's Image Question UI
-    <div>
+    return <div>
       { authoredState.prompt && <div>{renderHTML(authoredState.prompt)}</div> }
-      { interactiveState?.answerImageUrl && <div><img src={interactiveState?.answerImageUrl} className={css.answerImageUrl} alt="user work" /></div> }
+      { inlineImage && <div><img src={inlineImage} className={css.inlineImg} alt="user work"/></div> }
       { authoredState.answerPrompt && <div>{renderHTML(authoredState.answerPrompt)}</div> }
-      <div className={css.studentAnswerText}>{ interactiveState?.answerText }</div>
+      <div className={css.studentAnswerText}>{interactiveState?.answerText}</div>
       {
         !readOnly &&
         <div>
           {
-            useSnapshot &&
+            renderSnapshot &&
             <TakeSnapshot
               authoredState={authoredState}
               interactiveState={interactiveState}
@@ -100,7 +113,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             />
           }
           {
-            useUpload &&
+            renderUpload &&
             <UploadBackground
               authoredState={authoredState}
               setInteractiveState={setInteractiveState}
@@ -108,15 +121,15 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               onUploadComplete={snapshotOrUploadFinished} />
           }
           {
-            !controlsHidden && interactiveState?.userBackgroundImageUrl &&
+            !controlsHidden && (renderMakeDrawing || previousAnswerAvailable) &&
             <button className={cssHelpers.laraButton} onClick={openDrawingToolDialog} data-test="edit-btn">
-              Edit
+              { previousAnswerAvailable ? "Edit" : <span><PencilIcon className={cssHelpers.smallIcon}/> Make drawing</span> }
             </button>
           }
         </div>
       }
-    </div>
-  );
+    </div>;
+  };
 
   const renderDialog = () => (
     <div className={css.dialogContent}>
@@ -124,7 +137,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         <DrawingTool
           authoredState={authoredState}
           interactiveState={interactiveState}
-          setInteractiveState={setInteractiveState}
+          setInteractiveState={handleDrawingToolSetIntState}
         />
       </div>
       <div className={css.dialogRightPanel}>

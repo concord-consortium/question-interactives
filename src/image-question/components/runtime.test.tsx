@@ -109,13 +109,13 @@ describe("Runtime", () => {
     it("renders a close button that closes the dialog and saves annotated image PNG if there were changes to drawing", () => {
       const setState = jest.fn();
       const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} />);
-      const newInteractiveState = {...interactiveState, drawingState: "new drawing state!"}; // this will trigger saving of the annotated image PNG
-      wrapper.setProps({ authoredState, setInteractiveState: setState, interactiveState: newInteractiveState });
+      wrapper.find(DrawingTool).prop("setInteractiveState")?.(() => ({...interactiveState, drawingState: "new drawing state!"}));
       wrapper.find("[data-test='close-dialog-btn']").simulate("click");
       expect(ShutterbugSnapshotMock).toHaveBeenCalled();
       expect(closeModalMock).toHaveBeenCalled();
       expect(setState).toHaveBeenCalled();
-      const newState = setState.mock.calls[0][0](interactiveState);
+      // [1] => The second call done by Shutterbug! The first one was done above
+      const newState = setState.mock.calls[1][0](interactiveState);
       expect(newState.answerImageUrl).toEqual("https://mock-snapshot.com/123.png");
     });
   });
