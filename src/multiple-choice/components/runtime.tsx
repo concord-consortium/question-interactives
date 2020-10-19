@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
-import { IAuthoredState, IChoice, IInteractiveState } from "./app";
+import { IAuthoredState, IChoice, IInteractiveState } from "./types";
 import CheckIcon from "../../shared/icons/correct.svg";
 import CrossIcon from "../../shared/icons/incorrect.svg";
 import { renderHTML } from "../../shared/utilities/render-html";
