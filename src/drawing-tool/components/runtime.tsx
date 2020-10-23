@@ -1,7 +1,7 @@
 import React, {useCallback, useEffect, useRef, useState} from "react";
 import DrawingTool from "drawing-tool";
 import 'drawing-tool/dist/drawing-tool.css';
-import { IAuthoredState, IInteractiveState } from "./app";
+import { IAuthoredState, IInteractiveState } from "./types";
 import css from "./runtime.scss";
 import predefinedStampCollections from "./stamp-collections";
 import { renderHTML } from "../../shared/utilities/render-html";

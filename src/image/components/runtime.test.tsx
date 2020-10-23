@@ -1,11 +1,12 @@
 import React from "react";
 import { shallow } from "enzyme";
 import { Runtime } from "./runtime";
-import { IAuthoredState } from "./app";
+import { IAuthoredState } from "./types";
 import css from "./runtime.scss";
 
 const authoredState: IAuthoredState = {
   version: 1,
+  questionType: "image",
   url: "http://concord.org/sites/default/files/images/logos/cc/cc-logo.png",
   highResUrl: "http://concord.org/sites/default/files/images/logos/cc/cc-logo.png",
   altText: "CC Logo",
@@ -18,6 +19,7 @@ const authoredState: IAuthoredState = {
 };
 const naturalWidthImageAuthoredState: IAuthoredState = {
   version: 1,
+  questionType: "image",
   url: "http://concord.org/sites/default/files/images/logos/cc/cc-logo.png",
   highResUrl: "http://concord.org/sites/default/files/images/logos/cc/cc-logo.png",
   altText: "CC Logo",
