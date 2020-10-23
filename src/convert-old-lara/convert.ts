@@ -1,10 +1,13 @@
 import { IChoice, IAuthoredState as IMultipleChoiceAuthoredState } from "../multiple-choice/components/types";
 import { IAuthoredState as IOpenResponseAuthoredState } from "../open-response/components/types";
+import { IAuthoredState as IImageAuthoredState } from "../image/components/types";
+import { IAuthoredState as IImageQuestionAuthoredState } from "../image-question/components/types";
+import { IAuthoredState as IVideoPlayerAuthoredState } from "../video-player/components/types";
 
-const convertMultipleChoice = (item: any, libraryInteractive: any) => {
+const convertMultipleChoice = (item: Record<string, any>, libraryInteractive: Record<string, any>) => {
   let choiceId = 1;
   const convertedChoices: IChoice[] = [];
-  item.embeddable.choices.forEach((choice: any) => {
+  item.embeddable.choices.forEach((choice: Record<string, any>) => {
     const convertedChoice: IChoice = {
       id: `${choiceId}`,
       content: choice.choice,
@@ -36,7 +39,7 @@ const convertMultipleChoice = (item: any, libraryInteractive: any) => {
 
   for (const key in authoredStateProperties) {
     if (item.embeddable[key]) {
-      (authoredState as any)[authoredStateProperties[key]] = item.embeddable[key];
+      (authoredState as Record<string, any>)[authoredStateProperties[key]] = item.embeddable[key];
     }
   }
 
@@ -44,13 +47,11 @@ const convertMultipleChoice = (item: any, libraryInteractive: any) => {
   item.embeddable.library_interactive = setLibraryInteractive(libraryInteractive);
 };
 
-const convertOpenResponse = (item: any, libraryInteractive: any) => {
+const convertOpenResponse = (item: Record<string, any>, libraryInteractive: Record<string, any>) => {
   const authoredState: IOpenResponseAuthoredState = {
     version: 1,
     prompt: item.embeddable.prompt,
     defaultAnswer: item.embeddable.default_text,
-    enableCheckAnswer: item.embeddable.enable_check_answer,
-    layout: item.embeddable.layout,
     required: item.embeddable.is_prediction,
     questionType: "open_response",
     predictionFeedback: item.embeddable.prediction_feedback,
@@ -62,14 +63,15 @@ const convertOpenResponse = (item: any, libraryInteractive: any) => {
   item.embeddable.library_interactive = setLibraryInteractive(libraryInteractive);
 };
 
-const convertImage = (item: any, libraryInteractive: any) => {
-  const authoredState = {
+const convertImage = (item: Record<string, any>, libraryInteractive: Record<string, any>) => {
+  const authoredState: IImageAuthoredState = {
     version: 1,
-    scaling: "fitWidth",
+    questionType: "image",
     url: item.embeddable.url,
     caption: item.embeddable.caption,
     credit: item.embeddable.credit,
     creditLink: item.embeddable.credit_url,
+    creditLinkDisplayText: "",
     allowLightbox: true
   };
 
@@ -78,8 +80,9 @@ const convertImage = (item: any, libraryInteractive: any) => {
 
 };
 
-const convertImageQuestion = (item: any, libraryInteractive: any) => {
-  const authoredState = {
+const convertImageQuestion = (item: Record<string, any>, libraryInteractive: Record<string, any>) => {
+  const authoredState: IImageQuestionAuthoredState = {
+    version: 1,
     questionType: "iframe_interactive",
     required: item.embeddable.is_prediction,
     predictionFeedback: item.embeddable.prediction_feedback,
@@ -97,10 +100,10 @@ const convertImageQuestion = (item: any, libraryInteractive: any) => {
 
 };
 
-const convertVideoPlayer = (item: any, libraryInteractive: any) => {
+const convertVideoPlayer = (item: Record<string, any>, libraryInteractive: Record<string, any>) => {
   // get the MP4 version if present, otherwise take the first URL in the source array
   let videoSource = "";
-  item.embeddable.sources.forEach((source: any) => {
+  item.embeddable.sources.forEach((source: Record<string, any>) => {
     if (source.format === "video/mp4") {
       videoSource = source.url;
     }
@@ -109,13 +112,16 @@ const convertVideoPlayer = (item: any, libraryInteractive: any) => {
     videoSource = item.embeddable.sources[0].url;
   }
 
-  const authoredState = {
+  const authoredState: IVideoPlayerAuthoredState = {
+    version: 1,
     questionType: "iframe_interactive",
     videoUrl: videoSource,
     prompt: item.embeddable.caption,
     credit: item.embeddable.credit,
-    poster: item.embeddable.poster_url,
-    fixedHeight: ""
+    creditLinkDisplayText: "",
+    fixedHeight: item.embeddable.height,
+    fixedAspectRatio: "",
+    poster: item.embeddable.poster_url
   };
 
   item.embeddable.authored_state = JSON.stringify(authoredState);
@@ -123,7 +129,7 @@ const convertVideoPlayer = (item: any, libraryInteractive: any) => {
 
 };
 
-const setLibraryInteractive = (libraryInteractive: any) => {
+const setLibraryInteractive = (libraryInteractive: Record<string, any>) => {
   const libraryInteractiveProperties = {
     hash: libraryInteractive.export_hash,
     data: {
@@ -151,11 +157,10 @@ const setLibraryInteractive = (libraryInteractive: any) => {
   return libraryInteractiveProperties;
 };
 
-const deleteRedundantProperties = (item: any) => {
+const deleteRedundantProperties = (item: Record<string, any>) => {
   // delete old, redundant properties
-  // use property name map(s) to use a loop for deleting these?
-  delete item.embeddable.bg_source; // Does this need to be assigned to authoredState?
-  delete item.embeddable.bg_url; // Does this need to be assigned to authoredState?
+  delete item.embeddable.bg_source;
+  delete item.embeddable.bg_url;
   delete item.embeddable.caption;
   delete item.embeddable.choices;
   delete item.embeddable.credit;
@@ -179,7 +184,7 @@ const deleteRedundantProperties = (item: any) => {
   delete item.embeddable.width;
 };
 
-const addNewProperties = (item: any, libraryInteractive: any) => {
+const addNewProperties = (item: Record<string, any>, libraryInteractive: Record<string, any>) => {
   // add other new properties with default values
   item.embeddable.url_fragment = null;
   item.embeddable.inherit_aspect_ratio_method =	true;
@@ -200,8 +205,8 @@ const addNewProperties = (item: any, libraryInteractive: any) => {
   item.embeddable.type = "ManagedInteractive";
 };
 
-const updateEmbeddables = (embeddables: any, libraryInteractives: any) => {
-  embeddables.forEach((item: any) => {
+const updateEmbeddables = (embeddables: Record<string, any>, libraryInteractives: Record<string, any>) => {
+  embeddables.forEach((item: Record<string, any>) => {
     switch (item.embeddable.type) {
       case "Embeddable::MultipleChoice":
         convertMultipleChoice(item, libraryInteractives.multiple_choice);
@@ -229,16 +234,14 @@ const updateEmbeddables = (embeddables: any, libraryInteractives: any) => {
         addNewProperties(item, libraryInteractives.image_question);
         break;
     }
-
-    // if (item.embeddable.type !== "Embeddable::Xhtml" && item.embeddable.type !== "ManagedInteractive") {
-    //  deleteRedundantProperties(item);
-    //  addNewProperties(item);
-    // }
-
   });
 };
 
-const convert = async (laraResource: string, laraRoot: string, libraryInteractives: any) => {
+const convert = async (laraResource: string, laraRoot: string, libraryInteractives: Record<string, any>) => {
+  const convertButton = document.getElementById('convert-button');
+  convertButton?.setAttribute("disabled", "true");
+  convertButton && (convertButton.textContent = "Working. Please wait...");
+
   const resourceResponse = await fetch(laraResource);
   const resource = await resourceResponse.json();
   let newResourceName = "";
@@ -246,8 +249,8 @@ const convert = async (laraResource: string, laraRoot: string, libraryInteractiv
   if (resource.type === "Sequence") {
     newResourceName = "Activity Player Copy of " + resource.title;
     resource.title = newResourceName;
-    resource.activities.forEach((activity: any) => {
-      activity.pages.forEach((page: any) => {
+    resource.activities.forEach((activity: Record<string, any>) => {
+      activity.pages.forEach((page: Record<string, any>) => {
         updateEmbeddables(page.embeddables, libraryInteractives);
       });
     });
@@ -255,7 +258,7 @@ const convert = async (laraResource: string, laraRoot: string, libraryInteractiv
     // Change name to differentiate new resource from old
     newResourceName = "Activity Player Copy of " + resource.name;
     resource.name = newResourceName;
-    resource.pages.forEach((page: any) => {
+    resource.pages.forEach((page: Record<string, any>) => {
       updateEmbeddables(page.embeddables, libraryInteractives);
     });
   } else {
@@ -282,18 +285,15 @@ const convert = async (laraResource: string, laraRoot: string, libraryInteractiv
     const data = await importResource.json();
 
     // download("import-test.json", JSON.stringify(resource));
-    // console.log(data);
     const viewUrl = data.url ? data.url : "#";
     const feedbackMsg = data.success ? "Conversion was successful. The new resource, " + newResourceName + " is available at " + viewUrl + "." : "Conversion failed.";
     appElement && (appElement.innerHTML = "");
     const feedback = document.createElement("p");
     feedback.textContent = feedbackMsg;
-    const viewButton = document.createElement("a");
-    viewButton.setAttribute("class", "button");
+    const viewButton = document.createElement("button");
     viewButton.addEventListener("click", () => { window.open(viewUrl, "_blank"); });
     viewButton.textContent = "View";
-    const editButton = document.createElement("a");
-    editButton.setAttribute("class", "button");
+    const editButton = document.createElement("button");
     editButton.addEventListener("click", () => { window.open(viewUrl + "/edit", "_blank"); });
     editButton.textContent = "Edit";
     appElement?.appendChild(feedback);
@@ -302,7 +302,6 @@ const convert = async (laraResource: string, laraRoot: string, libraryInteractiv
       appElement?.appendChild(editButton);
     }
   } catch (e) {
-    // const errorMsg = "There was an error: " + e;
     appElement && (appElement.innerHTML = "");
     const error = document.createElement("p");
     document.getElementById('app')?.appendChild(error);
@@ -313,10 +312,24 @@ const convert = async (laraResource: string, laraRoot: string, libraryInteractiv
 (async function() {
 
   const searchParams = new URLSearchParams(window.location.search);
-  const laraResource = searchParams.get("lara_resource");
-  const laraRoot = searchParams.get("lara_root");
-  const resourceName = searchParams.get("resource_name");
-  const template = searchParams.get("template");
+  const laraResourceParam = searchParams.get("lara_resource");
+  const laraResource = laraResourceParam ? decodeURIComponent(laraResourceParam) : "";
+  const laraRootParam = searchParams.get("lara_root");
+  const laraRoot = laraRootParam ? decodeURIComponent(laraRootParam) : "";
+  const resourceNameParam = searchParams.get("resource_name");
+  const resourceName = resourceNameParam ? decodeURIComponent(resourceNameParam) : "";
+  const templateParam = searchParams.get("template");
+  const template = templateParam ? decodeURIComponent(templateParam) : "";
+
+  if (laraResource === "") {
+    throw new Error("Resource not provided.");
+  }
+  if (laraRoot === "") {
+    throw new Error("Site root not provided.");
+  }
+  if (template === "") {
+    throw new Error("Template not provided.");
+  }
 
   // The template is an activity in LARA with one example of each library interactive embeddable.
   // We reference this to get information about the library interactives' settings in LARA.
@@ -332,11 +345,11 @@ const convert = async (laraResource: string, laraRoot: string, libraryInteractiv
     "image_question": "Drawing Question"
   };
 
-  laraTemplate.pages[0].embeddables.forEach((embeddable: any) => {
+  laraTemplate.pages[0].embeddables.forEach((embeddable: Record<string, any>) => {
     const libraryInteractiveProperties = embeddable.embeddable.library_interactive;
     for (const property in qTypeMap) {
       const pattern = "^" + qTypeMap[property];
-      const regex = new RegExp(pattern,"g");
+      const regex = new RegExp(pattern, "g");
       if (libraryInteractiveProperties.data.name.search(regex) !== -1) {
         libraryInteractives[property] = libraryInteractiveProperties;
       }
@@ -356,8 +369,8 @@ const convert = async (laraResource: string, laraRoot: string, libraryInteractiv
   warningListItem2.textContent = "The original activity or sequence will remain as is at its existing URL.";
   warningList.appendChild(warningListItem1);
   warningList.appendChild(warningListItem2);
-  const convertButton = document.createElement("a");
-  convertButton.setAttribute("class", "button");
+  const convertButton = document.createElement("button");
+  convertButton.setAttribute("id", "convert-button");
   convertButton.addEventListener("click", () => { laraResource && laraRoot && convert(laraResource, laraRoot, libraryInteractives); });
   convertButton.textContent = "Create Activity Player Compatible Copy";
   document.getElementById('app')?.appendChild(instructions);

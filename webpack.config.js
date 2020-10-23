@@ -11,7 +11,7 @@ module.exports = (env, argv) => {
     context: __dirname, // to automatically find tsconfig.json
     devtool: 'source-map',
     entry: {
-      'convert-old-lara': './src/convert-old-lara/convert.js',
+      'convert-old-lara': './src/convert-old-lara/convert.ts',
       'multiple-choice': './src/multiple-choice/index.tsx',
       'multiple-choice-alerts': './src/multiple-choice-alerts/index.tsx',
       'open-response': './src/open-response/index.tsx',
