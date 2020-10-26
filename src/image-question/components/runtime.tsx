@@ -1,6 +1,6 @@
 import React from "react";
 import { IRuntimeQuestionComponentProps } from "../../shared/components/base-question-app";
-import { IAuthoredState, IInteractiveState } from "./types";
+import { IAuthoredState, IInteractiveState } from "./app";
 import { Runtime as DrawingToolRuntime } from "../../drawing-tool/components/runtime";
 import { showModal } from "@concord-consortium/lara-interactive-api";
 import { v4 as uuidv4 } from "uuid";

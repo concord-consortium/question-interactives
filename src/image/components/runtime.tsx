@@ -1,5 +1,5 @@
 import React, { useRef } from "react";
-import { IAuthoredState } from "./types";
+import { IAuthoredState } from "./app";
 import {
   IRuntimeInitInteractive, setSupportedFeatures, showModal, useInitMessage
 } from "@concord-consortium/lara-interactive-api";

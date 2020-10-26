@@ -2,9 +2,21 @@ import React from "react";
 import { JSONSchema6 } from "json-schema";
 import { BaseQuestionApp } from "../../shared/components/base-question-app";
 import { Runtime } from "./runtime";
-import { IAuthoredState, IInteractiveState } from "./types";
-import { baseAuthoringProps as drawingToolBaseAuthoringProps } from "../../drawing-tool/components/app";
+import {
+  baseAuthoringProps as drawingToolBaseAuthoringProps, IAuthoredState as IDrawingToolAuthoredState,
+  IInteractiveState as IDrawingToolInteractiveState
+} from "../../drawing-tool/components/app";
 import deepmerge from "deepmerge";
+
+export interface IAuthoredState extends IDrawingToolAuthoredState {
+  answerPrompt?: string;
+  defaultAnswer?: string;
+  modalSupported?: boolean;
+}
+
+export interface IInteractiveState extends IDrawingToolInteractiveState {
+  answerText?: string;
+}
 
 const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
   schema: {
