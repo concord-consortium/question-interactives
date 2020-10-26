@@ -5,11 +5,8 @@ import { IAuthoringOpenResponseMetadata, IRuntimeOpenResponseMetadata } from "@c
 
 export interface IAuthoredState extends IAuthoringOpenResponseMetadata {
   version: number;
-  questionType: any;
-  prompt: string;
   defaultAnswer?: string;
   hint?: string;
-  required: boolean;
   predictionFeedback?: string;
   customFeedback?: string;
 }

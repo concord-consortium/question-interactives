@@ -5,17 +5,14 @@ import { IAuthoringInteractiveMetadata, IRuntimeInteractiveMetadata } from "@con
 
 export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   version: number;
-  questionType: any;
   videoUrl?: string;
   captionUrl?: string;
   poster?: string;
-  prompt?: string;
   credit?: string;
   creditLink?: string;
   creditLinkDisplayText?: string;
   fixedAspectRatio?: string;
   fixedHeight?: number;
-  required?: boolean;
 }
 
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {

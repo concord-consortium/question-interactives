@@ -13,7 +13,6 @@ export type ILayout = "vertical" | "horizontal" | "likert" | "dropdown";
 
 export interface IAuthoredState extends IAuthoringMultipleChoiceMetadata {
   version: number;
-  questionType: any;
   hint?: string;
   multipleAnswers?: boolean;
   layout?: ILayout;
