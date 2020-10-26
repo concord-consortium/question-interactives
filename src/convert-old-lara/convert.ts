@@ -83,7 +83,7 @@ const convertImage = (item: Record<string, any>, libraryInteractive: Record<stri
 const convertImageQuestion = (item: Record<string, any>, libraryInteractive: Record<string, any>) => {
   const authoredState: IImageQuestionAuthoredState = {
     version: 1,
-    questionType: "iframe_interactive",
+    questionType: "image_question",
     required: item.embeddable.is_prediction,
     predictionFeedback: item.embeddable.prediction_feedback,
     backgroundImageUrl: item.embeddable.bg_url,

@@ -3,8 +3,7 @@
 
 export interface IAuthoredState {
   version: number;
-  questionType: any;
-  scaling?: "fitWidth" | "originalDimensions";
+  questionType: string;
   url?: string;
   highResUrl?: string;
   altText?: string;
@@ -13,5 +12,5 @@ export interface IAuthoredState {
   creditLink?: string;
   creditLinkDisplayText?: string;
   allowLightbox?: boolean;
-  isShowingModal?: boolean; // TODO: move this to initInteractive message
+  scaling?: "fitWidth" | "originalDimensions";
 }

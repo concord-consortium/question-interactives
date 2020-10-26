@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { IRuntimeQuestionComponentProps } from "../../shared/components/base-question-app";
-import { IAuthoredState, IInteractiveState } from "./app";
+import { IAuthoredState, IInteractiveState } from "./types";
 import { closeModal, showModal } from "@concord-consortium/lara-interactive-api";
 import { TakeSnapshot } from "../../drawing-tool/components/take-snapshot";
 import { UploadBackground } from "../../drawing-tool/components/upload-background";
