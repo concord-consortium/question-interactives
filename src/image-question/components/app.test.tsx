@@ -2,7 +2,7 @@ import React from "react";
 import { render } from "@testing-library/react";
 import { useAuthoredState, useInitMessage, useInteractiveState } from "@concord-consortium/lara-interactive-api";
 import { App } from "./app";
-import { IAuthoredState, IInteractiveState } from "./types";
+import { IAuthoredState, IInteractiveState } from "./app";
 
 jest.unmock("react-jsonschema-form");
 
@@ -20,7 +20,7 @@ const useInteractiveStateMock = useInteractiveState as jest.Mock;
 
 const authoredState = {
   version: 1,
-  questionType: "open_response",
+  questionType: "image_question" as const,
   prompt: "Test prompt",
   hint: "hint",
   required: false,
@@ -28,7 +28,7 @@ const authoredState = {
 } as IAuthoredState;
 
 const interactiveState = {
-  answerType: "open_response_answer",
+  answerType: "image_question_answer" as const,
   answerText: "Test answer",
 } as IInteractiveState;
 

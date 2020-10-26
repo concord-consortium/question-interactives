@@ -1,4 +1,4 @@
-legend.prompt {     // clear bootstrap stuff
+legend.prompt { // clear bootstrap stuff
   display: unset;
   width: unset;
   margin-bottom: unset;
@@ -6,19 +6,49 @@ legend.prompt {     // clear bootstrap stuff
   border: unset;
   padding-bottom: 5px;
 }
-.answerPrompt{
+
+.answerPrompt {
   margin-top: 10px;
   margin-bottom: 4px;
 }
-.viewHighRes{
-  position: absolute;
-  right: 30px;
-  width: 30px;
-  height: 30px;
-  margin-top:0px;
-  font-size: 0.8em;
-  cursor: zoom-in;
-}
+
 .warn {
   color: darkred;
+}
+
+.studentAnswerText {
+  font-style: italic;
+  font-size: 0.9em;
+}
+
+.inlineImg {
+  max-width: 100%;
+}
+
+.dialogContent {
+  height: 600px;
+  width: 960px;
+  margin: 0 auto;
+  position: relative;
+
+  .drawingTool {
+    vertical-align: top;
+    margin-right: 20px;
+    width: 650px;
+    display: inline-block;
+  }
+
+  .dialogRightPanel {
+    vertical-align: top;
+    display: inline-block;
+    width: 280px;
+  }
+
+  .closeDialogSection {
+    width: 280px;
+    text-align: right;
+    position: absolute;
+    bottom: 0;
+    right: 0;
+  }
 }

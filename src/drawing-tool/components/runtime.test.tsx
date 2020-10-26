@@ -1,14 +1,9 @@
 import React from "react";
 import { shallow } from "enzyme";
 import { Runtime } from "./runtime";
-import { IAuthoredState, IInteractiveState } from "./app";
-import { getInteractiveSnapshot } from "@concord-consortium/lara-interactive-api";
-
-jest.mock("@concord-consortium/lara-interactive-api", () => ({
-  getInteractiveSnapshot: jest.fn(() => new Promise(resolve => resolve({success: true, snapshotUrl: "http://snapshot/123" })))
-}));
-const getInteractiveSnapshotMock = getInteractiveSnapshot as jest.Mock;
-
+import { IAuthoredState, IInteractiveState } from "./types";
+import { TakeSnapshot } from "./take-snapshot";
+import { UploadBackground } from "./upload-background";
 
 const authoredState: IAuthoredState = {
   version: 1,
@@ -32,32 +27,26 @@ const interactiveState: IInteractiveState = {
 };
 
 describe("Runtime", () => {
-  beforeEach(() => {
-    getInteractiveSnapshotMock.mockClear();
-  });
-
   it("renders rich text prompt", () => {
     const wrapper = shallow(<Runtime authoredState={authoredRichState} />);
     expect(wrapper.html()).toEqual(expect.stringContaining(authoredRichState.prompt));
   });
 
-  it("renders snapshot button when useSnapshot=true and snapshotTarget is set", () => {
+  it("renders snapshot UI when backgroundSource === snapshot", () => {
     const wrapperWithoutSnapshot = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} />);
-    expect(wrapperWithoutSnapshot.find("[data-test='snapshot-btn']").length).toEqual(0);
+    expect(wrapperWithoutSnapshot.find(TakeSnapshot).length).toEqual(0);
 
     const authoredStateWithSnapshot = {...authoredState, backgroundSource: "snapshot" as const, snapshotTarget: "interactive_123"};
     const wrapper = shallow(<Runtime authoredState={authoredStateWithSnapshot} interactiveState={interactiveState} />);
-
-    expect(wrapper.find("[data-test='snapshot-btn']").length).toEqual(1);
-    wrapper.find("[data-test='snapshot-btn']").simulate("click");
-    expect(getInteractiveSnapshotMock).toHaveBeenCalledWith({ interactiveItemId: "interactive_123" });
+    expect(wrapper.find(TakeSnapshot).length).toEqual(1);
   });
 
-  it("renders warning when useSnapshot=true and snapshotTarget is not set", () => {
-    const authoredStateWithoutSnapshotTarget = {...authoredState, backgroundSource: "snapshot" as const };
-    const wrapper = shallow(<Runtime authoredState={authoredStateWithoutSnapshotTarget} interactiveState={interactiveState} />);
+  it("renders upload UI when backgroundSource === upload", () => {
+    const wrapperWithoutUpload = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} />);
+    expect(wrapperWithoutUpload.find(UploadBackground).length).toEqual(0);
 
-    expect(wrapper.find("[data-test='snapshot-btn']").length).toEqual(0);
-    expect(wrapper.text()).toEqual(expect.stringContaining("Snapshot won't work, as no target interactive is selected"));
+    const authoredStateWithSnapshot = {...authoredState, backgroundSource: "upload" as const};
+    const wrapper = shallow(<Runtime authoredState={authoredStateWithSnapshot} interactiveState={interactiveState} />);
+    expect(wrapper.find(UploadBackground).length).toEqual(1);
   });
 });
