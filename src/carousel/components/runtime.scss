@@ -1,0 +1,97 @@
+@import "../../shared/styles/helpers";
+
+.runtime {
+  button {
+    @include lara-button;
+    margin: 5px;
+    svg {
+      // icon
+      margin-left: 5px;
+    }
+  }
+
+  .buttons {
+    float: right;
+  }
+}
+
+.carousel { // how can these class-specific styles for react-responsive-carousel be applied?
+  .slider-wrapper {
+    .slider {
+      align-items: center;
+
+      .slide iframe {
+        margin: 0;
+        width: 100%;
+      }
+    }
+  }
+}
+
+nav {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: center;
+  text-align: center;
+  width: 100%;
+
+  button {
+    background: #6fc6da;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    height: 20px;
+    margin: 15px 0 10px 15px;
+    overflow: hidden;
+    padding: 0;
+    text-indent: 200%;
+    white-space: nowrap;
+    width: 20px;
+
+    &:hover {
+      background: #007c8b;
+    }
+    &.activeButton {
+      background: #ea6d2f;
+    }
+    &.prevButton, &.nextButton {
+      background: transparent;
+      border-top: solid 10px transparent;
+      border-bottom: solid 10px transparent;
+      border-radius: 0;
+      height: 0;
+      width: 0;
+    }
+    &.prevButton {
+      border-right: solid 20px #6fc6da;
+
+      &.disabled {
+        border-right-color: #aaa;
+      }
+    }
+    &.nextButton {
+      border-left: solid 20px #6fc6da;
+
+      &.disabled {
+        border-left-color: #aaa;
+      }
+    }
+    &.disabled {
+      cursor: not-allowed;
+      opacity: .8;
+    }
+  }
+}
+
+:global .slider {
+  align-items: center;
+}
+
+:global .slider .slide {
+  background: #fff;
+}
+
+:global .slider .slide iframe {
+  margin: 0;
+  width: 100%;
+}

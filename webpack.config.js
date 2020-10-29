@@ -11,6 +11,7 @@ module.exports = (env, argv) => {
     context: __dirname, // to automatically find tsconfig.json
     devtool: 'source-map',
     entry: {
+      'carousel': './src/carousel/index.tsx',
       'multiple-choice': './src/multiple-choice/index.tsx',
       'multiple-choice-alerts': './src/multiple-choice-alerts/index.tsx',
       'open-response': './src/open-response/index.tsx',
@@ -124,6 +125,11 @@ module.exports = (env, argv) => {
         filename: devMode ? "[name]/assets/index.css" : "[name]/assets/index.[hash].css"
       }),
       // HtmlWebpackPlugin and CopyWebpackPlugin will need to be configured in a similar way for all future question types.
+      new HtmlWebpackPlugin({
+        chunks: ['carousel'],
+        filename: 'carousel/index.html',
+        template: 'src/shared/index.html'
+      }),
       new HtmlWebpackPlugin({
         chunks: ['multiple-choice'],
         filename: 'multiple-choice/index.html',
