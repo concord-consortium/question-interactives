@@ -54,9 +54,8 @@ const convertOpenResponse = (item: Record<string, any>, libraryInteractive: Reco
     defaultAnswer: item.embeddable.default_text,
     required: item.embeddable.is_prediction,
     questionType: "open_response",
-    predictionFeedback: item.embeddable.prediction_feedback,
-    hint: item.embeddable.hint,
-    customFeedback: item.embeddable.give_prediction_feedback
+    predictionFeedback: item.embeddable.give_prediction_feedback ? item.embeddable.prediction_feedback : undefined,
+    hint: item.embeddable.hint
   };
 
   item.embeddable.authored_state = JSON.stringify(authoredState);
