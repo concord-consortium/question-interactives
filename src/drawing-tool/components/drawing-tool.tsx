@@ -63,6 +63,9 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
         const url = new URL(backgroundImgSrc || "");
         if (!url.host.match(/concord\.org/)) {
           // Use LARA image proxy to avoid tainting canvas when external image URL is used.
+          // Note that concord.org domain is actually not enough when the subdomains are different.
+          // So, the host needs to have CORS headers enabled. It's more likely for servers owned by CC. In practice
+          // it should be mostly AWS S3 bucket with a concord.org domain.
           backgroundImgSrc = LARA_IMAGE_PROXY + backgroundImgSrc;
         }
       } catch (e) {
