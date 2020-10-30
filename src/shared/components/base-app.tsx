@@ -30,13 +30,17 @@ interface IProps<IAuthoredState> {
   Runtime: React.FC<IRuntimeComponentProps<IAuthoredState>>;
   disableAutoHeight?: boolean;
   linkedInteractiveProps?: ILinkedInteractiveProp[];
+  migrateAuthoredState?: (oldAuthoredState: any) => IAuthoredState;
 }
 
 // BaseApp for interactives that don't save interactive state and don't show up in the report. E.g. image, video.
 export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps<IAuthoredState>) => {
-  const { Authoring, baseAuthoringProps, Runtime, disableAutoHeight, linkedInteractiveProps } = props;
+  const { Authoring, baseAuthoringProps, Runtime, disableAutoHeight, linkedInteractiveProps, migrateAuthoredState } = props;
   const container = useRef<HTMLDivElement>(null);
-  const { authoredState, setAuthoredState } = useAuthoredState<IAuthoredState>();
+  const useAuthStateResult = useAuthoredState<IAuthoredState>();
+  const authoredState = migrateAuthoredState && useAuthStateResult.authoredState ?
+    migrateAuthoredState(useAuthStateResult.authoredState) : useAuthStateResult.authoredState;
+  const setAuthoredState = useAuthStateResult.setAuthoredState;
   const initMessage = useInitMessage();
   const isLoading = !initMessage;
   const isRuntimeView = initMessage?.mode === "runtime";
