@@ -3,7 +3,6 @@
 
 export interface IAuthoredState {
   version: number;
-  questionType: string;
   url?: string;
   highResUrl?: string;
   altText?: string;

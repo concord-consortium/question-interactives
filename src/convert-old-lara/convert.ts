@@ -66,7 +66,6 @@ const convertOpenResponse = (item: Record<string, any>, libraryInteractive: Reco
 const convertImage = (item: Record<string, any>, libraryInteractive: Record<string, any>) => {
   const authoredState: IImageAuthoredState = {
     version: 1,
-    questionType: "image",
     url: item.embeddable.url,
     caption: item.embeddable.caption,
     credit: item.embeddable.credit,
