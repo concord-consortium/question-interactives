@@ -29,6 +29,10 @@ const availableInteractives = [
   {
     url: window.location.href.replace(carouselQuestionSegment, "video-player"),
     name: "Video"
+  },
+  {
+    url: window.location.href.replace(carouselQuestionSegment, "image"),
+    name: "Image"
   }
 ];
 
