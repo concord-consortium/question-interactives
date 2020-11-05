@@ -13,7 +13,6 @@ export interface IAuthoredStateBase extends IAuthoringImageQuestionMetadata {
   // - answerType: "image_question"
   // - answerPrompt?: string;
   defaultAnswer?: string;
-  customFeedback?: string;
 }
 // Final IAuthoredState is combination of properties above and DrawingTool authored state (without questionType).
 export type IAuthoredState = IAuthoredStateBase & Omit<IDrawingToolAuthoredState, "questionType">;

@@ -87,10 +87,9 @@ const convertImageQuestion = (item: Record<string, any>, libraryInteractive: Rec
     backgroundImageUrl: item.embeddable.bg_url,
     imageFit: "shrinkBackgroundToCanvas",
     imagePosition: "center",
-    answerPrompt: item.embeddable.prompt,
-    prompt: item.embeddable.drawing_prompt,
-    hint: item.embeddable.hint,
-    customFeedback: item.embeddable.give_prediction_feedback
+    answerPrompt: item.embeddable.drawing_prompt,
+    prompt: item.embeddable.prompt,
+    hint: item.embeddable.hint
   };
 
   item.embeddable.authored_state = JSON.stringify(authoredState);
