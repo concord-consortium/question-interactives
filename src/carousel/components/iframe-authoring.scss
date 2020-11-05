@@ -1,0 +1,20 @@
+.iframeAuthoring {
+  .iframeAuthoring {
+    margin-top: 10px;
+    border: 1px solid #eee;
+    border-radius: 5px;
+    overflow: hidden;
+  }
+
+  .iframeContainer {
+    transition: max-height 500ms;
+  }
+
+  .link {
+    cursor: pointer;
+  }
+
+  h4 {
+    margin-left: 10px;
+  }
+}

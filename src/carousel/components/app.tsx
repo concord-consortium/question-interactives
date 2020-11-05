@@ -1,10 +1,9 @@
 import React from "react";
 import { JSONSchema6 } from "json-schema";
 import { BaseQuestionApp } from "../../shared/components/base-question-app";
+import { IAuthoredState, IInteractiveState } from "./types";
 import { Runtime } from "./runtime";
 import { IframeAuthoring } from "./iframe-authoring";
-import { IAuthoredState, IInteractiveState } from "./types";
-import { migrateAuthoredState } from "./state-migrations";
 
 const baseAuthoringProps = {
   schema: {
@@ -12,7 +11,7 @@ const baseAuthoringProps = {
     properties: {
       version: {
         type: "number",
-        default: 2
+        default: 1
       },
       questionType: {
         type: "string",
@@ -39,7 +38,7 @@ const baseAuthoringProps = {
             id: {
               type: "string"
             },
-            libraryInteractiveId: {
+            url: {
               type: "string"
             },
             authoredState: {
@@ -81,6 +80,5 @@ export const App = () => (
     Runtime={Runtime}
     baseAuthoringProps={baseAuthoringProps}
     disableSubmitBtnRendering={true}
-    migrateAuthoredState={migrateAuthoredState}
   />
 );

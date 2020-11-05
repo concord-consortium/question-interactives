@@ -3,13 +3,42 @@ import { FieldProps } from "react-jsonschema-form";
 import { IframePhone } from "../../shared/types";
 import iframePhone from "iframe-phone";
 import deepEqual from "deep-equal";
-import { v4 as uuidv4 } from "uuid";
-import { libraryInteractives, libraryInteractiveIdToUrl } from "./library-interactives";
+
 import css from "./iframe-authoring.scss";
+import { v4 as uuidv4 } from "uuid";
+
+// This is only temporary list. In the future, it will be replaced by LARA Interactive API call that returns all the available managed interactives.
+const carouselQuestionSegment = /carousel\/?$/;
+const availableInteractives = [
+  {
+    url: "",
+    name: "Select an interactive"
+  },
+  {
+    url: window.location.href.replace(carouselQuestionSegment, "open-response"),
+    name: "Open response"
+  },
+  {
+    url: window.location.href.replace(carouselQuestionSegment, "fill-in-the-blank"),
+    name: "Fill in the blank"
+  },
+  {
+    url: window.location.href.replace(carouselQuestionSegment, "multiple-choice"),
+    name: "Multiple choice"
+  },
+  {
+    url: window.location.href.replace(carouselQuestionSegment, "video-player"),
+    name: "Video"
+  },
+  {
+    url: window.location.href.replace(carouselQuestionSegment, "image"),
+    name: "Image"
+  }
+];
 
 export const IframeAuthoring: React.FC<FieldProps> = props => {
   const { onChange, formData } = props;
-  const { libraryInteractiveId, authoredState, id } = formData;
+  const { url, authoredState, id } = formData;
   const [ iframeHeight, setIframeHeight ] = useState(300);
   const [ authoringOpened, setAuthoringOpened ] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -24,9 +53,9 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
   // state outside `initInteractive` call. But this would require all the existing interactives to be updated.
   const iframeCurrentAuthoredState = useRef<any>();
 
-  const handleLibraryInteractiveIdChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    const newLibraryInteractiveId = event.target.value;
-    onChange({ libraryInteractiveId: newLibraryInteractiveId, authoredState: undefined, id: id || uuidv4() });
+  const handleUrlChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const newUrl = event.target.value;
+    onChange({ url: newUrl, authoredState: undefined, id: id || uuidv4() });
   };
 
   const handleHeaderClick = () => {
@@ -41,7 +70,7 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
     phone.addListener("authoredState", (newAuthoredState: any) => {
       // Save current iframe authored state.
       iframeCurrentAuthoredState.current = newAuthoredState;
-      onChange({ libraryInteractiveId, authoredState: newAuthoredState, id: id || uuidv4() });
+      onChange({ url, authoredState: newAuthoredState, id: id || uuidv4() });
     });
     phone.addListener("height", (newHeight: number) => {
       setIframeHeight(newHeight);
@@ -50,10 +79,10 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
       mode: "authoring",
       authoredState
     });
-  }, [id, libraryInteractiveId, onChange, authoredState]);
+  }, [id, url, onChange, authoredState]);
 
   useEffect(() => {
-    const url = libraryInteractiveIdToUrl(libraryInteractiveId);
+
     // Trigger reload ONLY if URL has changed or authored state is different than current iframe state.
     // This can happen when iframes are reordered using react-jsochschema-form array controls. More details in the
     // initial comment about `iframeCurrentAuthoredState`. `deepEqual` is used, as when `===` was used, sometimes iframe
@@ -64,17 +93,15 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
       iframeRef.current.src = url;
       phoneRef.current = new iframePhone.ParentEndpoint(iframeRef.current, initInteractive);
     }
-  }, [libraryInteractiveId, authoredState, initInteractive]);
-
-  console.log('lid', libraryInteractiveId);
+  }, [url, authoredState, initInteractive]);
 
   return (
     <div className={css.iframeAuthoring}>
-      Interactive: <select onChange={handleLibraryInteractiveIdChange} value={libraryInteractiveId} data-cy="select-subquestion">
-        { libraryInteractives.map(o => <option key={o.libraryInteractiveId} value={o.libraryInteractiveId}>{o.name}</option>) }
+      Interactive: <select onChange={handleUrlChange} value={url} data-cy="select-subquestion">
+        { availableInteractives.map(o => <option key={o.url} value={o.url}>{o.name}</option>) }
       </select>
       {
-        libraryInteractiveId &&
+        url &&
         <div className={css.iframeAuthoring}>
           <h4 onClick={handleHeaderClick} className={css.link} data-cy="subquestion-authoring">{authoringOpened ? "▼" : "▶"} Subquestion authoring</h4>
           <div className={css.iframeContainer} style={{maxHeight: authoringOpened ? iframeHeight : 0 }}>

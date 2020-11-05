@@ -42,14 +42,19 @@ interface IProps<IAuthoredState, IInteractiveState> {
   // Note that isAnswered is required when `disableSubmitBtnRendering` is false.
   isAnswered?: (state: IInteractiveState | null) => boolean;
   linkedInteractiveProps?: ILinkedInteractiveProp[];
+  migrateAuthoredState?: (oldAuthoredState: any) => IAuthoredState;
 }
 
 // BaseApp for interactives that save interactive state and show in the report. E.g. open response, multiple choice.
 export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBaseQuestionAuthoredState,
   IInteractiveState extends IRuntimeMetadata & IBaseQuestionInteractiveState>(props: IProps<IAuthoredState, IInteractiveState>) => {
-  const { Authoring, baseAuthoringProps, Runtime, isAnswered, disableAutoHeight, disableSubmitBtnRendering, linkedInteractiveProps } = props;
+  const { Authoring, baseAuthoringProps, Runtime, isAnswered, disableAutoHeight, disableSubmitBtnRendering,
+    linkedInteractiveProps, migrateAuthoredState } = props;
   const container = useRef<HTMLDivElement>(null);
-  const { authoredState, setAuthoredState } = useAuthoredState<IAuthoredState>();
+  const useAuthStateResult = useAuthoredState<IAuthoredState>();
+  const authoredState = migrateAuthoredState && useAuthStateResult.authoredState ?
+    migrateAuthoredState(useAuthStateResult.authoredState) : useAuthStateResult.authoredState;
+  const setAuthoredState = useAuthStateResult.setAuthoredState;
   const { interactiveState, setInteractiveState } = useInteractiveState<IInteractiveState>();
   const initMessage = useInitMessage();
   const isLoading = !initMessage;

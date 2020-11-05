@@ -13,13 +13,13 @@ context("Test scaffolded question interactive", () => {
       phonePost("initInteractive", {
         mode: "runtime",
         authoredState: {
-          version: 1,
+          version: 2,
           prompt: "Test prompt",
           hint: "Hint",
           subinteractives: [
             {
               id: "int1",
-              url: "/open-response",
+              libraryInteractiveId: "open-response",
               authoredState: {
                 version: 1,
                 prompt: "Subquestion prompt",
@@ -55,13 +55,13 @@ context("Test scaffolded question interactive", () => {
       phonePost("initInteractive", {
         mode: "runtime",
         authoredState: {
-          version: 1,
+          version: 2,
           prompt: "Test prompt",
           hint: "Hint",
           subinteractives: [
             {
               id: "int1",
-              url: "/open-response",
+              libraryInteractiveId: "open-response",
               authoredState: {
                 version: 1,
                 prompt: "Subquestion prompt",
@@ -92,13 +92,13 @@ context("Test scaffolded question interactive", () => {
       phonePost("initInteractive", {
         mode: "runtime",
         authoredState: {
-          version: 1,
+          version: 2,
           prompt: "Test prompt",
           hint: "Hint",
           subinteractives: [
             {
               id: "int1",
-              url: "/open-response",
+              libraryInteractiveId: "open-response",
               authoredState: {
                 version: 1,
                 prompt: "Subquestion prompt",
@@ -118,6 +118,9 @@ context("Test scaffolded question interactive", () => {
       getAndClearAllPhoneMessage((messages) => {
         expect(messages.length).eql(2);
 
+        console.log("TAAK");
+        console.log(messages[0]);
+
         expect(messages[0]).eql({
           action: "focus in",
           data: {
@@ -127,7 +130,7 @@ context("Test scaffolded question interactive", () => {
             target_name: '',
             target_value: '',
             scaffolded_question_level: 1,
-            subinteractive_url: "/open-response",
+            subinteractive_url: "http://localhost:8080/open-response",
             subinteractive_type: "open_response",
             subinteractive_sub_type: undefined,
             subinteractive_id: 'int1'
@@ -143,7 +146,7 @@ context("Test scaffolded question interactive", () => {
             target_name: '',
             target_value: 'Test subquestion answer',
             scaffolded_question_level: 1,
-            subinteractive_url: '/open-response',
+            subinteractive_url: "http://localhost:8080/open-response",
             subinteractive_type: 'open_response',
             subinteractive_sub_type: undefined,
             subinteractive_id: 'int1',
@@ -159,13 +162,13 @@ context("Test scaffolded question interactive", () => {
       phonePost("initInteractive", {
         mode: "authoring",
         authoredState: {
-          version: 1,
+          version: 2,
           prompt: "Test prompt",
           hint: "Hint",
           subinteractives: [
             {
               id: "int1",
-              url: "/open-response",
+              libraryInteractiveId: "open-response",
               authoredState: {
                 version: 1,
                 prompt: "Subquestion prompt",
@@ -196,7 +199,7 @@ context("Test scaffolded question interactive", () => {
 
       cy.getIframeBody().find("#root_prompt").type("Test prompt");
       getAndClearLastPhoneMessage(state => {
-        expect(state.version).eql(1);
+        expect(state.version).eql(2);
         expect(state.prompt).include("Test prompt");
       }, 200);
 
@@ -221,13 +224,13 @@ context("Test scaffolded question interactive", () => {
       phonePost("initInteractive", {
         mode: "authoring",
         authoredState: {
-          version: 1,
+          version: 2,
           prompt: "Test prompt",
           hint: "Hint",
           subinteractives: [
             {
               id: "int1",
-              url: "/open-response",
+              libraryInteractiveId: "open-response",
               authoredState: {
                 version: 1,
                 prompt: "1"
@@ -235,7 +238,7 @@ context("Test scaffolded question interactive", () => {
             },
             {
               id: "int2",
-              url: "/open-response",
+              libraryInteractiveId: "open-response",
               authoredState: {
                 version: 1,
                 prompt: "2",
@@ -275,13 +278,13 @@ context("Test scaffolded question interactive", () => {
       phonePost("initInteractive", {
         mode: "report",
         authoredState: {
-          version: 1,
+          version: 2,
           prompt: "Test prompt",
           hint: "Hint",
           subinteractives: [
             {
               id: "int1",
-              url: "/open-response",
+              libraryInteractiveId: "open-response",
               authoredState: {
                 version: 1,
                 prompt: "Subquestion prompt",

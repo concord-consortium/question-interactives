@@ -3,6 +3,7 @@ import { Runtime } from "./runtime";
 import { JSONSchema6 } from "json-schema";
 import { BaseQuestionApp } from "../../shared/components/base-question-app";
 import { IAuthoredState, IInteractiveState } from "./types";
+import { FormValidation } from "react-jsonschema-form";
 
 // Note that TS interfaces should match JSON schema. Currently there"s no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
@@ -261,9 +262,21 @@ export const baseAuthoringProps = {
   },
   // Can't get defaults to work with custom stamps, so validating would be ugly and confusing for users until
   // they enter the required properties after they select a custom stamp, so skipping this for now.
-  // validate: (formData: IAuthoredState, errors: FormValidation) => {
-  //   return errors;
-  // }
+
+  // Omit<IAuthoredState, "questionType"> lets us use this validation function directly in other question types (ImageQuestion).
+  validate: (formData: Omit<IAuthoredState, "questionType">, errors: FormValidation) => {
+    if (formData.backgroundImageUrl && formData.backgroundSource === "url") {
+      try {
+        const url = new URL(formData.backgroundImageUrl);
+        if (!url.host.match(/concord\.org/)) {
+          errors.backgroundImageUrl.addError(`Please use only images hosted at *.concord.org.`);
+        }
+      } catch (e) {
+        errors.backgroundImageUrl.addError(`Invalid background image URL.`);
+      }
+    }
+    return errors;
+  }
 };
 
 const isAnswered = (interactiveState: IInteractiveState | null) => !!interactiveState?.drawingState;

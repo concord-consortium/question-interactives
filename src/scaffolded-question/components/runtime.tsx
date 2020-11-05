@@ -1,12 +1,12 @@
 import React from "react";
 import { IframeRuntime } from "./iframe-runtime";
-import { IInteractiveState } from "./app";
-import { IAuthoredState } from "./app";
+import { IInteractiveState, IAuthoredState } from "./types";
 import { SubmitButton } from "../../shared/components/submit-button";
 import { LockedInfo } from "../../shared/components/locked-info";
 import { useStudentSettings } from "../../shared/hooks/use-student-settings";
 import { renderHTML } from "../../shared/utilities/render-html";
 import { log } from "@concord-consortium/lara-interactive-api";
+import { libraryInteractiveIdToUrl } from "./library-interactives";
 import css from "./runtime.scss";
 
 interface IProps {
@@ -86,7 +86,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       <IframeRuntime
         key={currentInteractive.id}
         id={currentInteractive.id}
-        url={currentInteractive.url}
+        url={libraryInteractiveIdToUrl(currentInteractive.libraryInteractiveId)}
         authoredState={currentInteractive.authoredState}
         interactiveState={subState}
         setInteractiveState={readOnly ? undefined : handleNewInteractiveState.bind(null, currentInteractive.id)}
