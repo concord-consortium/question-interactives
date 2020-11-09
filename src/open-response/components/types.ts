@@ -7,6 +7,7 @@ export interface IAuthoredState extends IAuthoringOpenResponseMetadata {
   version: number;
   defaultAnswer?: string;
   hint?: string;
+  predictionFeedback?: string;
 }
 
 export interface IInteractiveState extends IRuntimeOpenResponseMetadata {}

@@ -12,6 +12,7 @@ module.exports = (env, argv) => {
     devtool: 'source-map',
     entry: {
       'carousel': './src/carousel/index.tsx',
+      'convert-old-lara': './src/convert-old-lara/convert.ts',
       'multiple-choice': './src/multiple-choice/index.tsx',
       'multiple-choice-alerts': './src/multiple-choice-alerts/index.tsx',
       'open-response': './src/open-response/index.tsx',
@@ -129,6 +130,11 @@ module.exports = (env, argv) => {
         chunks: ['carousel'],
         filename: 'carousel/index.html',
         template: 'src/shared/index.html'
+      }),
+      new HtmlWebpackPlugin({
+        chunks: ['convert-old-lara'],
+        filename: 'convert-old-lara/index.html',
+        template: 'src/convert-old-lara/index.html'
       }),
       new HtmlWebpackPlugin({
         chunks: ['multiple-choice'],

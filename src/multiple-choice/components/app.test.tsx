@@ -1,4 +1,5 @@
-import { baseAuthoringProps, IChoice } from "./app";
+import { baseAuthoringProps  } from "./app";
+import { IChoice } from "./types";
 
 describe("preprocessFormData helper", () => {
   it("generates unique IDs for choices when they're missing", () => {

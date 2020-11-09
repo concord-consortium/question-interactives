@@ -1,7 +1,7 @@
 import React from "react";
 import { shallow } from "enzyme";
 import { Runtime } from "./runtime";
-import { IAuthoredState } from "./app";
+import { IAuthoredState } from "./types";
 import css from "./runtime.scss";
 
 const authoredState: IAuthoredState = {

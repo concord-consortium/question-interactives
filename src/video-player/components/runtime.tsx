@@ -1,7 +1,6 @@
 import React, { useRef, useEffect, useState } from "react";
 import videojs from "video.js";
-import { IAuthoredState } from "./app";
-import { IInteractiveState } from "./app";
+import { IAuthoredState, IInteractiveState } from "./types";
 import { log } from "@concord-consortium/lara-interactive-api";
 import css from "./runtime.scss";
 import "./video-js.css";

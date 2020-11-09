@@ -1,23 +1,8 @@
 import React from "react";
 import { BaseApp } from "../../shared/components/base-app";
+import { IAuthoredState } from "./types";
 import { Runtime } from "./runtime";
 import { JSONSchema6 } from "json-schema";
-
-// Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
-// TS interfaces are not available in runtime in contrast to JSON schema.
-
-export interface IAuthoredState {
-  version: number;
-  url?: string;
-  highResUrl?: string;
-  altText?: string;
-  caption?: string;
-  credit?: string;
-  creditLink?: string;
-  creditLinkDisplayText?: string;
-  allowLightbox?: boolean;
-  scaling?: "fitWidth" | "originalDimensions";
-}
 
 const baseAuthoringProps = {
   schema: {
