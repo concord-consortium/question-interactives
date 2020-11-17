@@ -79,9 +79,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
         const newDataset = newLinkedIntState && newLinkedIntState.dataset;
         // Accept null or undefined datasets too to clear them. If it's an object, make sure it follows
         // specified format.
-        if (!newDataset || newDataset && newDataset.type === "dataset" && newDataset.version === 1) {
+        if (!newDataset || newDataset && newDataset.type === "dataset" && Number(newDataset.version) === 1) {
           setDataset(newDataset);
-        } else if (newDataset && newDataset.type === "dataset" && newDataset.version !== 1) {
+        } else if (newDataset && newDataset.type === "dataset" && Number(newDataset.version) !== 1) {
           console.warn(`Dataset version ${newDataset.version} is not supported`);
           setDataset(null);
         }
