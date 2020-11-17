@@ -22,6 +22,7 @@ module.exports = (env, argv) => {
       'image': './src/image/index.tsx',
       'drawing-tool': './src/drawing-tool/index.tsx',
       'image-question': './src/image-question/index.tsx',
+      'graph': './src/graph/index.tsx',
       'wrapper': './src/shared/wrapper.tsx'
     },
     mode: 'development',
@@ -179,6 +180,11 @@ module.exports = (env, argv) => {
       new HtmlWebpackPlugin({
         chunks: ['scaffolded-question'],
         filename: 'scaffolded-question/index.html',
+        template: 'src/shared/index.html'
+      }),
+      new HtmlWebpackPlugin({
+        chunks: ['graph'],
+        filename: 'graph/index.html',
         template: 'src/shared/index.html'
       }),
       // Wrapper page, useful for testing and Cypress.

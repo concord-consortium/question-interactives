@@ -3,7 +3,6 @@ import { JSONSchema6 } from "json-schema";
 import { BaseQuestionApp } from "../../shared/components/base-question-app";
 import { Runtime } from "./runtime";
 import { IAuthoredState, IInteractiveState } from "./types";
-import { IAuthoringInteractiveMetadata, IRuntimeInteractiveMetadata } from "@concord-consortium/lara-interactive-api";
 
 export const baseAuthoringProps = {
   schema: {

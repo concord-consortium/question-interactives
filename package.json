@@ -72,6 +72,7 @@
     "@svgr/webpack": "^5.4.0",
     "@testing-library/react": "^10.4.9",
     "@testing-library/react-hooks": "^3.4.1",
+    "@types/chart.js": "^2.9.28",
     "@types/deep-equal": "^1.0.1",
     "@types/dompurify": "^2.0.3",
     "@types/enzyme": "^3.10.5",
@@ -121,8 +122,9 @@
     "webpack-dev-server": "^3.11.0"
   },
   "dependencies": {
-    "@concord-consortium/lara-interactive-api": "0.6.1-pre.2",
+    "@concord-consortium/lara-interactive-api": "0.7.0-pre.2",
     "@concord-consortium/slate-editor": "^0.6.0",
+    "chart.js": "^2.5.0",
     "deep-equal": "^2.0.3",
     "deepmerge": "^4.2.2",
     "dompurify": "^2.0.14",
@@ -133,6 +135,7 @@
     "intersection-observer": "^0.11.0",
     "jquery": "^3.5.1",
     "react": "^16.13.1",
+    "react-chartjs-2": "^2.11.1",
     "react-dom": "^16.13.1",
     "react-hooks-use-previous": "^1.1.1",
     "react-jsonschema-form": "^1.8.1",
