@@ -36,10 +36,21 @@ describe("useLinkedInteractives", () => {
       { id: "ID1", name: "int 1" },
       { id: "ID2", name: "int 2" },
     ];
+    // Property can be in top-level schema, or nested in dependencies.
     const schema = {
       properties: {
-        linkedInteractive1: {},
-        linkedInteractive2: {}
+        linkedInteractive1: {
+          type: "string" as const
+        }
+      },
+      dependencies: {
+        linkedInteractive1: {
+          properties: {
+            linkedInteractive2: {
+              type: "string" as const
+            }
+          }
+        }
       }
     };
     const HookWrapper = () => {
@@ -58,15 +69,23 @@ describe("useLinkedInteractives", () => {
       expect(result.current).toEqual({
         properties: {
           linkedInteractive1: {
-            enum: [ "ID1", "ID2" ],
-            enumNames: [ "ID1 (int 1)", "ID2 (int 2)" ]
-          },
-          linkedInteractive2: {
+            type: "string",
             enum: [ "ID1", "ID2" ],
             enumNames: [ "ID1 (int 1)", "ID2 (int 2)" ]
           }
-          // Note that linkedInteractive3 wasn't listed in the original schema, so it's not added here either.
+        },
+        dependencies: {
+          linkedInteractive1: {
+            properties: {
+              linkedInteractive2: {
+                type: "string",
+                enum: [ "ID1", "ID2" ],
+                enumNames: [ "ID1 (int 1)", "ID2 (int 2)" ]
+              }
+            }
+          }
         }
+        // Note that linkedInteractive3 wasn't listed in the original schema, so it's not added here either.
       });
       expect(getInteractiveListMock.mock.calls[0][0]).toEqual({ scope: "page", supportsSnapshots: true });
       expect(getInteractiveListMock.mock.calls[1][0]).toEqual({ scope: "page", supportsSnapshots: undefined });
