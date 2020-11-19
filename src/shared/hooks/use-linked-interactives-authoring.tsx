@@ -21,7 +21,7 @@ const emptyArray: ILinkedInteractive[] = [];
 
 const getNestedObject = (object: Record<string, any>, targetProp: string): Record<string, any> | undefined => {
   for (const prop in object) {
-    if (prop === targetProp) {
+    if (prop === targetProp && object[prop].type === "string") {
       return object[prop];
     }
   }

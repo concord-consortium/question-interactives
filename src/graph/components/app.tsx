@@ -12,11 +12,38 @@ const baseAuthoringProps = {
         type: "number",
         default: 1
       },
-      dataSourceInteractive: {
-        title: "Data Source Interactive",
+      dataSourceInteractive1: {
+        title: "Data Source Interactive 1",
         type: "string",
         enum: [],
         enumNames: []
+      }
+    },
+    // Why this strange chain of dependencies?
+    // Theoretically we could use dataSourceInteractive.type === "array", as react-jsonschema-forms handles that nicely.
+    // But it would make handling of linked interactives difficult. Our hooks / helpers support only top-level
+    // linked interactive properties in the authored state. That way authored state will remain "flat", having just:
+    // .dataSourceInteractive1, ..., .dataSourceInteractive5 properties instead of an array.
+    dependencies: {
+      dataSourceInteractive1: {
+        properties: {
+          dataSourceInteractive2: {
+            title: "Data Source Interactive 2",
+            type: "string",
+            enum: [],
+            enumNames: []
+          }
+        }
+      },
+      dataSourceInteractive2: {
+        properties: {
+          dataSourceInteractive3: {
+            title: "Data Source Interactive 3",
+            type: "string",
+            enum: [],
+            enumNames: []
+          }
+        }
       }
     }
   } as JSONSchema6,
@@ -33,6 +60,8 @@ export const App = () => (
     Runtime={Runtime}
     baseAuthoringProps={baseAuthoringProps}
     disableAutoHeight={false}
-    linkedInteractiveProps={[{ label: "dataSourceInteractive" }]}
+    linkedInteractiveProps={[
+      { label: "dataSourceInteractive1" }, { label: "dataSourceInteractive2" }, { label: "dataSourceInteractive3" }
+    ]}
   />
 );
