@@ -4,7 +4,7 @@ import {
   addLinkedInteractiveStateListener, IInteractiveStateWithDataset, removeLinkedInteractiveStateListener, IDataset
 } from "@concord-consortium/lara-interactive-api";
 import { Bar } from "react-chartjs-2";
-import { generateChartData } from "../generate-chart-data";
+import { generateChartData, emptyChartData } from "../generate-chart-data";
 
 export interface IProps {
   authoredState: IAuthoredState;
@@ -20,6 +20,13 @@ const defaultGraphOptions = {
       },
     ],
   },
+};
+
+const emptyGraphOptions = {
+  ...defaultGraphOptions,
+  legend: {
+    display: false
+  }
 };
 
 export const Runtime: React.FC<IProps> = ({ authoredState }) => {
@@ -63,14 +70,15 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
     };
   }, [authoredState.dataSourceInteractive1, authoredState.dataSourceInteractive2, authoredState.dataSourceInteractive3]);
 
+  const anyData = datasets.filter(d => d !== null).length > 0;
   return (
     <div>
       {
-        datasets.length > 0 ?
+        anyData ?
           generateChartData(datasets).map((chartData, idx: number) =>
             <Bar key={idx} data={chartData} options={defaultGraphOptions} />
           ) :
-          <p>Waiting for data</p>
+          <Bar data={emptyChartData} options={emptyGraphOptions} />
       }
     </div>
   );

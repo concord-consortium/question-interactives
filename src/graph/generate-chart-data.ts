@@ -37,6 +37,16 @@ const getBorderColor = (idx: number) => borderColors[idx % borderColors.length];
 
 const borderWidth = 1;
 
+export const emptyChartData = {
+  labels: [],
+  datasets: [{
+    data: [],
+    backgroundColor: getBgColor(0),
+    borderColor: getBorderColor(0),
+    borderWidth: 1
+  }]
+};
+
 export const generateChartData = (datasets: Array<IDataset | null | undefined>) => {
   const result: CustomChartData[] = [];
   const chartDataForProp: {[key: string]: CustomChartData} = {};
