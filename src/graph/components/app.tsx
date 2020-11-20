@@ -23,7 +23,7 @@ const baseAuthoringProps = {
     // Theoretically we could use dataSourceInteractive.type === "array", as react-jsonschema-forms handles that nicely.
     // But it would make handling of linked interactives difficult. Our hooks / helpers support only top-level
     // linked interactive properties in the authored state. That way authored state will remain "flat", having just:
-    // .dataSourceInteractive1, ..., .dataSourceInteractive5 properties instead of an array.
+    // .dataSourceInteractive1, ..., .dataSourceInteractive3 properties instead of an array.
     dependencies: {
       dataSourceInteractive1: {
         properties: {

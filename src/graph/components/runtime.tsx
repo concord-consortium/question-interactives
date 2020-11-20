@@ -42,15 +42,16 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
     const unsubscribeMethods = linkedInteractives.map((dataSourceInteractive, datasetIdx) => {
       const listener = (newLinkedIntState: IInteractiveStateWithDataset | undefined) => {
         const newDataset = newLinkedIntState && newLinkedIntState.dataset;
-        // Accept null or undefined datasets too to clear them. If it's an object, make sure it follows
-        // specified format.
-        if (!newDataset || newDataset && newDataset.type === "dataset" && Number(newDataset.version) === 1) {
+        const isValidDatasetVersion = newDataset && newDataset.type === "dataset" && Number(newDataset.version) === 1;
+
+        // Accept null or undefined datasets too to clear them. If it's an object, make sure it follows specified format.
+        if (!newDataset || isValidDatasetVersion) {
           setDatasets(prevDatasets => {
             const newDatasets = prevDatasets.slice();
             newDatasets[datasetIdx] = newDataset;
             return newDatasets;
           });
-        } else if (newDataset && newDataset.type === "dataset" && Number(newDataset.version) !== 1) {
+        } else if (newDataset && !isValidDatasetVersion) {
           console.warn(`Dataset version ${newDataset.version} is not supported`);
           setDatasets(prevDatasets => {
             const newDatasets = prevDatasets.slice();
