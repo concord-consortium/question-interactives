@@ -2,12 +2,7 @@ import React from "react";
 import { JSONSchema6 } from "json-schema";
 import { BaseQuestionApp } from "../../shared/components/base-question-app";
 import { Runtime } from "./runtime";
-import {
-  IAuthoredState,
-  IAuthoredStateBase,
-  IBaseInteractiveState,
-  IInteractiveState
-} from "./types";
+import { IAuthoredState, IInteractiveState } from "./types";
 import { baseAuthoringProps as drawingToolBaseAuthoringProps } from "../../drawing-tool/components/app";
 import deepmerge from "deepmerge";
 

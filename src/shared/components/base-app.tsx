@@ -61,7 +61,12 @@ export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps
       return <Authoring authoredState={authoredState} setAuthoredState={setAuthoredState} />;
     }
     if (!Authoring && baseAuthoringProps) {
-      return <BaseAuthoring {...baseAuthoringProps} authoredState={authoredState} setAuthoredState={setAuthoredState} />;
+      return <BaseAuthoring
+        {...baseAuthoringProps}
+        authoredState={authoredState}
+        setAuthoredState={setAuthoredState}
+        linkedInteractiveProps={linkedInteractiveProps}
+      />;
     }
   };
 

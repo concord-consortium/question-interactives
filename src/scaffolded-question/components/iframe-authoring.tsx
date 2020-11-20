@@ -66,8 +66,6 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
     }
   }, [libraryInteractiveId, authoredState, initInteractive]);
 
-  console.log('lid', libraryInteractiveId);
-
   return (
     <div className={css.iframeAuthoring}>
       Interactive: <select onChange={handleLibraryInteractiveIdChange} value={libraryInteractiveId} data-cy="select-subquestion">
