@@ -19,6 +19,7 @@ const defaultGraphOptions: ChartOptions = {
       {
         ticks: {
           beginAtZero: true,
+          maxTicksLimit: 5
         },
       },
     ],
