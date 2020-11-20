@@ -1,1 +1,34 @@
 @import "../../shared/styles/helpers";
+
+.graph {
+  display: inline-block;
+  // Chart.JS requires relative positioning of the parent container.
+  position: relative;
+}
+
+.graphLayout1 {
+  width: 100%;
+  height: 400px;
+}
+
+.graphLayout2 {
+  width: 48.5%;
+  height: 320px;
+  &:nth-child(2n) {
+    margin-left: 2%;
+  }
+}
+
+.graphLayout3 {
+  width: 32%;
+  height: 270px;
+  &:nth-child(3n + 2) {
+    margin-left: 1.5%;
+    margin-right: 1.5%;
+  }
+}
+
+.graphLayout4 {
+  width: 25%;
+  height: 250px;
+}

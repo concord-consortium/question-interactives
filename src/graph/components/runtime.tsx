@@ -4,18 +4,22 @@ import {
   addLinkedInteractiveStateListener, IInteractiveStateWithDataset, removeLinkedInteractiveStateListener, IDataset
 } from "@concord-consortium/lara-interactive-api";
 import { Bar } from "react-chartjs-2";
+import { ChartOptions } from "chart.js";
 import { generateChartData, emptyChartData } from "../generate-chart-data";
+import css from "./runtime.scss";
 
 export interface IProps {
   authoredState: IAuthoredState;
 }
 
-const defaultGraphOptions = {
+const defaultGraphOptions: ChartOptions = {
+  maintainAspectRatio: false,
   scales: {
     yAxes: [
       {
         ticks: {
           beginAtZero: true,
+          maxTicksLimit: 5
         },
       },
     ],
@@ -72,12 +76,15 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
   }, [authoredState.dataSourceInteractive1, authoredState.dataSourceInteractive2, authoredState.dataSourceInteractive3]);
 
   const anyData = datasets.filter(d => d !== null).length > 0;
+  const graphContainerClassName = css.graph + " " + css["graphLayout" + (authoredState.graphsPerRow || 1)];
   return (
     <div>
       {
         anyData ?
           generateChartData(datasets).map((chartData, idx: number) =>
-            <Bar key={idx} data={chartData} options={defaultGraphOptions} />
+            <div key={idx} className={graphContainerClassName}>
+              <Bar data={chartData} options={defaultGraphOptions} />
+            </div>
           ) :
           <Bar data={emptyChartData} options={emptyGraphOptions} />
       }

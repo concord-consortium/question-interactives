@@ -12,6 +12,12 @@ const baseAuthoringProps = {
         type: "number",
         default: 1
       },
+      graphsPerRow: {
+        title: "Number of graphs per row",
+        type: "number",
+        enum: [1, 2, 3, 4],
+        default: 3
+      },
       dataSourceInteractive1: {
         title: "Data Source Interactive 1",
         type: "string",
@@ -51,6 +57,12 @@ const baseAuthoringProps = {
   uiSchema: {
     version: {
       "ui:widget": "hidden"
+    },
+    graphsPerRow: {
+      "ui:widget": "radio",
+      "ui:options": {
+        "inline": true
+      }
     }
   }
 };
