@@ -38,7 +38,7 @@ const availableInteractives = [
 
 export const IframeAuthoring: React.FC<FieldProps> = props => {
   const { onChange, formData } = props;
-  const { url, authoredState, id } = formData;
+  const { url, authoredState, id, navImageUrl } = formData;
   const [ iframeHeight, setIframeHeight ] = useState(300);
   const [ authoringOpened, setAuthoringOpened ] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -55,7 +55,12 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
 
   const handleUrlChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const newUrl = event.target.value;
-    onChange({ url: newUrl, authoredState: undefined, id: id || uuidv4() });
+    onChange({ url: newUrl, authoredState: undefined, id: id || uuidv4(), navImageUrl: navImageUrl || "" });
+  };
+
+  const handleNavImageUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const newNavImageUrl = event.target.value;
+    onChange({ url: url, authoredState: authoredState, id: id, navImageUrl: newNavImageUrl || "" });
   };
 
   const handleHeaderClick = () => {
@@ -70,7 +75,7 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
     phone.addListener("authoredState", (newAuthoredState: any) => {
       // Save current iframe authored state.
       iframeCurrentAuthoredState.current = newAuthoredState;
-      onChange({ url, authoredState: newAuthoredState, id: id || uuidv4() });
+      onChange({ url, authoredState: newAuthoredState, id: id || uuidv4(), navImageUrl: navImageUrl || ""  });
     });
     phone.addListener("height", (newHeight: number) => {
       setIframeHeight(newHeight);
@@ -79,7 +84,7 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
       mode: "authoring",
       authoredState
     });
-  }, [id, url, onChange, authoredState]);
+  }, [id, url, onChange, authoredState, navImageUrl]);
 
   useEffect(() => {
 
@@ -93,7 +98,7 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
       iframeRef.current.src = url;
       phoneRef.current = new iframePhone.ParentEndpoint(iframeRef.current, initInteractive);
     }
-  }, [url, authoredState, initInteractive]);
+  }, [url, authoredState, initInteractive, navImageUrl]);
 
   return (
     <div className={css.iframeAuthoring}>
@@ -103,8 +108,13 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
       {
         url &&
         <div className={css.iframeAuthoring}>
-          <h4 onClick={handleHeaderClick} className={css.link} data-cy="subquestion-authoring">{authoringOpened ? "▼" : "▶"} Subquestion authoring</h4>
+          <h4 onClick={handleHeaderClick} className={css.link} data-cy="subquestion-authoring">{authoringOpened ? "▼" : "▶"} Subquestion Authoring</h4>
           <div className={css.iframeContainer} style={{maxHeight: authoringOpened ? iframeHeight : 0 }}>
+            <div className={css.navButtonField}>
+              <label htmlFor={navImageUrl}>Custom Navigation Button Image URL</label>
+              <input className="form-control" type="text" id={navImageUrl} defaultValue={navImageUrl} onChange={handleNavImageUrlChange} />
+              <p className="help-block">To customize the button for this slide, specify an image URL. Optimal image size: 150x100 pixels.</p>
+            </div>
             <iframe id={id} ref={iframeRef} width="100%" height={iframeHeight} frameBorder={0} />
           </div>
         </div>
