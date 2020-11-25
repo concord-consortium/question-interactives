@@ -26,7 +26,7 @@ const defaultGraphOptions: ChartOptions = {
   },
 };
 
-const emptyGraphOptions = {
+export const emptyGraphOptions = {
   ...defaultGraphOptions,
   legend: {
     display: false

@@ -47,6 +47,7 @@ export const emptyChartData = {
   }]
 };
 
+// It accepts array of IDataset and returns array of Chart.JS ChartData objects.
 export const generateChartData = (datasets: Array<IDataset | null | undefined>) => {
   const result: CustomChartData[] = [];
   const chartDataForProp: {[key: string]: CustomChartData} = {};
