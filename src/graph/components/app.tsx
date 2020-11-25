@@ -18,6 +18,11 @@ const baseAuthoringProps = {
         enum: [1, 2, 3, 4],
         default: 3
       },
+      displayXAxisLabels: {
+        title: "Display X axis labels",
+        type: "boolean",
+        default: true
+      },
       dataSourceInteractive1: {
         title: "Data Source Interactive 1",
         type: "string",

@@ -7,7 +7,6 @@ import { Runtime } from "./runtime";
 import { Bar } from "react-chartjs-2";
 import { IAuthoredState } from "./types";
 import { act } from "react-dom/test-utils";
-import { emptyChartData } from "../generate-chart-data";
 import css from "./runtime.scss";
 
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
@@ -64,7 +63,6 @@ describe("Graph runtime", () => {
   it("renders empty graph when there's no data available yet", () => {
     const wrapper = mount(<Runtime authoredState={authoredState} />);
     expect(wrapper.find(Bar).length).toEqual(1);
-    expect(wrapper.find(Bar).at(0).prop("data")).toEqual(emptyChartData);
   });
 
   it("renders two separate graphs when datasets cannot be merged", () => {
@@ -121,8 +119,6 @@ describe("Graph runtime", () => {
     fakeDatasetUpdate(0, intStateWithWrongVersion as IInteractiveStateWithDataset);
     wrapper.update();
     expect(wrapper.find(Bar).length).toEqual(1);
-    // Still renders empty bar graph, wrong data is ignored.
-    expect(wrapper.find(Bar).at(0).prop("data")).toEqual(emptyChartData);
   });
 
   it("respects graphsPerRow setting", () => {

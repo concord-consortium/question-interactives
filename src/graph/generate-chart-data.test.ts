@@ -25,6 +25,13 @@ const dataset2: IDataset = {
   rows: [ [7, null], [8, 2000] ]
 };
 
+const datasetWithoutXProp: IDataset = {
+  type: "dataset",
+  version: 1,
+  properties: ["y"],
+  rows: [ [100], [200] ]
+};
+
 describe("generateChartData", () => {
   it("works for a single dataset", () => {
     const result = generateChartData([dataset1]);
@@ -59,6 +66,18 @@ describe("generateChartData", () => {
     });
   });
 
+  it("generates X axis labels (row indices) when xAxisProp is not specified", () => {
+    const result = generateChartData([datasetWithoutXProp]);
+    expect(result[0].labels).toEqual([1, 2]);
+    expect(result[0].datasets[0]).toMatchObject({
+      label: "y",
+      data: [100, 200],
+      backgroundColor: expect.any(String),
+      borderColor: expect.any(String),
+      borderWidth: expect.any(Number)
+    });
+  });
+
   it("merges multiple datasets when possible", () => {
     const result = generateChartData([dataset1, dataset1A]);
     expect(result[0].labels).toEqual([1, 2, 1.5, 3]);
@@ -76,17 +95,5 @@ describe("generateChartData", () => {
       borderColor: expect.any(String),
       borderWidth: expect.any(Number)
     });
-  });
-
-  it("detects incorrect xAxisProperty", () => {
-    expect(() => {
-      generateChartData([{
-        type: "dataset",
-        version: 1,
-        properties: ["x", "y"],
-        xAxisProp: "wrong",
-        rows: [ [1, 10], [2, 20] ]
-      }]);
-    }).toThrow("Incorrect dataset.xAxisProp value");
   });
 });
