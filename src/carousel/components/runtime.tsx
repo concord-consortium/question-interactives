@@ -98,8 +98,14 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       <nav>
         <button className={currentSlide === 0 ? css.disabled + " " + css.prevButton : css.prevButton} onClick={previousSlide}>Prev</button>
         {subinteractives.map(function(interactive, index) {
+          let buttonStyle = {};
+          let buttonClass = currentSlide === index ? css.activeButton : "";
+          if (interactive.navImageUrl) {
+            buttonStyle = { backgroundImage: "url(" + interactive.navImageUrl + ")" };
+            buttonClass += " " + css.customButton;
+          }
           return (
-            <button key={index} className={currentSlide === index ? css.activeButton : ""} onClick={() => updateCurrentSlide(index)}>{index}</button>
+            <button key={index} className={buttonClass} style={buttonStyle} onClick={() => updateCurrentSlide(index)}>{index}</button>
           );
         })}
         <button className={currentSlide === subinteractives.length - 1 ? css.disabled + " " + css.nextButton : css.nextButton} onClick={nextSlide}>Next</button>

@@ -43,6 +43,9 @@ const baseAuthoringProps = {
             },
             authoredState: {
               type: "any"
+            },
+            navImageUrl: {
+              type: "string"
             }
           }
         }

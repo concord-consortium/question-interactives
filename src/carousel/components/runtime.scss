@@ -29,6 +29,7 @@
 }
 
 nav {
+  align-items: center;
   display: flex;
   flex-flow: row nowrap;
   justify-content: center;
@@ -79,6 +80,25 @@ nav {
     &.disabled {
       cursor: not-allowed;
       opacity: .8;
+    }
+    &.customButton {
+      background-color: transparent;
+      background-position: center center;
+      background-repeat: no-repeat;
+      background-size: contain;
+      border-radius: 0;
+      height: auto;
+      margin: 15px 0 10px 15px;
+      max-width: 150px;
+      min-height: 100px;
+      max-height: 100px;
+      opacity: .8;
+      width: 150px;
+
+      &:hover, &.activeButton {
+        background-color: transparent;
+        opacity: 1;
+      }
     }
   }
 }
