@@ -57,11 +57,15 @@ export const generateChartData = (datasets: Array<IDataset | null | undefined>) 
     if (!dataset) {
       return;
     }
-    const xPropIdx = dataset.properties.indexOf(dataset.xAxisProp);
-    if (xPropIdx < 0) {
-      throw new Error("Incorrect dataset.xAxisProp value");
-    }
-    const labels = dataset.rows.map(row => row[xPropIdx] || "");
+    const xPropIdx = dataset.xAxisProp ? dataset.properties.indexOf(dataset.xAxisProp) : -1;
+    const labels: Label[] = dataset.rows.map((row, rowIdx) => {
+      if (xPropIdx === -1) {
+        // If x property isn't defined, use row index, but starting from 1.
+        return rowIdx + 1;
+      }
+      const val = row[xPropIdx];
+      return val !== null ? val : "";
+    });
 
     dataset.properties.forEach((prop, propIdx) => {
       if (propIdx === xPropIdx) {
