@@ -26,18 +26,14 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
   }, []);
 
+  // This scroll handler triggers the carousel to set the current slide when 
+  // a user uses their keyboard to tab directly through the slides (without 
+  // using the carousel's navigation buttons).
   const handleScroll = useCallback((scroller: any) => {
-    console.log("Scroller detected scroll event");
     const scrollPosition = scroller.scrollLeft;
-    console.log(scrollPosition);
-    // const expectedPosition = currentSlideRef.current === 0 ? scroller.getBoundingClientRect().width : (currentSlideRef.current + 1) * scroller.getBoundingClientRect().width;
-    console.log(currentSlideRef.current);
-    console.log(scroller.getBoundingClientRect().width);
-    // console.log(expectedPosition);
     if (scrollPosition > 0) {
       scroller.scrollLeft = 0;
       updateCurrentSlide(currentSlideRef.current + 1);
-      console.log(`Setting current slide to  ${currentSlideRef.current}`);
     }
   }, [updateCurrentSlide]);
 
