@@ -12,25 +12,26 @@ export interface IProps {
   authoredState: IAuthoredState;
 }
 
-const defaultGraphOptions: ChartOptions = {
-  maintainAspectRatio: false,
-  scales: {
-    yAxes: [
-      {
+const getGraphOptions = (authoredState: IAuthoredState, { displayLegend }: { displayLegend: boolean }): ChartOptions => {
+  return {
+    legend: {
+      display: displayLegend // top legend with datasets and their colors
+    },
+    maintainAspectRatio: false,
+    scales: {
+      yAxes: [{
         ticks: {
           beginAtZero: true,
           maxTicksLimit: 5
-        },
-      },
-    ],
-  },
-};
-
-const emptyGraphOptions = {
-  ...defaultGraphOptions,
-  legend: {
-    display: false
-  }
+        }
+      }],
+      xAxes: [{
+        ticks: {
+          display: authoredState.displayXAxisLabels // this will show/hide labels only
+        }
+      }]
+    }
+  };
 };
 
 export const Runtime: React.FC<IProps> = ({ authoredState }) => {
@@ -83,10 +84,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
         anyData ?
           generateChartData(datasets).map((chartData, idx: number) =>
             <div key={idx} className={graphContainerClassName}>
-              <Bar data={chartData} options={defaultGraphOptions} />
+              <Bar data={chartData} options={getGraphOptions(authoredState, { displayLegend: true })} />
             </div>
           ) :
-          <Bar data={emptyChartData} options={emptyGraphOptions} />
+          // Hide legend, as it'd show "undefined" (no data available yet).
+          <Bar data={emptyChartData} options={getGraphOptions(authoredState, { displayLegend: false })} />
       }
     </div>
   );
