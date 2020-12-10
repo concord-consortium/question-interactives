@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { IframeRuntime } from "./iframe-runtime";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { renderHTML } from "../../shared/utilities/render-html";
@@ -16,6 +16,35 @@ interface IProps {
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState }) => {
 
   const [currentSlide, setCurrentSlide] = useState(0);
+  const currentSlideRef = useRef(currentSlide);
+  currentSlideRef.current = currentSlide;
+
+  const updateCurrentSlide = useCallback((index: number) => {
+    pauseAllVideos();
+    if (currentSlideRef.current !== index) {
+      setCurrentSlide(index);
+    }
+  }, []);
+
+  // This scroll handler triggers the carousel to set the current slide when 
+  // a user uses their keyboard to tab directly through the slides (without 
+  // using the carousel's navigation buttons).
+  const handleScroll = useCallback((scroller: any) => {
+    const scrollPosition = scroller.scrollLeft;
+    if (scrollPosition > 0) {
+      scroller.scrollLeft = 0;
+      updateCurrentSlide(currentSlideRef.current + 1);
+    }
+  }, [updateCurrentSlide]);
+
+  useEffect(() => {
+    const scroller = document.querySelector(".slider-wrapper");
+    if (scroller) {
+      (scroller as any).onscroll = () => {
+        handleScroll(scroller);
+      };
+    }
+  }, [handleScroll]);
 
   const subinteractives = authoredState.subinteractives || [];
   if (subinteractives.length === 0) {
@@ -67,19 +96,12 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     });
   };
 
-  const updateCurrentSlide = (index: number) => {
-    pauseAllVideos();
-    if (currentSlide !== index) {
-      setCurrentSlide(index);
-    }
-  };
-
   return (
     <div>
       <Carousel selectedItem={currentSlide} onChange={updateCurrentSlide} showArrows={false} showIndicators={false} showStatus={false} showThumbs={false} autoPlay={false} dynamicHeight={false} transitionTime={300}>
         {subinteractives.map(function(interactive, index) {
           return (
-            <div key={index} className={css.runtime} tabIndex={index+1}>
+            <div key={index} className={css.runtime}>
               { authoredState.prompt &&
                 <div>{renderHTML(authoredState.prompt)}</div> }
                 <IframeRuntime
