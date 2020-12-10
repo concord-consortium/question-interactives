@@ -5,6 +5,11 @@ import { IAuthoredState, IInteractiveState } from "./types";
 import { TakeSnapshot } from "./take-snapshot";
 import { UploadBackground } from "./upload-background";
 
+let useCorsImageErrorResult = false;
+jest.mock("../../shared/hooks/use-cors-image-error-check", () => ({
+  useCorsImageErrorCheck: () => useCorsImageErrorResult
+}));
+
 const authoredState: IAuthoredState = {
   version: 1,
   questionType: "iframe_interactive" as const,
@@ -27,6 +32,10 @@ const interactiveState: IInteractiveState = {
 };
 
 describe("Runtime", () => {
+  beforeEach(() => {
+    useCorsImageErrorResult = false;
+  });
+
   it("renders rich text prompt", () => {
     const wrapper = shallow(<Runtime authoredState={authoredRichState} />);
     expect(wrapper.html()).toEqual(expect.stringContaining(authoredRichState.prompt));
@@ -48,5 +57,11 @@ describe("Runtime", () => {
     const authoredStateWithSnapshot = {...authoredState, backgroundSource: "upload" as const};
     const wrapper = shallow(<Runtime authoredState={authoredStateWithSnapshot} interactiveState={interactiveState} />);
     expect(wrapper.find(UploadBackground).length).toEqual(1);
+  });
+
+  it("renders an error when authored background URL is not CORS enabled", () => {
+    useCorsImageErrorResult = true;
+    const wrapper = shallow(<Runtime authoredState={authoredRichState} />);
+    expect(wrapper.html()).toEqual(expect.stringContaining("Authored background image is not CORS enabled"));
   });
 });

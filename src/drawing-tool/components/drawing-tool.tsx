@@ -1,8 +1,9 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import DrawingToolLib from "drawing-tool";
 import { getAnswerType, IGenericAuthoredState, IGenericInteractiveState } from "./types";
 import predefinedStampCollections from "./stamp-collections";
 import 'drawing-tool/dist/drawing-tool.css';
+import { shouldUseLARAImgProxy } from "../../shared/hooks/use-cors-image-error-check";
 import css from "./runtime.scss";
 
 const kToolbarWidth = 40; // Drawing Tool buttons are 40x40
@@ -58,19 +59,8 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
     }
     let backgroundImgSrc: string | undefined;
     if (authoredState.backgroundSource === "url") {
-      backgroundImgSrc = authoredState.backgroundImageUrl;
-      try {
-        const url = new URL(backgroundImgSrc || "");
-        if (!url.host.match(/concord\.org/)) {
-          // Use LARA image proxy to avoid tainting canvas when external image URL is used.
-          // Note that concord.org domain is actually not enough when the subdomains are different.
-          // So, the host needs to have CORS headers enabled. It's more likely for servers owned by CC. In practice
-          // it should be mostly AWS S3 bucket with a concord.org domain.
-          backgroundImgSrc = LARA_IMAGE_PROXY + backgroundImgSrc;
-        }
-      } catch (e) {
-        // Malformed URL, ignore it.
-      }
+      backgroundImgSrc = shouldUseLARAImgProxy(authoredState.backgroundImageUrl) ?
+        LARA_IMAGE_PROXY + authoredState.backgroundImageUrl : authoredState.backgroundImageUrl;
     } else if (authoredState.backgroundSource === "upload" || authoredState.backgroundSource === "snapshot") {
       backgroundImgSrc = userBackgroundImageUrl;
     }

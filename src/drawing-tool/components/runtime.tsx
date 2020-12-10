@@ -5,6 +5,8 @@ import { renderHTML } from "../../shared/utilities/render-html";
 import { UploadBackground } from "./upload-background";
 import { TakeSnapshot } from "./take-snapshot";
 import { DrawingTool } from "./drawing-tool";
+import { useCorsImageErrorCheck } from "../../shared/hooks/use-cors-image-error-check";
+import css from "./runtime.scss";
 
 export interface IProps {
   authoredState: IAuthoredState;
@@ -17,6 +19,14 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
   const useSnapshot = authoredState?.backgroundSource === "snapshot";
   const useUpload = authoredState?.backgroundSource === "upload";
+  const authoredBgCorsError = useCorsImageErrorCheck({
+    performTest: authoredState.backgroundSource === "url" && !!authoredState.backgroundImageUrl,
+    imgSrc: authoredState.backgroundImageUrl
+  });
+  if (authoredBgCorsError) {
+    return <div className={css.error}>Authored background image is not CORS enabled, please use a different background
+      image URL or change configuration of the host.</div>;
+  }
   return (
     <div>
       { authoredState.prompt && <div>{renderHTML(authoredState.prompt)}</div> }

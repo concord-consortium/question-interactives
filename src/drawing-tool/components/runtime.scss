@@ -6,6 +6,11 @@
   width: 100%;
 }
 
+.error {
+  color: darkred;
+  font-weight: bold;
+}
+
 .runtime, .clickShield {
   position: absolute;
   left: 0;
