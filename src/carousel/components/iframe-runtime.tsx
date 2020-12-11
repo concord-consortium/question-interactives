@@ -58,7 +58,7 @@ export const IframeRuntime: React.FC<IProps> =
       phone.addListener("showModal", (modalOptions: IShowModal) => {
         if (modalOptions.type === "dialog") {
           // Note that dialog is very different from lightbox and alert - it depends on the interactive state.
-          // It'd require quite complex code to handle it. Lightbox ony displays provided URL (for example hi-res image)
+          // It'd require quite complex code to handle it. Lightbox only displays provided URL (for example hi-res image)
           // and there's no associated state. Alert shows provided message. However, dialog renders complete
           // interactive, so it needs to receive correct interactive state. Carousel would need to capture provided URL,
           // modify it so it still points to carousel interactive instead of the subinteractive, send it to parent,
