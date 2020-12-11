@@ -3,7 +3,9 @@ import { renderHTML } from "../../shared/utilities/render-html";
 import { IframePhone } from "../../shared/types";
 import iframePhone from "iframe-phone";
 import css from "./iframe-runtime.scss";
-import { IHintRequest, log } from "@concord-consortium/lara-interactive-api";
+import {
+  closeModal, ICloseModal, IHintRequest, IShowModal, log, showModal
+} from "@concord-consortium/lara-interactive-api";
 
 // This should be part of lara-interactive-api
 interface ILogRequest {
@@ -52,6 +54,23 @@ export const IframeRuntime: React.FC<IProps> =
       });
       phone.addListener("hint", (newHint: IHintRequest) => {
         setHint(newHint.text || "");
+      });
+      phone.addListener("showModal", (modalOptions: IShowModal) => {
+        if (modalOptions.type === "dialog") {
+          // Note that dialog is very different from lightbox and alert - it depends on the interactive state.
+          // It'd require quite complex code to handle it. Lightbox only displays provided URL (for example hi-res image)
+          // and there's no associated state. Alert shows provided message. However, dialog renders complete
+          // interactive, so it needs to receive correct interactive state. Carousel would need to capture provided URL,
+          // modify it so it still points to carousel interactive instead of the subinteractive, send it to parent,
+          // open itself in dialog, hide carousel UI and provide correct state to the subinteractive. It's doable, but
+          // not necessary at this point, as none of the carousel interactives uses "dialog" modal type.
+          window.alert("Dialog is not supported within carousel.");
+          return;
+        }
+        showModal(modalOptions);
+      });
+      phone.addListener("closeModal", (modalOptions: ICloseModal) => {
+        closeModal(modalOptions);
       });
       phone.addListener("log", (logData: ILogRequest) => {
         log(logData.action, {
