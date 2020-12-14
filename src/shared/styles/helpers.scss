@@ -57,6 +57,11 @@ $themeColor2: #34a5be;
   }
 }
 
+.error {
+  font-weight: bold;
+  color: darkred;
+}
+
 .laraButton {
   @include lara-button;
   & + & {

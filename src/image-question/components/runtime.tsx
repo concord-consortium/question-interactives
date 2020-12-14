@@ -10,6 +10,7 @@ import { renderHTML } from "../../shared/utilities/render-html";
 import { UpdateFunc } from "../../shared/components/base-app";
 import Shutterbug from "shutterbug";
 import PencilIcon from "../../shared/icons/pencil.svg";
+import { useCorsImageErrorCheck } from "../../shared/hooks/use-cors-image-error-check";
 import css from "./runtime.scss";
 import cssHelpers from "../../shared/styles/helpers.scss";
 
@@ -25,6 +26,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const [ drawingStateUpdated, setDrawingStateUpdated ] = useState(false);
   const [ savingAnnotatedImage, setSavingAnnotatedImage ] = useState(false);
   const drawingToolDialog = getURLParam(drawingToolDialogUrlParam);
+  const authoredBgCorsError = useCorsImageErrorCheck({
+    performTest: authoredState.backgroundSource === "url" && !!authoredState.backgroundImageUrl,
+    imgSrc: authoredState.backgroundImageUrl
+  });
 
   const snapshotOrUploadFinished = ({ success }: { success: boolean }) => {
     setControlsHidden(false);
@@ -87,6 +92,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const renderInline = () => {
+    if (authoredBgCorsError) {
+      return <div className={css.error}>Authored background image is not CORS enabled. Please use a different background
+        image URL or change configuration of the host.</div>;
+    }
+
     const renderSnapshot = authoredState?.backgroundSource === "snapshot";
     const renderUpload = authoredState?.backgroundSource === "upload";
     const renderMakeDrawing = !renderSnapshot && !renderUpload;

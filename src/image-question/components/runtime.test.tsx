@@ -19,6 +19,10 @@ jest.mock("shutterbug", () => ({
 }));
 const ShutterbugSnapshotMock = Shutterbug.snapshot as jest.Mock;
 
+let useCorsImageErrorResult = false;
+jest.mock("../../shared/hooks/use-cors-image-error-check", () => ({
+  useCorsImageErrorCheck: () => useCorsImageErrorResult
+}));
 
 const authoredState = {
   version: 1,
@@ -48,6 +52,7 @@ describe("Runtime", () => {
     (window as any).location = {
       href: "http://example.org/"
     };
+    useCorsImageErrorResult = false;
   });
 
   it("renders rich text prompt, answer prompt and user answer", () => {
@@ -73,6 +78,12 @@ describe("Runtime", () => {
     const authoredStateWithSnapshot = {...authoredState, backgroundSource: "upload" as const};
     const wrapper = shallow(<Runtime authoredState={authoredStateWithSnapshot} interactiveState={interactiveState} />);
     expect(wrapper.find(UploadBackground).length).toEqual(1);
+  });
+
+  it("renders an error when authored background URL is not CORS enabled", () => {
+    useCorsImageErrorResult = true;
+    const wrapper = shallow(<Runtime authoredState={authoredState} />);
+    expect(wrapper.html()).toEqual(expect.stringContaining("Authored background image is not CORS enabled"));
   });
 
   describe("dialog", () => {
