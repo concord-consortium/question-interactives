@@ -27,17 +27,17 @@ export const shouldUseLARAImgProxy = (imgSrc?: string): boolean => {
   return false;
 };
 
-export const useCorsImageErrorCheck = (props: { performTest: boolean, imgSrc?: string }): boolean => {
+export const useCorsImageErrorCheck = ({ performTest, imgSrc }: { performTest: boolean, imgSrc?: string }): boolean => {
   const [error, setError ] = useState<boolean>(false);
 
   useEffect(() => {
     // It doesn't make sense to test images proxied by LARA image proxy, as they will work.
-    if (props.performTest && props.imgSrc && !shouldUseLARAImgProxy(props.imgSrc)) {
-      isImgCORSEnabled(props.imgSrc).then(testResult => {
+    if (performTest && imgSrc && !shouldUseLARAImgProxy(imgSrc)) {
+      isImgCORSEnabled(imgSrc).then(testResult => {
         setError(!testResult);
       });
     }
-  }, [props.performTest, props.imgSrc]);
+  }, [performTest, imgSrc]);
 
   return error;
 };

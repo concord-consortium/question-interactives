@@ -24,7 +24,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     imgSrc: authoredState.backgroundImageUrl
   });
   if (authoredBgCorsError) {
-    return <div className={css.error}>Authored background image is not CORS enabled, please use a different background
+    return <div className={css.error}>Authored background image is not CORS enabled. Please use a different background
       image URL or change configuration of the host.</div>;
   }
   return (
