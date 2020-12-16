@@ -32,7 +32,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
   const [ itemDimensions, setItemDimensions ] = useState<Record<ItemId, IDimensions>>({});
   const draggingAreaPromptRef = useRef<HTMLDivElement>(null);
   const itemPositions = interactiveState?.itemPositions || {};
-  const canvasWidth = authoredState.canvasHeight || 330;
+  const canvasWidth = authoredState.canvasWidth || 330;
   const canvasHeight = authoredState.canvasHeight || 300;
   const draggingAreaPromptHeight = draggingAreaPromptRef.current?.offsetHeight || 0;
 
