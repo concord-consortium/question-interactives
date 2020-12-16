@@ -35,7 +35,6 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
   const canvasWidth = authoredState.canvasHeight || 330;
   const canvasHeight = authoredState.canvasHeight || 300;
   const draggingAreaPromptHeight = draggingAreaPromptRef.current?.offsetHeight || 0;
-  const draggingAreaStyle = { width: canvasWidth + "px", height: canvasHeight + "px"};
 
   useEffect(() => {
     authoredState.draggableItems?.forEach(item => {
@@ -72,6 +71,12 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
       moveDraggableItem(wrapper.item.id, left, top);
     }
   });
+
+  const draggingAreaStyle = {
+    width: canvasWidth + "px",
+    height: canvasHeight + "px",
+    backgroundImage: authoredState.backgroundImageUrl ? `url("${authoredState.backgroundImageUrl}")` : undefined
+  };
 
   return (
     <div ref={drop} className={css.draggingArea} style={draggingAreaStyle}>

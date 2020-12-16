@@ -3,6 +3,8 @@
 .draggingArea {
   border: 1px solid gray;
   position: relative;
+  background-repeat: no-repeat;
+  background-position: center;
 
   .prompt {
     position: absolute;
