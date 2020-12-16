@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import DrawingToolLib from "drawing-tool";
 import { getAnswerType, IGenericAuthoredState, IGenericInteractiveState } from "./types";
 import predefinedStampCollections from "./stamp-collections";
