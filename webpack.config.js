@@ -9,7 +9,7 @@ module.exports = (env, argv) => {
 
   return {
     context: __dirname, // to automatically find tsconfig.json
-    devtool: 'source-map',
+    devtool: devMode ? 'eval-cheap-module-source-map' : 'source-map',
     entry: {
       'carousel': './src/carousel/index.tsx',
       'convert-old-lara': './src/convert-old-lara/convert.ts',
@@ -23,6 +23,7 @@ module.exports = (env, argv) => {
       'drawing-tool': './src/drawing-tool/index.tsx',
       'image-question': './src/image-question/index.tsx',
       'graph': './src/graph/index.tsx',
+      'drag-and-drop': './src/drag-and-drop/index.tsx',
       'wrapper': './src/shared/wrapper.tsx'
     },
     mode: 'development',
@@ -185,6 +186,11 @@ module.exports = (env, argv) => {
       new HtmlWebpackPlugin({
         chunks: ['graph'],
         filename: 'graph/index.html',
+        template: 'src/shared/index.html'
+      }),
+      new HtmlWebpackPlugin({
+        chunks: ['drag-and-drop'],
+        filename: 'drag-and-drop/index.html',
         template: 'src/shared/index.html'
       }),
       // Wrapper page, useful for testing and Cypress.
