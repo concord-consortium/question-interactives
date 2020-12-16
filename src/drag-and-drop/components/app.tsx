@@ -4,8 +4,6 @@ import { BaseQuestionApp } from "../../shared/components/base-question-app";
 import { Runtime } from "./runtime";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { v4 as uuidv4 } from "uuid";
-import { TouchBackend } from "react-dnd-touch-backend";
-import { DndProvider } from "react-dnd";
 
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
@@ -113,12 +111,10 @@ export const baseAuthoringProps = {
 const isAnswered = (interactiveState: IInteractiveState) => !!interactiveState?.itemPositions;
 
 export const App = () => (
-  <DndProvider backend={TouchBackend} options={{enableMouseEvents: true}} >
-    <BaseQuestionApp<IAuthoredState, IInteractiveState>
-      Runtime={Runtime}
-      baseAuthoringProps={baseAuthoringProps}
-      isAnswered={isAnswered}
-    />
-  </DndProvider>
+  <BaseQuestionApp<IAuthoredState, IInteractiveState>
+    Runtime={Runtime}
+    baseAuthoringProps={baseAuthoringProps}
+    isAnswered={isAnswered}
+  />
 );
 

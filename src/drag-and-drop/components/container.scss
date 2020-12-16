@@ -1,0 +1,10 @@
+@import "../../shared/styles/helpers";
+
+.draggingArea {
+  border: 1px solid gray;
+  position: relative;
+
+  .prompt {
+    position: absolute;
+  }
+}

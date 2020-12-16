@@ -1,8 +1,8 @@
 import React from "react";
 import { IDraggableItem, IPosition } from "./types";
-import css from "./runtime.scss";
 import { DragSourceMonitor, useDrag } from "react-dnd";
 import { DraggableItem } from "./draggable-item";
+import css from "./draggable-item-wrapper.scss";
 
 export interface IProps {
   item: IDraggableItem;
@@ -32,7 +32,7 @@ export const DraggableItemWrapper: React.FC<IProps> = ({ item, position }) => {
   }
 
   return (
-    <div ref={drag} className={css.draggableItem} style={position}>
+    <div ref={drag} className={css.draggableItemWrapper} style={position}>
       <DraggableItem item={item} />
     </div>
   );
