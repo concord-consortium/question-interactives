@@ -11,7 +11,6 @@ export const DraggableItemPreview = () => {
   if (!display) {
     return null;
   }
-  console.log(style);
 
   return (
     <div className={css.draggableItemPreview} style={style}>

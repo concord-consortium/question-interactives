@@ -118,9 +118,6 @@ context("Test scaffolded question interactive", () => {
       getAndClearAllPhoneMessage((messages) => {
         expect(messages.length).eql(2);
 
-        console.log("TAAK");
-        console.log(messages[0]);
-
         expect(messages[0]).eql({
           action: "focus in",
           data: {
