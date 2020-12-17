@@ -21,17 +21,24 @@ const marginLeft = 10;
 const marginTop = 10;
 const margin = 5;
 
-const getInitialTop = (minTop: number, items: IDraggableItem[], itemPositions: Record<ItemId, IPosition>, itemDimensions: Record<ItemId, IDimensions>, idx: number) => {
+const getInitialTop = (
+  minTop: number, items: IDraggableItem[], itemPositions: Record<ItemId, IPosition>,
+  itemDimensions: Record<ItemId, IDimensions>, idx: number
+) => {
   let top = minTop;
   for (let i = 0; i < idx; i += 1) {
     const item = items[i];
-    top += itemDimensions[item.id]?.height || 0;
-    top += margin;
+    // If item has been already moved by author, doesn't count it in.
+    if (!itemPositions[item.id]) {
+      top += itemDimensions[item.id]?.height || 0;
+      top += margin;
+    }
   }
   return top;
 };
 
-export const Container: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, setInitialState }) => {
+export const Container: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, setInitialState, report }) => {
+  const readOnly = !!(report || (authoredState.required && interactiveState?.submitted));
   const [ itemDimensions, setItemDimensions ] = useState<Record<ItemId, IDimensions>>({});
   const draggingAreaPromptRef = useRef<HTMLDivElement>(null);
   const canvasWidth = authoredState.canvasWidth || 330;
@@ -45,12 +52,11 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
     ...interactiveState?.itemPositions
   };
 
-
   useEffect(() => {
     // Preload draggable items to get their dimensions.
     authoredState.draggableItems?.forEach(item => {
-      const img = document.createElement("img");
       if (item.imageUrl) {
+        const img = document.createElement("img");
         img.src = item.imageUrl;
         img.onload = () => {
           setItemDimensions(prevHash => ({...prevHash, [item.id]: {width: img.width, height: img.height }}));
@@ -118,7 +124,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
               top: Math.min(canvasHeight - margin, top)
             };
           }
-          return <DraggableItemWrapper key={item.id} item={item} position={position} />;
+          return <DraggableItemWrapper key={item.id} item={item} position={position} draggable={!readOnly} />;
         })
       }
       {/* Dragged item preview image (one that follows mouse cursor) */}

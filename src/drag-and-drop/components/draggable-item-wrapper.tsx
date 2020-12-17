@@ -7,6 +7,7 @@ import css from "./draggable-item-wrapper.scss";
 export interface IProps {
   item: IDraggableItem;
   position: IPosition;
+  draggable: boolean;
 }
 
 // These types are used by react-dnd.
@@ -18,7 +19,7 @@ export interface IDraggableItemWrapper {
 }
 
 // Provides dragging logic and renders basic draggable item.
-export const DraggableItemWrapper: React.FC<IProps> = ({ item, position }) => {
+export const DraggableItemWrapper: React.FC<IProps> = ({ item, position, draggable }) => {
   const [{ isDragging }, drag] = useDrag<IDraggableItemWrapper, any, any>({
     item: { type: "draggable-item-wrapper", item, position },
     collect: (monitor: DragSourceMonitor) => ({
@@ -32,7 +33,11 @@ export const DraggableItemWrapper: React.FC<IProps> = ({ item, position }) => {
   }
 
   return (
-    <div ref={drag} className={css.draggableItemWrapper} style={position}>
+    <div
+      ref={draggable ? drag : undefined}
+      className={`${css.draggableItemWrapper} ${draggable ? css.draggable : ""}`}
+      style={position}
+    >
       <DraggableItem item={item} />
     </div>
   );

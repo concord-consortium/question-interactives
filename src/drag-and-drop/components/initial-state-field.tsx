@@ -22,6 +22,7 @@ export const InitialStateField: React.FC<FieldProps<IInitialState>> = props => {
 
   return (
     <div className={css.authoringPreview}>
+      {/* label.control-label will be automatically styled by react-jsonschema-form */}
       <label className="control-label">Initial positions of draggable items</label>
       <DndProvider backend={TouchBackend} options={{enableMouseEvents: true}} >
         <Container authoredState={authoredState} setInitialState={setInitialState} />

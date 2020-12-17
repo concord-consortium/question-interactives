@@ -2,11 +2,14 @@
 
 .draggableItemWrapper {
   position: absolute;
-  cursor: move;
-  &:hover {
-    $border-width: 4px;
-    border: $border-width solid yellow;
-    transform: translate(-$border-width, -$border-width);
+
+  &.draggable {
+    cursor: move;
+    &:hover {
+      $border-width: 4px;
+      border: $border-width solid yellow;
+      transform: translate(-$border-width, -$border-width);
+    }
   }
 
   img {
