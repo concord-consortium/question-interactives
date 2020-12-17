@@ -12,6 +12,10 @@ export interface IPosition {
   top: number;
 }
 
+export interface IInitialState {
+  itemPositions?: Record<ItemId, IPosition>;
+}
+
 export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   version: number;
   prompt?: string;
@@ -21,7 +25,8 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   canvasWidth?: number;
   canvasHeight?: number;
   backgroundImageUrl?: string;
-  draggableItems?: IDraggableItem[]
+  draggableItems?: IDraggableItem[];
+  initialState?: IInitialState;
 }
 
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {

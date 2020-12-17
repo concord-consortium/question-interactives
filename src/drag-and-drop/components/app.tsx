@@ -4,6 +4,7 @@ import { BaseQuestionApp } from "../../shared/components/base-question-app";
 import { Runtime } from "./runtime";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { v4 as uuidv4 } from "uuid";
+import { InitialStateField } from "./initial-state-field";
 
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
@@ -68,6 +69,14 @@ export const baseAuthoringProps = {
             }
           }
         }
+      },
+      initialState: {
+        type: "object",
+        properties: {
+          itemPositions: {
+            type: "object"
+          }
+        }
       }
     }
   } as JSONSchema6,
@@ -94,7 +103,14 @@ export const baseAuthoringProps = {
           "ui:widget": "hidden"
         }
       }
+    },
+    initialState: {
+      "ui:field": "initialState"
     }
+  },
+
+  fields: {
+    initialState: InitialStateField
   },
 
   preprocessFormData: (authoredState: IAuthoredState) => {
