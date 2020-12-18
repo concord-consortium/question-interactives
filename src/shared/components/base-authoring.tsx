@@ -20,6 +20,10 @@ export interface IBaseAuthoringProps<IAuthoredState> {
   linkedInteractiveProps?: ILinkedInteractiveProp[];
 }
 
+export interface IFormContext<IAuthoredState> {
+  authoredState: IAuthoredState;
+}
+
 // custom widgets
 const widgets = {
   richtext: RichTextWidget
@@ -58,6 +62,12 @@ export const BaseAuthoring = <IAuthoredState,>({ authoredState, setAuthoredState
         onChange={onChange}
         fields={fields}
         validate={validate}
+        formContext={{
+          // Pass authored state in context, so custom field can access the complete authored state.
+          // It's useful quite often, e.g. when field rendering is based on previous form inputs.
+          // Currently used by drag and drop - `initialState` field is using list of draggable items.
+          authoredState: authoredState || {}
+        }}
       >
         {/* Children are used to render custom action buttons. We don't want any, */}
         {/* as form is saving and validating data live. */}

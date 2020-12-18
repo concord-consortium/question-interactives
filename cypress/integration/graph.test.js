@@ -163,7 +163,6 @@ context("Test graph interactive", () => {
       phoneListen("authoredState");
 
       getAndClearAllPhoneMessage(messages => {
-        console.log(messages);
         messages.forEach(msg => {
           phonePost("interactiveList", {
             requestId: msg.requestId,

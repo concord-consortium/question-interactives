@@ -1,0 +1,7 @@
+@import "../../shared/styles/helpers";
+
+$border-width: 4px;
+.draggableItemPreview {
+  border: $border-width solid darkred;
+  transform: translate(-$border-width, -$border-width);
+}
