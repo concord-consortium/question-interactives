@@ -1,12 +1,11 @@
 import React from "react";
 import { FieldProps } from "react-jsonschema-form";
 import css from "./initial-state-field.scss";
-import { Container } from "./container";
 import { IFormContext } from "../../shared/components/base-authoring";
 import { IAuthoredState, IInitialState } from "./types";
-import { TouchBackend } from "react-dnd-touch-backend";
-import { DndProvider } from "react-dnd";
+import { ContainerWithDndProvider } from "./container-with-dnd-provider";
 
+//Custom react-jsonschema-form field.
 export const InitialStateField: React.FC<FieldProps<IInitialState>> = props => {
   const { onChange, formData } = props;
   const formContext: IFormContext<IAuthoredState> = props.formContext || {};
@@ -24,9 +23,7 @@ export const InitialStateField: React.FC<FieldProps<IInitialState>> = props => {
     <div className={css.authoringPreview}>
       {/* label.control-label will be automatically styled by react-jsonschema-form */}
       <label className="control-label">Initial positions of draggable items</label>
-      <DndProvider backend={TouchBackend} options={{enableMouseEvents: true}} >
-        <Container authoredState={authoredState} setInitialState={setInitialState} />
-      </DndProvider>
+      <ContainerWithDndProvider authoredState={authoredState} setInitialState={setInitialState} />
     </div>
   );
 };

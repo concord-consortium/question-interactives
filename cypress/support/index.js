@@ -76,3 +76,17 @@ export const getAndClearAllPhoneMessage = (callback) => {
     delete window.receivedMessages;
   });
 };
+
+// Accepts array of page coordinates, e.g.:
+// cy.drag('.map', [ { x: 700, y: 500 }, { x: 800, y: 500 } ])
+Cypress.Commands.add('drag', (element, positions) => {
+  const options = positions.map(pos => (
+    { button: 0, clientX: pos.x, clientY: pos.y, pageX: pos.x, pageY: pos.y }
+  ))
+  options.forEach((opt, idx) => {
+    cy.get(element).first().trigger(idx === 0 ? 'mousedown' : 'mousemove', opt)
+    cy.wait(20)
+  })
+  cy.get(element).first().trigger('mouseup')
+  cy.wait(20)
+});

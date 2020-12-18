@@ -7,7 +7,7 @@ import { DraggableItemPreview } from "./draggable-item-preview";
 import { DraggableItemWrapper, DraggableItemWrapperType, IDraggableItemWrapper } from "./draggable-item-wrapper";
 import css from "./container.scss";
 
-interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {
+export interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {
   // Used only for authoring (initial state is part of the authored state).
   setInitialState?: (initialState: IInitialState) => void;
 }
@@ -17,9 +17,9 @@ interface IDimensions {
   height: number;
 }
 
-const marginLeft = 10;
-const marginTop = 10;
-const margin = 5;
+export const marginLeft = 10;
+export const marginTop = 10;
+export const margin = 5;
 
 const getInitialTop = (
   minTop: number, items: IDraggableItem[], itemPositions: Record<ItemId, IPosition>,
@@ -107,7 +107,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
   };
 
   return (
-    <div ref={drop} className={css.draggingArea} style={draggingAreaStyle}>
+    <div ref={drop} className={css.draggingArea} style={draggingAreaStyle} data-cy="dnd-container">
       <div ref={draggingAreaPromptRef} className={css.prompt} style={{top: marginTop, left: marginLeft}}>
         {renderHTML(authoredState.draggingAreaPrompt || "")}
       </div>
