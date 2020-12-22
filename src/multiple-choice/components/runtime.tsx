@@ -4,6 +4,8 @@ import { IAuthoredState, IChoice, IInteractiveState } from "./types";
 import CheckIcon from "../../shared/icons/correct.svg";
 import CrossIcon from "../../shared/icons/incorrect.svg";
 import { renderHTML } from "../../shared/utilities/render-html";
+import { DecorateChildren } from "@concord-consortium/text-decorator";
+import { useGlossaryDecoration } from "../../shared/hooks/use-glossary-decoration";
 import buttonCss from "../../shared/styles/helpers.scss";
 import css from "./runtime.scss";
 import { log } from "@concord-consortium/lara-interactive-api";
@@ -22,7 +24,7 @@ interface IProps {
 const baseElementId = uuidv4();     // DOM id necessary to associate inputs and label-for
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
-
+  const [decorateOptions, decorateClassName] = useGlossaryDecoration();
   const [showAnswerFeedback, setShowAnswerFeedback] = useState(false);
 
   const type = authoredState.multipleAnswers ? "checkbox" : "radio";
@@ -187,9 +189,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     <div>
       <fieldset>
         { authoredState.prompt &&
-          <legend className={css.prompt + " list-unstyled"}>
-            {renderHTML(authoredState.prompt)}
-          </legend> }
+          <DecorateChildren decorateOptions={decorateOptions}>
+            <legend className={css.prompt + " list-unstyled " + decorateClassName}>
+              {renderHTML(authoredState.prompt)}
+            </legend>
+          </DecorateChildren> }
         <div className={css.choices + " " + (css[layout] || "")} data-cy="choices-container">
           {
             authoredState.layout !== "dropdown"

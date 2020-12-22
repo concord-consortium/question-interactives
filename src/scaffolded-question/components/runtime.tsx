@@ -7,6 +7,8 @@ import { useStudentSettings } from "../../shared/hooks/use-student-settings";
 import { renderHTML } from "../../shared/utilities/render-html";
 import { log } from "@concord-consortium/lara-interactive-api";
 import { libraryInteractiveIdToUrl } from "./library-interactives";
+import { DecorateChildren } from "@concord-consortium/text-decorator";
+import { useGlossaryDecoration } from "../../shared/hooks/use-glossary-decoration";
 import css from "./runtime.scss";
 
 interface IProps {
@@ -18,6 +20,7 @@ interface IProps {
 }
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
+  const [decorateOptions, decorateClassName] = useGlossaryDecoration();
   const studentSettings = useStudentSettings();
   // 1 means that student get to the easiest question variant. 5 means that user is limited to the most difficult
   // one (assuming there are 5 levels in total).
@@ -82,7 +85,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   return (
     <div className={css.runtime} tabIndex={1}>
       { authoredState.prompt &&
-        <div>{renderHTML(authoredState.prompt)}</div> }
+        <DecorateChildren decorateOptions={decorateOptions}>
+          <div className={decorateClassName}>{renderHTML(authoredState.prompt)}</div>
+        </DecorateChildren> }
       <IframeRuntime
         key={currentInteractive.id}
         id={currentInteractive.id}

@@ -6,6 +6,8 @@ import { UploadBackground } from "./upload-background";
 import { TakeSnapshot } from "./take-snapshot";
 import { DrawingTool } from "./drawing-tool";
 import { useCorsImageErrorCheck } from "../../shared/hooks/use-cors-image-error-check";
+import { DecorateChildren } from "@concord-consortium/text-decorator";
+import { useGlossaryDecoration } from "../../shared/hooks/use-glossary-decoration";
 import css from "./runtime.scss";
 
 export interface IProps {
@@ -16,6 +18,7 @@ export interface IProps {
 }
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
+  const [decorateOptions, decorateClassName] = useGlossaryDecoration();
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
   const useSnapshot = authoredState?.backgroundSource === "snapshot";
   const useUpload = authoredState?.backgroundSource === "upload";
@@ -29,7 +32,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   }
   return (
     <div>
-      { authoredState.prompt && <div>{renderHTML(authoredState.prompt)}</div> }
+      { authoredState.prompt &&
+        <DecorateChildren decorateOptions={decorateOptions}>
+          <div className={decorateClassName}>{renderHTML(authoredState.prompt)}</div>
+        </DecorateChildren> }
       <DrawingTool authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} readOnly={readOnly} />
       {
         !readOnly && useSnapshot &&
