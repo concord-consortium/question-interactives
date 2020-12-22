@@ -54,7 +54,7 @@ export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps
     setSupportedFeatures({
       authoredState: true
     });
-  }, []);
+  }, [initMessage]);
 
   const renderAuthoring = () => {
     if (Authoring) {
