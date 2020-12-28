@@ -2,6 +2,8 @@ import React, { useRef, useEffect, useState } from "react";
 import videojs from "video.js";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { log } from "@concord-consortium/lara-interactive-api";
+import { DecorateChildren } from "@concord-consortium/text-decorator";
+import { useGlossaryDecoration } from "../../shared/hooks/use-glossary-decoration";
 import css from "./runtime.scss";
 import "./video-js.css";
 
@@ -38,6 +40,7 @@ const captionsOnByDefault = true;
 // "https://models-resources.s3.amazonaws.com/question-interactives/test-captions.vtt";
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
+  const [decorateOptions, decorateClassName] = useGlossaryDecoration();
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
   const viewedProgress = interactiveState?.percentageViewed || 0;
   const viewedTimestamp = interactiveState?.lastViewedTimestamp || 0;
@@ -172,7 +175,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   return (
     <div className={css.runtime}>
-      { authoredState.prompt && <div className={css.prompt}>{ authoredState.prompt }</div> }
+      { authoredState.prompt &&
+        <DecorateChildren decorateOptions={decorateOptions}>
+          <div className={`${css.prompt} ${decorateClassName}`}>{ authoredState.prompt }</div>
+        </DecorateChildren> }
       <div className={`${css.videoPlayerContainer} last-viewed${viewedTimestamp}`}>
         <div className="video-player" data-vjs-player={true}>
           <video

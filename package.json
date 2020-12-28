@@ -122,8 +122,9 @@
     "webpack-dev-server": "^3.11.0"
   },
   "dependencies": {
-    "@concord-consortium/lara-interactive-api": "0.7.1",
+    "@concord-consortium/lara-interactive-api": "^1.0.0",
     "@concord-consortium/slate-editor": "^0.6.0",
+    "@concord-consortium/text-decorator": "^1.0.2",
     "chart.js": "^2.5.0",
     "deep-equal": "^2.0.3",
     "deepmerge": "^4.2.2",

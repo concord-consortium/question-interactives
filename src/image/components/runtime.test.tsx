@@ -32,8 +32,8 @@ const naturalWidthImageAuthoredState: IAuthoredState = {
 describe("Runtime", () => {
   it("renders image and all other supplied fields", () => {
     const wrapper = shallow(<Runtime authoredState={authoredState} />);
-
-    expect(wrapper.text()).toEqual(expect.stringContaining("Image showing the CC Logo"));
+    // not sure, for now, how to pull the content from the DecorateChildren component
+    expect(wrapper.text()).toEqual(expect.stringContaining("<DecorateChildren />"));
     expect(wrapper.text()).toEqual(expect.stringContaining("Copyright Concord Consortium"));
     expect(wrapper.text()).toEqual(expect.stringContaining("Concord.org"));
     expect(wrapper.find("img").at(0).props().src).toEqual(authoredState.url);

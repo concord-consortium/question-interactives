@@ -3,6 +3,8 @@ import { IAuthoredState } from "./types";
 import { setSupportedFeatures, showModal } from "@concord-consortium/lara-interactive-api";
 import ReactDOMServer from "react-dom/server";
 import { log } from "@concord-consortium/lara-interactive-api";
+import { DecorateChildren } from "@concord-consortium/text-decorator";
+import { useGlossaryDecoration } from "../../shared/hooks/use-glossary-decoration";
 import css from "./runtime.scss";
 import ZoomIcon from "../../shared/icons/zoom-in.svg";
 
@@ -17,6 +19,7 @@ interface IImageSize {
 }
 
 export const Runtime: React.FC<IProps> = ({ authoredState }) => {
+  const [decorateOptions, decorateClassName] = useGlossaryDecoration();
   const { url, highResUrl, altText, caption, credit, creditLink, creditLinkDisplayText, scaling } = authoredState;
   const imageSize = useRef<IImageSize>();
 
@@ -75,7 +78,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
           onLoad={getOriginalImageSize}
         />
       </div>
-      {caption && <div className={css.caption}>{caption}</div>}
+      {caption &&
+        <DecorateChildren decorateOptions={decorateOptions}>
+          <div className={`${css.caption} ${decorateClassName}`}>{caption}</div>
+        </DecorateChildren> }
       {credit && <div className={css.credit}>{credit}</div>}
       {getCreditLink()}
       <div className={`${css.viewHighRes} .glyphicon-zoom-in`} onClick={handleClick}><ZoomIcon /></div>

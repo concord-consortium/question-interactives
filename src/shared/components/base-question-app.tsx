@@ -72,7 +72,7 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
       interactiveState: true,
       authoredState: true
     });
-  }, []);
+  }, [initMessage]);
 
   if (!isAnswered && !disableSubmitBtnRendering) {
     throw new Error("isAnswered function is required when disableSubmitBtnRendering = false");
