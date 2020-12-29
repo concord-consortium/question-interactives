@@ -5,7 +5,7 @@ import { renderHTML } from "../utilities/render-html";
 
 export const useGlossaryDecoration = (): IDecorateReactOptions => {
   const [options, setOptions] = useState<IDecorateReactOptions>({ words: [], replace: "" });
-  const [msg, setMsg] = useState<ITextDecorationHandlerInfo>();
+  const [message, setMessage] = useState<ITextDecorationHandlerInfo>();
 
   useDecorateContent((msg: ITextDecorationHandlerInfo) => {
     const msgOptions = {
@@ -13,13 +13,13 @@ export const useGlossaryDecoration = (): IDecorateReactOptions => {
       replace: renderHTML(msg.replace) as string | React.ReactElement,
     };
     setOptions(msgOptions);
-    setMsg(msg);
+    setMessage(msg);
   });
 
   useEffect(() => {
-    msg && addEventListeners(msg.wordClass, msg.eventListeners);
-    return () => msg && removeEventListeners(msg.wordClass, msg.eventListeners);
-  }, [msg]);
+    message && addEventListeners(message.wordClass, message.eventListeners);
+    return () => message && removeEventListeners(message.wordClass, message.eventListeners);
+  }, [message]);
 
   return options;
 };
