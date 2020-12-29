@@ -5,8 +5,7 @@ import { renderHTML } from "../utilities/render-html";
 
 export const useGlossaryDecoration = (): IDecorateReactOptions => {
   const [options, setOptions] = useState<IDecorateReactOptions>({ words: [], replace: "" });
-  const [listeners, setListeners] = useState<any>(); // TODO: type should be IEventListeners
-  const [wordClass, setWordClass] = useState<string>("");
+  const [msg, setMsg] = useState<ITextDecorationHandlerInfo>();
 
   useDecorateContent((msg: ITextDecorationHandlerInfo) => {
     const msgOptions = {
@@ -14,14 +13,13 @@ export const useGlossaryDecoration = (): IDecorateReactOptions => {
       replace: renderHTML(msg.replace) as string | React.ReactElement,
     };
     setOptions(msgOptions);
-    setListeners(msg.eventListeners);
-    setWordClass(msg.wordClass);
+    setMsg(msg);
   });
 
   useEffect(() => {
-    listeners && addEventListeners(wordClass, listeners);
-    return () => listeners && removeEventListeners(wordClass, listeners);
-  }, [wordClass, listeners]);
+    msg && addEventListeners(msg.wordClass, msg.eventListeners);
+    return () => msg && removeEventListeners(msg.wordClass, msg.eventListeners);
+  }, [msg]);
 
   return options;
 };
