@@ -3,11 +3,10 @@ import { addEventListeners, removeEventListeners, IDecorateReactOptions } from "
 import { useEffect, useState } from "react";
 import { renderHTML } from "../utilities/render-html";
 
-const kClassName = "text-decorate";
-
-export const useGlossaryDecoration = (): [IDecorateReactOptions, string] => {
+export const useGlossaryDecoration = (): IDecorateReactOptions => {
   const [options, setOptions] = useState<IDecorateReactOptions>({ words: [], replace: "" });
   const [listeners, setListeners] = useState<any>(); // TODO: type should be IEventListeners
+  const [wordClass, setWordClass] = useState<string>("");
 
   useDecorateContent((msg: ITextDecorationHandlerInfo) => {
     const msgOptions = {
@@ -16,12 +15,13 @@ export const useGlossaryDecoration = (): [IDecorateReactOptions, string] => {
     };
     setOptions(msgOptions);
     setListeners(msg.eventListeners);
+    setWordClass(msg.wordClass);
   });
 
   useEffect(() => {
-    listeners && addEventListeners(kClassName, listeners);
-    return () => listeners && removeEventListeners(kClassName, listeners);
-  });
+    listeners && addEventListeners(wordClass, listeners);
+    return () => listeners && removeEventListeners(wordClass, listeners);
+  }, [wordClass, listeners]);
 
-  return [options, kClassName];
+  return options;
 };

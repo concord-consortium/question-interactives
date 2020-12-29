@@ -18,7 +18,7 @@ export interface IProps {
 }
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
-  const [decorateOptions, decorateClassName] = useGlossaryDecoration();
+  const decorateOptions = useGlossaryDecoration();
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
   const useSnapshot = authoredState?.backgroundSource === "snapshot";
   const useUpload = authoredState?.backgroundSource === "upload";
@@ -34,7 +34,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     <div>
       { authoredState.prompt &&
         <DecorateChildren decorateOptions={decorateOptions}>
-          <div className={decorateClassName}>{renderHTML(authoredState.prompt)}</div>
+          <div>{renderHTML(authoredState.prompt)}</div>
         </DecorateChildren> }
       <DrawingTool authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} readOnly={readOnly} />
       {

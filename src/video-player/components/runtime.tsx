@@ -40,7 +40,7 @@ const captionsOnByDefault = true;
 // "https://models-resources.s3.amazonaws.com/question-interactives/test-captions.vtt";
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
-  const [decorateOptions, decorateClassName] = useGlossaryDecoration();
+  const decorateOptions = useGlossaryDecoration();
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
   const viewedProgress = interactiveState?.percentageViewed || 0;
   const viewedTimestamp = interactiveState?.lastViewedTimestamp || 0;
@@ -177,7 +177,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     <div className={css.runtime}>
       { authoredState.prompt &&
         <DecorateChildren decorateOptions={decorateOptions}>
-          <div className={`${css.prompt} ${decorateClassName}`}>{ authoredState.prompt }</div>
+          <div className={css.prompt}>{ authoredState.prompt }</div>
         </DecorateChildren> }
       <div className={`${css.videoPlayerContainer} last-viewed${viewedTimestamp}`}>
         <div className="video-player" data-vjs-player={true}>

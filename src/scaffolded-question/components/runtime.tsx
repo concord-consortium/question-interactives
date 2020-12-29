@@ -20,7 +20,7 @@ interface IProps {
 }
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
-  const [decorateOptions, decorateClassName] = useGlossaryDecoration();
+  const decorateOptions = useGlossaryDecoration();
   const studentSettings = useStudentSettings();
   // 1 means that student get to the easiest question variant. 5 means that user is limited to the most difficult
   // one (assuming there are 5 levels in total).
@@ -86,7 +86,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     <div className={css.runtime} tabIndex={1}>
       { authoredState.prompt &&
         <DecorateChildren decorateOptions={decorateOptions}>
-          <div className={decorateClassName}>{renderHTML(authoredState.prompt)}</div>
+          <div>{renderHTML(authoredState.prompt)}</div>
         </DecorateChildren> }
       <IframeRuntime
         key={currentInteractive.id}

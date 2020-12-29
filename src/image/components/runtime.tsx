@@ -19,7 +19,7 @@ interface IImageSize {
 }
 
 export const Runtime: React.FC<IProps> = ({ authoredState }) => {
-  const [decorateOptions, decorateClassName] = useGlossaryDecoration();
+  const decorateOptions = useGlossaryDecoration();
   const { url, highResUrl, altText, caption, credit, creditLink, creditLinkDisplayText, scaling } = authoredState;
   const imageSize = useRef<IImageSize>();
 
@@ -80,7 +80,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
       </div>
       {caption &&
         <DecorateChildren decorateOptions={decorateOptions}>
-          <div className={`${css.caption} ${decorateClassName}`}>{caption}</div>
+          <div className={css.caption}>{caption}</div>
         </DecorateChildren> }
       {credit && <div className={css.credit}>{credit}</div>}
       {getCreditLink()}
