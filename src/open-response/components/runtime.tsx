@@ -14,12 +14,12 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInteractiveState?.(prevState => ({...prevState, answerType: "open_response_answer", answerText: event.target.value }));
   };
-  const [decorateOptions, decorateClassName] = useGlossaryDecoration();
+  const decorateOptions = useGlossaryDecoration();
   return (
     <fieldset>
       { authoredState.prompt &&
         <DecorateChildren decorateOptions={decorateOptions}>
-          <legend className={`${css.prompt} ${decorateClassName}`}>
+          <legend className={css.prompt}>
             {renderHTML(authoredState.prompt)}
           </legend>
         </DecorateChildren> }

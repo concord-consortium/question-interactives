@@ -24,7 +24,7 @@ interface IProps {
 const baseElementId = uuidv4();     // DOM id necessary to associate inputs and label-for
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
-  const [decorateOptions, decorateClassName] = useGlossaryDecoration();
+  const decorateOptions = useGlossaryDecoration();
   const [showAnswerFeedback, setShowAnswerFeedback] = useState(false);
 
   const type = authoredState.multipleAnswers ? "checkbox" : "radio";
@@ -190,7 +190,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       <fieldset>
         { authoredState.prompt &&
           <DecorateChildren decorateOptions={decorateOptions}>
-            <legend className={css.prompt + " list-unstyled " + decorateClassName}>
+            <legend className={css.prompt + " list-unstyled "}>
               {renderHTML(authoredState.prompt)}
             </legend>
           </DecorateChildren> }
