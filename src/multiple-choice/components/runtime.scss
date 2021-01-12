@@ -108,6 +108,27 @@ legend.prompt {     // clear bootstrap stuff
   }
 }
 
+.markContainer {
+  position: relative;
+
+  .mark {
+    width: 30px;
+    height: 30px;
+    position: absolute;
+    left: -31px;
+
+    &.correctCheck {
+      fill: green;
+      top: -1px;
+    }
+
+    &.incorrectCheck {
+      fill: red;
+      top: -5px;
+    }
+  }
+}
+
 :global .radio-choice {
   label {
     font-weight: normal;

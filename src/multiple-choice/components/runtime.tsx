@@ -8,7 +8,9 @@ import { DecorateChildren } from "@concord-consortium/text-decorator";
 import { useGlossaryDecoration } from "../../shared/hooks/use-glossary-decoration";
 import buttonCss from "../../shared/styles/helpers.scss";
 import css from "./runtime.scss";
-import { log } from "@concord-consortium/lara-interactive-api";
+import { log, useCustomMessages, ICustomMessage } from "@concord-consortium/lara-interactive-api";
+import CheckMarkIcon from "../../shared/icons/check_mark.svg";
+import XMarkIcon from "../../shared/icons/x_mark.svg";
 
 const DEFAULT_INCORRECT = "Sorry, that is incorrect.";
 const DEFAULT_CORRECT = "Yes! You are correct.";
@@ -26,6 +28,8 @@ const baseElementId = uuidv4();     // DOM id necessary to associate inputs and 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const decorateOptions = useGlossaryDecoration();
   const [showAnswerFeedback, setShowAnswerFeedback] = useState(false);
+  const [showCorrect, setShowCorrect] = useState(false);
+  const [showDistractor, setShowDistractor] = useState(false);
 
   const type = authoredState.multipleAnswers ? "checkbox" : "radio";
   let selectedChoiceIds = interactiveState?.selectedChoiceIds || [];
@@ -38,6 +42,19 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
     // Question can be scored if it has at least one correct answer defined.
   const isScorable = !!authoredState.choices && authoredState.choices.filter(c => c.correct).length > 0;
+
+  useCustomMessages((msg: ICustomMessage) => {
+    if (msg.type === "teacher-edition:showCorrectOverlay") {
+      setShowCorrect(true);
+      setShowDistractor(false);
+    } else if (msg.type === "teacher-edition:showDistractorOverlay") {
+      setShowDistractor(true);
+      setShowCorrect(false);
+    } else if (msg.type === "teacher-edition:hideOverlay") {
+      setShowCorrect(false);
+      setShowDistractor(false);
+    }
+  });
 
   const getAnswerText = (choiceIds: string[]) => {
     return choiceIds.map(choiceId => {
@@ -102,6 +119,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
 
   const renderRadioChecks = () => {
+    console.log(authoredState);
     return authoredState.choices && authoredState.choices.map(choice => {
       const checked = selectedChoiceIds.indexOf(choice.id) !== -1;
       const inputId = baseElementId + choice.id;
@@ -117,6 +135,16 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             readOnly={readOnly}
             disabled={readOnly}
           />
+          {choice.correct !== undefined && choice.correct === true && showCorrect &&
+            <div className={css.markContainer}>
+              <CheckMarkIcon className={`${css.mark} ${css.correctCheck}`} />
+            </div>
+          }
+          {choice.correct !== undefined && choice.correct === false && showDistractor &&
+            <div className={css.markContainer}>
+              <XMarkIcon className={`${css.mark} ${css.incorrectCheck}`} />
+            </div>
+          }
           <label htmlFor={inputId}>
             {choice.content}
           </label>
