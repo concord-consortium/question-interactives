@@ -119,7 +119,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
 
   const renderRadioChecks = () => {
-    console.log(authoredState);
     return authoredState.choices && authoredState.choices.map(choice => {
       const checked = selectedChoiceIds.indexOf(choice.id) !== -1;
       const inputId = baseElementId + choice.id;
