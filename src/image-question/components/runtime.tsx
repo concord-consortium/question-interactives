@@ -11,6 +11,8 @@ import { UpdateFunc } from "../../shared/components/base-app";
 import Shutterbug from "shutterbug";
 import PencilIcon from "../../shared/icons/pencil.svg";
 import { useCorsImageErrorCheck } from "../../shared/hooks/use-cors-image-error-check";
+import { DecorateChildren } from "@concord-consortium/text-decorator";
+import { useGlossaryDecoration } from "../../shared/hooks/use-glossary-decoration";
 import css from "./runtime.scss";
 import cssHelpers from "../../shared/styles/helpers.scss";
 
@@ -21,6 +23,7 @@ const kGlobalDefaultAnswer = "Please type your answer here.";
 const drawingToolDialogUrlParam = "drawingToolDialog";
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
+  const decorateOptions = useGlossaryDecoration();
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
   const [ controlsHidden, setControlsHidden ] = useState(false);
   const [ drawingStateUpdated, setDrawingStateUpdated ] = useState(false);
@@ -105,7 +108,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     const inlineImage = interactiveState?.answerImageUrl || interactiveState?.userBackgroundImageUrl || authoredBackgroundUrl;
     // Render answer prompt and answer text in inline mode to replicate LARA's Image Question UI
     return <div>
-      { authoredState.prompt && <div>{renderHTML(authoredState.prompt)}</div> }
+      { authoredState.prompt && <DecorateChildren decorateOptions={decorateOptions}><div>{renderHTML(authoredState.prompt)}</div></DecorateChildren> }
       { inlineImage && <div><img src={inlineImage} className={css.inlineImg} alt="user work"/></div> }
       { authoredState.answerPrompt && <div>{renderHTML(authoredState.answerPrompt)}</div> }
       <div className={css.studentAnswerText}>{interactiveState?.answerText}</div>

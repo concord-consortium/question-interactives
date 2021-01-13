@@ -3,6 +3,8 @@ import striptags from "striptags";
 import { IRuntimeQuestionComponentProps } from "../../shared/components/base-question-app";
 import { ParseHTMLReplacer, renderHTML } from "../../shared/utilities/render-html";
 import { blankRegexp, defaultBlankSize, IAuthoredState, IBlankDef, IFilledBlank, IInteractiveState } from "./types";
+import { DecorateChildren } from "@concord-consortium/text-decorator";
+import { useGlossaryDecoration } from "../../shared/hooks/use-glossary-decoration";
 import css from "./runtime.scss";
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {
@@ -39,7 +41,7 @@ export const replaceBlanksWithInputs = (prompt: string) => {
 };
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
-
+  const decorateOptions = useGlossaryDecoration();
   const readOnly = !!(report || (authoredState.required && interactiveState?.submitted));
 
   const handleChange = useCallback((blankId: string, value: string) => {
@@ -91,7 +93,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const htmlContents = replaceBlanksWithInputs(authoredState.prompt || "");
   return (
     <div className="fill-in-the-blank">
-      {renderHTML(htmlContents, replaceInputs)}
+      <DecorateChildren decorateOptions={decorateOptions}>
+        {renderHTML(htmlContents, replaceInputs)}
+      </DecorateChildren>
     </div>
   );
 };
