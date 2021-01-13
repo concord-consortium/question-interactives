@@ -108,7 +108,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     const inlineImage = interactiveState?.answerImageUrl || interactiveState?.userBackgroundImageUrl || authoredBackgroundUrl;
     // Render answer prompt and answer text in inline mode to replicate LARA's Image Question UI
     return <div>
-      { authoredState.prompt && <DecorateChildren decorateOptions={decorateOptions}><div>{renderHTML(authoredState.prompt)}</div></DecorateChildren> }
+      { authoredState.prompt &&
+        <DecorateChildren decorateOptions={decorateOptions}>
+          <div>{renderHTML(authoredState.prompt)}</div>
+        </DecorateChildren>
+      }
       { inlineImage && <div><img src={inlineImage} className={css.inlineImg} alt="user work"/></div> }
       { authoredState.answerPrompt && <div>{renderHTML(authoredState.answerPrompt)}</div> }
       <div className={css.studentAnswerText}>{interactiveState?.answerText}</div>
