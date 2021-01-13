@@ -9,7 +9,8 @@ import Shutterbug  from "shutterbug";
 
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
   getInteractiveSnapshot: jest.fn(() => new Promise(resolve => resolve({success: true, snapshotUrl: "http://snapshot/123" }))),
-  closeModal: jest.fn()
+  closeModal: jest.fn(),
+  useDecorateContent: jest.fn(),
 }));
 const getInteractiveSnapshotMock = getInteractiveSnapshot as jest.Mock;
 const closeModalMock = closeModal as jest.Mock;
