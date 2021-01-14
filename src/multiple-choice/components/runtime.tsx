@@ -134,12 +134,12 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             readOnly={readOnly}
             disabled={readOnly}
           />
-          {choice.correct !== undefined && choice.correct === true && showCorrect &&
+          {choice.correct && showCorrect &&
             <div className={css.markContainer}>
               <CheckMarkIcon className={`${css.mark} ${css.correctCheck}`} />
             </div>
           }
-          {choice.correct !== undefined && choice.correct === false && showDistractor &&
+          {!choice.correct && showDistractor &&
             <div className={css.markContainer}>
               <XMarkIcon className={`${css.mark} ${css.incorrectCheck}`} />
             </div>
