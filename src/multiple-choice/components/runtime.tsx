@@ -44,15 +44,19 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const isScorable = !!authoredState.choices && authoredState.choices.filter(c => c.correct).length > 0;
 
   useCustomMessages((msg: ICustomMessage) => {
-    if (msg.type === "teacher-edition:showCorrectOverlay") {
-      setShowCorrect(true);
-      setShowDistractor(false);
-    } else if (msg.type === "teacher-edition:showDistractorOverlay") {
-      setShowDistractor(true);
-      setShowCorrect(false);
-    } else if (msg.type === "teacher-edition:hideOverlay") {
-      setShowCorrect(false);
-      setShowDistractor(false);
+    switch (msg.type) {
+      case "teacher-edition:showCorrectOverlay":
+        setShowCorrect(true);
+        setShowDistractor(false);
+        break;
+      case "teacher-edition:showDistractorOverlay":
+        setShowDistractor(true);
+        setShowCorrect(false);
+        break;
+      case "teacher-edition:hideOverlay":
+        setShowCorrect(false);
+        setShowDistractor(false);
+        break;
     }
   });
 
