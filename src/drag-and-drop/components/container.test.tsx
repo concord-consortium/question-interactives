@@ -1,6 +1,6 @@
 import React from "react";
 import { mount } from "enzyme";
-import { Container, margin, marginLeft, marginTop } from "./container";
+import { margin, marginLeft, marginTop } from "./container";
 import { DraggableItemWrapper } from "./draggable-item-wrapper";
 import { ContainerWithDndProvider } from "./container-with-dnd-provider";
 import { DraggableItemPreview } from "./draggable-item-preview";
