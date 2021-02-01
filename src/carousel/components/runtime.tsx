@@ -126,8 +126,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             buttonStyle = { backgroundImage: "url(" + interactive.navImageUrl + ")" };
             buttonClass += " " + css.customButton;
           }
+          const buttonText = interactive.navImageAltText ? interactive.navImageAltText : `Go to slide ${index + 1}`;
           return (
-            <button key={index} className={buttonClass} style={buttonStyle} onClick={() => updateCurrentSlide(index)}>{index}</button>
+            <button key={index} className={buttonClass} style={buttonStyle} title={buttonText} aria-label={buttonText} onClick={() => updateCurrentSlide(index)}>{buttonText}</button>
           );
         })}
         <button className={currentSlide === subinteractives.length - 1 ? css.disabled + " " + css.nextButton : css.nextButton} onClick={nextSlide}>Next</button>

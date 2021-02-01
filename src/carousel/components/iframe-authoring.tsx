@@ -38,7 +38,7 @@ const availableInteractives = [
 
 export const IframeAuthoring: React.FC<FieldProps> = props => {
   const { onChange, formData } = props;
-  const { url, authoredState, id, navImageUrl } = formData;
+  const { url, authoredState, id, navImageUrl, navImageAltText } = formData;
   const [ iframeHeight, setIframeHeight ] = useState(300);
   const [ authoringOpened, setAuthoringOpened ] = useState(false);
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -55,12 +55,35 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
 
   const handleUrlChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const newUrl = event.target.value;
-    onChange({ url: newUrl, authoredState: undefined, id: id || uuidv4(), navImageUrl: navImageUrl || "" });
+    onChange({ 
+      url: newUrl,
+      authoredState: undefined,
+      id: id || uuidv4(),
+      navImageUrl: navImageUrl || "",
+      navImageAltText: navImageAltText || ""
+    });
   };
 
   const handleNavImageUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
     const newNavImageUrl = event.target.value;
-    onChange({ url: url, authoredState: authoredState, id: id, navImageUrl: newNavImageUrl || "" });
+    onChange({ 
+      url: url,
+      authoredState: authoredState,
+      id: id,
+      navImageUrl: newNavImageUrl || "",
+      navImageAltText: navImageAltText || ""
+    });
+  };
+
+  const handleNavImageAltTextChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const newNavImageAltText = event.target.value;
+    onChange({ 
+      url: url,
+      authoredState: undefined,
+      id: id,
+      navImageUrl: navImageUrl || "",
+      navImageAltText: newNavImageAltText || ""
+    });
   };
 
   const handleHeaderClick = () => {
@@ -75,7 +98,13 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
     phone.addListener("authoredState", (newAuthoredState: any) => {
       // Save current iframe authored state.
       iframeCurrentAuthoredState.current = newAuthoredState;
-      onChange({ url, authoredState: newAuthoredState, id: id || uuidv4(), navImageUrl: navImageUrl || ""  });
+      onChange({ 
+        url,
+        authoredState: newAuthoredState,
+        id: id || uuidv4(),
+        navImageUrl: navImageUrl || "",
+        navImageAltText: navImageAltText || ""
+      });
     });
     phone.addListener("height", (newHeight: number) => {
       setIframeHeight(newHeight);
@@ -84,7 +113,7 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
       mode: "authoring",
       authoredState
     });
-  }, [id, url, onChange, authoredState, navImageUrl]);
+  }, [id, url, onChange, authoredState, navImageUrl, navImageAltText]);
 
   useEffect(() => {
 
@@ -98,7 +127,7 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
       iframeRef.current.src = url;
       phoneRef.current = new iframePhone.ParentEndpoint(iframeRef.current, initInteractive);
     }
-  }, [url, authoredState, initInteractive, navImageUrl]);
+  }, [url, authoredState, initInteractive, navImageUrl, navImageAltText]);
 
   return (
     <div className={css.iframeAuthoring}>
@@ -113,7 +142,10 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
             <div className={css.navButtonField}>
               <label htmlFor={navImageUrl}>Custom Navigation Button Image URL</label>
               <input className="form-control" type="text" id={navImageUrl} defaultValue={navImageUrl} onChange={handleNavImageUrlChange} />
-              <p className="help-block">To customize the button for this slide, specify an image URL. Optimal image size: 150x100 pixels.</p>
+              <p className="help-block">To customize the button for this slide, enter an image URL. Optimal image size: 150x100 pixels.</p>
+              <label htmlFor={navImageAltText}>Custom Navigation Button Image Alt Text</label>
+              <input className="form-control" type="text" id={navImageAltText} defaultValue={navImageAltText} onChange={handleNavImageAltTextChange} />
+              <p className="help-block">To customize the alt text for a custom navigation button, enter your text.</p>
             </div>
             <iframe id={id} ref={iframeRef} width="100%" height={iframeHeight} frameBorder={0} />
           </div>
