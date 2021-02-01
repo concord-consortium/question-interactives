@@ -337,7 +337,7 @@ const convert = async (laraResource: string, laraRoot: string, libraryInteractiv
   const qTypeMap: Record<string, string> = {
     "multiple_choice": "Multiple Choice",
     "open_response": "Open Response",
-    "image": "Image Question",
+    "image": "Image Interactive",
     "video": "Video Player",
     "image_question": "Drawing Question"
   };
