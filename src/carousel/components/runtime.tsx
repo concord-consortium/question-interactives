@@ -117,7 +117,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           );
         })}
       </Carousel>
-      <nav>
+      <nav data-cy="carousel-nav">
         <button className={currentSlide === 0 ? css.disabled + " " + css.prevButton : css.prevButton} onClick={previousSlide}>Prev</button>
         {subinteractives.map(function(interactive, index) {
           let buttonStyle = {};
