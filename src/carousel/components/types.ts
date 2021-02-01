@@ -13,6 +13,7 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
     url: string;
     authoredState: any;
     navImageUrl?: string;
+    navImageAltText?: string;
   }[]
 }
 
