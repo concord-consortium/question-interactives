@@ -12,6 +12,7 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
   const { libraryInteractiveId, authoredState, id } = formData;
   const [ iframeHeight, setIframeHeight ] = useState(300);
   const [ authoringOpened, setAuthoringOpened ] = useState(false);
+  const interactiveWrapperClass = authoringOpened ? `${css.iframeAuthoring} ${css.open}` : css.iframeAuthoring;
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const phoneRef = useRef<IframePhone>();
   // We need to keep track of the current iframe state and detect cases when update comes from the parent (e.g. when
@@ -73,7 +74,7 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
       </select>
       {
         libraryInteractiveId &&
-        <div className={css.iframeAuthoring}>
+        <div className={interactiveWrapperClass}>
           <h4 onClick={handleHeaderClick} className={css.link} data-cy="subquestion-authoring">{authoringOpened ? "▼" : "▶"} Subquestion authoring</h4>
           <div className={css.iframeContainer} style={{maxHeight: authoringOpened ? iframeHeight : 0 }}>
             <iframe id={id} ref={iframeRef} width="100%" height={iframeHeight} frameBorder={0} />

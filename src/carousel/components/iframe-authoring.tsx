@@ -41,6 +41,7 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
   const { url, authoredState, id, navImageUrl } = formData;
   const [ iframeHeight, setIframeHeight ] = useState(300);
   const [ authoringOpened, setAuthoringOpened ] = useState(false);
+  const interactiveWrapperClass = authoringOpened ? `${css.iframeAuthoring} ${css.open}` : css.iframeAuthoring;
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const phoneRef = useRef<IframePhone>();
   // We need to keep track of the current iframe state and detect cases when update comes from the parent (e.g. when
@@ -107,7 +108,7 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
       </select>
       {
         url &&
-        <div className={css.iframeAuthoring}>
+        <div className={interactiveWrapperClass}>
           <h4 onClick={handleHeaderClick} className={css.link} data-cy="subquestion-authoring">{authoringOpened ? "▼" : "▶"} Subquestion Authoring</h4>
           <div className={css.iframeContainer} style={{maxHeight: authoringOpened ? iframeHeight : 0 }}>
             <div className={css.navButtonField}>
