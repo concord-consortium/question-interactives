@@ -62,7 +62,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const currentLevel = levelsCount - currentSubintIndex;
 
   const subStates = interactiveState?.subinteractiveStates;
-  const subState = subStates && subStates[currentInteractive.id];
 
   const getAnswerText = (level: number, subinteractiveAnswerText: string | undefined) =>
     `[Level: ${level}] ${subinteractiveAnswerText ? subinteractiveAnswerText : "no response"}`;
@@ -100,6 +99,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     <div>
       <Carousel selectedItem={currentSlide} onChange={updateCurrentSlide} showArrows={false} showIndicators={false} showStatus={false} showThumbs={false} autoPlay={false} dynamicHeight={false} transitionTime={300}>
         {subinteractives.map(function(interactive, index) {
+          const subState = subStates && subStates[interactive.id];
           return (
             <div key={index} className={css.runtime}>
               { authoredState.prompt &&
