@@ -4,6 +4,10 @@
     border: 1px solid #eee;
     border-radius: 5px;
     overflow: hidden;
+
+    &.open {
+      overflow: auto;
+    }
   }
 
   .iframeContainer {
