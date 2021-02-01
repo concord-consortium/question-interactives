@@ -92,12 +92,12 @@ nav {
       max-width: 150px;
       min-height: 100px;
       max-height: 100px;
-      opacity: .8;
       width: 150px;
 
       &:hover, &.activeButton {
         background-color: transparent;
-        opacity: 1;
+        border: solid 2px #ea6d2f;
+        transform: scale(1.1);
       }
     }
   }
