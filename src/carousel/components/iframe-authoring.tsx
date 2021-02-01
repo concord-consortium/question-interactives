@@ -140,11 +140,11 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
           <h4 onClick={handleHeaderClick} className={css.link} data-cy="subquestion-authoring">{authoringOpened ? "▼" : "▶"} Subquestion Authoring</h4>
           <div className={css.iframeContainer} style={{maxHeight: authoringOpened ? iframeHeight : 0 }}>
             <div className={css.navButtonField}>
-              <label htmlFor={navImageUrl}>Custom Navigation Button Image URL</label>
-              <input className="form-control" type="text" id={navImageUrl} defaultValue={navImageUrl} onChange={handleNavImageUrlChange} />
+              <label htmlFor="navImageUrl">Custom Navigation Button Image URL</label>
+              <input className="form-control" type="text" id="navImageUrl" defaultValue={navImageUrl} onChange={handleNavImageUrlChange} />
               <p className="help-block">To customize the button for this slide, enter an image URL. Optimal image size: 150x100 pixels.</p>
-              <label htmlFor={navImageAltText}>Custom Navigation Button Image Alt Text</label>
-              <input className="form-control" type="text" id={navImageAltText} defaultValue={navImageAltText} onChange={handleNavImageAltTextChange} />
+              <label htmlFor="navImageAltText">Custom Navigation Button Image Alt Text</label>
+              <input className="form-control" type="text" id="navImageAltText" defaultValue={navImageAltText} onChange={handleNavImageAltTextChange} />
               <p className="help-block">To customize the alt text for a custom navigation button, enter your text.</p>
             </div>
             <iframe id={id} ref={iframeRef} width="100%" height={iframeHeight} frameBorder={0} />
