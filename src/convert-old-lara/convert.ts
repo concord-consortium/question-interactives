@@ -241,6 +241,7 @@ const convert = async (laraResource: string, laraRoot: string, libraryInteractiv
 
   const resourceResponse = await fetch(laraResource);
   const resource = await resourceResponse.json();
+  resource.runtime = "Activity Player";
   let newResourceName = "";
 
   if (resource.type === "Sequence") {
@@ -283,19 +284,15 @@ const convert = async (laraResource: string, laraRoot: string, libraryInteractiv
 
     // download("import-test.json", JSON.stringify(resource));
     const viewUrl = data.url ? data.url : "#";
-    const feedbackMsg = data.success ? "Conversion was successful. The new resource, " + newResourceName + " is available at " + viewUrl + "." : "Conversion failed.";
+    const feedbackMsg = data.success ? "Conversion was successful." : "Conversion failed.";
     appElement && (appElement.innerHTML = "");
     const feedback = document.createElement("p");
     feedback.textContent = feedbackMsg;
-    const viewButton = document.createElement("button");
-    viewButton.addEventListener("click", () => { window.open(viewUrl, "_blank"); });
-    viewButton.textContent = "View";
     const editButton = document.createElement("button");
     editButton.addEventListener("click", () => { window.open(viewUrl + "/edit", "_blank"); });
-    editButton.textContent = "Edit";
+    editButton.textContent = "Edit New Resource";
     appElement?.appendChild(feedback);
     if (data.success) {
-      appElement?.appendChild(viewButton);
       appElement?.appendChild(editButton);
     }
   } catch (e) {
