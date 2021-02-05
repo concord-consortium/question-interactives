@@ -83,7 +83,7 @@ context("Test carousel interactive", () => {
               answerText: "Test subquestion answer"
             }
           },
-          answerText: "[Level: 1] Test subquestion answer"
+          answerText: "Test subquestion answer"
         });
       });
     });
@@ -126,7 +126,6 @@ context("Test carousel interactive", () => {
             target_id: '',
             target_name: '',
             target_value: '',
-            scaffolded_question_level: 1,
             subinteractive_url: "open-response",
             subinteractive_type: "open_response",
             subinteractive_sub_type: undefined,
@@ -142,7 +141,6 @@ context("Test carousel interactive", () => {
             target_id: '',
             target_name: '',
             target_value: 'Test subquestion answer',
-            scaffolded_question_level: 1,
             subinteractive_url: "open-response",
             subinteractive_type: 'open_response',
             subinteractive_sub_type: undefined,
