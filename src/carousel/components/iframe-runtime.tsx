@@ -19,14 +19,13 @@ interface IProps {
   authoredState: any;
   interactiveState: any;
   setInteractiveState: (state: any) => void;
-  scaffoldedQuestionLevel: number;
   report?: boolean;
   navImageUrl?: string;
   navImageAltText?: string;
 }
 
 export const IframeRuntime: React.FC<IProps> =
-  ({ url, id, authoredState, interactiveState, setInteractiveState, report, scaffoldedQuestionLevel, navImageUrl, navImageAltText }) => {
+  ({ url, id, authoredState, interactiveState, setInteractiveState, report, navImageUrl, navImageAltText }) => {
   const [ iframeHeight, setIframeHeight ] = useState(300);
   const [ hint, setHint ] = useState("");
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -76,7 +75,6 @@ export const IframeRuntime: React.FC<IProps> =
       phone.addListener("log", (logData: ILogRequest) => {
         log(logData.action, {
           ...logData.data,
-          scaffolded_question_level: scaffoldedQuestionLevel,
           subinteractive_url: url,
           subinteractive_type: authoredState.questionType,
           subinteractive_sub_type: authoredState.questionSubType,
@@ -103,7 +101,7 @@ export const IframeRuntime: React.FC<IProps> =
         phoneRef.current.disconnect();
       }
     };
-  }, [url, authoredState, report, id, scaffoldedQuestionLevel, navImageUrl, navImageAltText]);
+  }, [url, authoredState, report, id, navImageUrl, navImageAltText]);
 
   return (
     <div>

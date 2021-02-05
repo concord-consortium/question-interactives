@@ -58,13 +58,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     currentInteractive = subinteractives[0];
   }
 
-  const currentSubintIndex = subinteractives.indexOf(currentInteractive);
-  const currentLevel = levelsCount - currentSubintIndex;
-
   const subStates = interactiveState?.subinteractiveStates;
-
-  const getAnswerText = (level: number, subinteractiveAnswerText: string | undefined) =>
-    `[Level: ${level}] ${subinteractiveAnswerText ? subinteractiveAnswerText : "no response"}`;
+  
+  const getAnswerText = (subinteractiveAnswerText: string | undefined) =>
+    `${subinteractiveAnswerText ? subinteractiveAnswerText : "no response"}`;
 
   const handleNewInteractiveState = (interactiveId: string, newInteractiveState: any) => {
     setInteractiveState?.((prevState: IInteractiveState) => {
@@ -73,7 +70,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         ...prevState,
         answerType: "interactive_state",
         subinteractiveStates: updatedStates,
-        answerText: getAnswerText(currentLevel, newInteractiveState.answerText)
+        answerText: getAnswerText(newInteractiveState.answerText)
       };
     });
   };
@@ -111,7 +108,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                   authoredState={interactive.authoredState}
                   interactiveState={subState}
                   setInteractiveState={handleNewInteractiveState.bind(null, interactive.id)}
-                  scaffoldedQuestionLevel={currentLevel}
                 />
             </div>
           );
