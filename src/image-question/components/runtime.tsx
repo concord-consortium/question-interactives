@@ -139,8 +139,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           }
           {
             !controlsHidden && (renderMakeDrawing || previousAnswerAvailable) &&
-            <button className={cssHelpers.laraButton} onClick={openDrawingToolDialog} data-test="edit-btn">
-              { previousAnswerAvailable ? "Edit" : <span><PencilIcon className={cssHelpers.smallIcon}/> Make drawing</span> }
+            <button className={cssHelpers.apButton} onClick={openDrawingToolDialog} data-test="edit-btn">
+              { previousAnswerAvailable ? "Edit" : <span><PencilIcon className={cssHelpers.smallIcon}/> Make Drawing</span> }
             </button>
           }
         </div>
@@ -171,7 +171,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       <div className={css.closeDialogSection}>
         { savingAnnotatedImage ?
           <div>Please wait while your drawing is being saved...</div> :
-          <button className={cssHelpers.laraButton} onClick={handleClose} data-test="close-dialog-btn">
+          <button className={cssHelpers.apButton} onClick={handleClose} data-test="close-dialog-btn">
             Close
           </button>
         }

@@ -80,8 +80,8 @@ export const UploadBackground: React.FC<IProps> = ({ authoredState, setInteracti
     <>
       {
         !uploadControlsVisible && !uploadInProgress &&
-        <button className={cssHelpers.laraButton} onClick={handleUploadBtnClick} data-test="upload-btn">
-          <UploadIcon className={cssHelpers.smallIcon} /> Upload image
+        <button className={cssHelpers.apButton} onClick={handleUploadBtnClick} data-test="upload-btn">
+          <UploadIcon className={cssHelpers.smallIcon} /> Upload Image
         </button>
       }
       {

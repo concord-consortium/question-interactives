@@ -41,8 +41,8 @@ export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState
     <>
       {
         authoredState.snapshotTarget &&
-        <button className={cssHelpers.laraButton} onClick={handleSnapshot} disabled={snapshotInProgress} data-test="snapshot-btn">
-          <CameraIcon className={cssHelpers.smallIcon} /> { interactiveState?.userBackgroundImageUrl ? "Replace snapshot" : "Take a snapshot" }
+        <button className={cssHelpers.apButton} onClick={handleSnapshot} disabled={snapshotInProgress} data-test="snapshot-btn">
+          <CameraIcon className={cssHelpers.smallIcon} /> { interactiveState?.userBackgroundImageUrl ? "Replace Snapshot" : "Take a Snapshot" }
         </button>
       }
       { snapshotInProgress && <p>Please wait while the snapshot is being taken...</p> }
