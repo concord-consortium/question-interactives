@@ -48,7 +48,7 @@ export const emptyChartData = {
 };
 
 // It accepts array of IDataset and returns array of Chart.JS ChartData objects.
-export const generateChartData = (datasets: Array<IDataset | null | undefined>) => {
+export const generateChartData = (datasets: Array<IDataset | null | undefined>, datasetNames: Array<string | undefined>) => {
   const result: CustomChartData[] = [];
   const chartDataForProp: {[key: string]: CustomChartData} = {};
   const multipleDatasets = datasets.length > 1;
@@ -72,10 +72,10 @@ export const generateChartData = (datasets: Array<IDataset | null | undefined>) 
         return;
       }
       const data = dataset.rows.map(row => row[propIdx]).map(v => typeof v !== "number" ? null : v);
-      const colorIdx = multipleDatasets ? datasetIdx : propIdx;
 
       if (!chartDataForProp[prop]) {
         // Generate a new chart data with one chart dataset.
+        const colorIdx = multipleDatasets ? datasetIdx : propIdx;
         chartDataForProp[prop] = {
           labels,
           datasets: [{
@@ -99,6 +99,14 @@ export const generateChartData = (datasets: Array<IDataset | null | undefined>) 
         });
       }
     });
+  });
+  result.forEach(chartData => {
+    if (chartData.datasets.length > 1) {
+      chartData.datasets.forEach((dataset, idx) => {
+        const name = datasetNames[idx] ? ` - ${datasetNames[idx]}` : ` #${idx + 1}`;
+        dataset.label += name;
+      });
+    }
   });
   return result;
 };
@@ -132,7 +140,7 @@ const mergeIntoChartData = ({ data, labels, datasetIdx, targetChartData }: IMerg
     }
   });
   targetChartData.datasets.push({
-    label: `${targetChartData.datasets[0].label} #${datasetIdx + 1}`,
+    label: `${targetChartData.datasets[0].label}`,
     data: newData,
     backgroundColor: getBgColor(datasetIdx),
     borderColor: getBorderColor(datasetIdx),

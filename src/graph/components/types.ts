@@ -9,4 +9,8 @@ export interface IAuthoredState {
   dataSourceInteractive1?: string;
   dataSourceInteractive2?: string;
   dataSourceInteractive3?: string;
+
+  dataSourceInteractive1Name?: string;
+  dataSourceInteractive2Name?: string;
+  dataSourceInteractive3Name?: string;
 }
