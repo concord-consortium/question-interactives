@@ -50,13 +50,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   if (subinteractives.length === 0) {
     return <div>No sub items available. Please add them using the authoring interface.</div>;
   }
-  const levelsCount = subinteractives.length;
-
-  const currentSubintId = interactiveState?.currentSubinteractiveId;
-  let currentInteractive = subinteractives.find(si => si.id === currentSubintId);
-  if (!currentInteractive) {
-    currentInteractive = subinteractives[0];
-  }
 
   const subStates = interactiveState?.subinteractiveStates;
   
