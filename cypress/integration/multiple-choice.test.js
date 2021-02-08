@@ -82,7 +82,7 @@ context("Test multiple-choice interactive", () => {
       });
 
       cy.getIframeBody().find("[data-cy=check-answer-button]").should("be.visible");
-      cy.getIframeBody().find("[data-cy=check-answer-button]").should("include.text", "Check answer");
+      cy.getIframeBody().find("[data-cy=check-answer-button]").should("include.text", "Check Answer");
       cy.getIframeBody().find("[data-cy=check-answer-button]").should("have.attr", "disabled");
     });
 

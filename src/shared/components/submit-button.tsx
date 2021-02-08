@@ -24,7 +24,7 @@ export const SubmitButton: React.FC<IProps> = ({ isAnswered }) => {
   };
 
   return (
-    <button className={css.laraButton} onClick={handleSubmit} disabled={!isAnswered} data-cy="lock-answer-button">
+    <button className={css.apButton} onClick={handleSubmit} disabled={!isAnswered} data-cy="lock-answer-button">
       Submit <LockIcon className={css.smallIcon} />
     </button>
   );

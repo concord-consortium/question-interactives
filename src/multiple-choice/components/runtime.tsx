@@ -237,9 +237,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         showAnswerFeedback && !readOnly && renderFeedback()
       }
       { authoredState.enableCheckAnswer && !readOnly &&
-      <button className={buttonCss.laraButton} onClick={handleShowAnswerFeedback}
+      <button className={buttonCss.apButton} onClick={handleShowAnswerFeedback}
           disabled={!isAnswered} data-cy="check-answer-button">
-        Check answer
+        Check Answer
       </button>
       }
     </div>
