@@ -50,22 +50,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   if (subinteractives.length === 0) {
     return <div>No sub items available. Please add them using the authoring interface.</div>;
   }
-  const levelsCount = subinteractives.length;
-
-  const currentSubintId = interactiveState?.currentSubinteractiveId;
-  let currentInteractive = subinteractives.find(si => si.id === currentSubintId);
-  if (!currentInteractive) {
-    currentInteractive = subinteractives[0];
-  }
-
-  const currentSubintIndex = subinteractives.indexOf(currentInteractive);
-  const currentLevel = levelsCount - currentSubintIndex;
 
   const subStates = interactiveState?.subinteractiveStates;
-  const subState = subStates && subStates[currentInteractive.id];
-
-  const getAnswerText = (level: number, subinteractiveAnswerText: string | undefined) =>
-    `[Level: ${level}] ${subinteractiveAnswerText ? subinteractiveAnswerText : "no response"}`;
+  
+  const getAnswerText = (subinteractiveAnswerText: string | undefined) =>
+    `${subinteractiveAnswerText ? subinteractiveAnswerText : "no response"}`;
 
   const handleNewInteractiveState = (interactiveId: string, newInteractiveState: any) => {
     setInteractiveState?.((prevState: IInteractiveState) => {
@@ -74,7 +63,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         ...prevState,
         answerType: "interactive_state",
         subinteractiveStates: updatedStates,
-        answerText: getAnswerText(currentLevel, newInteractiveState.answerText)
+        answerText: getAnswerText(newInteractiveState.answerText)
       };
     });
   };
@@ -100,6 +89,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     <div>
       <Carousel selectedItem={currentSlide} onChange={updateCurrentSlide} showArrows={false} showIndicators={false} showStatus={false} showThumbs={false} autoPlay={false} dynamicHeight={false} transitionTime={300}>
         {subinteractives.map(function(interactive, index) {
+          const subState = subStates && subStates[interactive.id];
           return (
             <div key={index} className={css.runtime}>
               { authoredState.prompt &&
@@ -111,7 +101,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                   authoredState={interactive.authoredState}
                   interactiveState={subState}
                   setInteractiveState={handleNewInteractiveState.bind(null, interactive.id)}
-                  scaffoldedQuestionLevel={currentLevel}
                 />
             </div>
           );
