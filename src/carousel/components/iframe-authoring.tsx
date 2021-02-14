@@ -15,23 +15,23 @@ const availableInteractives = [
     name: "Select an interactive"
   },
   {
-    url: window.location.href.replace(carouselQuestionSegment, "open-response"),
+    url: window.location.href.replace(carouselQuestionSegment, "open-response/"),
     name: "Open response"
   },
   {
-    url: window.location.href.replace(carouselQuestionSegment, "fill-in-the-blank"),
+    url: window.location.href.replace(carouselQuestionSegment, "fill-in-the-blank/"),
     name: "Fill in the blank"
   },
   {
-    url: window.location.href.replace(carouselQuestionSegment, "multiple-choice"),
+    url: window.location.href.replace(carouselQuestionSegment, "multiple-choice/"),
     name: "Multiple choice"
   },
   {
-    url: window.location.href.replace(carouselQuestionSegment, "video-player"),
+    url: window.location.href.replace(carouselQuestionSegment, "video-player/"),
     name: "Video"
   },
   {
-    url: window.location.href.replace(carouselQuestionSegment, "image"),
+    url: window.location.href.replace(carouselQuestionSegment, "image/"),
     name: "Image"
   }
 ];
@@ -56,7 +56,7 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
 
   const handleUrlChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const newUrl = event.target.value;
-    onChange({ 
+    onChange({
       url: newUrl,
       authoredState: undefined,
       id: id || uuidv4(),
@@ -67,7 +67,7 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
 
   const handleNavImageUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
     const newNavImageUrl = event.target.value;
-    onChange({ 
+    onChange({
       url: url,
       authoredState: authoredState,
       id: id,
@@ -78,7 +78,7 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
 
   const handleNavImageAltTextChange = (event: ChangeEvent<HTMLInputElement>) => {
     const newNavImageAltText = event.target.value;
-    onChange({ 
+    onChange({
       url: url,
       authoredState: undefined,
       id: id,
@@ -99,7 +99,7 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
     phone.addListener("authoredState", (newAuthoredState: any) => {
       // Save current iframe authored state.
       iframeCurrentAuthoredState.current = newAuthoredState;
-      onChange({ 
+      onChange({
         url,
         authoredState: newAuthoredState,
         id: id || uuidv4(),
