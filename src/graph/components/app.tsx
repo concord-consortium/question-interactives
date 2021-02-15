@@ -38,6 +38,10 @@ const baseAuthoringProps = {
     dependencies: {
       dataSourceInteractive1: {
         properties: {
+          dataSourceInteractive1Name: {
+            title: "Data Source Interactive 1 Name",
+            type: "string"
+          },
           dataSourceInteractive2: {
             title: "Data Source Interactive 2",
             type: "string",
@@ -48,11 +52,23 @@ const baseAuthoringProps = {
       },
       dataSourceInteractive2: {
         properties: {
+          dataSourceInteractive2Name: {
+            title: "Data Source Interactive 2 Name",
+            type: "string"
+          },
           dataSourceInteractive3: {
             title: "Data Source Interactive 3",
             type: "string",
             enum: [],
             enumNames: []
+          }
+        }
+      },
+      dataSourceInteractive3: {
+        properties: {
+          dataSourceInteractive3Name: {
+            title: "Data Source Interactive 3 Name",
+            type: "string"
           }
         }
       }

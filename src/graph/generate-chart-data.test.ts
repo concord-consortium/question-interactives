@@ -34,7 +34,7 @@ const datasetWithoutXProp: IDataset = {
 
 describe("generateChartData", () => {
   it("works for a single dataset", () => {
-    const result = generateChartData([dataset1]);
+    const result = generateChartData([dataset1], []);
     expect(result[0].labels).toEqual([1, 2]);
     expect(result[0].datasets[0]).toMatchObject({
       label: "y",
@@ -46,7 +46,7 @@ describe("generateChartData", () => {
   });
 
   it("works for multiple datasets", () => {
-    const result = generateChartData([dataset1, dataset2]);
+    const result = generateChartData([dataset1, dataset2], []);
     expect(result[0].labels).toEqual([1, 2]);
     expect(result[0].datasets[0]).toMatchObject({
       label: "y",
@@ -67,7 +67,7 @@ describe("generateChartData", () => {
   });
 
   it("generates X axis labels (row indices) when xAxisProp is not specified", () => {
-    const result = generateChartData([datasetWithoutXProp]);
+    const result = generateChartData([datasetWithoutXProp], []);
     expect(result[0].labels).toEqual([1, 2]);
     expect(result[0].datasets[0]).toMatchObject({
       label: "y",
@@ -78,11 +78,11 @@ describe("generateChartData", () => {
     });
   });
 
-  it("merges multiple datasets when possible", () => {
-    const result = generateChartData([dataset1, dataset1A]);
+  it("merges multiple datasets when possible and provides index labels automatically", () => {
+    const result = generateChartData([dataset1, dataset1A], []);
     expect(result[0].labels).toEqual([1, 2, 1.5, 3]);
     expect(result[0].datasets[0]).toMatchObject({
-      label: "y",
+      label: "y #1",
       data: [10, 20],
       backgroundColor: expect.any(String),
       borderColor: expect.any(String),
@@ -90,6 +90,25 @@ describe("generateChartData", () => {
     });
     expect(result[0].datasets[1]).toMatchObject({
       label: "y #2",
+      data: [null, 200, 100, 300],
+      backgroundColor: expect.any(String),
+      borderColor: expect.any(String),
+      borderWidth: expect.any(Number)
+    });
+  });
+
+  it("merges multiple datasets when possible and uses provided dataset names", () => {
+    const result = generateChartData([dataset1, dataset1A], ["Data Source 1", "Data Source 2"]);
+    expect(result[0].labels).toEqual([1, 2, 1.5, 3]);
+    expect(result[0].datasets[0]).toMatchObject({
+      label: "y - Data Source 1",
+      data: [10, 20],
+      backgroundColor: expect.any(String),
+      borderColor: expect.any(String),
+      borderWidth: expect.any(Number)
+    });
+    expect(result[0].datasets[1]).toMatchObject({
+      label: "y - Data Source 2",
       data: [null, 200, 100, 300],
       backgroundColor: expect.any(String),
       borderColor: expect.any(String),

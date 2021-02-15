@@ -15,7 +15,9 @@ export interface IProps {
 const getGraphOptions = (authoredState: IAuthoredState, { displayLegend }: { displayLegend: boolean }): ChartOptions => {
   return {
     legend: {
-      display: displayLegend // top legend with datasets and their colors
+      display: displayLegend, // top legend with datasets and their colors
+      align: "start",
+      fullWidth: false // this will put each legend in its own line (name of the property doesn't suggest that)
     },
     maintainAspectRatio: false,
     scales: {
@@ -78,11 +80,16 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
 
   const anyData = datasets.filter(d => d !== null).length > 0;
   const graphContainerClassName = css.graph + " " + css["graphLayout" + (authoredState.graphsPerRow || 1)];
+  const datasetNames = [
+    authoredState.dataSourceInteractive1Name, 
+    authoredState.dataSourceInteractive2Name, 
+    authoredState.dataSourceInteractive3Name
+  ];
   return (
     <div>
       {
         anyData ?
-          generateChartData(datasets).map((chartData, idx: number) =>
+          generateChartData(datasets, datasetNames).map((chartData, idx: number) =>
             <div key={idx} className={graphContainerClassName}>
               <Bar data={chartData} options={getGraphOptions(authoredState, { displayLegend: true })} />
             </div>
