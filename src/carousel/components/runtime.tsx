@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 import { IframeRuntime } from "./iframe-runtime";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { renderHTML } from "../../shared/utilities/render-html";
@@ -19,7 +19,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const currentSlideRef = useRef(currentSlide);
   currentSlideRef.current = currentSlide;
 
-  const updateCurrentSlide = useCallback((index: number) => {
+  const updateCurrentSlide = useCallback((index: number, event?: MouseEvent<HTMLButtonElement>) => {
+    if (event) {
+      const target = event.currentTarget as HTMLButtonElement;
+      target?.focus(); // required for consistent behavior in all browsers
+    }
     pauseAllVideos();
     if (currentSlideRef.current !== index) {
       setCurrentSlide(index);
@@ -68,11 +72,15 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     });
   };
 
-  const nextSlide = () => {
+  const nextSlide = (event: MouseEvent<HTMLButtonElement>) => {
+    const target = event.currentTarget as HTMLButtonElement;
+    target.focus(); // required for consistent behavior in all browsers
     setCurrentSlide(currentSlide + 1);
   };
 
-  const previousSlide = () => {
+  const previousSlide = (event: MouseEvent<HTMLButtonElement>) => {
+    const target = event.currentTarget as HTMLButtonElement;
+    target.focus(); // required for consistent behavior in all browsers
     setCurrentSlide(currentSlide - 1);
   };
 
@@ -117,7 +125,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           }
           const buttonText = interactive.navImageAltText ? interactive.navImageAltText : `Go to slide ${index + 1}`;
           return (
-            <button key={index} className={buttonClass} style={buttonStyle} title={buttonText} aria-label={buttonText} onClick={() => updateCurrentSlide(index)}>{buttonText}</button>
+            <button key={index} className={buttonClass} style={buttonStyle} title={buttonText} aria-label={buttonText} onClick={(event) => updateCurrentSlide(index, event)}>{buttonText}</button>
           );
         })}
         <button className={currentSlide === subinteractives.length - 1 ? css.disabled + " " + css.nextButton : css.nextButton} onClick={nextSlide}>Next</button>
