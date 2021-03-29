@@ -24,5 +24,5 @@ export const libraryInteractiveIdToUrl = (libraryInteractiveId: string) => {
   // "open-response", "fill-in-the-blank", and so on. The final URL is constructed here dynamically using
   // scaffolded question URL that includes version number to keep subinteractives updated too.
   const scaffoldedQuestionSegment = /scaffolded-question\/?$/;
-  return window.location.href.replace(scaffoldedQuestionSegment, libraryInteractiveId);
+  return window.location.href.replace(scaffoldedQuestionSegment, `${libraryInteractiveId}/`);
 };
