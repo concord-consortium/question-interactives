@@ -91,7 +91,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       <IframeRuntime
         key={currentInteractive.id}
         id={currentInteractive.id}
-        url={libraryInteractiveIdToUrl(currentInteractive.libraryInteractiveId)}
+        url={libraryInteractiveIdToUrl(currentInteractive.libraryInteractiveId, "scaffolded-question")}
         authoredState={currentInteractive.authoredState}
         interactiveState={subState}
         setInteractiveState={readOnly ? undefined : handleNewInteractiveState.bind(null, currentInteractive.id)}

@@ -106,7 +106,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                 <IframeRuntime
                   key={interactive.id}
                   id={interactive.id}
-                  url={libraryInteractiveIdToUrl(interactive.libraryInteractiveId)}
+                  url={libraryInteractiveIdToUrl(interactive.libraryInteractiveId, "carousel")}
                   authoredState={interactive.authoredState}
                   interactiveState={subState}
                   setInteractiveState={handleNewInteractiveState.bind(null, interactive.id)}

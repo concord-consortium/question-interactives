@@ -112,9 +112,9 @@ context("Test scaffolded question interactive", () => {
       phoneListen("log");
 
       cy.getNestedIframeBody().find("textarea").type("Test subquestion answer");
+      cy.wait(500);
       cy.focused().blur();
-      cy.wait(200);
-
+      cy.wait(400);
       getAndClearAllPhoneMessage((messages) => {
         expect(messages.length).eql(2);
 

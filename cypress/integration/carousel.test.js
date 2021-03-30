@@ -19,7 +19,7 @@ context("Test carousel interactive", () => {
           subinteractives: [
             {
               id: "int1",
-              url: "open-response",
+              libraryInteractiveId: "open-response",
               authoredState: {
                 version: 1,
                 prompt: "Subquestion prompt",
@@ -61,7 +61,7 @@ context("Test carousel interactive", () => {
           subinteractives: [
             {
               id: "int1",
-              url: "open-response",
+              libraryInteractiveId: "open-response",
               authoredState: {
                 version: 1,
                 prompt: "Subquestion prompt",
@@ -98,7 +98,7 @@ context("Test carousel interactive", () => {
           subinteractives: [
             {
               id: "int1",
-              url: "open-response",
+              libraryInteractiveId: "open-response",
               authoredState: {
                 version: 1,
                 prompt: "Subquestion prompt",
@@ -112,9 +112,9 @@ context("Test carousel interactive", () => {
       phoneListen("log");
 
       cy.getNestedIframeBody().find("textarea").type("Test subquestion answer");
+      cy.wait(500);
       cy.focused().blur();
-      cy.wait(200);
-
+      cy.wait(400);
       getAndClearAllPhoneMessage((messages) => {
         expect(messages.length).eql(2);
 
@@ -126,7 +126,7 @@ context("Test carousel interactive", () => {
             target_id: '',
             target_name: '',
             target_value: '',
-            subinteractive_url: "open-response",
+            subinteractive_url: "http://localhost:8080/open-response/",
             subinteractive_type: "open_response",
             subinteractive_sub_type: undefined,
             subinteractive_id: 'int1'
@@ -141,7 +141,7 @@ context("Test carousel interactive", () => {
             target_id: '',
             target_name: '',
             target_value: 'Test subquestion answer',
-            subinteractive_url: "open-response",
+            subinteractive_url: "http://localhost:8080/open-response/",
             subinteractive_type: 'open_response',
             subinteractive_sub_type: undefined,
             subinteractive_id: 'int1',
@@ -161,7 +161,7 @@ context("Test carousel interactive", () => {
           subinteractives: [
             {
               id: "int1",
-              url: "open-response",
+              libraryInteractiveId: "open-response",
               authoredState: {
                 version: 1,
                 prompt: "Subquestion prompt #1",
@@ -170,7 +170,7 @@ context("Test carousel interactive", () => {
             },
             {
               id: "int2",
-              url: "open-response",
+              libraryInteractiveId: "open-response",
               authoredState: {
                 version: 1,
                 prompt: "Subquestion prompt #2",
@@ -179,7 +179,7 @@ context("Test carousel interactive", () => {
             },
             {
               id: "int3",
-              url: "open-response",
+              libraryInteractiveId: "open-response",
               authoredState: {
                 version: 1,
                 prompt: "Subquestion prompt #3",
@@ -225,7 +225,7 @@ context("Test carousel interactive", () => {
           subinteractives: [
             {
               id: "int1",
-              url: "open-response",
+              libraryInteractiveId: "open-response",
               authoredState: {
                 version: 1,
                 prompt: "Subquestion prompt #1",
@@ -236,7 +236,7 @@ context("Test carousel interactive", () => {
             },
             {
               id: "int2",
-              url: "open-response",
+              libraryInteractiveId: "open-response",
               authoredState: {
                 version: 1,
                 prompt: "Subquestion prompt #2",
@@ -247,7 +247,7 @@ context("Test carousel interactive", () => {
             },
             {
               id: "int3",
-              url: "open-response",
+              libraryInteractiveId: "open-response",
               authoredState: {
                 version: 1,
                 prompt: "Subquestion prompt #3",
@@ -283,7 +283,7 @@ context("Test carousel interactive", () => {
           subinteractives: [
             {
               id: "int1",
-              url: "open-response",
+              libraryInteractiveId: "open-response",
               authoredState: {
                 version: 1,
                 prompt: "Subquestion prompt",
@@ -314,7 +314,7 @@ context("Test carousel interactive", () => {
 
       cy.getIframeBody().find("#root_prompt").type("Test prompt");
       getAndClearLastPhoneMessage(state => {
-        expect(state.version).eql(1);
+        expect(state.version).eql(2);
         expect(state.prompt).include("Test prompt");
       }, 200);
 
@@ -345,7 +345,7 @@ context("Test carousel interactive", () => {
           subinteractives: [
             {
               id: "int1",
-              url: "open-response",
+              libraryInteractiveId: "open-response",
               authoredState: {
                 version: 1,
                 prompt: "1"
@@ -353,7 +353,7 @@ context("Test carousel interactive", () => {
             },
             {
               id: "int2",
-              url: "open-response",
+              libraryInteractiveId: "open-response",
               authoredState: {
                 version: 1,
                 prompt: "2",

@@ -89,7 +89,7 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
     // This can happen when iframes are reordered using react-jsochschema-form array controls. More details in the
     // initial comment about `iframeCurrentAuthoredState`. `deepEqual` is used, as when `===` was used, sometimes iframe
     // was reloaded unnecessarily (e.g. during very fast typing in textarea, probably multiple messages have been sent).
-    const url = libraryInteractiveIdToUrl(libraryInteractiveId);
+    const url = libraryInteractiveIdToUrl(libraryInteractiveId, "carousel");
     if (iframeRef.current && (url !== iframeRef.current.src || !deepEqual(iframeCurrentAuthoredState.current, authoredState))) {
       phoneRef.current?.disconnect();
       iframeCurrentAuthoredState.current = authoredState;
