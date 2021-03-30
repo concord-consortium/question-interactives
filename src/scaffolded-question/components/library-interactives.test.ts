@@ -9,6 +9,6 @@ describe("libraryInteractiveIdToUrl", () => {
   });
 
   it("converts temporal ID (path segment) to full URL using the current URL", () => {
-    expect(libraryInteractiveIdToUrl("open-response")).toEqual("http://question-interactives/version/0.5.0/open-response");
+    expect(libraryInteractiveIdToUrl("open-response")).toEqual("http://question-interactives/version/0.5.0/open-response/");
   });
 });
