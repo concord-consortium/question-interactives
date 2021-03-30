@@ -5,8 +5,21 @@ import {
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
 
+
 export interface IAuthoredState extends IAuthoringInteractiveMetadata {
-  version: number;
+  version: 2;
+  hint?: string;
+  subinteractives?: {
+    id: string;
+    libraryInteractiveId: string;
+    authoredState: any;
+    navImageUrl?: string;
+    navImageAltText?: string;
+  }[]
+}
+
+export interface IAuthoredStateV1 extends IAuthoringInteractiveMetadata {
+  version: 1;
   hint?: string;
   subinteractives?: {
     id: string;

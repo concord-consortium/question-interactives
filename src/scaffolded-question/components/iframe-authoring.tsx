@@ -4,7 +4,7 @@ import { IframePhone } from "../../shared/types";
 import iframePhone from "iframe-phone";
 import deepEqual from "deep-equal";
 import { v4 as uuidv4 } from "uuid";
-import { libraryInteractives, libraryInteractiveIdToUrl } from "./library-interactives";
+import { libraryInteractives, libraryInteractiveIdToUrl } from "../../shared/utilities/library-interactives";
 import css from "./iframe-authoring.scss";
 
 export const IframeAuthoring: React.FC<FieldProps> = props => {

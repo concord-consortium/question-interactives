@@ -3,42 +3,16 @@ import { FieldProps } from "react-jsonschema-form";
 import { IframePhone } from "../../shared/types";
 import iframePhone from "iframe-phone";
 import deepEqual from "deep-equal";
-
+import { libraryInteractives, libraryInteractiveIdToUrl } from "../../shared/utilities/library-interactives";
 import css from "./iframe-authoring.scss";
 import { v4 as uuidv4 } from "uuid";
 
 // This is only temporary list. In the future, it will be replaced by LARA Interactive API call that returns all the available managed interactives.
-const carouselQuestionSegment = /carousel\/?$/;
-const availableInteractives = [
-  {
-    url: "",
-    name: "Select an interactive"
-  },
-  {
-    url: window.location.href.replace(carouselQuestionSegment, "open-response"),
-    name: "Open response"
-  },
-  {
-    url: window.location.href.replace(carouselQuestionSegment, "fill-in-the-blank"),
-    name: "Fill in the blank"
-  },
-  {
-    url: window.location.href.replace(carouselQuestionSegment, "multiple-choice"),
-    name: "Multiple choice"
-  },
-  {
-    url: window.location.href.replace(carouselQuestionSegment, "video-player"),
-    name: "Video"
-  },
-  {
-    url: window.location.href.replace(carouselQuestionSegment, "image"),
-    name: "Image"
-  }
-];
+const availableInteractives = libraryInteractives;
 
 export const IframeAuthoring: React.FC<FieldProps> = props => {
   const { onChange, formData } = props;
-  const { url, authoredState, id, navImageUrl, navImageAltText } = formData;
+  const { libraryInteractiveId, authoredState, id, navImageUrl, navImageAltText } = formData;
   const [ iframeHeight, setIframeHeight ] = useState(300);
   const [ authoringOpened, setAuthoringOpened ] = useState(false);
   const interactiveWrapperClass = authoringOpened ? `${css.iframeAuthoring} ${css.open}` : css.iframeAuthoring;
@@ -54,10 +28,10 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
   // state outside `initInteractive` call. But this would require all the existing interactives to be updated.
   const iframeCurrentAuthoredState = useRef<any>();
 
-  const handleUrlChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    const newUrl = event.target.value;
+  const handleLibraryInteractiveIdChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    const newLibraryInteractiveId = event.target.value;
     onChange({ 
-      url: newUrl,
+      libraryInteractiveId: newLibraryInteractiveId,
       authoredState: undefined,
       id: id || uuidv4(),
       navImageUrl: navImageUrl || "",
@@ -67,10 +41,7 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
 
   const handleNavImageUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
     const newNavImageUrl = event.target.value;
-    onChange({ 
-      url: url,
-      authoredState: authoredState,
-      id: id,
+    onChange({libraryInteractiveId, authoredState, id,
       navImageUrl: newNavImageUrl || "",
       navImageAltText: navImageAltText || ""
     });
@@ -78,10 +49,8 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
 
   const handleNavImageAltTextChange = (event: ChangeEvent<HTMLInputElement>) => {
     const newNavImageAltText = event.target.value;
-    onChange({ 
-      url: url,
+    onChange({libraryInteractiveId, id,
       authoredState: undefined,
-      id: id,
       navImageUrl: navImageUrl || "",
       navImageAltText: newNavImageAltText || ""
     });
@@ -99,8 +68,7 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
     phone.addListener("authoredState", (newAuthoredState: any) => {
       // Save current iframe authored state.
       iframeCurrentAuthoredState.current = newAuthoredState;
-      onChange({ 
-        url,
+      onChange({libraryInteractiveId,
         authoredState: newAuthoredState,
         id: id || uuidv4(),
         navImageUrl: navImageUrl || "",
@@ -114,29 +82,29 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
       mode: "authoring",
       authoredState
     });
-  }, [id, url, onChange, authoredState, navImageUrl, navImageAltText]);
+  }, [id, libraryInteractiveId, onChange, authoredState, navImageUrl, navImageAltText]);
 
   useEffect(() => {
-
     // Trigger reload ONLY if URL has changed or authored state is different than current iframe state.
     // This can happen when iframes are reordered using react-jsochschema-form array controls. More details in the
     // initial comment about `iframeCurrentAuthoredState`. `deepEqual` is used, as when `===` was used, sometimes iframe
     // was reloaded unnecessarily (e.g. during very fast typing in textarea, probably multiple messages have been sent).
+    const url = libraryInteractiveIdToUrl(libraryInteractiveId);
     if (iframeRef.current && (url !== iframeRef.current.src || !deepEqual(iframeCurrentAuthoredState.current, authoredState))) {
       phoneRef.current?.disconnect();
       iframeCurrentAuthoredState.current = authoredState;
       iframeRef.current.src = url;
       phoneRef.current = new iframePhone.ParentEndpoint(iframeRef.current, initInteractive);
     }
-  }, [url, authoredState, initInteractive, navImageUrl, navImageAltText]);
+  }, [libraryInteractiveId, authoredState, initInteractive, navImageUrl, navImageAltText]);
 
   return (
     <div className={css.iframeAuthoring}>
-      Interactive: <select onChange={handleUrlChange} value={url} data-cy="select-subquestion">
-        { availableInteractives.map(o => <option key={o.url} value={o.url}>{o.name}</option>) }
+      Interactive: <select onChange={handleLibraryInteractiveIdChange} value={libraryInteractiveId} data-cy="select-subquestion">
+        { availableInteractives.map(o => <option key={o.libraryInteractiveId} value={o.libraryInteractiveId}>{o.name}</option>) }
       </select>
       {
-        url &&
+        libraryInteractiveId &&
         <div className={interactiveWrapperClass}>
           <h4 onClick={handleHeaderClick} className={css.link} data-cy="subquestion-authoring">{authoringOpened ? "▼" : "▶"} Subquestion Authoring</h4>
           <div className={css.iframeContainer} style={{maxHeight: authoringOpened ? iframeHeight : 0 }}>
