@@ -6,7 +6,7 @@ import { LockedInfo } from "../../shared/components/locked-info";
 import { useStudentSettings } from "../../shared/hooks/use-student-settings";
 import { renderHTML } from "../../shared/utilities/render-html";
 import { log } from "@concord-consortium/lara-interactive-api";
-import { libraryInteractiveIdToUrl } from "./library-interactives";
+import { libraryInteractiveIdToUrl } from "../../shared/utilities/library-interactives";
 import { DecorateChildren } from "@concord-consortium/text-decorator";
 import { useGlossaryDecoration } from "../../shared/hooks/use-glossary-decoration";
 import css from "./runtime.scss";
@@ -91,7 +91,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       <IframeRuntime
         key={currentInteractive.id}
         id={currentInteractive.id}
-        url={libraryInteractiveIdToUrl(currentInteractive.libraryInteractiveId)}
+        url={libraryInteractiveIdToUrl(currentInteractive.libraryInteractiveId, "scaffolded-question")}
         authoredState={currentInteractive.authoredState}
         interactiveState={subState}
         setInteractiveState={readOnly ? undefined : handleNewInteractiveState.bind(null, currentInteractive.id)}

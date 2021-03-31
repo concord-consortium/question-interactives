@@ -112,9 +112,9 @@ context("Test scaffolded question interactive", () => {
       phoneListen("log");
 
       cy.getNestedIframeBody().find("textarea").type("Test subquestion answer");
+      cy.wait(500);
       cy.focused().blur();
-      cy.wait(200);
-
+      cy.wait(400);
       getAndClearAllPhoneMessage((messages) => {
         expect(messages.length).eql(2);
 
@@ -127,7 +127,7 @@ context("Test scaffolded question interactive", () => {
             target_name: '',
             target_value: '',
             scaffolded_question_level: 1,
-            subinteractive_url: "http://localhost:8080/open-response",
+            subinteractive_url: "http://localhost:8080/open-response/",
             subinteractive_type: "open_response",
             subinteractive_sub_type: undefined,
             subinteractive_id: 'int1'
@@ -143,7 +143,7 @@ context("Test scaffolded question interactive", () => {
             target_name: '',
             target_value: 'Test subquestion answer',
             scaffolded_question_level: 1,
-            subinteractive_url: "http://localhost:8080/open-response",
+            subinteractive_url: "http://localhost:8080/open-response/",
             subinteractive_type: 'open_response',
             subinteractive_sub_type: undefined,
             subinteractive_id: 'int1',

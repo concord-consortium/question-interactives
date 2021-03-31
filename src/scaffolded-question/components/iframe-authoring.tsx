@@ -4,7 +4,7 @@ import { IframePhone } from "../../shared/types";
 import iframePhone from "iframe-phone";
 import deepEqual from "deep-equal";
 import { v4 as uuidv4 } from "uuid";
-import { libraryInteractives, libraryInteractiveIdToUrl } from "./library-interactives";
+import { libraryInteractives, libraryInteractiveIdToUrl } from "../../shared/utilities/library-interactives";
 import css from "./iframe-authoring.scss";
 
 export const IframeAuthoring: React.FC<FieldProps> = props => {
@@ -54,7 +54,7 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
   }, [id, libraryInteractiveId, onChange, authoredState]);
 
   useEffect(() => {
-    const url = libraryInteractiveIdToUrl(libraryInteractiveId);
+    const url = libraryInteractiveIdToUrl(libraryInteractiveId,"scaffolded-question");
     // Trigger reload ONLY if URL has changed or authored state is different than current iframe state.
     // This can happen when iframes are reordered using react-jsochschema-form array controls. More details in the
     // initial comment about `iframeCurrentAuthoredState`. `deepEqual` is used, as when `===` was used, sometimes iframe

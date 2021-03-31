@@ -3,6 +3,7 @@ import { IframeRuntime } from "./iframe-runtime";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { renderHTML } from "../../shared/utilities/render-html";
 import { Carousel } from "react-responsive-carousel";
+import { libraryInteractiveIdToUrl } from "../../shared/utilities/library-interactives";
 
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
 import css from "./runtime.scss";
@@ -105,7 +106,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                 <IframeRuntime
                   key={interactive.id}
                   id={interactive.id}
-                  url={interactive.url}
+                  url={libraryInteractiveIdToUrl(interactive.libraryInteractiveId, "carousel")}
                   authoredState={interactive.authoredState}
                   interactiveState={subState}
                   setInteractiveState={handleNewInteractiveState.bind(null, interactive.id)}

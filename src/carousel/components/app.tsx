@@ -4,14 +4,14 @@ import { BaseQuestionApp } from "../../shared/components/base-question-app";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { Runtime } from "./runtime";
 import { IframeAuthoring } from "./iframe-authoring";
-
+import { migrateAuthoredState } from "./state-migrations";
 const baseAuthoringProps = {
   schema: {
     type: "object",
     properties: {
       version: {
         type: "number",
-        default: 1
+        default: 2
       },
       questionType: {
         type: "string",
@@ -38,7 +38,7 @@ const baseAuthoringProps = {
             id: {
               type: "string"
             },
-            url: {
+            libraryInteractiveId: {
               type: "string"
             },
             authoredState: {
@@ -83,5 +83,6 @@ export const App = () => (
     Runtime={Runtime}
     baseAuthoringProps={baseAuthoringProps}
     disableSubmitBtnRendering={true}
+    migrateAuthoredState={migrateAuthoredState}
   />
 );
