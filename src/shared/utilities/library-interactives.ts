@@ -16,6 +16,14 @@ export const libraryInteractives = [
   {
     libraryInteractiveId: "multiple-choice",
     name: "Multiple choice"
+  },
+  {
+    libraryInteractiveId: "video-player",
+    name: "Video"
+  },
+  {
+    libraryInteractiveId: "image",
+    name: "Image"
   }
 ];
 
