@@ -79,12 +79,16 @@ const convertImage = (item: Record<string, any>, libraryInteractive: Record<stri
 };
 
 const convertImageQuestion = (item: Record<string, any>, libraryInteractive: Record<string, any>) => {
+  const backgroundSource = item.embeddable.bg_source === "Shutterbug" ? "snapshot"
+                                                                      : item.embeddable.bg_source === "Upload" ? "upload"
+                                                                      : undefined;
   const authoredState: IImageQuestionAuthoredState = {
     version: 1,
     questionType: "image_question",
     required: item.embeddable.is_prediction,
     predictionFeedback: item.embeddable.prediction_feedback,
     backgroundImageUrl: item.embeddable.bg_url,
+    backgroundSource: backgroundSource,
     imageFit: "shrinkBackgroundToCanvas",
     imagePosition: "center",
     answerPrompt: item.embeddable.drawing_prompt,
@@ -182,6 +186,10 @@ const deleteRedundantProperties = (item: Record<string, any>) => {
 };
 
 const addNewProperties = (item: Record<string, any>, libraryInteractive: Record<string, any>) => {
+  const hasSnapshotTarget = item.embeddable.type === "Embeddable::ImageQuestion" 
+                            && item.embeddable.interactive_ref_id !== undefined;
+  const linkedInteractives =  hasSnapshotTarget ? [{"ref_id": item.embeddable.interactive_ref_id, "label": "snapshotTarget"}] 
+                                                : [];
   // add other new properties with default values
   item.embeddable.url_fragment = null;
   item.embeddable.inherit_aspect_ratio_method =	true;
@@ -198,7 +206,7 @@ const addNewProperties = (item: Record<string, any>, libraryInteractive: Record<
   item.embeddable.custom_click_to_play_prompt = null;
   item.embeddable.inherit_image_url = true;
   item.embeddable.custom_image_url = null;
-  item.embeddable.linked_interactives = [];
+  item.embeddable.linked_interactives = linkedInteractives;
   item.embeddable.type = "ManagedInteractive";
 };
 
@@ -336,7 +344,7 @@ const convert = async (laraResource: string, laraRoot: string, libraryInteractiv
     "open_response": "Open Response",
     "image": "Image Interactive",
     "video": "Video Player",
-    "image_question": "Drawing Question"
+    "image_question": "Image Question"
   };
 
   laraTemplate.pages[0].embeddables.forEach((embeddable: Record<string, any>) => {
