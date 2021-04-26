@@ -256,6 +256,7 @@ const convert = async (laraResource: string, laraRoot: string, libraryInteractiv
     newResourceName = "Activity Player Copy of " + resource.title;
     resource.title = newResourceName;
     resource.activities.forEach((activity: Record<string, any>) => {
+      activity.runtime = "Activity Player";
       activity.pages.forEach((page: Record<string, any>) => {
         updateEmbeddables(page.embeddables, libraryInteractives);
       });
