@@ -5,6 +5,7 @@ import { IAuthoredState as IImageQuestionAuthoredState } from "../image-question
 import { IAuthoredState as IVideoPlayerAuthoredState } from "../video-player/components/types";
 
 const convertMultipleChoice = (item: Record<string, any>, libraryInteractive: Record<string, any>) => {
+  item.embeddable.name = item.embeddable.name !== "Multiple Choice Question element" ? item.embeddable.name : "";
   let choiceId = 1;
   const convertedChoices: IChoice[] = [];
   item.embeddable.choices.forEach((choice: Record<string, any>) => {
