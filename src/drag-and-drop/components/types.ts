@@ -5,6 +5,10 @@ export type ItemId = string;
 export interface IDraggableItem {
   id: ItemId;
   imageUrl?: string;
+  itemLabel: string;
+  index: number;
+  itemValue: number;
+  itemUnit: string;
 }
 
 export interface IPosition {

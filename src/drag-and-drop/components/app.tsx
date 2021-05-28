@@ -66,6 +66,22 @@ export const baseAuthoringProps = {
               title: "Image URL",
               type: "string",
               format: "uri"
+            },
+            itemLabel: {
+              title: "Image label",
+              type: "string"
+            },
+            index: {
+              title: "Index",
+              type: "number"
+            },
+            itemValue: {
+              title: "Value",
+              type: "number"
+            },
+            itemUnit: {
+              title: "Unit",
+              type: "string"
             }
           }
         }
