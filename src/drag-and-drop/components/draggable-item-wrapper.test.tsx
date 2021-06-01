@@ -9,7 +9,7 @@ describe("DraggableItemWrapper", () => {
   it("renders DraggableItem", () => {
     const wrapper = mount(
       <DndProvider backend={TouchBackend} options={{enableMouseEvents: true}} >
-        <DraggableItemWrapper item={{ id: "1", imageUrl: "https://image/1", itemLabel: "image label", index: 1, itemValue: 5, itemUnit: "oz" }} position={{ left: 1, top: 1}} draggable={true} />
+        <DraggableItemWrapper item={{ id: "1", imageUrl: "https://image/1", imageWidth: 25, imageHeight: 25, itemLabel: "image label", index: 1, itemValue: 5, itemUnit: "oz" }} position={{ left: 1, top: 1}} draggable={true} />
       </DndProvider>
     );
     expect(wrapper.find(DraggableItem).length).toEqual(1);
