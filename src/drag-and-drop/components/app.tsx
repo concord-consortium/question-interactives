@@ -78,12 +78,48 @@ export const baseAuthoringProps = {
           }
         }
       },
+      dragTargets: {
+        type: "array",
+        title: "Drag targets",
+        items: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string"
+            },
+            targetLabel: {
+              title: "Target label",
+              type: "string"
+            },
+            imageUrl: {
+              title: "Image URL",
+              type: "string",
+              format: "uri"
+            },
+            targetWidth: {
+              title: "Target width",
+              type: "number"
+            },
+            targetHeight: {
+              title: "Target height",
+              type: "number"
+            },
+            index: {
+              title: "Target index",
+              type: "number"
+            }
+          }
+        }
+      },
       initialState: {
         type: "object",
         properties: {
           itemPositions: {
             type: "object"
-          }
+          },
+          // itemsInTarget: {
+          //   type: "object"
+          // }
         }
       }
     }
@@ -112,6 +148,13 @@ export const baseAuthoringProps = {
         }
       }
     },
+    dragTargets: {
+      items: {
+        id: {
+          "ui:widget": "hidden"
+        }
+      }
+    },
     initialState: {
       "ui:field": "initialState"
     }
@@ -126,6 +169,11 @@ export const baseAuthoringProps = {
     authoredState.draggableItems?.forEach(item => {
       if (item.id === undefined) {
         item.id = uuidv4();
+      }
+    });
+    authoredState.dragTargets?.forEach(target => {
+      if (target.id === undefined) {
+        target.id = uuidv4();
       }
     });
     return authoredState;

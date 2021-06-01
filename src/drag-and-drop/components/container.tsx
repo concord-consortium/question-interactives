@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { IRuntimeQuestionComponentProps } from "../../shared/components/base-question-app";
-import { IAuthoredState, IDraggableItem, IInitialState, IInteractiveState, IPosition, ItemId } from "./types";
+import { IAuthoredState, IDraggableItem, IDragTarget, IInitialState, IInteractiveState, IPosition, ItemId, TargetId } from "./types";
 import { renderHTML } from "../../shared/utilities/render-html";
 import { useDrop } from "react-dnd";
 import { DraggableItemPreview } from "./draggable-item-preview";
 import { DraggableItemWrapper, DraggableItemWrapperType, IDraggableItemWrapper } from "./draggable-item-wrapper";
+import { DragTargetWrapper } from "./drag-target-wrapper";
 import css from "./container.scss";
 
 export interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {
@@ -37,6 +38,22 @@ const getInitialTop = (
   return top;
 };
 
+const getTargetTop = (
+  minTop: number, targets: IDragTarget[], targetPositions: Record<TargetId, IPosition>,
+  targetDimensions: Record<TargetId, IDimensions>, idx: number
+) => {
+  let top = minTop;
+  for (let i = 0; i < idx; i += 1) {
+    const target = targets[i];
+    // If item has been already moved by author, doesn't count it in.
+    if (!targetPositions[target.id]) {
+      top += targetDimensions[target.id]?.height || 0;
+      top += margin;
+    }
+  }
+  return top;
+};
+
 export const Container: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, setInitialState, report }) => {
   const readOnly = !!(report || (authoredState.required && interactiveState?.submitted));
   const [ itemDimensions, setItemDimensions ] = useState<Record<ItemId, IDimensions>>({});
@@ -51,6 +68,15 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
     // Interactive state. If only available, that's the highest priority. Used in runtime mode only.
     ...interactiveState?.itemPositions
   };
+  const targetPositions: Record<string, IPosition> = {
+    ...authoredState.targetPositions,
+  };
+  // const itemsInTarget: IDraggableItem[] = {
+  //   // Initial state coming from authored state. Used when this component is used in runtime mode or in authoring mode.
+  //   ...authoredState.initialState?.itemsInTarget,
+  //   // Interactive state. If only available, that's the highest priority. Used in runtime mode only.
+  //   ...interactiveState?.itemsInTarget
+  // };
 
   useEffect(() => {
     // Preload draggable items to get their dimensions.
@@ -72,7 +98,11 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
         itemPositions: {
           ...authoredState.initialState?.itemPositions,
           [id]: {left, top}
-        }
+        },
+        // itemsInTarget: {
+        //   ...authoredState.initialState?.itemsInTarget,
+        //   [id]:
+        // }
       });
     } else if (setInteractiveState) {
       // Runtime mode.
@@ -125,6 +155,22 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
             };
           }
           return <DraggableItemWrapper key={item.id} item={item} position={position} draggable={!readOnly} />;
+        })
+      }
+      {
+        authoredState.dragTargets?.map((target, idx) => {
+          let position = targetPositions[target.id];
+          if (!position) {
+            // If position is not available, calculate it dynamically using dimensions of other draggable items.
+            // Put them all right below the dragging area prompt, in one column.
+            const minTargetTop = marginTop;
+            const top = getTargetTop(minTargetTop, authoredState.dragTargets || [], itemPositions, itemDimensions, idx);
+            position = {
+              left: marginLeft,
+              top: Math.min(canvasHeight - margin, top)
+            };
+          }
+          return <DragTargetWrapper key={target.id} target={target} position={position}/>;
         })
       }
       {/* Dragged item preview image (one that follows mouse cursor) */}

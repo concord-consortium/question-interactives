@@ -4,6 +4,7 @@ import { margin, marginLeft, marginTop } from "./container";
 import { DraggableItemWrapper } from "./draggable-item-wrapper";
 import { ContainerWithDndProvider } from "./container-with-dnd-provider";
 import { DraggableItemPreview } from "./draggable-item-preview";
+import { IDragTarget } from "./types";
 
 const authoredState = {
   version: 1,
@@ -15,7 +16,11 @@ const authoredState = {
   draggableItems: [
     {id: "1", imageUrl: "http://image/1", imageWidth: 25, imageHeight: 25, itemLabel: "image label 1", index: 1, itemValue: 5, targetMatch: 3},
     {id: "2", imageUrl: "http://image/2", imageWidth: 25, imageHeight: 25, itemLabel: "image label 2", index: 2, itemValue: 2, targetMatch: 1},
-  ]
+  ],
+  dragTargets: [
+    {id: "123", imageUrl: "https://image.com/1", targetWidth: 20, targetHeight: 20, targetLabel: "target 1", index:1} as IDragTarget
+  ],
+  targetPositions: {}
 };
 
 describe("Container", () => {
@@ -58,6 +63,9 @@ describe("Container", () => {
           itemPositions: {
             1: {left: 123, top: 321},
             2: {left: 111, top: 222}
+          },
+          targetPositions: {
+            1: {left: 222, top: 222}
           }
         }
       };
@@ -81,6 +89,9 @@ describe("Container", () => {
         answerType: "interactive_state" as const,
         itemPositions: {
           2: {left: 999, top: 999}
+        },
+        targetPositions: {
+          1: {left: 222, top: 222}
         }
       };
       const wrapper = mount(<ContainerWithDndProvider authoredState={authoredStateWithInitialState} interactiveState={interactiveState} />);
