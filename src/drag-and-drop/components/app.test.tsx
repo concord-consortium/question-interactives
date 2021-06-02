@@ -1,5 +1,5 @@
 import { baseAuthoringProps  } from "./app";
-import { IDraggableItem, IDragTarget } from "./types";
+import { IDraggableItem, IDropZone } from "./types";
 
 describe("preprocessFormData helper", () => {
   it("generates unique IDs for draggableItems they're missing", () => {
@@ -10,10 +10,9 @@ describe("preprocessFormData helper", () => {
         {imageUrl: "https://image.com/1"} as IDraggableItem,
         {imageUrl: "https://image.com/2"} as IDraggableItem,
       ],
-      dragTargets: [
-        {id: "123", imageUrl: "https://image.com/1", targetWidth: 20, targetHeight: 20, targetLabel: "target 1", index:1} as IDragTarget
+      dropZones: [
+        {id: "123", imageUrl: "https://image.com/1", targetWidth: 20, targetHeight: 20, targetLabel: "target 1", index:1} as IDropZone
       ],
-      targetPositions: {}
     });
     const draggableItems = newData.draggableItems;
 
@@ -30,10 +29,9 @@ describe("preprocessFormData helper", () => {
         {id: "1", imageUrl: "https://image.com/1"} as IDraggableItem,
         {id: "2", imageUrl: "https://image.com/2"} as IDraggableItem,
       ],
-      dragTargets: [
-        {id: "123", imageUrl: "https://image.com/1", targetWidth: 20, targetHeight: 20, targetLabel: "target 1", index:1} as IDragTarget
+      dropZones: [
+        {id: "123", imageUrl: "https://image.com/1", targetWidth: 20, targetHeight: 20, targetLabel: "target 1", index:1} as IDropZone
       ],
-      targetPositions: {}
     })).toEqual({
       version: 1,
       questionType: "iframe_interactive",
@@ -41,10 +39,9 @@ describe("preprocessFormData helper", () => {
         {id: "1", imageUrl: "https://image.com/1"} as IDraggableItem,
         {id: "2", imageUrl: "https://image.com/2"} as IDraggableItem,
       ],
-      dragTargets: [
-        {id: "123", imageUrl: "https://image.com/1", targetWidth: 20, targetHeight: 20, targetLabel: "target 1", index:1} as IDragTarget
+      dropZones: [
+        {id: "123", imageUrl: "https://image.com/1", targetWidth: 20, targetHeight: 20, targetLabel: "target 1", index:1} as IDropZone
       ],
-      targetPositions: {}
     });
   });
 });

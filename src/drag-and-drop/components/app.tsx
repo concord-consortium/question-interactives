@@ -78,9 +78,9 @@ export const baseAuthoringProps = {
           }
         }
       },
-      dragTargets: {
+      dropZones: {
         type: "array",
-        title: "Drag targets",
+        title: "Targets",
         items: {
           type: "object",
           properties: {
@@ -104,9 +104,9 @@ export const baseAuthoringProps = {
               title: "Target height",
               type: "number"
             },
-            index: {
-              title: "Target index",
-              type: "number"
+            showTargetSum: {
+              title: "Show sum",
+              type: "boolean"
             }
           }
         }
@@ -117,9 +117,9 @@ export const baseAuthoringProps = {
           itemPositions: {
             type: "object"
           },
-          // itemsInTarget: {
-          //   type: "object"
-          // }
+          targetPositions: {
+            type: "object"
+          },
         }
       }
     }
@@ -148,7 +148,7 @@ export const baseAuthoringProps = {
         }
       }
     },
-    dragTargets: {
+    dropZones: {
       items: {
         id: {
           "ui:widget": "hidden"
@@ -171,7 +171,7 @@ export const baseAuthoringProps = {
         item.id = uuidv4();
       }
     });
-    authoredState.dragTargets?.forEach(target => {
+    authoredState.dropZones?.forEach(target => {
       if (target.id === undefined) {
         target.id = uuidv4();
       }

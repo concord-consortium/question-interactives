@@ -16,22 +16,22 @@ export interface IPosition {
 
 export interface IInitialState {
   itemPositions?: Record<ItemId, IPosition>;
+  targetPositions?: Record<TargetId, IPosition>;
   itemsInTarget?: IDraggableItem[];
 }
 
 export type TargetId = string;
 
-export interface IDragTarget {
+export interface IDropZone {
   id: TargetId;
   imageUrl?: string;
   targetWidth: number;
   targetHeight: number;
-  targetabel?: string;
+  targetLabel?: string;
   index: number;
 }
 
 export interface IAuthoredState extends IAuthoringInteractiveMetadata {
-  targetPositions?: Record<string, IPosition>;
   version: number;
   prompt?: string;
   draggingAreaPrompt?: string;
@@ -41,12 +41,13 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   canvasHeight?: number;
   backgroundImageUrl?: string;
   draggableItems?: IDraggableItem[];
-  dragTargets?: IDragTarget[];
+  dropZones?: IDropZone[];
   initialState?: IInitialState;
 }
 
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
   submitted?: boolean;
   itemPositions?: Record<ItemId, IPosition>;
+  targetPositions?: Record<TargetId, IPosition>;
   itemsInTarget?: IDraggableItem[];
 }
