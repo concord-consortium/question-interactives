@@ -76,7 +76,7 @@ export const baseAuthoringProps = {
               type: "number"
             },
             itemLabel: {
-              title: "Image label",
+              title: "Label",
               type: "string"
             },
             index: {
@@ -87,12 +87,16 @@ export const baseAuthoringProps = {
               title: "Value",
               type: "number"
             },
-            itemUnit: {
-              title: "Unit",
-              type: "string"
+            targetMatch: {
+              title: "Target match:",
+              type: "number"
             }
           }
         }
+      },
+      enableCheckAnswer: {
+        title: "Allow users to check answers",
+        type: "boolean",
       },
       initialState: {
         type: "object",

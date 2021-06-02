@@ -10,7 +10,7 @@ export interface IDraggableItem {
   itemLabel: string;
   index: number;
   itemValue: number;
-  itemUnit: string;
+  targetMatch: number;
 }
 
 export interface IPosition {
