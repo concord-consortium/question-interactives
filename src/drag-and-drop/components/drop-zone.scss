@@ -1,0 +1,12 @@
+@import "../../shared/styles/helpers";
+
+.drop-zone {
+  position: relative;
+  cursor: move;
+  width: inherit;
+  height: inherit;
+
+  img {
+    pointer-events: none;
+  }
+}

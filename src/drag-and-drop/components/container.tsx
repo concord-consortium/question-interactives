@@ -3,11 +3,9 @@ import { IRuntimeQuestionComponentProps } from "../../shared/components/base-que
 import { IAuthoredState, IDraggableItem, IDropZone, IInitialState, IInteractiveState, IPosition, ItemId, TargetId } from "./types";
 import { renderHTML } from "../../shared/utilities/render-html";
 import { useDrop } from "react-dnd";
-import { DraggableItemPreview } from "./draggable-item-preview";
 import { DraggableItemWrapper, DraggableItemWrapperType, IDraggableItemWrapper } from "./draggable-item-wrapper";
 import { DropZoneWrapper, DropZoneWrapperType, IDropZoneWrapper } from "./drop-zone-wrapper";
 import css from "./container.scss";
-import { DropZonePreview } from "./drop-zone-preview";
 
 export interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {
   // Used only for authoring (initial state is part of the authored state).
@@ -74,12 +72,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
     ...authoredState.initialState?.targetPositions,
     ...interactiveState?.targetPositions
   };
-  // const itemsInTarget: IDraggableItem[] = {
-  //   // Initial state coming from authored state. Used when this component is used in runtime mode or in authoring mode.
-  //   ...authoredState.initialState?.itemsInTarget,
-  //   // Interactive state. If only available, that's the highest priority. Used in runtime mode only.
-  //   ...interactiveState?.itemsInTarget
-  // };
+
   useEffect(() => {
     // Preload draggable items to get their dimensions.
     authoredState.draggableItems?.forEach(item => {
@@ -124,10 +117,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
           ...prevState?.itemPositions,
           [id]: {left, top}
         },
-        targetPositions: {
-          ...prevState?.targetPositions,
-          [id]: {left, top}
-        }
+
       }));
     }
   }, [authoredState.initialState?.itemPositions, authoredState.initialState?.targetPositions, setInitialState, setInteractiveState]);
@@ -150,7 +140,6 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
     height: canvasHeight + "px",
     backgroundImage: authoredState.backgroundImageUrl ? `url("${authoredState.backgroundImageUrl}")` : undefined
   };
-  // console.log(authoredState);
 
   return (
     <div ref={drop} className={css.draggingArea} style={draggingAreaStyle} data-cy="dnd-container">
@@ -175,7 +164,6 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
       }
       {
         authoredState.dropZones?.map((target, idx) => {
-          // console.log(authoredState);
           let position = targetPositions[target.id];
           if (!position) {
             // If position is not available, calculate it dynamically using dimensions of other draggable items.
@@ -187,12 +175,9 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
               top: Math.min(canvasHeight - margin, top)
             };
           }
-          return <DropZoneWrapper key={target.id} item={target} position={position} draggable={!readOnly}/>;
+          return <DropZoneWrapper key={target.id} item={target} position={position} draggable={!readOnly && !setInteractiveState} />;
         })
       }
-      {/* Dragged item preview image (one that follows mouse cursor) */}
-      <DraggableItemPreview />
-      <DropZonePreview />
     </div>
   );
 };
