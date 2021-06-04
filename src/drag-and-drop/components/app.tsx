@@ -94,10 +94,6 @@ export const baseAuthoringProps = {
           }
         }
       },
-      enableCheckAnswer: {
-        title: "Allow users to check answers",
-        type: "boolean",
-      },
       initialState: {
         type: "object",
         properties: {
