@@ -1,9 +1,11 @@
 import React from "react";
+import { useDrop } from "react-dnd";
 import { IDropZone, IPosition } from "./types";
 import { DragSourceMonitor, useDrag } from "react-dnd";
 import { DropZone } from "./drop-zone";
-import css from "./drop-zone-wrapper.scss";
 import { DropZonePreview } from "./drop-zone-preview";
+import { DraggableItemWrapperType, IDraggableItemWrapper } from "./draggable-item-wrapper";
+import css from "./drop-zone-wrapper.scss";
 
 export interface IProps {
   item: IDropZone;
@@ -21,6 +23,21 @@ export interface IDropZoneWrapper {
 
 // Provides dragging logic and renders basic draggable item.
 export const DropZoneWrapper: React.FC<IProps> = ({ item, position, draggable }) => {
+
+  const handleItemDrop = (wrapper: IDraggableItemWrapper) => {
+    console.log("wrapper: ", wrapper);
+
+    // if (trayType && notebookType) {
+    //   if (trayType === notebookType) {
+    //     setErrorClass("");
+    //     onCategorizeAnimal(trayType, notebookType);
+    //   }
+    //   else {
+    //     setErrorClass("error");
+    //   }
+    // }
+  };
+
   const [{ isDragging }, drag] = useDrag<IDropZoneWrapper, any, any>({
     item: { type: "drop-zone-wrapper", item, position },
     collect: (monitor: DragSourceMonitor) => ({
@@ -29,11 +46,22 @@ export const DropZoneWrapper: React.FC<IProps> = ({ item, position, draggable })
     canDrag: draggable
   });
 
+  // const [, drop] = useDrop({
+  const [{ isOver }, drop] = useDrop({
+    accept: DraggableItemWrapperType,
+    drop: (wrapper: IDraggableItemWrapper, monitor ) => {
+      handleItemDrop(wrapper);
+    },
+    collect: monitor => ({
+      isOver: !!monitor.isOver(),
+    }),
+  });
+
   return (
     <>
       {isDragging ? <DropZonePreview /> :
         <div
-          ref={draggable ? drag : undefined}
+          ref={draggable ? drag : drop}
           className={`${css.dropZoneWrapper} ${draggable ? css.draggable : ""} ${item.imageUrl ? "" : css.background }`}
           style={position}
           data-cy="draggable-item-wrapper"

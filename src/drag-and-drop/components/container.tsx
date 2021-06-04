@@ -70,7 +70,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
   };
   const targetPositions: Record<string, IPosition> = {
     ...authoredState.initialState?.targetPositions,
-    ...interactiveState?.targetPositions
+    // ...interactiveState?.targetPositions
   };
 
   useEffect(() => {
@@ -122,17 +122,25 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
     }
   }, [authoredState.initialState?.itemPositions, authoredState.initialState?.targetPositions, setInitialState, setInteractiveState]);
 
-  const [, drop] = useDrop({
+  const [{ isOver }, drop] = useDrop({
     accept: [DraggableItemWrapperType, DropZoneWrapperType],
     drop(wrapper: IDraggableItemWrapper | IDropZoneWrapper, monitor) {
-      const delta = monitor.getDifferenceFromInitialOffset() as {
-        x: number
-        y: number
-      };
-      const left = Math.round(wrapper.position.left + delta.x);
-      const top = Math.round(wrapper.position.top + delta.y);
-      moveDraggableItem(wrapper.item.id, left, top);
+      const didDrop = monitor.didDrop();
+      if (didDrop ) {
+        return;
+      } else {
+        const delta = monitor.getDifferenceFromInitialOffset() as {
+          x: number
+          y: number
+        };
+        const left = Math.round(wrapper.position.left + delta.x);
+        const top = Math.round(wrapper.position.top + delta.y);
+        moveDraggableItem(wrapper.item.id, left, top);
     }
+    },
+    collect: monitor => ({
+      isOver: !!monitor.isOver(),
+    }),
   });
 
   const draggingAreaStyle = {
