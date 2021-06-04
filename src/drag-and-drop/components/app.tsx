@@ -78,6 +78,10 @@ export const baseAuthoringProps = {
           }
         }
       },
+      enableCheckAnswer: {
+        title: "Allow users to check answers",
+        type: "boolean",
+      },
       dropZones: {
         type: "array",
         title: "Targets",
