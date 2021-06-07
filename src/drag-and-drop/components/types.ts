@@ -7,10 +7,6 @@ export interface IDraggableItem {
   imageUrl?: string;
   imageWidth: number;
   imageHeight: number;
-  itemLabel: string;
-  index: number;
-  itemValue: number;
-  targetMatch: number;
 }
 
 export interface IPosition {

@@ -12,7 +12,6 @@ export const DraggableItem: React.FC<IProps> = ({ item }) => {
     <div className={`${css.draggableItem}`}>
       {item.imageUrl &&
         <img src={item.imageUrl} alt="draggable item" width={`${item.imageWidth}px`} height={`${item.imageHeight}px`}/>}
-      <div className={`${css.itemLabel}`}>{item.itemLabel}</div>
     </div>
   );
 };

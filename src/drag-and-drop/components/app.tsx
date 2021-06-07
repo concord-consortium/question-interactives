@@ -75,10 +75,6 @@ export const baseAuthoringProps = {
               title:"Image height",
               type: "number"
             },
-            itemLabel: {
-              title: "Label",
-              type: "string"
-            },
           }
         }
       },
