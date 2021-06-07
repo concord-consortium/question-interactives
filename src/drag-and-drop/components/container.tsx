@@ -71,6 +71,9 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
   const targetPositions: Record<string, IPosition> = {
     ...authoredState.initialState?.targetPositions,
   };
+  const itemTargetIds: Record<string, string> = {
+    ...interactiveState?.itemTargetIds
+  };
 
   useEffect(() => {
     // Preload draggable items to get their dimensions.
@@ -125,6 +128,21 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
     }
   }, [authoredState.initialState?.itemPositions, authoredState.initialState?.targetPositions, setInitialState, setInteractiveState]);
 
+  const handleItemDrop = useCallback ((draggableItem: IDraggableItemWrapper, targetId: string) => {
+    if (setInteractiveState) {
+      // Runtime mode.
+      setInteractiveState(prevState => ({
+        ...prevState,
+        answerType: "interactive_state",
+        itemTargetIds: {
+          ...prevState?.itemTargetIds,
+          [draggableItem.item.id]: targetId
+        },
+
+      }));
+    }
+  },[setInteractiveState]);
+
   const [, drop] = useDrop({
     accept: [DraggableItemWrapperType, DropZoneWrapperType],
     drop(wrapper: IDraggableItemWrapper | IDropZoneWrapper, monitor) {
@@ -170,12 +188,21 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
               top: Math.min(canvasHeight - margin, top)
             };
           }
-          return <DropZoneWrapper key={target.id} item={target} position={position} draggable={!readOnly && !setInteractiveState} moveDraggableItem={moveDraggableItem}/>;
+
+          return <DropZoneWrapper
+                    key={target.id}
+                    target={target}
+                    position={position}
+                    draggable={!readOnly && !setInteractiveState}
+                    onItemDrop={handleItemDrop}
+                  />;
         })
       }
       {
         authoredState.draggableItems?.map((item, idx) => {
           let position = itemPositions[item.id];
+          const targetId = itemTargetIds[item.id];
+
           if (!position) {
             // If position is not available, calculate it dynamically using dimensions of other draggable items.
             // Put them all right below the dragging area prompt, in one column.
@@ -186,7 +213,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
               top: Math.min(canvasHeight - margin, top)
             };
           }
-          return <DraggableItemWrapper key={item.id} item={item} position={position} draggable={!readOnly} />;
+          return targetId === undefined && <DraggableItemWrapper key={item.id} item={item} position={position} draggable={!readOnly} />;
         })
       }
 

@@ -17,7 +17,7 @@ export interface IPosition {
 export interface IInitialState {
   itemPositions?: Record<ItemId, IPosition>;
   targetPositions?: Record<TargetId, IPosition>;
-  itemsInTarget?: IDraggableItem[];
+  itemTargetIds?: Record<ItemId, TargetId>;
 }
 
 export type TargetId = string;
@@ -48,6 +48,5 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
   submitted?: boolean;
   itemPositions?: Record<ItemId, IPosition>;
-  targetPositions?: Record<TargetId, IPosition>;
-  itemsInTarget?: IDraggableItem[];
+  itemTargetIds?: Record<ItemId, TargetId>;
 }

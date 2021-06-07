@@ -3,18 +3,18 @@ import { IDropZone } from "./types";
 import css from "./drop-zone-wrapper.scss";
 
 export interface IProps {
-  // target: IDropZone;
-  item: IDropZone;
+  target: IDropZone;
   highlight?: boolean;
 }
 
 // Just an image for now, but it can be extended in the future to include some text and other elements.
-export const DropZone: React.FC<IProps> = ({ item, highlight }) => {
-  const style={width: item.targetWidth, height: item.targetHeight};
+export const DropZone: React.FC<IProps> = ({ target, highlight }) => {
+  const style={width: target.targetWidth, height: target.targetHeight};
   return (
-    <div className={highlight && css.highlight} style={style}>
-      {item.imageUrl && <img src={item.imageUrl} alt="drag target" width={item.targetWidth} height={item.targetHeight}/>}
-      <div>{item.targetLabel}</div>
+    <div className={highlight? css.highlight: ""} style={style}>
+      {target.imageUrl && <img src={target.imageUrl} alt="drag target" width={target.targetWidth} height={target.targetHeight}/>}
+      <div>{target.targetLabel}
+      </div>
     </div>
   );
 };

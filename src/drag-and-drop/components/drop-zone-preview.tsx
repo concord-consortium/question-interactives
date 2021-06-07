@@ -14,7 +14,7 @@ export const DropZonePreview = () => {
 
   return (
     <div className={css.dropZonePreview} style={style}>
-      <DropZone item={itemCasted.item} />
+      <DropZone target={itemCasted.item} />
     </div>
   );
 };
