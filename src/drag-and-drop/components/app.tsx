@@ -79,18 +79,6 @@ export const baseAuthoringProps = {
               title: "Label",
               type: "string"
             },
-            index: {
-              title: "Index",
-              type: "number"
-            },
-            itemValue: {
-              title: "Value",
-              type: "number"
-            },
-            targetMatch: {
-              title: "Target match:",
-              type: "number"
-            }
           }
         }
       },
