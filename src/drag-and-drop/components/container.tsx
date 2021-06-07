@@ -46,7 +46,7 @@ const getTargetTop = (
     const target = targets[i];
     // If item has been already moved by author, doesn't count it in.
     if (!targetPositions[target.id]) {
-      top += targetDimensions[target.id]?.height || 0;
+      top += targetDimensions[target.id]?.height || 100;
       top += margin;
     }
   }
@@ -70,7 +70,6 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
   };
   const targetPositions: Record<string, IPosition> = {
     ...authoredState.initialState?.targetPositions,
-    // ...interactiveState?.targetPositions
   };
 
   useEffect(() => {
@@ -89,8 +88,12 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
         const img = document.createElement("img");
         img.src = target.imageUrl;
         img.onload = () => {
-          setTargetDimensions(prevHash => ({...prevHash, [target.id]: {width: img.width, height: img.height }}));
+          setTargetDimensions(prevHash => ({...prevHash, [target.id]: {width: target.targetWidth || img.width, height: target.targetHeight || img.height }}));
         };
+      } else {
+        setTargetDimensions(prevHash => (
+          {...prevHash, [target.id]: {width: target.targetWidth || 100, height: target.targetHeight  || 100 }}
+        ));
       }
     });
   }, [authoredState.draggableItems, authoredState.dropZones]);
@@ -122,7 +125,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
     }
   }, [authoredState.initialState?.itemPositions, authoredState.initialState?.targetPositions, setInitialState, setInteractiveState]);
 
-  const [{ isOver }, drop] = useDrop({
+  const [, drop] = useDrop({
     accept: [DraggableItemWrapperType, DropZoneWrapperType],
     drop(wrapper: IDraggableItemWrapper | IDropZoneWrapper, monitor) {
       const didDrop = monitor.didDrop();
@@ -155,6 +158,22 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
         {renderHTML(authoredState.draggingAreaPrompt || "")}
       </div>
       {
+        authoredState.dropZones?.map((target, idx) => {
+          let position = targetPositions[target.id];
+          if (!position) {
+            // If position is not available, calculate it dynamically using dimensions of other draggable items.
+            // Put them all right below the dragging area prompt, in one column.
+            const minTargetTop = marginTop;
+            const top = getTargetTop(minTargetTop, authoredState.dropZones || [], targetPositions, targetDimensions, idx);
+            position = {
+              left: marginLeft,
+              top: Math.min(canvasHeight - margin, top)
+            };
+          }
+          return <DropZoneWrapper key={target.id} item={target} position={position} draggable={!readOnly && !setInteractiveState} moveDraggableItem={moveDraggableItem}/>;
+        })
+      }
+      {
         authoredState.draggableItems?.map((item, idx) => {
           let position = itemPositions[item.id];
           if (!position) {
@@ -170,22 +189,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
           return <DraggableItemWrapper key={item.id} item={item} position={position} draggable={!readOnly} />;
         })
       }
-      {
-        authoredState.dropZones?.map((target, idx) => {
-          let position = targetPositions[target.id];
-          if (!position) {
-            // If position is not available, calculate it dynamically using dimensions of other draggable items.
-            // Put them all right below the dragging area prompt, in one column.
-            const minTargetTop = marginTop;
-            const top = getTargetTop(minTargetTop, authoredState.dropZones || [], targetPositions, targetDimensions, idx);
-            position = {
-              left: marginLeft,
-              top: Math.min(canvasHeight - margin, top)
-            };
-          }
-          return <DropZoneWrapper key={target.id} item={target} position={position} draggable={!readOnly && !setInteractiveState} />;
-        })
-      }
+
     </div>
   );
 };

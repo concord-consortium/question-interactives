@@ -1,26 +1,33 @@
 .dropZoneWrapper {
 
   position: absolute;
+  box-sizing: border-box;
+
+
   &.draggable {
     cursor: move;
     &:hover {
       $border-width: 4px;
-      border: $border-width dotted #ffdd00;
+      border: $border-width dotted #0022ff;
       transform: translate(-$border-width, -$border-width);
     }
   }
   &.background {
     border-radius: 5px;
     border: 2px dotted gray;
-    background-color: rgba(255, 255, 255, 1);
+    background-color: #e8e8e8;
+  }
 
-    &.highlight {
-      opacity: 1;
-    }
+  &.highlight {
+    background-color: #cecece;
+    border: 2px dotted gray;
   }
 
   img {
     pointer-events: none;
   }
-
+  .targetLabel {
+    position: absolute;
+    bottom: 0;
+  }
 }

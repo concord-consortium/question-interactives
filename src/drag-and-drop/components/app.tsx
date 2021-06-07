@@ -102,11 +102,13 @@ export const baseAuthoringProps = {
             },
             targetWidth: {
               title: "Target width",
-              type: "number"
+              type: "number",
+              default: 100
             },
             targetHeight: {
               title: "Target height",
-              type: "number"
+              type: "number",
+              default: 100
             },
             showTargetSum: {
               title: "Show sum",
