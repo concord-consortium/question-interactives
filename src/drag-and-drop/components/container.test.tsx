@@ -14,8 +14,8 @@ const authoredState = {
   backgroundImageUrl: "http://background.img.url",
   draggingAreaPrompt: "Test prompt",
   draggableItems: [
-    {id: "1", imageUrl: "http://image/1", imageWidth: 25, imageHeight: 25, itemLabel: "image label 1", index: 1, itemValue: 5, targetMatch: 3},
-    {id: "2", imageUrl: "http://image/2", imageWidth: 25, imageHeight: 25, itemLabel: "image label 2", index: 2, itemValue: 2, targetMatch: 1},
+    {id: "1", imageUrl: "http://image/1", imageWidth: 25, imageHeight: 25},
+    {id: "2", imageUrl: "http://image/2", imageWidth: 25, imageHeight: 25},
   ],
   dropZones: [
     {id: "123", imageUrl: "https://image.com/1", targetWidth: 20, targetHeight: 20, targetLabel: "target 1", index:1} as IDropZone
