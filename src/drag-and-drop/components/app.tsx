@@ -66,7 +66,15 @@ export const baseAuthoringProps = {
               title: "Image URL",
               type: "string",
               format: "uri"
-            }
+            },
+            imageWidth: {
+              title: "Image width",
+              type: "number"
+            },
+            imageHeight: {
+              title:"Image height",
+              type: "number"
+            },
           }
         }
       },

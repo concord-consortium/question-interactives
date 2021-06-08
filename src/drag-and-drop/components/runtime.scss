@@ -7,12 +7,4 @@
   .prompt {
     position: absolute;
   }
-
-  .draggableItem {
-    position: absolute;
-    cursor: move;
-    img {
-      pointer-events: none;
-    }
-  }
 }

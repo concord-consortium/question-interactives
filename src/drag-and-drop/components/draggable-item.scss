@@ -1,7 +1,7 @@
 @import "../../shared/styles/helpers";
 
 .draggableItem {
-  position: absolute;
+  position: relative;
   cursor: move;
   img {
     pointer-events: none;
