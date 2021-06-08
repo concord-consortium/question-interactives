@@ -30,15 +30,16 @@ export const DraggableItemWrapper: React.FC<IProps> = ({ item, position, draggab
 
   return (
     <>
-    { isDragging ? <DraggableItemPreview /> :
-      <div
-        ref={draggable ? drag : undefined}
-        className={`${css.draggableItemWrapper} ${draggable ? css.draggable : ""}`}
-        style={position}
-        data-cy="draggable-item-wrapper"
-      >
-        <DraggableItem item={item} />
-      </div>
+    { isDragging
+      ? <DraggableItemPreview />
+      : <div
+          ref={draggable ? drag : undefined}
+          className={`${css.draggableItemWrapper} ${draggable ? css.draggable : ""}`}
+          style={position}
+          data-cy="draggable-item-wrapper"
+        >
+          <DraggableItem item={item} />
+        </div>
     }
     </>
   );

@@ -23,11 +23,18 @@
     border: $border-width dotted #0022ff;
   }
 
+  .itemInTarget {
+    position: relative;
+    top: 0;
+    left: 0;
+    border: $border-width dotted rgb(172, 72, 89);
+  }
+
   img {
     pointer-events: none;
   }
   .targetLabel {
-    position: absolute;
-    bottom: 0;
+    position: relative;
+    bottom: -10px;
   }
 }

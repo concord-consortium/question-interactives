@@ -91,11 +91,12 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
         const img = document.createElement("img");
         img.src = target.imageUrl;
         img.onload = () => {
-          setTargetDimensions(prevHash => ({...prevHash, [target.id]: {width: target.targetWidth || img.width, height: target.targetHeight || img.height }}));
+          setTargetDimensions(prevHash => (
+            {...prevHash, [target.id]: { width: target.targetWidth || img.width, height: target.targetHeight || img.height }}));
         };
       } else {
         setTargetDimensions(prevHash => (
-          {...prevHash, [target.id]: {width: target.targetWidth || 100, height: target.targetHeight  || 100 }}
+          {...prevHash, [target.id]: { width: target.targetWidth || 100, height: target.targetHeight  || 100 }}
         ));
       }
     });
@@ -128,7 +129,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
     }
   }, [authoredState.initialState?.itemPositions, authoredState.initialState?.targetPositions, setInitialState, setInteractiveState]);
 
-  const handleItemDrop = useCallback ((draggableItem: IDraggableItemWrapper, targetId: string) => {
+  const handleItemDrop = useCallback ((targetId: string, draggableItem: IDraggableItemWrapper) => {
     if (setInteractiveState) {
       // Runtime mode.
       setInteractiveState(prevState => ({
@@ -138,7 +139,6 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
           ...prevState?.itemTargetIds,
           [draggableItem.item.id]: targetId
         },
-
       }));
     }
   },[setInteractiveState]);
@@ -170,6 +170,17 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
     backgroundImage: authoredState.backgroundImageUrl ? `url("${authoredState.backgroundImageUrl}")` : undefined
   };
 
+  const getItemsInTarget = (targetId: string) => {
+    let key ="";
+    const itemIds=[];
+    for (key in itemTargetIds) {
+      if (itemTargetIds[key] === targetId) {
+        itemIds.push(key);
+      }
+    }
+    return itemIds;
+  };
+
   return (
     <div ref={drop} className={css.draggingArea} style={draggingAreaStyle} data-cy="dnd-container">
       <div ref={draggingAreaPromptRef} className={css.prompt} style={{top: marginTop, left: marginLeft}}>
@@ -178,6 +189,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
       {
         authoredState.dropZones?.map((target, idx) => {
           let position = targetPositions[target.id];
+          const itemsInTarget = getItemsInTarget(target.id);
           if (!position) {
             // If position is not available, calculate it dynamically using dimensions of other draggable items.
             // Put them all right below the dragging area prompt, in one column.
@@ -188,13 +200,13 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
               top: Math.min(canvasHeight - margin, top)
             };
           }
-
           return <DropZoneWrapper
                     key={target.id}
                     target={target}
                     position={position}
                     draggable={!readOnly && !setInteractiveState}
                     onItemDrop={handleItemDrop}
+                    itemsInTarget={itemsInTarget}
                   />;
         })
       }
@@ -202,7 +214,6 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
         authoredState.draggableItems?.map((item, idx) => {
           let position = itemPositions[item.id];
           const targetId = itemTargetIds[item.id];
-
           if (!position) {
             // If position is not available, calculate it dynamically using dimensions of other draggable items.
             // Put them all right below the dragging area prompt, in one column.
@@ -213,10 +224,10 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
               top: Math.min(canvasHeight - margin, top)
             };
           }
-          return targetId === undefined && <DraggableItemWrapper key={item.id} item={item} position={position} draggable={!readOnly} />;
+          return targetId === undefined &&
+            <DraggableItemWrapper key={item.id} item={item} position={position} draggable={!readOnly} />;
         })
       }
-
     </div>
   );
 };

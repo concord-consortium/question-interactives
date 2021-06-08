@@ -13,7 +13,7 @@ export const DropZone: React.FC<IProps> = ({ target, highlight }) => {
   return (
     <div className={highlight? css.highlight: ""} style={style}>
       {target.imageUrl && <img src={target.imageUrl} alt="drag target" width={target.targetWidth} height={target.targetHeight}/>}
-      <div>{target.targetLabel}
+      <div className={css.targetLabel}>{target.targetLabel}
       </div>
     </div>
   );
