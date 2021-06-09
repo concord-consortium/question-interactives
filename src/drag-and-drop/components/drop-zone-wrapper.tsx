@@ -1,17 +1,18 @@
-import React, { useState } from "react";
+import React from "react";
 import { DropTargetMonitor, useDrop } from "react-dnd";
-import { IDropZone, IPosition } from "./types";
+import { IDroppedItem, IDropZone, IPosition } from "./types";
 import { DragSourceMonitor, useDrag } from "react-dnd";
 import { DropZone } from "./drop-zone";
 import { DropZonePreview } from "./drop-zone-preview";
 import { DraggableItemWrapperType, IDraggableItemWrapper } from "./draggable-item-wrapper";
 import css from "./drop-zone-wrapper.scss";
+import { DraggableItem } from "./draggable-item";
 
 export interface IProps {
   target: IDropZone;
   position: IPosition;
   draggable: boolean;
-  itemsInTarget: string[];
+  itemsInTarget: IDroppedItem[];
   onItemDrop: (targetId: string, draggableItem: IDraggableItemWrapper ) => void
 }
 
@@ -65,8 +66,9 @@ export const DropZoneWrapper: React.FC<IProps> = ({ target, position, draggable,
             data-cy="draggable-item-wrapper"
           >
           {/* { itemsInTarget.map((itemId: string, idx: number) => { */}
-            { itemsInTarget.map((itemId: string, idx: number) => {
-                  return <div key={itemId} className={css.itemInTarget}>{itemId}</div>;
+            { itemsInTarget.map((item: any, idx: number) => {
+                  // return <div key={item.targetId} className={css.itemInTarget}>{item.targetId}</div>;
+                return <DraggableItem key={idx} item={item.droppedItem} />;
               })
 
               //   // const droppedItem = getDropResult && getDropResult.item;

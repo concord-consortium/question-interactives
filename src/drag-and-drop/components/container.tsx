@@ -174,13 +174,13 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
 
   const getItemsInTarget = (targetId: string) => {
     let key ="";
-    const itemIds=[];
+    const itemsDropped=[];
     for (key in itemTargetIds) {
       if (itemTargetIds[key].targetId === targetId) {
-        itemIds.push(key);
+        itemsDropped.push(itemTargetIds[key]);
       }
     }
-    return itemIds;
+    return itemsDropped;
   };
 
   return (
