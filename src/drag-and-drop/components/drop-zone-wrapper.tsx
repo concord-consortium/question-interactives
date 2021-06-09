@@ -1,12 +1,11 @@
 import React, { useState } from "react";
 import { DropTargetMonitor, useDrop } from "react-dnd";
-import { IDraggableItem, IDropZone, IPosition } from "./types";
+import { IDropZone, IPosition } from "./types";
 import { DragSourceMonitor, useDrag } from "react-dnd";
 import { DropZone } from "./drop-zone";
 import { DropZonePreview } from "./drop-zone-preview";
 import { DraggableItemWrapperType, IDraggableItemWrapper } from "./draggable-item-wrapper";
 import css from "./drop-zone-wrapper.scss";
-import { DraggableItem } from "./draggable-item";
 
 export interface IProps {
   target: IDropZone;

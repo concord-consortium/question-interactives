@@ -141,7 +141,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
         },
       }));
     }
-  },[setInteractiveState]);
+  }, [setInteractiveState]);
 
   const [, drop] = useDrop({
     accept: [DraggableItemWrapperType, DropZoneWrapperType],
@@ -157,7 +157,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
         const left = Math.round(wrapper.position.left + delta.x);
         const top = Math.round(wrapper.position.top + delta.y);
         moveDraggableItem(wrapper.item.id, left, top);
-    }
+      }
     },
     collect: monitor => ({
       isOver: !!monitor.isOver(),
@@ -222,7 +222,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
               top: Math.min(canvasHeight - margin, top)
             };
           }
-          return targetId === undefined &&
+          return !targetId &&
             <DraggableItemWrapper key={item.id} item={item} position={position} draggable={!readOnly} />;
         })
       }
