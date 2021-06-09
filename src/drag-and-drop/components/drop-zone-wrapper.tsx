@@ -24,8 +24,7 @@ export interface IDropZoneWrapper {
 }
 
 // Provides dragging logic and renders basic draggable item.
-export const DropZoneWrapper: React.FC<IProps> = ({ target, position, draggable, itemsInTarget, onItemDrop }) => {
-  const [ showDroppedItem, setShowDroppedItem ] = useState(false);
+export const DropZoneWrapper: React.FC<IProps> = ({ target, position, draggable, onItemDrop }) => {
   const [{ isDragging }, drag] = useDrag<IDropZoneWrapper, any, any>({
     item: { type: "drop-zone-wrapper", item: target, position },
     collect: (monitor: DragSourceMonitor) => ({
@@ -34,11 +33,10 @@ export const DropZoneWrapper: React.FC<IProps> = ({ target, position, draggable,
     canDrag: draggable
   });
 
-  const [{ isOver, canDrop, getItem, getDropResult }, drop] = useDrop({
+  const [{ isOver, canDrop, getItem }, drop] = useDrop({
     accept: DraggableItemWrapperType,
     drop: (droppedItem: any) => {
       onItemDrop(target.id, getItem);
-      setShowDroppedItem(true);
       return droppedItem;
     },
     collect: (monitor: DropTargetMonitor) => ({
@@ -65,21 +63,6 @@ export const DropZoneWrapper: React.FC<IProps> = ({ target, position, draggable,
             style={zoneStyle}
             data-cy="draggable-item-wrapper"
           >
-          { itemsInTarget.map((itemId: string, idx: number) => {
-            if (showDroppedItem && getDropResult) {
-                const droppedItem = getDropResult.item;
-                return <div key={droppedItem.id} className={css.itemInTarget}>{droppedItem.id}</div>;
-            }
-                // showDroppedItem && console.log("getDropResult: ", getDropResult);
-                // const droppedItem = getDropResult && getDropResult.item;
-                // console.log("droppeditem: ", droppedItem);
-                // { <div key={droppedItemOnTarget.id} className={css.itemInTarget}>{itemId}</div>; }
-
-                // return <div key={droppedItem?.id} className={css.itemInTarget}>{droppedItem?.id}</div>;
-                // return <div key={itemId} className={css.itemInTarget}>{itemId}</div>;
-                // return <DraggableItem key={idx} item={droppedItem.item} />;
-              })
-            }
             <DropZone target={target} highlight={highlight} />
           </div>
       }
