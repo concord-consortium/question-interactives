@@ -22,7 +22,7 @@ export interface IDraggableItemWrapper {
 // Provides dragging logic and renders basic draggable item.
 export const DraggableItemWrapper: React.FC<IProps> = ({ item, position, draggable }) => {
   const [{ isDragging }, drag] = useDrag<IDraggableItemWrapper, any, any>({
-    item: { type: "draggable-item-wrapper", item, position },
+    item: {type: "draggable-item-wrapper", item, position},
     collect: (monitor: DragSourceMonitor) => ({
       isDragging: monitor.isDragging()
     })

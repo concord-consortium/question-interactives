@@ -1,11 +1,12 @@
-import React from "react";
+import React, { useState } from "react";
 import { DropTargetMonitor, useDrop } from "react-dnd";
-import { IDropZone, IPosition } from "./types";
+import { IDraggableItem, IDropZone, IPosition } from "./types";
 import { DragSourceMonitor, useDrag } from "react-dnd";
 import { DropZone } from "./drop-zone";
 import { DropZonePreview } from "./drop-zone-preview";
 import { DraggableItemWrapperType, IDraggableItemWrapper } from "./draggable-item-wrapper";
 import css from "./drop-zone-wrapper.scss";
+import { DraggableItem } from "./draggable-item";
 
 export interface IProps {
   target: IDropZone;
@@ -25,7 +26,7 @@ export interface IDropZoneWrapper {
 
 // Provides dragging logic and renders basic draggable item.
 export const DropZoneWrapper: React.FC<IProps> = ({ target, position, draggable, itemsInTarget, onItemDrop }) => {
-
+  const [ showDroppedItem, setShowDroppedItem ] = useState(false);
   const [{ isDragging }, drag] = useDrag<IDropZoneWrapper, any, any>({
     item: { type: "drop-zone-wrapper", item: target, position },
     collect: (monitor: DragSourceMonitor) => ({
@@ -34,19 +35,22 @@ export const DropZoneWrapper: React.FC<IProps> = ({ target, position, draggable,
     canDrag: draggable
   });
 
-  const [{ isOver, canDrop, getItem }, drop] = useDrop({
+  const [{ isOver, canDrop, getItem, getDropResult }, drop] = useDrop({
     accept: DraggableItemWrapperType,
-    drop: ( monitor ) => {
+    drop: (droppedItem: any) => {
       onItemDrop(target.id, getItem);
+      setShowDroppedItem(true);
+      return droppedItem;
     },
     collect: (monitor: DropTargetMonitor) => ({
       isOver: monitor.isOver(),
       canDrop: monitor.canDrop(),
       getItem: monitor.getItem(),
+      getDropResult: monitor.getDropResult(),
     }),
   });
 
-  const zoneStyle = { left: position.left, top: position.top };
+  const zoneStyle = {left: position.left, top: position.top};
   const highlight = isOver && canDrop;
   return (
     <>
@@ -58,14 +62,23 @@ export const DropZoneWrapper: React.FC<IProps> = ({ target, position, draggable,
                         ${draggable ? css.draggable : ""}
                         ${target.imageUrl ? "" : css.background }
                         ${(isOver && canDrop)? css.highlight : ""}
-                        `
-                      }
+                      `}
             style={zoneStyle}
             data-cy="draggable-item-wrapper"
           >
-            { itemsInTarget.map((itemId: string, idx: number) => {
-                console.log("item: ", itemId);
-                return (<div key={idx} className={css.itemInTarget}>{itemId}</div>);
+          { itemsInTarget.map((itemId: string, idx: number) => {
+            if (showDroppedItem && getDropResult) {
+                const droppedItem = getDropResult.item;
+                return <div key={droppedItem.id} className={css.itemInTarget}>{droppedItem.id}</div>;
+            }
+                // showDroppedItem && console.log("getDropResult: ", getDropResult);
+                // const droppedItem = getDropResult && getDropResult.item;
+                // console.log("droppeditem: ", droppedItem);
+                // { <div key={droppedItemOnTarget.id} className={css.itemInTarget}>{itemId}</div>; }
+
+                // return <div key={droppedItem?.id} className={css.itemInTarget}>{droppedItem?.id}</div>;
+                // return <div key={itemId} className={css.itemInTarget}>{itemId}</div>;
+                // return <DraggableItem key={idx} item={droppedItem.item} />;
               })
             }
             <DropZone target={target} highlight={highlight} />

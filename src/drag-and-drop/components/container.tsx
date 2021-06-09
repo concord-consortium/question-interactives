@@ -82,7 +82,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
         const img = document.createElement("img");
         img.src = item.imageUrl;
         img.onload = () => {
-          setItemDimensions(prevHash => ({...prevHash, [item.id]: {width: img.width, height: img.height }}));
+          setItemDimensions(prevHash => ({...prevHash, [item.id]: {width: img.width, height: img.height}}));
         };
       }
     });
@@ -92,11 +92,11 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
         img.src = target.imageUrl;
         img.onload = () => {
           setTargetDimensions(prevHash => (
-            {...prevHash, [target.id]: { width: target.targetWidth || img.width, height: target.targetHeight || img.height }}));
+            {...prevHash, [target.id]: {width: target.targetWidth || img.width, height: target.targetHeight || img.height}}));
         };
       } else {
         setTargetDimensions(prevHash => (
-          {...prevHash, [target.id]: { width: target.targetWidth || 100, height: target.targetHeight  || 100 }}
+          {...prevHash, [target.id]: {width: target.targetWidth || 100, height: target.targetHeight || 100}}
         ));
       }
     });
@@ -186,8 +186,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
       <div ref={draggingAreaPromptRef} className={css.prompt} style={{top: marginTop, left: marginLeft}}>
         {renderHTML(authoredState.draggingAreaPrompt || "")}
       </div>
-      {
-        authoredState.dropZones?.map((target, idx) => {
+      { authoredState.dropZones?.map((target, idx) => {
           let position = targetPositions[target.id];
           const itemsInTarget = getItemsInTarget(target.id);
           if (!position) {
@@ -210,8 +209,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
                   />;
         })
       }
-      {
-        authoredState.draggableItems?.map((item, idx) => {
+      { authoredState.draggableItems?.map((item, idx) => {
           let position = itemPositions[item.id];
           const targetId = itemTargetIds[item.id];
           if (!position) {
