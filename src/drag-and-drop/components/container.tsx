@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { IRuntimeQuestionComponentProps } from "../../shared/components/base-question-app";
-import { IAuthoredState, IDraggableItem, IDropZone, IInitialState, IInteractiveState, IPosition, ItemId, TargetId } from "./types";
+import { IAuthoredState, IDraggableItem, IDroppedItem, IDropZone, IInitialState, IInteractiveState, IPosition, ItemId, TargetId } from "./types";
 import { renderHTML } from "../../shared/utilities/render-html";
 import { useDrop } from "react-dnd";
 import { DraggableItemWrapper, DraggableItemWrapperType, IDraggableItemWrapper } from "./draggable-item-wrapper";
@@ -71,7 +71,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
   const targetPositions: Record<string, IPosition> = {
     ...authoredState.initialState?.targetPositions,
   };
-  const itemTargetIds: Record<string, string> = {
+  const itemTargetIds: Record<string, IDroppedItem> = {
     ...interactiveState?.itemTargetIds
   };
 
@@ -129,7 +129,9 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
     }
   }, [authoredState.initialState?.itemPositions, authoredState.initialState?.targetPositions, setInitialState, setInteractiveState]);
 
-  const handleItemDrop = useCallback ((targetId: string, draggableItem: IDraggableItemWrapper) => {
+  const handleItemDrop = useCallback ((targetId: TargetId, draggableItem: IDraggableItemWrapper) => {
+    const droppedItem = draggableItem.item;
+    const targetDroppedItem = {targetId, droppedItem};
     if (setInteractiveState) {
       // Runtime mode.
       setInteractiveState(prevState => ({
@@ -137,7 +139,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
         answerType: "interactive_state",
         itemTargetIds: {
           ...prevState?.itemTargetIds,
-          [draggableItem.item.id]: targetId
+          [droppedItem.id]: targetDroppedItem
         },
       }));
     }
@@ -174,7 +176,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
     let key ="";
     const itemIds=[];
     for (key in itemTargetIds) {
-      if (itemTargetIds[key] === targetId) {
+      if (itemTargetIds[key].targetId === targetId) {
         itemIds.push(key);
       }
     }
