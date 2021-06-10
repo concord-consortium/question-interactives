@@ -39,6 +39,7 @@ export const DraggableItemWrapper: React.FC<IProps> = ({ item, position, draggab
           data-cy="draggable-item-wrapper"
         >
           <DraggableItem item={item} />
+          <div className={css.itemLabel}>{item.label}</div>
         </div>
     }
     </>

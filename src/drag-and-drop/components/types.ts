@@ -4,6 +4,9 @@ export type ItemId = string;
 
 export interface IDraggableItem {
   id: ItemId;
+  label: string;
+  value: number;
+  targetMatch: number;
   imageUrl?: string;
   imageWidth: number;
   imageHeight: number;

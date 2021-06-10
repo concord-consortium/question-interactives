@@ -9,7 +9,7 @@ describe("DraggableItemWrapper", () => {
   it("renders DraggableItem", () => {
     const wrapper = mount(
       <DndProvider backend={TouchBackend} options={{enableMouseEvents: true}} >
-        <DraggableItemWrapper item={{id: "1", imageUrl: "https://image/1", imageWidth: 25, imageHeight: 25}}
+        <DraggableItemWrapper item={{id: "1", imageUrl: "https://image/1", imageWidth: 25, imageHeight: 25, label: "Image 1", value: 1, targetMatch: 1}}
                                      position={{left: 1, top: 1}} draggable={true} />
       </DndProvider>
     );

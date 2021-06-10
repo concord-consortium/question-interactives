@@ -70,15 +70,6 @@ export const DropZoneWrapper: React.FC<IProps> = ({ target, position, draggable,
                   // return <div key={item.targetId} className={css.itemInTarget}>{item.targetId}</div>;
                 return <DraggableItem key={idx} item={item.droppedItem} />;
               })
-
-              //   // const droppedItem = getDropResult && getDropResult.item;
-              //   // console.log("droppeditem: ", droppedItem);
-              //   // { <div key={droppedItemOnTarget.id} className={css.itemInTarget}>{itemId}</div>; }
-
-              //   // return <div key={droppedItem?.id} className={css.itemInTarget}>{droppedItem?.id}</div>;
-              //   // return <div key={itemId} className={css.itemInTarget}>{itemId}</div>;
-              //   // return <DraggableItem key={idx} item={droppedItem.item} />; */}
-              // // })
             }
             <DropZone target={target} highlight={highlight} />
             <div className={css.targetLabel}>{target.targetLabel}</div>
