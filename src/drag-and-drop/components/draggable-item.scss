@@ -3,7 +3,10 @@
 .draggableItem {
   position: relative;
   cursor: move;
-  
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
   img {
     pointer-events: none;
   }

@@ -3,6 +3,9 @@
 .dropZone {
   position: relative;
   cursor: move;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
 
   img {
     pointer-events: none;

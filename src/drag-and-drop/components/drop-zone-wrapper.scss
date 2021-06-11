@@ -4,6 +4,10 @@
   position: absolute;
   box-sizing: border-box;
   border: $border-width dotted white;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+
   &.draggable {
     cursor: move;
     &:hover {
@@ -28,9 +32,12 @@
   }
   img {
     pointer-events: none;
+    position: absolute;
+    top: 0;
+    left: 0;
   }
   .targetLabel {
-    position: relative;
+    position: absolute;
     bottom: 0px;
   }
 }
