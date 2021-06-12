@@ -20,7 +20,6 @@ export interface IPosition {
 export interface IInitialState {
   itemPositions?: Record<ItemId, IPosition>;
   targetPositions?: Record<TargetId, IPosition>;
-  itemTargetIds?: Record<ItemId, TargetId>;
 }
 
 export type TargetId = string;
@@ -56,5 +55,5 @@ export interface IDroppedItem {
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
   submitted?: boolean;
   itemPositions?: Record<ItemId, IPosition>;
-  itemTargetIds?: Record<ItemId, IDroppedItem>;
+  droppedItemData?: Record<ItemId, IDroppedItem>;
 }

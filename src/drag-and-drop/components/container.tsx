@@ -6,6 +6,8 @@ import { useDrop } from "react-dnd";
 import { DraggableItemWrapper, DraggableItemWrapperType, IDraggableItemWrapper } from "./draggable-item-wrapper";
 import { DropZoneWrapper, DropZoneWrapperType, IDropZoneWrapper } from "./drop-zone-wrapper";
 import css from "./container.scss";
+import { IDataset } from "@concord-consortium/lara-interactive-api";
+import { IInitInteractiveData, useInteractiveApi } from "../utils/interactive-api";
 
 export interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {
   // Used only for authoring (initial state is part of the authored state).
@@ -71,9 +73,12 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
   const targetPositions: Record<string, IPosition> = {
     ...authoredState.initialState?.targetPositions,
   };
-  const itemTargetIds: Record<string, IDroppedItem> = {
-    ...interactiveState?.itemTargetIds
+  const droppedItemData: Record<string, IDroppedItem> = {
+    ...interactiveState?.droppedItemData
   };
+  const dataset = useRef<IDataset | null>(null);
+  // const [initInteractiveData, setInitInteractiveData] = useState<IInitInteractiveData | undefined>(undefined);
+  const { initInteractiveData, phone, setHeight, setDataset } = useInteractiveApi();
 
   useEffect(() => {
     // Preload draggable items to get their dimensions.
@@ -137,8 +142,8 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
       setInteractiveState(prevState => ({
         ...prevState,
         answerType: "interactive_state",
-        itemTargetIds: {
-          ...prevState?.itemTargetIds,
+        droppedItemData: {
+          ...prevState?.droppedItemData,
           [droppedItem.id]: targetDroppedItem
         },
       }));
@@ -175,9 +180,9 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
   const getItemsInTarget = (targetId: string) => {
     let key ="";
     const itemsDropped=[];
-    for (key in itemTargetIds) {
-      if (itemTargetIds[key].targetId === targetId) {
-        itemsDropped.push(itemTargetIds[key]);
+    for (key in droppedItemData) {
+      if (droppedItemData[key].targetId === targetId) {
+        itemsDropped.push(droppedItemData[key]);
       }
     }
     return itemsDropped;
@@ -208,12 +213,13 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
                     draggable={!readOnly && !setInteractiveState}
                     onItemDrop={handleItemDrop}
                     itemsInTarget={itemsInTarget}
+                    setDataset={setDataset}
                   />;
         })
       }
       { authoredState.draggableItems?.map((item, idx) => {
           let position = itemPositions[item.id];
-          const targetId = itemTargetIds[item.id];
+          const targetId = droppedItemData[item.id];
           if (!position) {
             // If position is not available, calculate it dynamically using dimensions of other draggable items.
             // Put them all right below the dragging area prompt, in one column.
