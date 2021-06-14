@@ -4,9 +4,10 @@ export type ItemId = string;
 
 export interface IDraggableItem {
   id: ItemId;
+  label: string;
+  value: number;
+  targetMatch: number;
   imageUrl?: string;
-  imageWidth: number;
-  imageHeight: number;
 }
 
 export interface IPosition {
@@ -24,7 +25,6 @@ export type TargetId = string;
 
 export interface IDropZone {
   id: TargetId;
-  imageUrl?: string;
   targetWidth: number;
   targetHeight: number;
   targetLabel?: string;

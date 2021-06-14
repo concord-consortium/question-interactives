@@ -62,6 +62,18 @@ export const baseAuthoringProps = {
             id: {
               type: "string"
             },
+            label: {
+              title: "Label",
+              type: "string"
+            },
+            value: {
+              title: "Value",
+              type: "number"
+            },
+            targetMatch: {
+              title: "Target to match",
+              type: "number"
+            },
             imageUrl: {
               title: "Image URL",
               type: "string",

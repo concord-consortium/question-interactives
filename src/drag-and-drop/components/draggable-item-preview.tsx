@@ -15,6 +15,7 @@ export const DraggableItemPreview = () => {
   return (
     <div className={css.draggableItemPreview} style={style}>
       <DraggableItem item={itemCasted.item} />
+      <div className={css.itemLabel}>{item.item.label}</div>
     </div>
   );
 };
