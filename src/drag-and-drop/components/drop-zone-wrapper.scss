@@ -3,6 +3,9 @@
   position: absolute;
   box-sizing: border-box;
   border: $border-width dotted white;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
   &.draggable {
     cursor: move;
     &:hover {
@@ -29,7 +32,7 @@
     pointer-events: none;
   }
   .targetLabel {
-    position: relative;
-    bottom: 0px;
+    position: absolute;
+    bottom: -25px;
   }
 }
