@@ -15,6 +15,7 @@ export const DropZonePreview = () => {
   return (
     <div className={css.dropZonePreview} style={style}>
       <DropZone target={itemCasted.item} />
+      <div className={css.targetLabel}>{item.item.targetLabel}</div>
     </div>
   );
 };
