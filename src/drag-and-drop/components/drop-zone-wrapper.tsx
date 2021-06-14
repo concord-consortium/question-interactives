@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React from "react";
 import { DropTargetMonitor, useDrop } from "react-dnd";
 import { IDropZone, IPosition } from "./types";
 import { DragSourceMonitor, useDrag } from "react-dnd";
@@ -49,23 +49,20 @@ export const DropZoneWrapper: React.FC<IProps> = ({ target, position, draggable,
 
   const zoneStyle = {left: position.left, top: position.top};
   const highlight = isOver && canDrop;
+  const highlightClassName = highlight ? css.highlight : "";
+  const draggableClassName = draggable ? css.draggable : "";
+
   return (
-    <>
-      { isDragging
+      isDragging
         ? <DropZonePreview />
         : <div
             ref={draggable ? drag : drop}
-            className={`${css.dropZoneWrapper}
-                        ${draggable ? css.draggable : ""}
-                        ${target.imageUrl ? "" : css.background }
-                        ${(isOver && canDrop)? css.highlight : ""}
-                      `}
+            className={`${css.dropZoneWrapper} ${css.background} ${draggableClassName}  ${highlightClassName}`}
             style={zoneStyle}
             data-cy="draggable-item-wrapper"
           >
             <DropZone target={target} highlight={highlight} />
+            <div className={css.targetLabel}>{target.targetLabel}</div>
           </div>
-      }
-    </>
   );
 };

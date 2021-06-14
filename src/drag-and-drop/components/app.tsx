@@ -95,11 +95,6 @@ export const baseAuthoringProps = {
               title: "Target label",
               type: "string"
             },
-            imageUrl: {
-              title: "Image URL",
-              type: "string",
-              format: "uri"
-            },
             targetWidth: {
               title: "Target width",
               type: "number",
@@ -110,10 +105,6 @@ export const baseAuthoringProps = {
               type: "number",
               default: 100
             },
-            showTargetSum: {
-              title: "Show sum",
-              type: "boolean"
-            }
           }
         }
       },
