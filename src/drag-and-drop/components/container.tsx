@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { IRuntimeQuestionComponentProps } from "../../shared/components/base-question-app";
-import { IAuthoredState, IDraggableItem, IDropZone, IInitialState, IInteractiveState, IPosition, ItemId, TargetId } from "./types";
+import { IAuthoredState, IDraggableItem, IDroppedItem, IDropZone, IInitialState, IInteractiveState, IPosition, ItemId, TargetId } from "./types";
 import { renderHTML } from "../../shared/utilities/render-html";
 import { useDrop } from "react-dnd";
 import { DraggableItemWrapper, DraggableItemWrapperType, IDraggableItemWrapper } from "./draggable-item-wrapper";
@@ -71,8 +71,8 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
   const targetPositions: Record<string, IPosition> = {
     ...authoredState.initialState?.targetPositions,
   };
-  const itemTargetIds: Record<string, string> = {
-    ...interactiveState?.itemTargetIds
+  const droppedItemData: Record<string, IDroppedItem> = {
+    ...interactiveState?.droppedItemData
   };
 
   useEffect(() => {
@@ -120,20 +120,22 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
     }
   }, [authoredState.initialState?.itemPositions, authoredState.initialState?.targetPositions, setInitialState, setInteractiveState]);
 
-  const handleItemDrop = useCallback ((targetId: string, draggableItem: IDraggableItemWrapper) => {
+  const handleItemDrop = useCallback ((targetData: IDropZone, draggableItem: IDraggableItemWrapper) => {
+    const droppedItem = draggableItem.item;
+    const targetId = targetData.id;
+    const targetDroppedItem = {targetId, droppedItem};
     if (setInteractiveState) {
       // Runtime mode.
       setInteractiveState(prevState => ({
         ...prevState,
         answerType: "interactive_state",
-        itemTargetIds: {
-          ...prevState?.itemTargetIds,
-          [draggableItem.item.id]: targetId
+        droppedItemData: {
+          ...prevState?.droppedItemData,
+          [droppedItem.id]: targetDroppedItem
         },
       }));
     }
   }, [setInteractiveState]);
-
   const [, drop] = useDrop({
     accept: [DraggableItemWrapperType, DropZoneWrapperType],
     drop(wrapper: IDraggableItemWrapper | IDropZoneWrapper, monitor) {
@@ -162,14 +164,14 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
   };
 
   const getItemsInTarget = (targetId: string) => {
-    let key ="";
-    const itemIds=[];
-    for (key in itemTargetIds) {
-      if (itemTargetIds[key] === targetId) {
-        itemIds.push(key);
+    let key = "";
+    const itemsDropped=[];
+    for (key in droppedItemData) {
+      if (droppedItemData[key].targetId === targetId) {
+        itemsDropped.push(droppedItemData[key]);
       }
     }
-    return itemIds;
+    return itemsDropped;
   };
 
   return (
@@ -202,7 +204,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
       }
       { authoredState.draggableItems?.map((item, idx) => {
           let position = itemPositions[item.id];
-          const targetId = itemTargetIds[item.id];
+          const targetId = droppedItemData[item.id];
           if (!position) {
             // If position is not available, calculate it dynamically using dimensions of other draggable items.
             // Put them all right below the dragging area prompt, in one column.
