@@ -12,7 +12,7 @@ export interface IProps {
   position: IPosition;
   draggable: boolean;
   itemsInTarget: IDroppedItem[];
-  onItemDrop: (targetData: IDropZone, draggableItem: IDraggableItemWrapper ) => void
+  onItemDrop: (targetData: IDropZone, draggableItem: IDraggableItemWrapper) => void
 }
 
 // These types are used by react-dnd.
