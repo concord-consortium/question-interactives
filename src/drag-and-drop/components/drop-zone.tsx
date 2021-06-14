@@ -11,8 +11,6 @@ export interface IProps {
 export const DropZone: React.FC<IProps> = ({ target, highlight }) => {
   const style={width: target.targetWidth, height: target.targetHeight};
   return (
-    <div className={highlight? css.highlight: ""} style={style}>
-      {target.imageUrl && <img src={target.imageUrl} alt="drag target" width={target.targetWidth} height={target.targetHeight}/>}
-    </div>
+    <div className={highlight? css.highlight: ""} style={style}></div>
   );
 };

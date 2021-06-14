@@ -2,6 +2,7 @@
 
 .draggableItemWrapper {
   position: absolute;
+
   &.draggable {
     cursor: move;
     &:hover {
@@ -12,5 +13,12 @@
   }
   img {
     pointer-events: none;
+  }
+  .itemLabel {
+    position: absolute;
+    bottom: -25px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
   }
 }

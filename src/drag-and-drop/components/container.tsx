@@ -87,18 +87,9 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
       }
     });
     authoredState.dropZones?.forEach(target => {
-      if (target.imageUrl) {
-        const img = document.createElement("img");
-        img.src = target.imageUrl;
-        img.onload = () => {
-          setTargetDimensions(prevHash => (
-            {...prevHash, [target.id]: {width: target.targetWidth || img.width, height: target.targetHeight || img.height}}));
-        };
-      } else {
         setTargetDimensions(prevHash => (
           {...prevHash, [target.id]: {width: target.targetWidth || 100, height: target.targetHeight || 100}}
         ));
-      }
     });
   }, [authoredState.draggableItems, authoredState.dropZones]);
 
