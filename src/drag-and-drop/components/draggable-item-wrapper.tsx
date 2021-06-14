@@ -3,6 +3,7 @@ import { IDraggableItem, IPosition } from "./types";
 import { DragSourceMonitor, useDrag } from "react-dnd";
 import { DraggableItem } from "./draggable-item";
 import css from "./draggable-item-wrapper.scss";
+import { DraggableItemPreview } from "./draggable-item-preview";
 
 export interface IProps {
   item: IDraggableItem;
@@ -21,25 +22,25 @@ export interface IDraggableItemWrapper {
 // Provides dragging logic and renders basic draggable item.
 export const DraggableItemWrapper: React.FC<IProps> = ({ item, position, draggable }) => {
   const [{ isDragging }, drag] = useDrag<IDraggableItemWrapper, any, any>({
-    item: { type: "draggable-item-wrapper", item, position },
+    item: {type: "draggable-item-wrapper", item, position},
     collect: (monitor: DragSourceMonitor) => ({
       isDragging: monitor.isDragging()
     })
   });
 
-  if (isDragging) {
-    // Hide source element on dragging and render preview only.
-    return null;
-  }
-
   return (
-    <div
-      ref={draggable ? drag : undefined}
-      className={`${css.draggableItemWrapper} ${draggable ? css.draggable : ""}`}
-      style={position}
-      data-cy="draggable-item-wrapper"
-    >
-      <DraggableItem item={item} />
-    </div>
+    <>
+    { isDragging
+      ? <DraggableItemPreview />
+      : <div
+          ref={draggable ? drag : undefined}
+          className={`${css.draggableItemWrapper} ${draggable ? css.draggable : ""}`}
+          style={position}
+          data-cy="draggable-item-wrapper"
+        >
+          <DraggableItem item={item} />
+        </div>
+    }
+    </>
   );
 };

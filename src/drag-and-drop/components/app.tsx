@@ -78,12 +78,45 @@ export const baseAuthoringProps = {
           }
         }
       },
+      enableCheckAnswer: {
+        title: "Allow users to check answers",
+        type: "boolean",
+      },
+      dropZones: {
+        type: "array",
+        title: "Targets",
+        items: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string"
+            },
+            targetLabel: {
+              title: "Target label",
+              type: "string"
+            },
+            targetWidth: {
+              title: "Target width",
+              type: "number",
+              default: 100
+            },
+            targetHeight: {
+              title: "Target height",
+              type: "number",
+              default: 100
+            },
+          }
+        }
+      },
       initialState: {
         type: "object",
         properties: {
           itemPositions: {
             type: "object"
-          }
+          },
+          targetPositions: {
+            type: "object"
+          },
         }
       }
     }
@@ -112,6 +145,13 @@ export const baseAuthoringProps = {
         }
       }
     },
+    dropZones: {
+      items: {
+        id: {
+          "ui:widget": "hidden"
+        }
+      }
+    },
     initialState: {
       "ui:field": "initialState"
     }
@@ -126,6 +166,11 @@ export const baseAuthoringProps = {
     authoredState.draggableItems?.forEach(item => {
       if (item.id === undefined) {
         item.id = uuidv4();
+      }
+    });
+    authoredState.dropZones?.forEach(target => {
+      if (target.id === undefined) {
+        target.id = uuidv4();
       }
     });
     return authoredState;

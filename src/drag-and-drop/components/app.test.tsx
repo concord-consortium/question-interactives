@@ -1,5 +1,5 @@
 import { baseAuthoringProps  } from "./app";
-import { IDraggableItem } from "./types";
+import { IDraggableItem, IDropZone } from "./types";
 
 describe("preprocessFormData helper", () => {
   it("generates unique IDs for draggableItems they're missing", () => {
@@ -9,7 +9,10 @@ describe("preprocessFormData helper", () => {
       draggableItems: [
         {imageUrl: "https://image.com/1"} as IDraggableItem,
         {imageUrl: "https://image.com/2"} as IDraggableItem,
-      ]
+      ],
+      dropZones: [
+        {id: "123", imageUrl: "https://image.com/1", targetWidth: 20, targetHeight: 20, targetLabel: "target 1", index:1} as IDropZone
+      ],
     });
     const draggableItems = newData.draggableItems;
 
@@ -25,14 +28,20 @@ describe("preprocessFormData helper", () => {
       draggableItems: [
         {id: "1", imageUrl: "https://image.com/1"} as IDraggableItem,
         {id: "2", imageUrl: "https://image.com/2"} as IDraggableItem,
-      ]
+      ],
+      dropZones: [
+        {id: "123", imageUrl: "https://image.com/1", targetWidth: 20, targetHeight: 20, targetLabel: "target 1", index:1} as IDropZone
+      ],
     })).toEqual({
       version: 1,
       questionType: "iframe_interactive",
       draggableItems: [
         {id: "1", imageUrl: "https://image.com/1"} as IDraggableItem,
         {id: "2", imageUrl: "https://image.com/2"} as IDraggableItem,
-      ]
+      ],
+      dropZones: [
+        {id: "123", imageUrl: "https://image.com/1", targetWidth: 20, targetHeight: 20, targetLabel: "target 1", index:1} as IDropZone
+      ],
     });
   });
 });

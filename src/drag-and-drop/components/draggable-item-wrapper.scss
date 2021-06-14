@@ -2,7 +2,6 @@
 
 .draggableItemWrapper {
   position: absolute;
-
   &.draggable {
     cursor: move;
     &:hover {
@@ -11,7 +10,6 @@
       transform: translate(-$border-width, -$border-width);
     }
   }
-
   img {
     pointer-events: none;
   }

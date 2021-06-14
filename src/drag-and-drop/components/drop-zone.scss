@@ -1,10 +1,14 @@
 @import "../../shared/styles/helpers";
 
-.draggableItem {
+.dropZone {
   position: relative;
   cursor: move;
-  
+
   img {
     pointer-events: none;
+  }
+  .targetLabel {
+    position: absolute;
+    bottom: 0;
   }
 }

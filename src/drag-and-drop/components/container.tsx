@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { IRuntimeQuestionComponentProps } from "../../shared/components/base-question-app";
-import { IAuthoredState, IDraggableItem, IInitialState, IInteractiveState, IPosition, ItemId } from "./types";
+import { IAuthoredState, IDraggableItem, IDropZone, IInitialState, IInteractiveState, IPosition, ItemId, TargetId } from "./types";
 import { renderHTML } from "../../shared/utilities/render-html";
 import { useDrop } from "react-dnd";
-import { DraggableItemPreview } from "./draggable-item-preview";
 import { DraggableItemWrapper, DraggableItemWrapperType, IDraggableItemWrapper } from "./draggable-item-wrapper";
+import { DropZoneWrapper, DropZoneWrapperType, IDropZoneWrapper } from "./drop-zone-wrapper";
 import css from "./container.scss";
 
 export interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {
@@ -37,9 +37,26 @@ const getInitialTop = (
   return top;
 };
 
+const getTargetTop = (
+  minTop: number, targets: IDropZone[], targetPositions: Record<TargetId, IPosition>,
+  targetDimensions: Record<TargetId, IDimensions>, index: number
+) => {
+  let top = minTop;
+  for (let i = 0; i < index; i += 1) {
+    const target = targets[i];
+    // If item has been already moved by author, doesn't count it in.
+    if (!targetPositions[target.id]) {
+      top += targetDimensions[target.id]?.height || 100;
+      top += margin;
+    }
+  }
+  return top;
+};
+
 export const Container: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, setInitialState, report }) => {
   const readOnly = !!(report || (authoredState.required && interactiveState?.submitted));
   const [ itemDimensions, setItemDimensions ] = useState<Record<ItemId, IDimensions>>({});
+  const [ targetDimensions, setTargetDimensions ] = useState<Record<TargetId, IDimensions>>({});
   const draggingAreaPromptRef = useRef<HTMLDivElement>(null);
   const canvasWidth = authoredState.canvasWidth || 330;
   const canvasHeight = authoredState.canvasHeight || 300;
@@ -51,6 +68,12 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
     // Interactive state. If only available, that's the highest priority. Used in runtime mode only.
     ...interactiveState?.itemPositions
   };
+  const targetPositions: Record<string, IPosition> = {
+    ...authoredState.initialState?.targetPositions,
+  };
+  const itemTargetIds: Record<string, string> = {
+    ...interactiveState?.itemTargetIds
+  };
 
   useEffect(() => {
     // Preload draggable items to get their dimensions.
@@ -59,11 +82,25 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
         const img = document.createElement("img");
         img.src = item.imageUrl;
         img.onload = () => {
-          setItemDimensions(prevHash => ({...prevHash, [item.id]: {width: img.width, height: img.height }}));
+          setItemDimensions(prevHash => ({...prevHash, [item.id]: {width: img.width, height: img.height}}));
         };
       }
     });
-  }, [authoredState.draggableItems]);
+    authoredState.dropZones?.forEach(target => {
+      if (target.imageUrl) {
+        const img = document.createElement("img");
+        img.src = target.imageUrl;
+        img.onload = () => {
+          setTargetDimensions(prevHash => (
+            {...prevHash, [target.id]: {width: target.targetWidth || img.width, height: target.targetHeight || img.height}}));
+        };
+      } else {
+        setTargetDimensions(prevHash => (
+          {...prevHash, [target.id]: {width: target.targetWidth || 100, height: target.targetHeight || 100}}
+        ));
+      }
+    });
+  }, [authoredState.draggableItems, authoredState.dropZones]);
 
   const moveDraggableItem = useCallback((id: string, left: number, top: number) => {
     if (setInitialState) {
@@ -72,7 +109,11 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
         itemPositions: {
           ...authoredState.initialState?.itemPositions,
           [id]: {left, top}
-        }
+        },
+        targetPositions: {
+          ...authoredState.initialState?.targetPositions,
+          [id]: {left, top}
+        },
       });
     } else if (setInteractiveState) {
       // Runtime mode.
@@ -82,22 +123,45 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
         itemPositions: {
           ...prevState?.itemPositions,
           [id]: {left, top}
-        }
+        },
+
       }));
     }
-  }, [authoredState.initialState?.itemPositions, setInitialState, setInteractiveState]);
+  }, [authoredState.initialState?.itemPositions, authoredState.initialState?.targetPositions, setInitialState, setInteractiveState]);
+
+  const handleItemDrop = useCallback ((targetId: string, draggableItem: IDraggableItemWrapper) => {
+    if (setInteractiveState) {
+      // Runtime mode.
+      setInteractiveState(prevState => ({
+        ...prevState,
+        answerType: "interactive_state",
+        itemTargetIds: {
+          ...prevState?.itemTargetIds,
+          [draggableItem.item.id]: targetId
+        },
+      }));
+    }
+  }, [setInteractiveState]);
 
   const [, drop] = useDrop({
-    accept: DraggableItemWrapperType,
-    drop(wrapper: IDraggableItemWrapper, monitor) {
-      const delta = monitor.getDifferenceFromInitialOffset() as {
-        x: number
-        y: number
-      };
-      const left = Math.round(wrapper.position.left + delta.x);
-      const top = Math.round(wrapper.position.top + delta.y);
-      moveDraggableItem(wrapper.item.id, left, top);
-    }
+    accept: [DraggableItemWrapperType, DropZoneWrapperType],
+    drop(wrapper: IDraggableItemWrapper | IDropZoneWrapper, monitor) {
+      const didDrop = monitor.didDrop();
+      if (didDrop ) {
+        return;
+      } else {
+        const delta = monitor.getDifferenceFromInitialOffset() as {
+          x: number
+          y: number
+        };
+        const left = Math.round(wrapper.position.left + delta.x);
+        const top = Math.round(wrapper.position.top + delta.y);
+        moveDraggableItem(wrapper.item.id, left, top);
+      }
+    },
+    collect: monitor => ({
+      isOver: !!monitor.isOver(),
+    }),
   });
 
   const draggingAreaStyle = {
@@ -106,14 +170,48 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
     backgroundImage: authoredState.backgroundImageUrl ? `url("${authoredState.backgroundImageUrl}")` : undefined
   };
 
+  const getItemsInTarget = (targetId: string) => {
+    let key ="";
+    const itemIds=[];
+    for (key in itemTargetIds) {
+      if (itemTargetIds[key] === targetId) {
+        itemIds.push(key);
+      }
+    }
+    return itemIds;
+  };
+
   return (
     <div ref={drop} className={css.draggingArea} style={draggingAreaStyle} data-cy="dnd-container">
       <div ref={draggingAreaPromptRef} className={css.prompt} style={{top: marginTop, left: marginLeft}}>
         {renderHTML(authoredState.draggingAreaPrompt || "")}
       </div>
-      {
-        authoredState.draggableItems?.map((item, idx) => {
+      { authoredState.dropZones?.map((target, idx) => {
+          let position = targetPositions[target.id];
+          const itemsInTarget = getItemsInTarget(target.id);
+          if (!position) {
+            // If position is not available, calculate it dynamically using dimensions of other draggable items.
+            // Put them all right below the dragging area prompt, in one column.
+            const minTargetTop = marginTop;
+            const top = getTargetTop(minTargetTop, authoredState.dropZones || [], targetPositions, targetDimensions, idx);
+            position = {
+              left: marginLeft,
+              top: Math.min(canvasHeight - margin, top)
+            };
+          }
+          return <DropZoneWrapper
+                    key={target.id}
+                    target={target}
+                    position={position}
+                    draggable={!readOnly && !setInteractiveState}
+                    onItemDrop={handleItemDrop}
+                    itemsInTarget={itemsInTarget}
+                  />;
+        })
+      }
+      { authoredState.draggableItems?.map((item, idx) => {
           let position = itemPositions[item.id];
+          const targetId = itemTargetIds[item.id];
           if (!position) {
             // If position is not available, calculate it dynamically using dimensions of other draggable items.
             // Put them all right below the dragging area prompt, in one column.
@@ -124,11 +222,10 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
               top: Math.min(canvasHeight - margin, top)
             };
           }
-          return <DraggableItemWrapper key={item.id} item={item} position={position} draggable={!readOnly} />;
+          return !targetId &&
+            <DraggableItemWrapper key={item.id} item={item} position={position} draggable={!readOnly} />;
         })
       }
-      {/* Dragged item preview image (one that follows mouse cursor) */}
-      <DraggableItemPreview />
     </div>
   );
 };

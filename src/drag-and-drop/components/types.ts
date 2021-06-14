@@ -16,6 +16,19 @@ export interface IPosition {
 
 export interface IInitialState {
   itemPositions?: Record<ItemId, IPosition>;
+  targetPositions?: Record<TargetId, IPosition>;
+  itemTargetIds?: Record<ItemId, TargetId>;
+}
+
+export type TargetId = string;
+
+export interface IDropZone {
+  id: TargetId;
+  imageUrl?: string;
+  targetWidth: number;
+  targetHeight: number;
+  targetLabel?: string;
+  index: number;
 }
 
 export interface IAuthoredState extends IAuthoringInteractiveMetadata {
@@ -28,10 +41,12 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   canvasHeight?: number;
   backgroundImageUrl?: string;
   draggableItems?: IDraggableItem[];
+  dropZones?: IDropZone[];
   initialState?: IInitialState;
 }
 
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
   submitted?: boolean;
   itemPositions?: Record<ItemId, IPosition>;
+  itemTargetIds?: Record<ItemId, TargetId>;
 }
