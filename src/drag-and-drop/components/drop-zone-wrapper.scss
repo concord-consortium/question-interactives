@@ -4,7 +4,6 @@
   box-sizing: border-box;
   border: $border-width dotted white;
   display: flex;
-  justify-content: center;
   flex-wrap: wrap;
   &.draggable {
     cursor: move;
@@ -33,6 +32,9 @@
   }
   .targetLabel {
     position: absolute;
+    display: flex;
+    width: 100%;
     bottom: -25px;
+    justify-content: center;
   }
 }
