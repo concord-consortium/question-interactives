@@ -45,8 +45,13 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   initialState?: IInitialState;
 }
 
+export interface IDroppedItem {
+  targetId: string;
+  droppedItem: IDraggableItem;
+}
+
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
   submitted?: boolean;
   itemPositions?: Record<ItemId, IPosition>;
-  itemTargetIds?: Record<ItemId, TargetId>;
+  droppedItemData?: Record<ItemId, IDroppedItem>;
 }
