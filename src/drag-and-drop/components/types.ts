@@ -53,5 +53,5 @@ export interface IInteractiveState extends IRuntimeInteractiveMetadata {
   submitted?: boolean;
   itemPositions?: Record<ItemId, IPosition>;
   droppedItemData?: Record<ItemId, IDroppedItem>;
-  targetAggregateValue?: Record<TargetId, number>;
+  targetAggregateValues?: Record<TargetId, number>;
 }

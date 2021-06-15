@@ -1,10 +1,14 @@
 import { IDataset } from "@concord-consortium/lara-interactive-api";
-import { IDraggableItemWrapper } from "../components/draggable-item-wrapper";
-import { IDropZone } from "../components/types";
+import { IDropZone, TargetId } from "../components/types";
 
-export const generateDataset = (target: IDropZone, draggableItem: IDraggableItemWrapper): IDataset | null => {
-  const value = draggableItem.item.value;
-  const label = target.targetLabel || "Bin 1";
+export const generateDataset = ( targets: IDropZone[], targetValues?: Record<TargetId, number>): IDataset | null => {
+
+  const rows = targets.map( target => {
+    const label = target.targetLabel || "Bin";
+    const value = targetValues ? targetValues[label] : 0;
+    return [label, value];
+  });
+
   return {
     type: "dataset",
     version: 1,
@@ -12,6 +16,6 @@ export const generateDataset = (target: IDropZone, draggableItem: IDraggableItem
     // Always use first property as X axis. It might be necessary to customize that in the future, but it doesn't
     // seem useful now.
     xAxisProp: "body of water",
-    rows: [[label,value]]
+    rows: rows
   };
 };
