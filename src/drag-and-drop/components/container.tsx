@@ -6,6 +6,7 @@ import { useDrop } from "react-dnd";
 import { DraggableItemWrapper, DraggableItemWrapperType, IDraggableItemWrapper } from "./draggable-item-wrapper";
 import { DropZoneWrapper, DropZoneWrapperType, IDropZoneWrapper } from "./drop-zone-wrapper";
 import css from "./container.scss";
+import { generateDataset } from "../utils/generate-dataset";
 
 export interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {
   // Used only for authoring (initial state is part of the authored state).
@@ -133,9 +134,11 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
           ...prevState?.droppedItemData,
           [droppedItem.id]: targetDroppedItem
         },
+        dataset: generateDataset(targetData, draggableItem)
       }));
     }
   }, [setInteractiveState]);
+
   const [, drop] = useDrop({
     accept: [DraggableItemWrapperType, DropZoneWrapperType],
     drop(wrapper: IDraggableItemWrapper | IDropZoneWrapper, monitor) {
