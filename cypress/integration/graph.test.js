@@ -175,7 +175,7 @@ context("Test graph interactive", () => {
           });
         });
       });
-
+      cy.wait(1000);
       cy.getIframeBody().find("select#root_dataSourceInteractive1").select("testInt4 (Test Interactive 4)");
       getAndClearLastPhoneMessage(state => {
         expect(state.version).eql(1);
