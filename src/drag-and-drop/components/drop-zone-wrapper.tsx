@@ -7,6 +7,8 @@ import { DropZonePreview } from "./drop-zone-preview";
 import { DraggableItemWrapper, DraggableItemWrapperType, IDraggableItemWrapper } from "./draggable-item-wrapper";
 import css from "./drop-zone-wrapper.scss";
 
+const kDropOffset = 30;
+
 export interface IProps {
   target: IDropZone;
   position: IPosition;
@@ -58,9 +60,13 @@ export const DropZoneWrapper: React.FC<IProps> = ({ target, position, draggable,
             style={zoneStyle}
             data-cy="draggable-item-wrapper"
           >
-            { itemsInTarget.map((item: any, idx: number) => {
-                return <DraggableItemWrapper key={idx} item={item.droppedItem} position={position} draggable={false} isDropped={true}/>;
-              })
+            { itemsInTarget.map((item: any, idx: number) =>
+                <DraggableItemWrapper
+                  key={`draggable-item-${idx}`}
+                  item={item.droppedItem}
+                  position={{ top: kDropOffset * idx, left: kDropOffset * idx }}
+                  draggable={false}
+                />)
             }
             <DropZone target={target} highlight={highlight} />
             <div className={css.targetLabel}>{target.targetLabel}</div>

@@ -9,7 +9,6 @@ export interface IProps {
   item: IDraggableItem;
   position: IPosition;
   draggable: boolean;
-  isDropped?: boolean;
 }
 
 // These types are used by react-dnd.
@@ -21,7 +20,7 @@ export interface IDraggableItemWrapper {
 }
 
 // Provides dragging logic and renders basic draggable item.
-export const DraggableItemWrapper: React.FC<IProps> = ({ item, position, draggable, isDropped }) => {
+export const DraggableItemWrapper: React.FC<IProps> = ({ item, position, draggable }) => {
   const [{ isDragging }, drag] = useDrag<IDraggableItemWrapper, any, any>({
     item: {type: "draggable-item-wrapper", item, position},
     collect: (monitor: DragSourceMonitor) => ({
@@ -31,18 +30,18 @@ export const DraggableItemWrapper: React.FC<IProps> = ({ item, position, draggab
 
   return (
     <>
-    { isDragging
-      ? <DraggableItemPreview />
-      : <div
-          ref={draggable ? drag : undefined}
-          className={`${css.draggableItemWrapper} ${draggable ? css.draggable : ""}`}
-          style={isDropped ? undefined : position}
-          data-cy="draggable-item-wrapper"
-        >
-          <DraggableItem item={item} />
-          <div className={css.itemLabel}>{item.label}</div>
-        </div>
-    }
+      { isDragging
+        ? <DraggableItemPreview />
+        : <div
+            ref={draggable ? drag : undefined}
+            className={`${css.draggableItemWrapper} ${draggable ? css.draggable : ""}`}
+            style={position}
+            data-cy="draggable-item-wrapper"
+          >
+            <DraggableItem item={item} />
+            <div className={css.itemLabel}>{item.label}</div>
+          </div>
+      }
     </>
   );
 };
