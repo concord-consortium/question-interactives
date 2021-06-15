@@ -8,7 +8,7 @@ export const generateDataset = ( targets: IDropZone[], targetValues?: Record<Tar
     const value = targetValues ? targetValues[label] : 0;
     return [label, value];
   });
-
+  console.log(rows);
   return {
     type: "dataset",
     version: 1,
