@@ -12,10 +12,10 @@ export const generateDataset = ( targets: IDropZone[], targetValues?: Record<Tar
   return {
     type: "dataset",
     version: 1,
-    properties: ["body of water", "area"],
+    properties: ["x", "y"],
     // Always use first property as X axis. It might be necessary to customize that in the future, but it doesn't
     // seem useful now.
-    xAxisProp: "body of water",
+    xAxisProp: "x",
     rows: rows
   };
 };
