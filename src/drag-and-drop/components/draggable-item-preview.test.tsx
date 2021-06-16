@@ -21,7 +21,7 @@ const previewItem = {
 describe("DraggableItemPreview", () => {
   it("renders DraggableItem", () => {
     const wrapper = mount(
-      <DndProvider backend={TouchBackend} options={{enableMouseEvents: true}} >
+      <DndProvider backend={TouchBackend} options={{enableMouseEvents: true}}>
         <DraggableItemPreview />
       </DndProvider>
     );

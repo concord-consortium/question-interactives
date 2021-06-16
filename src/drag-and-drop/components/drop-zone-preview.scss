@@ -8,12 +8,10 @@ $border-width: 4px;
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
+  background-color: #cecece;
 
   .targetLabel {
     position: absolute;
     bottom: -25px;
   }
-}
-.highlight {
-  background-color: #cecece;
 }
