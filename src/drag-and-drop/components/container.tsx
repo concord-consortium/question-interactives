@@ -120,10 +120,10 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
     }
   }, [authoredState.initialState?.itemPositions, authoredState.initialState?.targetPositions, setInitialState, setInteractiveState]);
 
-  const handleItemDrop = useCallback ((targetData: IDropZone, draggableItem: IDraggableItemWrapper) => {
+  const handleItemDrop = useCallback ((targetData: IDropZone, targetPosition: IPosition, draggableItem: IDraggableItemWrapper) => {
     const droppedItem = draggableItem.item;
     const targetId = targetData.id;
-    const targetDroppedItem = {targetId, droppedItem};
+    const targetDroppedItem = {targetId, targetPosition, droppedItem};
     const targets = authoredState.dropZones || [];
     const targetLabel = targetData.targetLabel || "Bin";
 
@@ -153,16 +153,32 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
     accept: [DraggableItemWrapperType, DropZoneWrapperType],
     drop(wrapper: IDraggableItemWrapper | IDropZoneWrapper, monitor) {
       const didDrop = monitor.didDrop();
-      if (didDrop ) {
+      if (didDrop) {
         return;
       } else {
-        const delta = monitor.getDifferenceFromInitialOffset() as {
-          x: number
-          y: number
-        };
-        const left = Math.round(wrapper.position.left + delta.x);
-        const top = Math.round(wrapper.position.top + delta.y);
+        const delta = monitor.getDifferenceFromInitialOffset() as { x: number, y: number };
+        // if the item was in a drop container, we need to also take into account the top-left position of the container
+        const dropTargetData = droppedItemData[wrapper.item.id];
+        const left = Math.round((dropTargetData ? dropTargetData.targetPosition.left : 0) + wrapper.position.left + delta.x);
+        const top = Math.round((dropTargetData ? dropTargetData.targetPosition.top : 0) + wrapper.position.top + delta.y);
         moveDraggableItem(wrapper.item.id, left, top);
+
+        // if the item was in a drop container, remove it
+        if (dropTargetData) {
+          const filteredDroppedItemData: Record<string, IDroppedItem> = {};
+          for (const key in droppedItemData) {
+            if (key !== wrapper.item.id) {
+              filteredDroppedItemData[key] = droppedItemData[key];
+            }
+          }
+          if (setInteractiveState) {
+            setInteractiveState(prevState => ({
+              ...prevState,
+              answerType: "interactive_state",
+              droppedItemData: filteredDroppedItemData,
+            }));
+          }
+        }
       }
     },
     collect: monitor => ({
@@ -206,13 +222,13 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
             };
           }
           return <DropZoneWrapper
-                    key={target.id}
-                    target={target}
-                    position={position}
-                    draggable={!readOnly && !setInteractiveState}
-                    onItemDrop={handleItemDrop}
-                    itemsInTarget={itemsInTarget}
-                  />;
+                   key={target.id}
+                   target={target}
+                   position={position}
+                   draggable={!readOnly && !setInteractiveState}
+                   onItemDrop={handleItemDrop}
+                   itemsInTarget={itemsInTarget}
+                 />;
         })
       }
       { authoredState.draggableItems?.map((item, idx) => {
