@@ -47,7 +47,7 @@ export const DropZoneWrapper: React.FC<IProps> = ({ target, position, draggable,
     }),
   });
 
-  const zoneStyle = {left: position.left, top: position.top, width: target.targetWidth, height: target.targetHeight};
+  const zoneStyle = { left: position.left, top: position.top, width: target.targetWidth, height: target.targetHeight };
   const highlight = isOver && canDrop;
   const highlightClassName = highlight ? css.highlight : "";
   const draggableClassName = draggable ? css.draggable : "";
@@ -56,9 +56,9 @@ export const DropZoneWrapper: React.FC<IProps> = ({ target, position, draggable,
     ? <DropZonePreview />
     : <div
         ref={draggable ? drag : drop}
-        className={`${css.dropZoneWrapper} ${css.background} ${draggableClassName}  ${highlightClassName}`}
+        className={`${css.dropZoneWrapper} ${css.background} ${draggableClassName} ${highlightClassName}`}
         style={zoneStyle}
-        data-cy="draggable-item-wrapper"
+        data-cy="drop-zone-wrapper"
       >
         { itemsInTarget.map((item: any, idx: number) =>
             <DraggableItemWrapper
@@ -68,7 +68,7 @@ export const DropZoneWrapper: React.FC<IProps> = ({ target, position, draggable,
               draggable={true}
             />)
         }
-        <DropZone target={target} highlight={highlight} />
+        <DropZone target={target} />
         <div className={css.targetLabel}>{target.targetLabel}</div>
       </div>
   );

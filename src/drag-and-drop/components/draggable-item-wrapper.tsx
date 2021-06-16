@@ -2,8 +2,8 @@ import React from "react";
 import { IDraggableItem, IPosition } from "./types";
 import { DragSourceMonitor, useDrag } from "react-dnd";
 import { DraggableItem } from "./draggable-item";
-import css from "./draggable-item-wrapper.scss";
 import { DraggableItemPreview } from "./draggable-item-preview";
+import css from "./draggable-item-wrapper.scss";
 
 export interface IProps {
   item: IDraggableItem;
@@ -29,19 +29,16 @@ export const DraggableItemWrapper: React.FC<IProps> = ({ item, position, draggab
   });
 
   return (
-    <>
-      { isDragging
-        ? <DraggableItemPreview />
-        : <div
-            ref={draggable ? drag : undefined}
-            className={`${css.draggableItemWrapper} ${draggable ? css.draggable : ""}`}
-            style={position}
-            data-cy="draggable-item-wrapper"
-          >
-            <DraggableItem item={item} />
-            <div className={css.itemLabel}>{item.label}</div>
-          </div>
-      }
-    </>
+    isDragging
+    ? <DraggableItemPreview />
+    : <div
+        ref={draggable ? drag : undefined}
+        className={`${css.draggableItemWrapper} ${draggable ? css.draggable : ""}`}
+        style={position}
+        data-cy="draggable-item-wrapper"
+      >
+        <DraggableItem item={item} />
+        <div className={css.itemLabel}>{item.label}</div>
+      </div>
   );
 };
