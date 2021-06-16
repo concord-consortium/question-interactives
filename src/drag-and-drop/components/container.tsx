@@ -94,6 +94,28 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
     });
   }, [authoredState.draggableItems, authoredState.dropZones]);
 
+  // This useEffect callback will automatically take care of all the necessary dataset updates, so `generateDataset`
+  // doesn't need to be spread all over this file in all the `setInteractiveState` calls.
+  // It'll also set initial, empty dataset that only includes bin labels and lets graph interactive render correctly.
+  useEffect(() => {
+    // PJ 16/6/2021: setTimeout should not be necessary. There might be a bug in LARA Interactive API client
+    // in or Activity Player. I was debugging that and I noticed that when two interactive state updates happen 
+    // right after each other, one of them is lost. And it seems to be the latest one.
+    // In this particular case, one state update was coming from `handleItemDrop` function that was updating 
+    // `droppedItemData` and the second one was coming from this callback. Unfortunately, Firestore was reporting
+    // only the first state update. 1ms setTimeout seems to workaround this issue for now.
+    setTimeout(() => {
+      setInteractiveState?.(prevState => ({
+        ...prevState,
+        answerType: "interactive_state",
+        dataset: generateDataset(authoredState.dropZones, prevState?.droppedItemData)
+      }));
+    }, 1);
+    // The dependency array should also include `setInteractiveState`, but this function seems to be updated 
+    // on each state update. It results in an infinite loop. Probably a bug in LARA Interactive API client.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [authoredState.dropZones, interactiveState?.droppedItemData]);
+
   const moveDraggableItem = useCallback((id: string, left: number, top: number) => {
     if (setInitialState) {
       // Authoring mode.
@@ -120,34 +142,26 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
     }
   }, [authoredState.initialState?.itemPositions, authoredState.initialState?.targetPositions, setInitialState, setInteractiveState]);
 
-  const handleItemDrop = useCallback ((targetData: IDropZone, targetPosition: IPosition, draggableItem: IDraggableItemWrapper) => {
+  const handleItemDrop = useCallback((targetData: IDropZone, targetPosition: IPosition, draggableItem: IDraggableItemWrapper) => {
     const droppedItem = draggableItem.item;
     const targetId = targetData.id;
     const targetDroppedItem = {targetId, targetPosition, droppedItem};
-    const targets = authoredState.dropZones || [];
-    const targetLabel = targetData.targetLabel || "Bin";
 
     if (setInteractiveState) {
       // Runtime mode.
       setInteractiveState(prevState => {
-        const newTargetAggregateValues = {
-          ...prevState?.targetAggregateValues,
-          [targetLabel]: (prevState?.targetAggregateValues?.[targetLabel] || 0) + droppedItem.value
+        const newDroppedItemData = {
+          ...prevState?.droppedItemData,
+          [droppedItem.id]: targetDroppedItem
         };
-
         return {
           ...prevState,
           answerType: "interactive_state",
-          droppedItemData: {
-            ...prevState?.droppedItemData,
-            [droppedItem.id]: targetDroppedItem
-          },
-          targetAggregateValues: newTargetAggregateValues,
-          dataset: generateDataset(targets, newTargetAggregateValues)
+          droppedItemData: newDroppedItemData
         };
       });
     }
-  }, [authoredState.dropZones, setInteractiveState]);
+  }, [setInteractiveState]);
 
   const [, drop] = useDrop({
     accept: [DraggableItemWrapperType, DropZoneWrapperType],
@@ -175,7 +189,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
             setInteractiveState(prevState => ({
               ...prevState,
               answerType: "interactive_state",
-              droppedItemData: filteredDroppedItemData,
+              droppedItemData: filteredDroppedItemData
             }));
           }
         }

@@ -1,4 +1,4 @@
-import { IAuthoringInteractiveMetadata, IRuntimeInteractiveMetadata } from "@concord-consortium/lara-interactive-api";
+import { IAuthoringInteractiveMetadata, IDataset, IRuntimeInteractiveMetadata } from "@concord-consortium/lara-interactive-api";
 
 export type ItemId = string;
 
@@ -54,5 +54,5 @@ export interface IInteractiveState extends IRuntimeInteractiveMetadata {
   submitted?: boolean;
   itemPositions?: Record<ItemId, IPosition>;
   droppedItemData?: Record<ItemId, IDroppedItem>;
-  targetAggregateValues?: Record<TargetId, number>;
+  dataset?: IDataset;
 }
