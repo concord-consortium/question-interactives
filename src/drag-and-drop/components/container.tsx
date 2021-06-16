@@ -6,6 +6,7 @@ import { useDrop } from "react-dnd";
 import { DraggableItemWrapper, DraggableItemWrapperType, IDraggableItemWrapper } from "./draggable-item-wrapper";
 import { DropZoneWrapper, DropZoneWrapperType, IDropZoneWrapper } from "./drop-zone-wrapper";
 import css from "./container.scss";
+import { generateDataset } from "../utils/generate-dataset";
 
 export interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {
   // Used only for authoring (initial state is part of the authored state).
@@ -115,7 +116,6 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
           ...prevState?.itemPositions,
           [id]: {left, top}
         },
-
       }));
     }
   }, [authoredState.initialState?.itemPositions, authoredState.initialState?.targetPositions, setInitialState, setInteractiveState]);
@@ -124,18 +124,30 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
     const droppedItem = draggableItem.item;
     const targetId = targetData.id;
     const targetDroppedItem = {targetId, targetPosition, droppedItem};
+    const targets = authoredState.dropZones || [];
+    const targetLabel = targetData.targetLabel || "Bin";
+
     if (setInteractiveState) {
       // Runtime mode.
-      setInteractiveState(prevState => ({
-        ...prevState,
-        answerType: "interactive_state",
-        droppedItemData: {
-          ...prevState?.droppedItemData,
-          [droppedItem.id]: targetDroppedItem
-        },
-      }));
+      setInteractiveState(prevState => {
+        const newTargetAggregateValues = {
+          ...prevState?.targetAggregateValues,
+          [targetLabel]: (prevState?.targetAggregateValues?.[targetLabel] || 0) + droppedItem.value
+        };
+
+        return {
+          ...prevState,
+          answerType: "interactive_state",
+          droppedItemData: {
+            ...prevState?.droppedItemData,
+            [droppedItem.id]: targetDroppedItem
+          },
+          targetAggregateValues: newTargetAggregateValues,
+          dataset: generateDataset(targets, newTargetAggregateValues)
+        };
+      });
     }
-  }, [setInteractiveState]);
+  }, [authoredState.dropZones, setInteractiveState]);
 
   const [, drop] = useDrop({
     accept: [DraggableItemWrapperType, DropZoneWrapperType],
