@@ -14,7 +14,7 @@ export interface IProps {
   position: IPosition;
   draggable: boolean;
   itemsInTarget: IDroppedItem[];
-  onItemDrop: (targetData: IDropZone, draggableItem: IDraggableItemWrapper) => void
+  onItemDrop: (targetData: IDropZone, targetPosition: IPosition, draggableItem: IDraggableItemWrapper) => void
 }
 
 // These types are used by react-dnd.
@@ -38,7 +38,7 @@ export const DropZoneWrapper: React.FC<IProps> = ({ target, position, draggable,
   const [{ isOver, canDrop, getItem }, drop] = useDrop({
     accept: DraggableItemWrapperType,
     drop: (droppedItem: any) => {
-      onItemDrop(target, getItem);
+      onItemDrop(target, position, getItem);
     },
     collect: (monitor: DropTargetMonitor) => ({
       isOver: monitor.isOver(),
@@ -52,24 +52,24 @@ export const DropZoneWrapper: React.FC<IProps> = ({ target, position, draggable,
   const highlightClassName = highlight ? css.highlight : "";
   const draggableClassName = draggable ? css.draggable : "";
   return (
-      isDragging
-        ? <DropZonePreview />
-        : <div
-            ref={draggable ? drag : drop}
-            className={`${css.dropZoneWrapper} ${css.background} ${draggableClassName}  ${highlightClassName}`}
-            style={zoneStyle}
-            data-cy="draggable-item-wrapper"
-          >
-            { itemsInTarget.map((item: any, idx: number) =>
-                <DraggableItemWrapper
-                  key={`draggable-item-${idx}`}
-                  item={item.droppedItem}
-                  position={{ top: kDropOffset * idx, left: kDropOffset * idx }}
-                  draggable={false}
-                />)
-            }
-            <DropZone target={target} highlight={highlight} />
-            <div className={css.targetLabel}>{target.targetLabel}</div>
-          </div>
+    isDragging
+    ? <DropZonePreview />
+    : <div
+        ref={draggable ? drag : drop}
+        className={`${css.dropZoneWrapper} ${css.background} ${draggableClassName}  ${highlightClassName}`}
+        style={zoneStyle}
+        data-cy="draggable-item-wrapper"
+      >
+        { itemsInTarget.map((item: any, idx: number) =>
+            <DraggableItemWrapper
+              key={`draggable-item-${idx}`}
+              item={item.droppedItem}
+              position={{ top: kDropOffset * idx, left: kDropOffset * idx }}
+              draggable={true}
+            />)
+        }
+        <DropZone target={target} highlight={highlight} />
+        <div className={css.targetLabel}>{target.targetLabel}</div>
+      </div>
   );
 };

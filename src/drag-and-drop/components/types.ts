@@ -47,6 +47,7 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
 
 export interface IDroppedItem {
   targetId: string;
+  targetPosition: IPosition;
   droppedItem: IDraggableItem;
 }
 
