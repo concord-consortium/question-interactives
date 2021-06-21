@@ -7,6 +7,7 @@ import { DraggableItemWrapper, DraggableItemWrapperType, IDraggableItemWrapper }
 import { DropZoneWrapper, DropZoneWrapperType, IDropZoneWrapper } from "./drop-zone-wrapper";
 import css from "./container.scss";
 import { generateDataset } from "../utils/generate-dataset";
+import { flushStateUpdates } from "@concord-consortium/lara-interactive-api";
 
 export interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {
   // Used only for authoring (initial state is part of the authored state).
@@ -110,6 +111,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
         answerType: "interactive_state",
         dataset: generateDataset(authoredState.dropZones, prevState?.droppedItemData)
       }));
+      flushStateUpdates();
     }, 1);
     // The dependency array should also include `setInteractiveState`, but this function seems to be updated 
     // on each state update. It results in an infinite loop. Probably a bug in LARA Interactive API client.
