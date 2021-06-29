@@ -24,6 +24,7 @@ module.exports = (env, argv) => {
       'image-question': './src/image-question/index.tsx',
       'graph': './src/graph/index.tsx',
       'drag-and-drop': './src/drag-and-drop/index.tsx',
+      'full-screen': './src/full-screen/index.tsx',
       'wrapper': './src/shared/wrapper.tsx'
     },
     mode: 'development',
@@ -191,6 +192,11 @@ module.exports = (env, argv) => {
       new HtmlWebpackPlugin({
         chunks: ['drag-and-drop'],
         filename: 'drag-and-drop/index.html',
+        template: 'src/shared/index.html'
+      }),
+      new HtmlWebpackPlugin({
+        chunks: ['full-screen'],
+        filename: 'full-screen/index.html',
         template: 'src/shared/index.html'
       }),
       // Wrapper page, useful for testing and Cypress.
