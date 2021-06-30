@@ -1,8 +1,10 @@
 import React from "react";
-import { BaseApp } from "../../shared/components/base-app";
 import { JSONSchema6 } from "json-schema";
+import { BaseQuestionApp } from "../../shared/components/base-question-app";
+import { IAuthoredState, IInteractiveState } from "./types";
 import { Runtime } from "./runtime";
-import { IAuthoredState } from "./types";
+import { IframeAuthoring } from "./iframe-authoring";
+import { migrateAuthoredState } from "./state-migrations";
 
 export const baseAuthoringProps = {
   schema: {
@@ -10,8 +12,26 @@ export const baseAuthoringProps = {
     properties: {
       version: {
         type: "number",
-        default: 1
+        default: 2
       },
+      subinteractives: {
+        type: "array",
+        title: "Interactive to scale",
+        items: {
+          type: "object",
+          properties: {
+            id: {
+              type: "string"
+            },
+            libraryInteractiveId: {
+              type: "string"
+            },
+            authoredState: {
+              type: "any"
+            }
+          }
+        }
+      }
     }
   } as JSONSchema6,
 
@@ -19,12 +39,21 @@ export const baseAuthoringProps = {
     version: {
       "ui:widget": "hidden"
     },
+    subinteractives: {
+      items: {
+        "ui:field": "iframeAuthoring"
+      }    }
   },
+  fields: {
+    iframeAuthoring: IframeAuthoring
+  }
 };
 
 export const App = () => (
-  <BaseApp<IAuthoredState>
+  <BaseQuestionApp<IAuthoredState, IInteractiveState>
     Runtime={Runtime}
     baseAuthoringProps={baseAuthoringProps}
+    disableSubmitBtnRendering={true}
+    migrateAuthoredState={migrateAuthoredState}
   />
 );
