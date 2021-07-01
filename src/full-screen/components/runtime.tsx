@@ -1,31 +1,31 @@
-import React, { useState } from "react";
-import screenfull from "screenfull";
+import React, { useCallback, useEffect } from "react";
+import _screenfull from "screenfull";
 import { IAuthoredState } from "./types";
 import { FullScreenButton } from "./full-screen-button";
 import css from "./runtime.scss";
+import { useForceUpdate } from "../../shared/hooks/use-force-update";
 
 interface IProps {
   authoredState: IAuthoredState;
 }
 
-export const Runtime: React.FC<IProps> = ({ authoredState }) => {
-  const [ isFullScreen, setIsFullScreen ] = useState<boolean>(false);
+const screenfull = _screenfull.isEnabled ? _screenfull : undefined;
 
-  const onToggleFullScreen = () => {
-    if (screenfull.isEnabled) {
-      screenfull.toggle();
-      screenfull.on("change", () => {
-        setIsFullScreen(!isFullScreen);
-      });
-    }
-  };
+export const Runtime: React.FC<IProps> = ({ authoredState }) => {
+  const forceUpdate = useForceUpdate();
+  const toggleFullScreen = useCallback(() => {
+    screenfull?.toggle();
+  }, []);
+
+  useEffect(() => {
+    const onChange = () => forceUpdate();
+    screenfull?.on("change", onChange);
+    return () => screenfull?.off("change", onChange);
+  }, [forceUpdate]);
 
   return (
     <div className={css.runtime}>
-      <div className={`${css.iframeContainer}`} >
-        This is the scaling interactive
-      </div>
-      <FullScreenButton isFullScreen={isFullScreen} handleToggleFullScreen={onToggleFullScreen} />
+      {screenfull && <FullScreenButton isFullScreen={screenfull.isFullscreen} handleToggleFullScreen={toggleFullScreen} />}
     </div>
   );
 };

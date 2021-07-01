@@ -1,4 +1,3 @@
-import { render } from "enzyme";
 import React, { useEffect, useState } from "react";
 
 import css from "./full-screen-button.scss";
