@@ -54,7 +54,7 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
   }, [id, libraryInteractiveId, onChange, authoredState]);
 
   useEffect(() => {
-    const url = libraryInteractiveIdToUrl(libraryInteractiveId, "fullscreen-scaler");
+    const url = libraryInteractiveIdToUrl(libraryInteractiveId, "full-screen");
     console.log("url: ", url, "libraryInteractiveId: ", libraryInteractiveId);
     // Trigger reload ONLY if URL has changed or authored state is different than current iframe state.
     // This can happen when iframes are reordered using react-jsochschema-form array controls. More details in the

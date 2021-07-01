@@ -67,6 +67,24 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
 
   return (
     <div className={css.runtime}>
+      {subinteractives.map((interactive, index) => {
+        const subState = subStates && subStates[interactive.id];
+        return (
+          <div key={interactive.id} className={`${css.runtime}`} >
+            { authoredState.prompt &&
+                <div>{renderHTML(authoredState.prompt)}</div> }
+                  <IframeRuntime
+                    key={interactive.id}
+                    id={interactive.id}
+                    url={libraryInteractiveIdToUrl(interactive.libraryInteractiveId, "full-screen")}
+                    authoredState={interactive.authoredState}
+                    interactiveState={subState}
+                    setInteractiveState={handleNewInteractiveState.bind(null, interactive.id)}
+                  />
+                </div>
+        );
+      })}
+
       {screenfull && <FullScreenButton isFullScreen={screenfull.isFullscreen} handleToggleFullScreen={toggleFullScreen} />}
     </div>
   );
