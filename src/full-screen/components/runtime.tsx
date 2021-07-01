@@ -5,6 +5,7 @@ import { FullScreenButton } from "./full-screen-button";
 import { useForceUpdate } from "../../shared/hooks/use-force-update";
 
 import css from "./runtime.scss";
+import { useForceUpdate } from "../../shared/hooks/use-force-update";
 
 const screenfull = _screenfull.isEnabled ? _screenfull : undefined;
 
