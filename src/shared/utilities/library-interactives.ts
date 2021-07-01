@@ -1,5 +1,5 @@
 // This is only temporary list. It will be replaced by LARA Interactive API call that returns all the available library interactives.
-type ParentInteractiveID =  "scaffolded-question" | "carousel" | "fullscreen-scaler";
+type ParentInteractiveID =  "scaffolded-question" | "carousel" | "full-screen";
 export const libraryInteractives = [
   {
     libraryInteractiveId: "",
@@ -26,8 +26,12 @@ export const libraryInteractives = [
     name: "Image"
   },
   {
-    libraryInteractiveId: "iframe-interactive",
-    name: "Iframe Interactive"
+    libraryInteractiveId: "drag-and-drop",
+    name: "Drag and drop"
+  },
+  {
+    libraryInteractiveId: "draw-tool",
+    name: "Draw tool"
   }
 ];
 
