@@ -29,44 +29,37 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     return () => screenfull?.off("change", onChange);
   }, [forceUpdate]);
 
-  const subinteractives = authoredState.subinteractives || [];
-  if (subinteractives.length === 0) {
+  const subinteractive = authoredState.subinteractive || null;
+  if (!subinteractive) {
     return <div>No sub items available. Please add them using the authoring interface.</div>;
   }
 
-  const subStates = interactiveState?.subinteractiveStates;
+  const subState = interactiveState?.subinteractiveState;
 
-  const handleNewInteractiveState = (interactiveId: string, newInteractiveState: any) => {
+  const handleNewInteractiveState = (newInteractiveState: any) => {
     setInteractiveState?.((prevState: IInteractiveState) => {
-      const updatedStates = {...prevState?.subinteractiveStates, [interactiveId]: newInteractiveState };
+      const updatedState = {...prevState?.subinteractiveState, newInteractiveState };
       return {
         ...prevState,
         answerType: "interactive_state",
-        subinteractiveStates: updatedStates,
+        subinteractiveState: updatedState,
       };
     });
   };
 
   return (
     <div className={css.runtime}>
-      {subinteractives.map((interactive, index) => {
-        const subState = subStates && subStates[interactive.id];
-        return (
-          <div key={interactive.id} className={`${css.runtime}`} >
+          <div className={css.runtime} >
             { authoredState.prompt &&
                 <div>{renderHTML(authoredState.prompt)}</div> }
                   <IframeRuntime
-                    key={interactive.id}
-                    id={interactive.id}
-                    url={libraryInteractiveIdToUrl(interactive.libraryInteractiveId, "full-screen")}
-                    authoredState={interactive.authoredState}
+                    id={subinteractive.id}
+                    url={libraryInteractiveIdToUrl(subinteractive.libraryInteractiveId, "full-screen")}
+                    authoredState={subinteractive.authoredState}
                     interactiveState={subState}
-                    setInteractiveState={handleNewInteractiveState.bind(null, interactive.id)}
+                    setInteractiveState={handleNewInteractiveState.bind(null, subinteractive.id)}
                   />
                 </div>
-        );
-      })}
-
       {screenfull && <FullScreenButton isFullScreen={screenfull.isFullscreen} handleToggleFullScreen={toggleFullScreen} />}
     </div>
   );

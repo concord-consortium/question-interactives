@@ -5,17 +5,16 @@ import { IAuthoringInteractiveMetadata, IRuntimeInteractiveMetadata } from "@con
 export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   version: 2;
   hint?: string;
-  subinteractives?: {
+  subinteractive?: {
     id: string;
     libraryInteractiveId: string;
     authoredState: any;
-  }[]
+  }
 }
 
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
-  subinteractiveStates: {
-    [id: string]: any;
-  },
+  id: string,
+  subinteractiveState: any,
   currentSubinteractiveId: string;
   submitted?: boolean;
 }
@@ -23,9 +22,9 @@ export interface IInteractiveState extends IRuntimeInteractiveMetadata {
 export interface IAuthoredStateV1 extends IAuthoringInteractiveMetadata {
   version: 1;
   hint?: string;
-  subinteractives?: {
+  subinteractive?: {
     id: string;
     url: string;
     authoredState: any;
-  }[]
+  }
 }

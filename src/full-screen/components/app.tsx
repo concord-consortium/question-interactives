@@ -14,21 +14,18 @@ export const baseAuthoringProps = {
         type: "number",
         default: 2
       },
-      subinteractives: {
-        type: "array",
+      subinteractive: {
+        type: "object",
         title: "Interactive to scale",
-        items: {
-          type: "object",
-          properties: {
-            id: {
-              type: "string"
-            },
-            libraryInteractiveId: {
-              type: "string"
-            },
-            authoredState: {
-              type: "any"
-            }
+        properties: {
+          id: {
+            type: "string"
+          },
+          libraryInteractiveId: {
+            type: "string"
+          },
+          authoredState: {
+            type: "any"
           }
         }
       }
@@ -39,10 +36,9 @@ export const baseAuthoringProps = {
     version: {
       "ui:widget": "hidden"
     },
-    subinteractives: {
-      items: {
-        "ui:field": "iframeAuthoring"
-      }    }
+    subinteractive: {
+      "ui:field": "iframeAuthoring"
+    }
   },
   fields: {
     iframeAuthoring: IframeAuthoring
