@@ -71,6 +71,7 @@ export const baseAuthoringProps = {
       "ui:help": "Path to subtitles or captions, if available"
     },
     poster: {
+      "ui:widget": "imageUpload",
       "ui:help": "Path to a static image to display before video playback begins"
     },
     prompt: {

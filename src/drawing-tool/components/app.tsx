@@ -251,7 +251,8 @@ export const baseAuthoringProps = {
       "ui:widget": "richtext"
     },
     backgroundImageUrl: {
-      "ui:help": "Path to hosted image file (jpg, png, gif, etc)"
+      "ui:help": "Path to hosted image file (jpg, png, gif, etc)",
+      "ui:widget": "imageUpload"
     },
     imageFit: {
       "ui:widget": "radio"

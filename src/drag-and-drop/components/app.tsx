@@ -142,10 +142,16 @@ export const baseAuthoringProps = {
     hint: {
       "ui:widget": "richtext"
     },
+    backgroundImageUrl: {
+      "ui:widget": "imageUpload"
+    },
     draggableItems: {
       items: {
         id: {
           "ui:widget": "hidden"
+        },
+        imageUrl: {
+          "ui:widget": "imageUpload"
         }
       }
     },
