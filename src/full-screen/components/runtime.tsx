@@ -29,22 +29,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     return () => screenfull?.off("change", onChange);
   }, [forceUpdate]);
 
-  const getIframeTransforms = (_window: any, _screen: any) => {
-    const MAX_WIDTH = 2000;
-    // Scale iframe, but make sure that:
-    // 1. Iframe is smaller than MAX_WIDTH which should be enough for all the documents. It prevents creating
-    //    some huge CODAP canvases on really big screens (e.g. 4k monitors).
-    // 2. Iframe is not smaller than size of the current window.
-    const width  = Math.max(_window.innerWidth, Math.min(MAX_WIDTH, _screen.width));
-    const scale  = _window.innerWidth  / width;
-    const height = _window.innerHeight / scale;
-    return {
-      scale: scale,
-      unscaledWidth: width,
-      unscaledHeight: height
-    };
-  };
-
   const subinteractives = authoredState.subinteractives || [];
   if (subinteractives.length === 0) {
     return <div>No sub items available. Please add them using the authoring interface.</div>;
