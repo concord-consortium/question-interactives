@@ -18,10 +18,11 @@ interface IProps {
   interactiveState: any;
   setInteractiveState: (state: any) => void;
   report?: boolean;
+  isFullScreen: boolean;
 }
 
 export const IframeRuntime: React.FC<IProps> =
-  ({ url, id, authoredState, interactiveState, setInteractiveState, report }) => {
+  ({ url, id, authoredState, interactiveState, setInteractiveState, report, isFullScreen }) => {
   const [ iframeHeight, setIframeHeight ] = useState(300);
   const [ hint, setHint ] = useState("");
   const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -82,9 +83,49 @@ export const IframeRuntime: React.FC<IProps> =
     };
   }, [url, authoredState, report, id]);
 
+  const getIframeTransforms = (_window: any, _screen: any) => {
+    const MAX_WIDTH = 2000;
+    // Scale iframe, but make sure that:
+    // 1. Iframe is smaller than MAX_WIDTH which should be enough for all the documents. It prevents creating
+    //    some huge CODAP canvases on really big screens (e.g. 4k monitors).
+    // 2. Iframe is not smaller than size of the current window.
+    const width  = Math.max(_window.innerWidth, Math.min(MAX_WIDTH, _screen.width));
+    const scale  = _window.innerWidth  / width;
+    const height = _window.innerHeight / scale;
+    return {
+      scale: scale,
+      unscaledWidth: width,
+      unscaledHeight: height
+    };
+  };
+
+  const setScaling = () => {
+    let scaledIframeWidth: number | string, scaledIframeHeight: number | string, scaledIframeTransformOrigin: string, scaledIframeTransform: string;
+    if (isFullScreen) {
+      const trans = getIframeTransforms(window, screen);
+      scaledIframeWidth = trans.unscaledWidth;
+      scaledIframeHeight = trans.unscaledHeight;
+      scaledIframeTransformOrigin = "top left";
+      scaledIframeTransform = "scale3d(" + trans.scale + "," + trans.scale + ",1)";
+    } else {
+      // Disable scaling in fullscreen mode.
+      scaledIframeWidth = "100%";
+      scaledIframeHeight = iframeHeight;
+      scaledIframeTransformOrigin = "";
+      scaledIframeTransform = "scale3d(1,1,1)";
+    }
+
+    return {
+      width: scaledIframeWidth,
+      height: scaledIframeHeight,
+      transformOrigin: scaledIframeTransformOrigin,
+      transform: scaledIframeTransform
+    };
+  };
+
   return (
     <div>
-      <iframe ref={iframeRef} src={url} width="100%" height={iframeHeight} frameBorder={0} />
+      <iframe ref={iframeRef} src={url} style={setScaling()} frameBorder={0} />
       { hint &&
         <div className={css.hint}>{renderHTML(hint)}</div> }
     </div>

@@ -58,6 +58,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                     authoredState={subinteractive.authoredState}
                     interactiveState={subState}
                     setInteractiveState={handleNewInteractiveState.bind(null, subinteractive.id)}
+                    isFullScreen={screenfull?.isFullscreen || false}
                   />
                 </div>
       {screenfull && <FullScreenButton isFullScreen={screenfull.isFullscreen} handleToggleFullScreen={toggleFullScreen} />}
