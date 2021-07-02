@@ -9,12 +9,15 @@ export const migrateAuthoredState = (authoredState: IAuthoredStateV1 | IAuthored
       }
       return url.substr(url.lastIndexOf("/") + 1);
     };
-    const newState: IAuthoredState = {...authoredState, version: 2, subinteractives: []};
-    newState.subinteractives = authoredState.subinteractives?.map(subint => ({
-      id: subint.id,
-      authoredState: subint.authoredState,
-      libraryInteractiveId: urlToIntName(subint.url)
-    }));
+    const newState: IAuthoredState = {
+      ...authoredState,
+      version: 2,
+      subinteractive: {
+        id: authoredState.subinteractive?.id || "",
+        authoredState: authoredState.subinteractive?.authoredState,
+        libraryInteractiveId: authoredState.subinteractive && urlToIntName(authoredState.subinteractive.url) || ""
+      }
+    };
     return newState;
   }
   return authoredState;
