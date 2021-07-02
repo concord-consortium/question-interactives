@@ -1,9 +1,13 @@
 import React, { useCallback, useEffect } from "react";
 import _screenfull from "screenfull";
-import { IAuthoredState } from "./types";
+import { IAuthoredState, IInteractiveState } from "./types";
 import { FullScreenButton } from "./full-screen-button";
-import css from "./runtime.scss";
 import { useForceUpdate } from "../../shared/hooks/use-force-update";
+import { IframeRuntime } from "./iframe-runtime";
+import { libraryInteractiveIdToUrl } from "../../shared/utilities/library-interactives";
+import { renderHTML } from "../../shared/utilities/render-html";
+
+import css from "./runtime.scss";
 
 interface IProps {
   authoredState: IAuthoredState;
@@ -11,11 +15,9 @@ interface IProps {
   setInteractiveState?: (updateFunc: (prevState: IInteractiveState | null) => IInteractiveState) => void;
 }
 
-}
-
 const screenfull = _screenfull.isEnabled ? _screenfull : undefined;
 
-export const Runtime: React.FC<IProps> = ({ authoredState }) => {
+export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState }) => {
   const forceUpdate = useForceUpdate();
   const toggleFullScreen = useCallback(() => {
     screenfull?.toggle();
@@ -43,26 +45,22 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
     };
   };
 
-  const fullscreenSupport = (iframe: any) => {
-    const target = iframe;
+  const subinteractives = authoredState.subinteractives || [];
+  if (subinteractives.length === 0) {
+    return <div>No sub items available. Please add them using the authoring interface.</div>;
+  }
 
-    function setScaling () {
-      if (!isFullScreen) {
-        const trans = getIframeTransforms(window, screen);
-        target.css('width', trans.unscaledWidth);
-        target.css('height', trans.unscaledHeight);
-        target.css('transform-origin', 'top left');
-        target.css('transform', 'scale3d(' + trans.scale + ',' + trans.scale + ',1)');
-      } else {
-        // Disable scaling in fullscreen mode.
-        target.css('width', '100%');
-        target.css('height', '100%');
-        target.css('transform', 'scale3d(1,1,1)');
-      }
-    }
-    setScaling();
+  const subStates = interactiveState?.subinteractiveStates;
 
-    window.onresize = setScaling;
+  const handleNewInteractiveState = (interactiveId: string, newInteractiveState: any) => {
+    setInteractiveState?.((prevState: IInteractiveState) => {
+      const updatedStates = {...prevState?.subinteractiveStates, [interactiveId]: newInteractiveState };
+      return {
+        ...prevState,
+        answerType: "interactive_state",
+        subinteractiveStates: updatedStates,
+      };
+    });
   };
 
   return (

@@ -30,7 +30,7 @@ export const libraryInteractives = [
     name: "Drag and drop"
   },
   {
-    libraryInteractiveId: "draw-tool",
+    libraryInteractiveId: "drawing-tool",
     name: "Draw tool"
   }
 ];
