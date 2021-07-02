@@ -75,11 +75,11 @@ const baseAuthoringProps = {
       "ui:widget": "hidden"
     },
     url: {
-      "ui:widget": "textarea",
+      "ui:widget": "imageUpload",
       "ui:help": "Path to hosted image file (jpg, png, gif, etc)"
     },
     highResUrl: {
-      "ui:widget": "textarea",
+      "ui:widget": "imageUpload",
       "ui:help": "Path to high-resolution hosted image file (jpg, png, gif, etc) for zoomed-in view (optional)"
     },
     altText: {
