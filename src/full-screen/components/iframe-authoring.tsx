@@ -55,7 +55,6 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
 
   useEffect(() => {
     const url = libraryInteractiveIdToUrl(libraryInteractiveId, "full-screen");
-    console.log("url: ", url, "libraryInteractiveId: ", libraryInteractiveId);
     // Trigger reload ONLY if URL has changed or authored state is different than current iframe state.
     // This can happen when iframes are reordered using react-jsochschema-form array controls. More details in the
     // initial comment about `iframeCurrentAuthoredState`. `deepEqual` is used, as when `===` was used, sometimes iframe
