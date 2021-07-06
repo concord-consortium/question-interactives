@@ -1,17 +1,21 @@
 .iframeAuthoring {
-  .iframeAuthoring {
-    margin-top: 10px;
-    border: 1px solid #eee;
-    border-radius: 5px;
-    overflow: hidden;
+  margin-top: 10px;
+  border: 1px solid #eee;
+  border-radius: 5px;
+  overflow: hidden;
 
-    &.open {
-      overflow: auto;
-    }
+  &.open {
+    overflow: auto;
+  }
+
+  .interactiveUrlInput {
+    width: 100%;
   }
 
   .iframeContainer {
     transition: max-height 500ms;
+    width: 100%;
+    margin-top: 15px;
   }
 
   .link {

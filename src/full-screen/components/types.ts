@@ -4,10 +4,9 @@ import { IAuthoringInteractiveMetadata, IRuntimeInteractiveMetadata } from "@con
 // TS interfaces are not available in runtime in contrast to JSON schema.
 export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   version: 2;
-  hint?: string;
-  subinteractive?: {
+  subinteractive: {
     id: string;
-    libraryInteractiveId: string;
+    subInteractiveUrl: string;
     authoredState: any;
   }
 }
@@ -15,16 +14,14 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
   id: string,
   subinteractiveState: any,
-  currentSubinteractiveId: string;
   submitted?: boolean;
 }
 
 export interface IAuthoredStateV1 extends IAuthoringInteractiveMetadata {
   version: 1;
-  hint?: string;
   subinteractive?: {
     id: string;
-    url: string;
+    subInteractiveUrl: string;
     authoredState: any;
   }
 }

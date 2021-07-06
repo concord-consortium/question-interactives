@@ -3,7 +3,6 @@ import { renderHTML } from "../../shared/utilities/render-html";
 import { IframePhone } from "../../shared/types";
 import iframePhone from "iframe-phone";
 import css from "./iframe-runtime.scss";
-import { IHintRequest, log } from "@concord-consortium/lara-interactive-api";
 
 // This should be part of lara-interactive-api
 interface ILogRequest {
@@ -22,8 +21,8 @@ interface IProps {
 
 export const IframeRuntime: React.FC<IProps> =
   ({ url, id, authoredState, interactiveState, setInteractiveState, report }) => {
+    // console.log("in iframe runtime authoredState:", authoredState);
   const [ iframeHeight, setIframeHeight ] = useState(300);
-  const [ hint, setHint ] = useState("");
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const phoneRef = useRef<IframePhone>();
   // Why is interativeState and setInteractiveState kept in refs? So it's not necessary to declare these variables as
@@ -35,6 +34,7 @@ export const IframeRuntime: React.FC<IProps> =
   const setInteractiveStateRef = useRef<((state: any) => void)>(setInteractiveState);
   interactiveStateRef.current = interactiveState;
   setInteractiveStateRef.current = setInteractiveState;
+  console.log("in iframe runtime iframeRef:", iframeRef);
 
   useEffect(() => {
     const initInteractive = () => {
@@ -47,18 +47,6 @@ export const IframeRuntime: React.FC<IProps> =
       });
       phone.addListener("height", (newHeight: number) => {
         setIframeHeight(newHeight);
-      });
-      phone.addListener("hint", (newHint: IHintRequest) => {
-        setHint(newHint.text || "");
-      });
-      phone.addListener("log", (logData: ILogRequest) => {
-        log(logData.action, {
-          ...logData.data,
-          subinteractive_url: url,
-          subinteractive_type: authoredState.questionType,
-          subinteractive_sub_type: authoredState.questionSubType,
-          subinteractive_id: id
-        });
       });
       phone.post("initInteractive", {
         mode: report ? "report" : "runtime",
@@ -85,8 +73,6 @@ export const IframeRuntime: React.FC<IProps> =
   return (
     <div>
       <iframe ref={iframeRef} src={url} width="100%" height={iframeHeight} frameBorder={0} />
-      { hint &&
-        <div className={css.hint}>{renderHTML(hint)}</div> }
     </div>
   );
 };
