@@ -1,18 +1,16 @@
-import React, { ChangeEvent, useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState, useCallback } from "react";
 import { FieldProps } from "react-jsonschema-form";
 import { IframePhone } from "../../shared/types";
 import iframePhone from "iframe-phone";
 import deepEqual from "deep-equal";
 import { v4 as uuidv4 } from "uuid";
-import { libraryInteractives, libraryInteractiveIdToUrl } from "../../shared/utilities/library-interactives";
 import css from "./iframe-authoring.scss";
 
 export const IframeAuthoring: React.FC<FieldProps> = props => {
   const { onChange, formData } = props;
-  const { libraryInteractiveId, authoredState, id } = formData;
-  const [ iframeHeight, setIframeHeight ] = useState(300);
-  const [ authoringOpened, setAuthoringOpened ] = useState(false);
-  const interactiveWrapperClass = authoringOpened ? `${css.iframeAuthoring} ${css.open}` : css.iframeAuthoring;
+  const { subInteractiveUrl, authoredState, id } = formData;
+  const [ wrappedInteractiveLink, setWrappedInteractiveLink ] = useState("https://codap.concord.org/releases/staging/#shared=155548");
+  const [ iframeHeight, setIframeHeight ] = useState(560);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const phoneRef = useRef<IframePhone>();
   // We need to keep track of the current iframe state and detect cases when update comes from the parent (e.g. when
@@ -25,62 +23,58 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
   // state outside `initInteractive` call. But this would require all the existing interactives to be updated.
   const iframeCurrentAuthoredState = useRef<any>();
 
-  const handleLibraryInteractiveIdChange = (event: ChangeEvent<HTMLSelectElement>) => {
-    const newLibraryInteractiveId = event.target.value;
-    onChange({ libraryInteractiveId: newLibraryInteractiveId, authoredState: undefined, id: id || uuidv4() });
-  };
-
-  const handleHeaderClick = () => {
-    setAuthoringOpened(!authoringOpened);
-  };
-
   const initInteractive = useCallback(() => {
     const phone = phoneRef.current;
+    // console.log(" in iframe authoring authoredState: ", authoredState);
     if (!phone) {
       return;
     }
     phone.addListener("authoredState", (newAuthoredState: any) => {
       // Save current iframe authored state.
       iframeCurrentAuthoredState.current = newAuthoredState;
-      onChange({ libraryInteractiveId, authoredState: newAuthoredState, id: id || uuidv4() });
+      onChange({ subInteractiveUrl, authoredState: newAuthoredState, id: id || uuidv4() });
     });
     phone.addListener("height", (newHeight: number) => {
       setIframeHeight(newHeight);
     });
     phone.post("initInteractive", {
       mode: "authoring",
-      authoredState
+      authoredState,
+      subInteractiveUrl
     });
-  }, [id, libraryInteractiveId, onChange, authoredState]);
+  }, [id, subInteractiveUrl, onChange, authoredState]);
 
+  // useEffect(() => {
+  //   const url = libraryInteractiveIdToUrl(libraryInteractiveId, "full-screen");
+  //   // Trigger reload ONLY if URL has changed or authored state is different than current iframe state.
+  //   // This can happen when iframes are reordered using react-jsochschema-form array controls. More details in the
+  //   // initial comment about `iframeCurrentAuthoredState`. `deepEqual` is used, as when `===` was used, sometimes iframe
+  //   // was reloaded unnecessarily (e.g. during very fast typing in textarea, probably multiple messages have been sent).
+  //   if (iframeRef.current && (url !== iframeRef.current.src || !deepEqual(iframeCurrentAuthoredState.current, authoredState))) {
+  //     phoneRef.current?.disconnect();
+  //     iframeCurrentAuthoredState.current = authoredState;
+  //     iframeRef.current.src = url;
+  //     phoneRef.current = new iframePhone.ParentEndpoint(iframeRef.current, initInteractive);
+  //   }
+  // }, [libraryInteractiveId, authoredState, initInteractive]);
   useEffect(() => {
-    const url = libraryInteractiveIdToUrl(libraryInteractiveId, "full-screen");
-    // Trigger reload ONLY if URL has changed or authored state is different than current iframe state.
-    // This can happen when iframes are reordered using react-jsochschema-form array controls. More details in the
-    // initial comment about `iframeCurrentAuthoredState`. `deepEqual` is used, as when `===` was used, sometimes iframe
-    // was reloaded unnecessarily (e.g. during very fast typing in textarea, probably multiple messages have been sent).
-    if (iframeRef.current && (url !== iframeRef.current.src || !deepEqual(iframeCurrentAuthoredState.current, authoredState))) {
+    // if (iframeRef.current && (url !== iframeRef.current.src || !deepEqual(iframeCurrentAuthoredState.current, authoredState))) {
+      // console.log("in iframe-authoring iframeRef: ", iframeRef);
+      // console.log("iframeRef.current.src: ", iframeRef.current?.src);
+    if (iframeRef.current &&
+          (wrappedInteractiveLink !== iframeRef.current.src || !deepEqual(iframeCurrentAuthoredState.current, authoredState))) {
       phoneRef.current?.disconnect();
       iframeCurrentAuthoredState.current = authoredState;
-      iframeRef.current.src = url;
+      // iframeRef.current.src = url;
+      iframeRef.current.src = wrappedInteractiveLink;
       phoneRef.current = new iframePhone.ParentEndpoint(iframeRef.current, initInteractive);
     }
-  }, [libraryInteractiveId, authoredState, initInteractive]);
+  },[authoredState, initInteractive, wrappedInteractiveLink]);
 
   return (
     <div className={css.iframeAuthoring}>
-      Interactive: <select onChange={handleLibraryInteractiveIdChange} value={libraryInteractiveId} data-cy="select-subquestion">
-        { libraryInteractives.map(o => <option key={o.libraryInteractiveId} value={o.libraryInteractiveId}>{o.name}</option>) }
-      </select>
-      {
-        libraryInteractiveId &&
-        <div className={interactiveWrapperClass}>
-          <h4 onClick={handleHeaderClick} className={css.link} data-cy="subquestion-authoring">{authoringOpened ? "▼" : "▶"} Subquestion authoring</h4>
-          <div className={css.iframeContainer} style={{maxHeight: authoringOpened ? iframeHeight : 0 }}>
-            <iframe id={id} ref={iframeRef} width="100%" height={iframeHeight} frameBorder={0} />
-          </div>
-        </div>
-      }
+      <iframe ref={iframeRef} className={css.iframeContainer}src={wrappedInteractiveLink} height={iframeHeight} frameBorder={0}/>
     </div>
+
   );
 };

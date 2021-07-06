@@ -15,7 +15,8 @@ export const migrateAuthoredState = (authoredState: IAuthoredStateV1 | IAuthored
       subinteractive: {
         id: authoredState.subinteractive?.id || "",
         authoredState: authoredState.subinteractive?.authoredState,
-        libraryInteractiveId: authoredState.subinteractive && urlToIntName(authoredState.subinteractive.url) || ""
+        // wrappedInteractive: authoredState.subinteractive && urlToIntName(authoredState.subinteractive.url) || ""
+        subInteractiveUrl: authoredState.subinteractive?.subInteractiveUrl || ""
       }
     };
     return newState;

@@ -21,7 +21,8 @@ export const baseAuthoringProps = {
           id: {
             type: "string"
           },
-          libraryInteractiveId: {
+          subInteractiveUrl: {
+            title: "Interactive URL: ",
             type: "string"
           },
           authoredState: {
@@ -37,11 +38,19 @@ export const baseAuthoringProps = {
       "ui:widget": "hidden"
     },
     subinteractive: {
-      "ui:field": "iframeAuthoring"
+      id: {
+        "ui:widget": "hidden"
+      },
+      subInteractiveUrl: {
+        "ui:widget": "text"
+      },
+      authoredState: {
+        "ui:field": "hidden"
+      }
     }
   },
   fields: {
-    iframeAuthoring: IframeAuthoring
+    iframeAuthoring: IframeAuthoring,
   }
 };
 

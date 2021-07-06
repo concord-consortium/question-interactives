@@ -21,7 +21,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const forceUpdate = useForceUpdate();
   const toggleFullScreen = useCallback(() => {
     screenfull?.toggle();
-  }, []);
+  },[]);
 
   useEffect(() => {
     const onChange = () => forceUpdate();
@@ -46,20 +46,20 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       };
     });
   };
-
+  // console.log("in runtime authoredState: ", authoredState);
   return (
     <div className={css.runtime}>
-          <div className={css.runtime} >
-            { authoredState.prompt &&
-                <div>{renderHTML(authoredState.prompt)}</div> }
-                  <IframeRuntime
-                    id={subinteractive.id}
-                    url={libraryInteractiveIdToUrl(subinteractive.libraryInteractiveId, "full-screen")}
-                    authoredState={subinteractive.authoredState}
-                    interactiveState={subState}
-                    setInteractiveState={handleNewInteractiveState.bind(null, subinteractive.id)}
-                  />
-                </div>
+      <div className={css.runtime} >
+        { (authoredState.prompt && authoredState.subinteractive) &&
+          <div>{renderHTML(authoredState.prompt)}</div> }
+            <IframeRuntime
+              id={subinteractive.id}
+              url={authoredState.subinteractive.subInteractiveUrl}
+              authoredState={subinteractive.authoredState}
+              interactiveState={subState}
+              setInteractiveState={handleNewInteractiveState.bind(null, subinteractive.id)}
+            />
+      </div>
       {screenfull && <FullScreenButton isFullScreen={screenfull.isFullscreen} handleToggleFullScreen={toggleFullScreen} />}
     </div>
   );
