@@ -28,17 +28,19 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     return () => screenfull?.off("change", onChange);
   }, [forceUpdate]);
 
-  const params = queryString.parse(window.location.search);
-  const subinteractiveUrl = params.wrappedInteractive as string || undefined;
+  const params = queryString.parse(location.search);
+  const hash = queryString.parse(location.hash);
+  const sharedDoc = hash.shared ? "#shared="+hash.shared : "";
+  const preUrl = params?.wrappedInteractive + sharedDoc;
+  const subinteractiveUrl = preUrl && encodeURI(preUrl);
+
   if (!subinteractiveUrl) {
     return <div>No sub items available. Please add them using the authoring interface.</div>;
   } else {
     return (
       <div className={css.runtime}>
         <div className={css.runtime} >
-          { (authoredState.prompt && authoredState.subinteractive) &&
-            <div>{renderHTML(authoredState.prompt)}</div> }
-            {subinteractiveUrl && <iframe className={css.subInteractiveIframe} src={subinteractiveUrl} />}
+          <iframe className={css.subInteractiveIframe} src={subinteractiveUrl} />
         </div>
         {screenfull && <FullScreenButton isFullScreen={screenfull.isFullscreen} handleToggleFullScreen={toggleFullScreen} />}
       </div>
