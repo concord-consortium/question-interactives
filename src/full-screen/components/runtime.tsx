@@ -1,22 +1,15 @@
-import React, { useCallback, useEffect} from "react";
+import React, { useCallback, useEffect } from "react";
 import _screenfull from "screenfull";
 import queryString from "query-string";
-import { IAuthoredState, IInteractiveState } from "./types";
 import { FullScreenButton } from "./full-screen-button";
 import { useForceUpdate } from "../../shared/hooks/use-force-update";
-import { renderHTML } from "../../shared/utilities/render-html";
 
 import css from "./runtime.scss";
 
-interface IProps {
-  authoredState: IAuthoredState;
-  interactiveState?: IInteractiveState | null;
-  setInteractiveState?: (updateFunc: (prevState: IInteractiveState | null) => IInteractiveState) => void;
-}
-
 const screenfull = _screenfull.isEnabled ? _screenfull : undefined;
 
-export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState }) => {
+// eslint-disable-next-line no-empty-pattern
+export const Runtime: React.FC = ({}) => {
   const forceUpdate = useForceUpdate();
   const toggleFullScreen = useCallback(() => {
     screenfull?.toggle();
@@ -25,11 +18,14 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   useEffect(() => {
     const onChange = () => forceUpdate();
     screenfull?.on("change", onChange);
-    return () => screenfull?.off("change", onChange);
+    window.addEventListener('resize', onChange);
+    return () => {
+      screenfull?.off("change", onChange);
+      window.removeEventListener('resize', onChange);
+    };
   }, [forceUpdate]);
 
-  const isFullScreen =screenfull?.isFullscreen;
-
+  const isFullScreen = screenfull?.isFullscreen;
   const getIframeTransforms = (_window: any, _screen: any) => {
     const MAX_WIDTH = 2000;
     // Scale iframe, but make sure that:
@@ -48,7 +44,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const setScaling = () => {
     let scaledIframeWidth: number | string, scaledIframeHeight: number | string, scaledIframeTransformOrigin: string, scaledIframeTransform: string;
-    if (isFullScreen) {
+    if (!isFullScreen) {
       const trans = getIframeTransforms(window, screen);
       scaledIframeWidth = trans.unscaledWidth;
       scaledIframeHeight = trans.unscaledHeight;
@@ -82,13 +78,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     return <div>No sub items available. Please add them using the authoring interface.</div>;
   } else {
     return (
-      <div className={css.runtime}>
-        <div className={css.runtime} >
-          <iframe className={css.subInteractiveIframe} src={subinteractiveUrl} />
-        </div>
+      <>
+        <iframe className={css.subInteractiveIframe} style={iframeStyle} src={subinteractiveUrl} />
         {screenfull &&
           <FullScreenButton isFullScreen={screenfull.isFullscreen} handleToggleFullScreen={toggleFullScreen} />}
-      </div>
+      </>
     );
   }
 };
