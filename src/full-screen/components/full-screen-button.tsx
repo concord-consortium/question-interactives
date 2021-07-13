@@ -9,16 +9,16 @@ interface IProps {
 
 export const FullScreenButton: React.FC<IProps> = (props) => {
   const {isFullScreen, handleToggleFullScreen} = props;
-  const [isHidden, setIsHidden] = useState(false);
+  const [isHintHidden, setIsHintHidden] = useState(false);
   useEffect(() => {
     setTimeout(() => {
-      setIsHidden(true);
+      setIsHintHidden(true);
     }, 4000);
   });
 
   return (
     <div className={css.fullScreenToggle}>
-      <div id="fullScreenHelp" className={`${css.fullScreenHelp} ${isHidden? css.hidden : ""}`} >
+      <div id="fullScreenHelp" className={`${css.fullScreenHelp} ${isHintHidden? css.hidden : ""}`} >
         Click here to enter/exit fullscreen →
       </div>
       <div>

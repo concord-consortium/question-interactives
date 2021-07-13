@@ -8,8 +8,7 @@ import css from "./runtime.scss";
 
 const screenfull = _screenfull.isEnabled ? _screenfull : undefined;
 
-// eslint-disable-next-line no-empty-pattern
-export const Runtime: React.FC = ({}) => {
+export const Runtime: React.FC = () => {
   const forceUpdate = useForceUpdate();
   const toggleFullScreen = useCallback(() => {
     screenfull?.toggle();
@@ -26,7 +25,9 @@ export const Runtime: React.FC = ({}) => {
   }, [forceUpdate]);
 
   const isFullScreen = screenfull?.isFullscreen;
-  const getIframeTransforms = (_window: any, _screen: any) => {
+  // This code is patterned after the jQuery-based implementation in 'fullscreen.ts' in the
+  // [Cloud File Manager](https://github.com/concord-consortium/cloud-file-manager/blob/master/src/code/autolaunch/fullscreen.ts).
+  const getIframeTransforms = (_window: Window, _screen: Screen) => {
     const MAX_WIDTH = 2000;
     // Scale iframe, but make sure that:
     // 1. Iframe is smaller than MAX_WIDTH which should be enough for all the documents. It prevents creating
