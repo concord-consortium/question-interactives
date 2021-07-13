@@ -1,0 +1,52 @@
+.fullScreenToggle {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+
+  .fullScreenHelp {
+    margin-right: 20px;
+    height: 40px;
+    text-align: right;
+    line-height: 36px;
+    color: #8e8e8e;
+    text-shadow: 1px 1px 5px #fff;
+    font-size: 30px;
+
+    &.hidden {
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 1.5s ease-out 2s, visibility 0.01s linear 3.5s;
+    }
+  }
+
+  .fullScreenIcon {
+    display: flex;
+    font-size: 45px;
+    height: 50px;
+    width: 50px;
+    background-size: 50px;
+    z-index: 10000;
+    cursor: pointer;
+    background-image: url("../img/fullscreen.svg");
+    background-color: transparent;
+    background-repeat: no-repeat;
+    border-radius: 0;
+    border: none;
+    color: transparent;
+
+    &:hover {
+      background-image: url("../img/fullscreen-dark.svg");
+    }
+
+    &.fullscreen {
+      background-image: url("../img/fullscreen-exit.svg");
+
+      &:hover {
+        background-image: url("../img/fullscreen-exit-dark.svg");
+      }
+    }
+  }
+}
