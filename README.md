@@ -8,6 +8,12 @@
 2. Run `npm install` to pull dependencies
 3. Run `npm start` to run `webpack-dev-server` in development mode with hot module replacement
 
+### Local development setup:
+
+1. At the moment there is no way to preview your components in isolation. You will need to **create a new Library Interactive in your local LARA instance** to develop in this repo. You could also create a Library Interactive on the staging server, but you should clean up after yourself = so that we don't end up with a lot of `https://localhost/` development references on the staging server.
+2. The `Base URL` of your Library interactive will be something like: `http://localhost:8080/<your component directory>/` where your component directory would be something like `open-response`. That should point to the top-level index of your component, e.g. `open-response/index.tsx`.
+3. You will probably want to check the `Save Interactive State` checkbox, and possibly the checkbox for `Interactive provides an authoring UI.`
+
 ### Building
 
 If you want to build a local version run `npm build`, it will create the files in the `dist` folder.
