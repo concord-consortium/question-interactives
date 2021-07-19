@@ -1,5 +1,5 @@
 import React from "react";
-import "./thumbnail.scss";
+import css from "./thumbnail.scss";
 
 export type ThumbnailModelID = string;
 
@@ -15,7 +15,7 @@ export interface IThumbnailProps {
 export const Thumbnail: React.FC<IThumbnailProps> = (props:IThumbnailProps) => {
   const {thumbContent} = props;
   return (
-    <div className="thumbnail" data-testid="thumbnail">
+    <div className={css["thumbnail"]} data-testid="thumbnail">
       {thumbContent}
     </div>
   );

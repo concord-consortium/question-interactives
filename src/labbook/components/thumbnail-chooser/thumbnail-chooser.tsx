@@ -5,7 +5,8 @@ import NextButtonIcon from "../../assets/arrow-next-icon.svg";
 import PrevButtonIcon from "../../assets/arrow-previous-icon.svg";
 import classNames from "classnames";
 
-import "./thumbnail-chooser.scss";
+import css from "./thumbnail-chooser.scss";
+
 interface basicButtonProps {
   onClick?: (e: React.MouseEvent<HTMLElement>) => void;
   enabled: boolean;
@@ -13,25 +14,25 @@ interface basicButtonProps {
 
 const PrevButton:React.FC<basicButtonProps> = (props: basicButtonProps) => {
   const {onClick, enabled} = props;
-  const backClasses = classNames("button-back", {disabled: !enabled});
+  const backClasses = classNames(css["button-back"], {[css.disabled]: !enabled});
   return(
-    <div className={backClasses} onClick={onClick}>
-      <div className="button-icon-container">
+    <button className={backClasses} onClick={onClick} disabled={!enabled}>
+      <div className={css["button-icon-container"]}>
         <PrevButtonIcon/>
       </div>
-    </div>
+    </button>
   );
 };
 
 const NextButton:React.FC<basicButtonProps> = (props: basicButtonProps) => {
   const {onClick, enabled} = props;
-  const backClasses = classNames("button-back", {disabled: !enabled});
+  const backClasses = classNames(css["button-back"], {[css.disabled]: !enabled});
   return(
-    <div className={backClasses} onClick={onClick}>
-      <div className="button-icon-container">
+    <button className={backClasses} onClick={onClick} disabled={!enabled}>
+      <div className={css["button-icon-container"]}>
         <NextButtonIcon/>
       </div>
-    </div>
+    </button>
   );
 };
 
@@ -55,9 +56,9 @@ export const ThumbnailChooser: React.FC<IThumbnailChooserProps> = (props) => {
   const effectiveOffset = Math.min(offset, items.length - maxDisplayItems);
 
   return (
-    <div className="thumbnail-chooser" data-testid="thumbnail-chooser">
+    <div className={css["thumbnail-chooser"]} data-testid="thumbnail-chooser">
       <PrevButton enabled={effectiveOffset > 0} onClick={() => setOffset(effectiveOffset -1)} />
-      <div className="thumbnail-chooser-list">
+      <div className={css["thumbnail-chooser-list"]}>
         {items.map( (item, index) => {
           // Only display a subset of items
           if(index < effectiveOffset) { return null; }

@@ -6,7 +6,7 @@ import { UploadButton } from "./uploadButton";
 import { CommentField } from "./comment-field";
 import SnapShotIcon from "../assets/snapshot-image-icon.svg";
 import UploadIcon from "../assets/upload-image-icon.svg";
-import "./app.scss";
+import css from "./app.scss";
 
 
 const initialItems:Array<IThumbnailProps> = [
@@ -89,7 +89,6 @@ export const App = () => {
   const[selectedItemID, _setSelectedItemID] = useState("nothing");
 
   const addItem = () => {
-    console.log("Bah");
     const names = "donut carrot lettuce candy milk icecream cookies".split(/\s+/);
     const index = Math.round(Math.random() * names.length);
     const name = names[index];
@@ -139,12 +138,12 @@ export const App = () => {
 
 
   return (
-    <div className="app">
-      <div className="container">
+    <div className={css["app"]}>
+      <div className={css["container"]}>
         <ThumbnailChooser {...thumbnailChooserProps} />
         <PreviewPanel item={selectedItem} />
-        <div className="under-sketch">
-          <div className="buttons">
+        <div className={css["under-sketch"]}>
+          <div className={css["buttons"]}>
             <UploadButton>
               <UploadIcon />
               Upload Image

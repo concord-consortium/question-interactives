@@ -1,7 +1,7 @@
 import React from "react";
 import { ThumbnailTitle } from "./thumbnail-chooser/thumbnail-title";
 import { IThumbnailProps } from "./thumbnail-chooser/thumbnail";
-import "./comment-field.scss";
+import css from "./comment-field.scss";
 
 
 export interface ICommentFieldProps {
@@ -16,7 +16,7 @@ export const CommentField: React.FC<ICommentFieldProps> = (props) => {
     : "Add comment … "; // TODO: I18n
 
   return (
-      <div className="comment-field">
+      <div className={css["comment-field"]}>
         <ThumbnailTitle title={item?.id} empty={empty}/>
         <textarea disabled={empty} placeholder={placeholder}>
         </textarea>
