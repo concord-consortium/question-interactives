@@ -25,8 +25,7 @@ interface IProps {
 export const useIframeRuntimeSetup =
   ({ iframeRef, interactiveStateRef, url, authoredState, setInteractiveStateRef, report, logRequestData, hasModal }: IProps) => {
   const [ , setIframeHeight ] = useState(300);
-  const [ , setHint ] = useState("");
-  // const setInteractiveStateRef = useRef<((state: any) => void)>(setInteractiveState);
+  const [ , setHint ] = useState(authoredState.hint);
   const phoneRef = useRef<IframePhone>();
 
   const initInteractive = useCallback(() => {
@@ -72,6 +71,9 @@ export const useIframeRuntimeSetup =
       });
     }
   },[]);
+  console.log("iframeRef: ", iframeRef);
+  console.log("authoredState: ", authoredState, "hint:", authoredState.hint);
+  console.log("interactiveStateRef: ", interactiveStateRef);
 
   useEffect (() => {
     if (iframeRef.current) {
@@ -88,13 +90,3 @@ export const useIframeRuntimeSetup =
     };
   },[]);
 };
-
-    // ******
-    // Aspect ratio should use setSupportedFeatures(features:ISupportedFeatures)
-    //    aspectRatio?: number;
-    // authoredState?: boolean;
-    // interactiveState?: boolean;
-    // customMessages?: {
-    //     handles?: ICustomMessagesHandledMap;
-    // };
-    // ******

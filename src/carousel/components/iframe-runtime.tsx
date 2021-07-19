@@ -23,7 +23,7 @@ interface IProps {
 export const IframeRuntime: React.FC<IProps> =
   ({ url, id, authoredState, interactiveState, setInteractiveState, report, navImageUrl, navImageAltText }) => {
   const [ iframeHeight, setIframeHeight ] = useState(300);
-  const [ hint, setHint ] = useState("");
+  const [ hint, setHint ] = useState(authoredState.hint);
   const iframeRef = useRef<HTMLIFrameElement>(null);
   // Why is interativeState and setInteractiveState kept in refs? So it's not necessary to declare these variables as
   // useEffect's dependencies. Theoretically this useEffect callback is perfectly fine either way, but since
