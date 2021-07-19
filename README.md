@@ -14,6 +14,27 @@
 2. The `Base URL` of your Library interactive will be something like: `http://localhost:8080/<your component directory>/` where your component directory would be something like `open-response`. That should point to the top-level index of your component, e.g. `open-response/index.tsx`.
 3. You will probably want to check the `Save Interactive State` checkbox, and possibly the checkbox for `Interactive provides an authoring UI.`
 
+#### Adding a new Interactive type:
+In addition to copying your component source into `./src/your-component/` you will also
+need to add a few new entries to webpack.config.js:
+ 
+ ```javascript
+   // webpack.config.js
+   ...
+	entry: {
+		...
+		'YourComponent': './src/your-component/index.tsx'
+	},
+	...
+	new HtmlWebpackPlugin({
+		chunks: ['YourComponent'],
+		filename: 'your-component/index.html',
+		template: 'src/shared/index.html'
+	}),
+   ...
+
+```
+
 ### Building
 
 If you want to build a local version run `npm build`, it will create the files in the `dist` folder.
