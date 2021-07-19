@@ -1,0 +1,56 @@
+@import "../vars.scss";
+
+.thumbnail-chooser {
+  background-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 514px;
+
+  .thumbnail-chooser-title {
+    font-size: 16px;
+    padding-top: 5px;
+    text-align: center;
+    margin: 10px;
+  }
+
+  .thumbnail-chooser-list {
+    height: 110px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .button-back {
+    width: 44px;
+    height: 44px;
+    margin: 10px;
+    border-radius: 4px;
+    background-color: var(--white);
+    border: none;
+    opacity: 1.0;
+    &:hover{
+      background-color: var(--cc-teal-light-5);
+    }
+    &:active {
+      background-color: var(--cc-teal-light-3);
+    }
+    &.disabled {
+      opacity: 0.35;
+      &:hover {
+        background-color: var(--white);
+      }
+      &:active {
+        background-color: var(--white);
+      }
+    }
+  }
+
+  .button-icon-container {
+    width: 24px;
+    height: 24px;
+    margin: 10px 10px 14px;
+    object-fit: contain;
+  }
+
+}
