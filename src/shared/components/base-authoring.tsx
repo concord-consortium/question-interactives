@@ -46,7 +46,9 @@ export const getTokenServiceEnv = () => {
   if (!host.match(/staging\./) && host.match(/concord\.org/)) {
     env = "production";
   }
-  console.log("getTokenServiceEnv", {host, env});
+  // force staging for demo
+  env = "staging";
+  console.log("getTokenServiceEnv!", {host, env});
   return env;
 };
 
