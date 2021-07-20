@@ -37,18 +37,17 @@ const widgets = {
 
 export const getTokenServiceEnv = () => {
   // use either the portal url param for standalone authoring or the Lara page url for inline authoring
-  const host = window.location.hostname;
-  if (host.match(/staging\./)) {
-    return "staging";
-  }
-  if (host.match(/concord\.org/)) {
-    return "production";
-  }
   // Note that when local Portal is being used, we'll still return "staging" token service env, so developers don't
   // have to setup local instance of token service. When local token service client should be used, you need to use
   // `token-service-url=dev` URL param. It's handled by TokenServiceClient directly, and the `env` param passed to its
   // constructor will be ignored.
-  return "staging";
+  let env = "staging";
+  const host = window.location.hostname;
+  if (!host.match(/staging\./) && host.match(/concord\.org/)) {
+    env = "production";
+  }
+  console.log("getTokenServiceEnv", {host, env});
+  return env;
 };
 
 export const BaseAuthoring = <IAuthoredState,>({ authoredState, setAuthoredState, preprocessFormData, schema, uiSchema, fields, validate, linkedInteractiveProps }: IBaseAuthoringProps<IAuthoredState>) => {
