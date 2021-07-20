@@ -3,7 +3,7 @@ import { JSONSchema6 } from "json-schema";
 import { BaseQuestionApp } from "../../shared/components/base-question-app";
 import { Runtime } from "./runtime";
 import { IframeAuthoring } from "./iframe-authoring";
-import { IAuthoredState, IInteractiveState } from "./types";
+import { IAuthoredState, IInteractiveState } from "../../shared/types";
 import { migrateAuthoredState } from "./state-migrations";
 
 const baseAuthoringProps = {

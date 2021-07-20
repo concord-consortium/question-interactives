@@ -3,8 +3,9 @@ import _screenfull from "screenfull";
 import queryString from "query-string";
 import { FullScreenButton } from "./full-screen-button";
 import { useForceUpdate } from "../../shared/hooks/use-force-update";
-
-import css from "./runtime.scss";
+import { IframeRuntime } from "../../shared/components/iframe-runtime";
+import { useInteractiveState } from "@concord-consortium/lara-interactive-api";
+import { IInteractiveState } from "../../shared/types";
 
 
 import css from "./runtime.scss";
@@ -27,7 +28,7 @@ export const Runtime: React.FC = () => {
       window.removeEventListener('resize', onChange);
     };
   }, [forceUpdate]);
-
+  const { interactiveState, setInteractiveState } = useInteractiveState<IInteractiveState>();
   const isFullScreen = screenfull?.isFullscreen;
   // This code is patterned after the jQuery-based implementation in 'fullscreen.ts' in the
   // [Cloud File Manager](https://github.com/concord-consortium/cloud-file-manager/blob/master/src/code/autolaunch/fullscreen.ts).
@@ -84,7 +85,13 @@ export const Runtime: React.FC = () => {
   } else {
     return (
       <>
-        <iframe className={css.subInteractiveIframe} style={iframeStyle} src={subinteractiveUrl} />
+        <IframeRuntime url={subinteractiveUrl}
+                       wrapper={"scaler"}
+                       iframeStyling={iframeStyle}
+                       interactiveState={interactiveState}
+                       setInteractiveState={setInteractiveState}
+        />
+         {/* <iframe className={css.subInteractiveIframe} style={iframeStyle} src={subinteractiveUrl} /> */}
         {screenfull &&
           <FullScreenButton isFullScreen={screenfull.isFullscreen} handleToggleFullScreen={toggleFullScreen} />}
       </>

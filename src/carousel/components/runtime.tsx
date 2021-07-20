@@ -1,6 +1,6 @@
 import React, { MouseEvent, useCallback, useEffect, useRef, useState } from "react";
-import { IframeRuntime } from "./iframe-runtime";
-import { IAuthoredState, IInteractiveState } from "./types";
+import { IframeRuntime } from "../../shared/components/iframe-runtime";
+import { IAuthoredState, IInteractiveState } from "../../shared/types";
 import { renderHTML } from "../../shared/utilities/render-html";
 import { Carousel } from "react-responsive-carousel";
 import { libraryInteractiveIdToUrl } from "../../shared/utilities/library-interactives";
@@ -31,8 +31,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
   }, []);
 
-  // This scroll handler triggers the carousel to set the current slide when 
-  // a user uses their keyboard to tab directly through the slides (without 
+  // This scroll handler triggers the carousel to set the current slide when
+  // a user uses their keyboard to tab directly through the slides (without
   // using the carousel's navigation buttons).
   const handleScroll = useCallback((scroller: any) => {
     const scrollPosition = scroller.scrollLeft;
@@ -57,7 +57,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   }
 
   const subStates = interactiveState?.subinteractiveStates;
-  
+
   const getAnswerText = (subinteractiveAnswerText: string | undefined) =>
     `${subinteractiveAnswerText ? subinteractiveAnswerText : "no response"}`;
 
@@ -99,6 +99,12 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       <Carousel selectedItem={currentSlide} onChange={updateCurrentSlide} showArrows={false} showIndicators={false} showStatus={false} showThumbs={false} autoPlay={false} dynamicHeight={false} transitionTime={300}>
         {subinteractives.map(function(interactive, index) {
           const subState = subStates && subStates[interactive.id];
+          const subinteractiveUrl = libraryInteractiveIdToUrl(interactive.libraryInteractiveId, "carousel");
+          const logRequestData: Record<string, unknown> = { subinteractive_url: subinteractiveUrl,
+                                                            subinteractive_type: interactive.authoredState.questionType,
+                                                            subinteractive_sub_type: interactive.authoredState.questionSubType,
+                                                            subinteractive_id: interactive.id,
+                                                          };
           return (
             <div key={index} className={css.runtime}>
               { authoredState.prompt &&
@@ -106,9 +112,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                 <IframeRuntime
                   key={interactive.id}
                   id={interactive.id}
-                  url={libraryInteractiveIdToUrl(interactive.libraryInteractiveId, "carousel")}
+                  url={subinteractiveUrl}
                   authoredState={interactive.authoredState}
                   interactiveState={subState}
+                  logRequestData={logRequestData}
+                  wrapper={"carousel"}
                   setInteractiveState={handleNewInteractiveState.bind(null, interactive.id)}
                 />
             </div>
