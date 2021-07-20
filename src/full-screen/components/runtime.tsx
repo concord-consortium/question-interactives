@@ -7,10 +7,6 @@ import { IframeRuntime } from "../../shared/components/iframe-runtime";
 import { useInteractiveState } from "@concord-consortium/lara-interactive-api";
 import { IInteractiveState } from "../../shared/types";
 
-
-import css from "./runtime.scss";
-import { useForceUpdate } from "../../shared/hooks/use-force-update";
-
 const screenfull = _screenfull.isEnabled ? _screenfull : undefined;
 
 export const Runtime: React.FC = () => {
@@ -91,7 +87,6 @@ export const Runtime: React.FC = () => {
                        interactiveState={interactiveState}
                        setInteractiveState={setInteractiveState}
         />
-         {/* <iframe className={css.subInteractiveIframe} style={iframeStyle} src={subinteractiveUrl} /> */}
         {screenfull &&
           <FullScreenButton isFullScreen={screenfull.isFullscreen} handleToggleFullScreen={toggleFullScreen} />}
       </>

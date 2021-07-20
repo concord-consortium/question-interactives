@@ -43,7 +43,7 @@ export const IframeRuntime: React.FC<IProps> =
     interactiveStateRef.current = interactiveState;
     setInteractiveStateRef.current = setInteractiveState;
 
-  useEffect(()=>{
+  useEffect(() => {
     const initInteractive = () => {
       const phone = phoneRef.current;
       if (!phone) {
