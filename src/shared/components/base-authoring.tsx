@@ -35,21 +35,9 @@ const widgets = {
   imageUpload: ImageUploadWidget
 };
 
-export const getTokenServiceEnv = () => {
-  // use either the portal url param for standalone authoring or the Lara page url for inline authoring
-  // Note that when local Portal is being used, we'll still return "staging" token service env, so developers don't
-  // have to setup local instance of token service. When local token service client should be used, you need to use
-  // `token-service-url=dev` URL param. It's handled by TokenServiceClient directly, and the `env` param passed to its
-  // constructor will be ignored.
-  let env: "staging" | "production" = "staging";
-  const host = window.location.hostname;
-  if (!host.match(/staging\./) && host.match(/concord\.org/)) {
-    env = "production";
-  }
-  // force staging for demo
-  env = "staging";
-  console.log("getTokenServiceEnv!", {host, env});
-  return env;
+export const getTokenServiceEnv = (claims: any) => {
+  const host = claims?.platform_id || "";
+  return host.match(/learn\.concord\.org/) ? "production" : "staging";
 };
 
 export const BaseAuthoring = <IAuthoredState,>({ authoredState, setAuthoredState, preprocessFormData, schema, uiSchema, fields, validate, linkedInteractiveProps }: IBaseAuthoringProps<IAuthoredState>) => {
@@ -76,7 +64,7 @@ export const BaseAuthoring = <IAuthoredState,>({ authoredState, setAuthoredState
   useEffect(() => {
     const getJWT = async () => {
       const jwt = await getFirebaseJwt(TokenServiceClient.FirebaseAppName);
-      setTokenServiceClient(new TokenServiceClient({ jwt: jwt.token, env: getTokenServiceEnv() }));
+      setTokenServiceClient(new TokenServiceClient({ jwt: jwt.token, env: getTokenServiceEnv(jwt.claims) }));
     };
     getJWT();
   }, [setTokenServiceClient]);

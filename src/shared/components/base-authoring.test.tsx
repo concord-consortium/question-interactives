@@ -1,6 +1,6 @@
 import React from "react";
 import { mount, shallow } from "enzyme";
-import { BaseAuthoring } from "./base-authoring";
+import { BaseAuthoring, getTokenServiceEnv } from "./base-authoring";
 import { JSONSchema6 } from "json-schema";
 import Form from "react-jsonschema-form";
 import { useLinkedInteractivesAuthoring } from "../hooks/use-linked-interactives-authoring";
@@ -97,5 +97,14 @@ describe("BaseAuthoring", () => {
         schema={schema}
     />);
     expect(useLinkedInteractivesAuthoringMock).toHaveBeenCalled();
+  });
+});
+
+describe("getTokenServiceEnv", () => {
+  it("returns production only for learn.concord.org", () => {
+    expect(getTokenServiceEnv({platform_id: "https://learn.concord.org"})).toEqual("production");
+
+    expect(getTokenServiceEnv({platform_id: "https://example.com"})).toEqual("staging");
+    expect(getTokenServiceEnv({platform_id: "https://learn.staging.concord.org"})).toEqual("staging");
   });
 });
