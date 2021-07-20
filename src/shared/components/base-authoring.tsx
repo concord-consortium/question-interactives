@@ -41,7 +41,7 @@ export const getTokenServiceEnv = () => {
   // have to setup local instance of token service. When local token service client should be used, you need to use
   // `token-service-url=dev` URL param. It's handled by TokenServiceClient directly, and the `env` param passed to its
   // constructor will be ignored.
-  let env = "staging";
+  let env: "staging" | "production" = "staging";
   const host = window.location.hostname;
   if (!host.match(/staging\./) && host.match(/concord\.org/)) {
     env = "production";
