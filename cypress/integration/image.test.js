@@ -59,9 +59,21 @@ context("Test Image interactive", () => {
 
   context("Authoring view", () => {
     it("handles pre-existing authored state", () => {
+
+      // fake token-service JWT so that image upload control is displayed above url
+      phoneListen("getFirebaseJWT", (data, phone) => {
+        phone.post("firebaseJWT", {
+          requestId: 1,
+          token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+        });
+      });
+
       phonePost("initInteractive", {
         mode: "authoring",
-        authoredState: authoredStateSample
+        authoredState: authoredStateSample,
+        hostFeatures: {
+          getFirebaseJwt: {version: "1.0.0"}
+        }
       });
 
       const app = cy.getIframeBody().find("#app");
@@ -74,6 +86,7 @@ context("Test Image interactive", () => {
       app.should("include.text", "Credit Link Display Text");
       app.should("include.text", "Allow lightbox");
       app.should("include.text", "Choose a scaling style for the image");
+      app.should("include.text", "Drop an image here, or click to select a file to upload. Only popular image formats are supported (e.g. png, jpeg, gif, svg, webp).");
 
       cy.getIframeBody().find("#root_url").should("have.value", authoredStateSample.url);
       cy.getIframeBody().find("#root_highResUrl").should("have.value", authoredStateSample.highResUrl);

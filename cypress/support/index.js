@@ -38,7 +38,7 @@ export const phonePost = (type, message) => {
   );
 };
 
-export const phoneListen = (type) => {
+export const phoneListen = (type, callback) => {
   useIframePhone(phone => {
     cy.window().then(window => {
       phone.addListener(type, newState => {
@@ -47,6 +47,10 @@ export const phoneListen = (type) => {
           window.receivedMessages = [];
         }
         window.receivedMessages.push(newState);
+
+        if (callback) {
+          callback(newState, phone);
+        }
       });
     });
   });

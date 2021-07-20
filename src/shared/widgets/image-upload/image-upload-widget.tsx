@@ -101,5 +101,5 @@ export const ImageUploadWidget = (props: WidgetProps) => {
   const { onChange } = props;
   const { tokenServiceClient } = props.formContext as IFormContext<unknown>;
 
-  return <ImageUploadComponent onChange={onChange} defaultValue={props.value} tokenServiceClient={tokenServiceClient} />;
+  return <ImageUploadComponent id={props.id} onChange={onChange} defaultValue={props.value} tokenServiceClient={tokenServiceClient} />;
 };
