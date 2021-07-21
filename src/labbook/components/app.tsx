@@ -4,7 +4,9 @@ import { BaseQuestionApp } from "../../shared/components/base-question-app";
 import { Runtime } from "./runtime";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { FormValidation } from "react-jsonschema-form";
-const baseAuthoringProps = {
+import { baseAuthoringProps as drawingToolBaseAuthoringProps } from "../../drawing-tool/components/app";
+import deepmerge from "deepmerge";
+const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
   schema: {
     properties: {
       version: {
@@ -30,7 +32,7 @@ const baseAuthoringProps = {
 
   uiSchema: {
     "ui:order": [
-      "maxItems", "showItems", "questionType", "version"
+      "maxItems", "showItems", "questionType"
     ],
     maxItems: {
       "ui:widget": "updown"
@@ -48,9 +50,10 @@ const baseAuthoringProps = {
   // Just overwrite array, don't merge values.
   arrayMerge: (destinationArray:any, sourceArray:any) => sourceArray,
   validate: (formData: IAuthoredState, errors: FormValidation) => {
+    // TODO: Some actual validation would be good.
     return errors;
   }
-};
+});
 
 const isAnswered = (interactiveState: IInteractiveState | null) => !!interactiveState?.answerText;
 
