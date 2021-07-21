@@ -1,7 +1,7 @@
 import React from "react";
 import { JSONSchema6 } from "json-schema";
 import { BaseQuestionApp } from "../../shared/components/base-question-app";
-import { IAuthoredState, IInteractiveState } from "../../shared/types";
+import { IAuthoredState, IInteractiveState } from "./types";
 import { Runtime } from "./runtime";
 import { IframeAuthoring } from "./iframe-authoring";
 import { migrateAuthoredState } from "./state-migrations";

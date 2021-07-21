@@ -1,5 +1,5 @@
 import { migrateAuthoredState } from "./state-migrations";
-import { IAuthoredState, IAuthoredStateV1 } from "../../shared/types";
+import { IAuthoredState, IAuthoredStateV1 } from "./types";
 import deepmerge from "deepmerge";
 
 describe("authored state migration", () => {

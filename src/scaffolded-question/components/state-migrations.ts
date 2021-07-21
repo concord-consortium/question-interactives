@@ -1,4 +1,4 @@
-import { IAuthoredState, IAuthoredStateV1 } from "../../shared/types";
+import { IAuthoredState, IAuthoredStateV1 } from "./types";
 
 export const migrateAuthoredState = (authoredState: IAuthoredStateV1 | IAuthoredState) => {
   if (authoredState.version === 1) {

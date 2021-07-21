@@ -1,6 +1,6 @@
 import React, { MouseEvent, useCallback, useEffect, useRef, useState } from "react";
 import { IframeRuntime } from "../../shared/components/iframe-runtime";
-import { IAuthoredState, IInteractiveState } from "../../shared/types";
+import { IAuthoredState, IInteractiveState } from "./types";
 import { renderHTML } from "../../shared/utilities/render-html";
 import { Carousel } from "react-responsive-carousel";
 import { libraryInteractiveIdToUrl } from "../../shared/utilities/library-interactives";
@@ -116,7 +116,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                   authoredState={interactive.authoredState}
                   interactiveState={subState}
                   logRequestData={logRequestData}
-                  wrapper={"carousel"}
                   setInteractiveState={handleNewInteractiveState.bind(null, interactive.id)}
                 />
             </div>

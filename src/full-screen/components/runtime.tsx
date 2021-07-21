@@ -4,13 +4,14 @@ import queryString from "query-string";
 import { FullScreenButton } from "./full-screen-button";
 import { useForceUpdate } from "../../shared/hooks/use-force-update";
 import { IframeRuntime } from "../../shared/components/iframe-runtime";
-import { useInteractiveState } from "@concord-consortium/lara-interactive-api";
-import { IInteractiveState } from "../../shared/types";
+import { setHint, useInteractiveState } from "@concord-consortium/lara-interactive-api";
+import { IInteractiveState } from "./types";
 
 const screenfull = _screenfull.isEnabled ? _screenfull : undefined;
 
 export const Runtime: React.FC = () => {
   const forceUpdate = useForceUpdate();
+
   const toggleFullScreen = useCallback(() => {
     screenfull?.toggle();
   },[]);
@@ -64,7 +65,13 @@ export const Runtime: React.FC = () => {
       width: scaledIframeWidth,
       height: scaledIframeHeight,
       transformOrigin: scaledIframeTransformOrigin,
-      transform: scaledIframeTransform
+      transform: scaledIframeTransform,
+      display: "inline",
+      position: "fixed",
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
     };
   };
 
@@ -82,10 +89,10 @@ export const Runtime: React.FC = () => {
     return (
       <>
         <IframeRuntime url={subinteractiveUrl}
-                       wrapper={"scaler"}
                        iframeStyling={iframeStyle}
                        interactiveState={interactiveState}
                        setInteractiveState={setInteractiveState}
+                       setHint={setHint}
         />
         {screenfull &&
           <FullScreenButton isFullScreen={screenfull.isFullscreen} handleToggleFullScreen={toggleFullScreen} />}

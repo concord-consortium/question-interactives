@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { renderHTML } from "../../shared/utilities/render-html";
-import { IframePhone, WrapperType } from "../types";
+import { IframePhone } from "../types";
 import iframePhone from "iframe-phone";
 import { closeModal, ICloseModal, IHintRequest, IShowModal, log, showModal } from "@concord-consortium/lara-interactive-api";
 import css from "./iframe-runtime.scss";
@@ -17,18 +17,15 @@ interface IProps {
   iframeStyling?: any;
   interactiveState: any;
   logRequestData?: Record<string, unknown>;
-  navImageUrl?: string;
-  navImageAltText?: string;
   report?: boolean;
-  scaffoldedQuestionLevel?: number;
-  url?: string;
-  wrapper?: WrapperType;
+  url: string;
   setInteractiveState: (state: any) => void | null;
+  setHint?: (state: any) => void | null;
 }
 
 export const IframeRuntime: React.FC<IProps> =
   ({ authoredState, id, iframeStyling, interactiveState, logRequestData, report,
-      url, wrapper, setInteractiveState }) => {
+      url, setInteractiveState }) => {
     const [ iframeHeight, setIframeHeight ] = useState(300);
     const [ hint, setHint ] = useState("");
     const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -101,13 +98,12 @@ export const IframeRuntime: React.FC<IProps> =
         phoneRef.current.disconnect();
       }
     };
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[]);
+  },[authoredState, logRequestData, report, url]);
 
-  const iframeStyle = wrapper === "scaler" ? iframeStyling : {width: "100%", height: iframeHeight, border: "none"};
+  const iframeStyle = iframeStyling ?? {width: "100%", height: iframeHeight, border: "none"};
   return (
     <>
-      <iframe ref={iframeRef} src={url} style={iframeStyle} className={wrapper === "scaler" ? css.subInteractiveIframe : ""} />
+      <iframe ref={iframeRef} src={url} style={iframeStyle} />
       { hint &&
         <div className={css.hint}>{renderHTML(hint)}</div> }
     </>

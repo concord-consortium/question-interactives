@@ -1,6 +1,6 @@
 import React from "react";
 import { IframeRuntime } from "../../shared/components/iframe-runtime";
-import { IInteractiveState, IAuthoredState } from "../../shared/types";
+import { IInteractiveState, IAuthoredState } from "./types";
 import { SubmitButton } from "../../shared/components/submit-button";
 import { LockedInfo } from "../../shared/components/locked-info";
 import { useStudentSettings } from "../../shared/hooks/use-student-settings";
@@ -103,10 +103,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         authoredState={currentInteractive.authoredState}
         interactiveState={subState}
         setInteractiveState={readOnly ? undefined : handleNewInteractiveState.bind(null, currentInteractive.id)}
-        scaffoldedQuestionLevel={currentLevel}
         report={readOnly}
         logRequestData={logRequestData}
-        wrapper={"scaffolding"}
       />
       {
         !report &&
