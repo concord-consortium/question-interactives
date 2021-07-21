@@ -7,6 +7,7 @@ import { libraryInteractives, libraryInteractiveIdToUrl } from "../../shared/uti
 import { v4 as uuidv4 } from "uuid";
 import { ImageUploadComponent } from "../../shared/widgets/image-upload/image-upload-widget";
 import { IFormContext } from "../../shared/components/base-authoring";
+import { getFirebaseJwt } from "@concord-consortium/lara-interactive-api";
 
 import css from "./iframe-authoring.scss";
 
@@ -80,9 +81,18 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
     phone.addListener("height", (newHeight: number) => {
       setIframeHeight(newHeight);
     });
+    phone.addListener("getFirebaseJWT", async (request) => {
+      const {requestId, firebase_app} = request;
+      const jwt = await getFirebaseJwt(firebase_app);
+      const response = {requestId, ...jwt};
+      phone.post("firebaseJWT", response);
+    });
     phone.post("initInteractive", {
       mode: "authoring",
-      authoredState
+      authoredState,
+      hostFeatures: {
+        getFirebaseJwt: {version: "1.0.0"}
+      }
     });
   }, [id, libraryInteractiveId, onChange, authoredState, navImageUrl, navImageAltText]);
 
