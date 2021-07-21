@@ -5,6 +5,7 @@ npm-error.log
 .DS_Store
 .yalc
 yalc.lock
+/temp
 
 # Editors
 .idea

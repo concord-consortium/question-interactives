@@ -4,14 +4,19 @@ import { IframePhone } from "../../shared/types";
 import iframePhone from "iframe-phone";
 import deepEqual from "deep-equal";
 import { libraryInteractives, libraryInteractiveIdToUrl } from "../../shared/utilities/library-interactives";
-import css from "./iframe-authoring.scss";
 import { v4 as uuidv4 } from "uuid";
+import { ImageUploadComponent } from "../../shared/widgets/image-upload/image-upload-widget";
+import { IFormContext } from "../../shared/components/base-authoring";
+import { getFirebaseJwt } from "@concord-consortium/lara-interactive-api";
+
+import css from "./iframe-authoring.scss";
 
 // This is only temporary list. In the future, it will be replaced by LARA Interactive API call that returns all the available managed interactives.
 const availableInteractives = libraryInteractives;
 
 export const IframeAuthoring: React.FC<FieldProps> = props => {
   const { onChange, formData } = props;
+  const { tokenServiceClient } = props.formContext as IFormContext<unknown>;
   const { libraryInteractiveId, authoredState, id, navImageUrl, navImageAltText } = formData;
   const [ iframeHeight, setIframeHeight ] = useState(300);
   const [ authoringOpened, setAuthoringOpened ] = useState(false);
@@ -30,7 +35,7 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
 
   const handleLibraryInteractiveIdChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const newLibraryInteractiveId = event.target.value;
-    onChange({ 
+    onChange({
       libraryInteractiveId: newLibraryInteractiveId,
       authoredState: undefined,
       id: id || uuidv4(),
@@ -39,16 +44,14 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
     });
   };
 
-  const handleNavImageUrlChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const newNavImageUrl = event.target.value;
+  const handleNavImageUrlChange = (newNavImageUrl: string) => {
     onChange({libraryInteractiveId, authoredState, id,
       navImageUrl: newNavImageUrl || "",
       navImageAltText: navImageAltText || ""
     });
   };
 
-  const handleNavImageAltTextChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const newNavImageAltText = event.target.value;
+  const handleNavImageAltTextChange = (newNavImageAltText: string) => {
     onChange({libraryInteractiveId, id,
       authoredState: undefined,
       navImageUrl: navImageUrl || "",
@@ -78,9 +81,18 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
     phone.addListener("height", (newHeight: number) => {
       setIframeHeight(newHeight);
     });
+    phone.addListener("getFirebaseJWT", async (request) => {
+      const {requestId, firebase_app} = request;
+      const jwt = await getFirebaseJwt(firebase_app);
+      const response = {requestId, ...jwt};
+      phone.post("firebaseJWT", response);
+    });
     phone.post("initInteractive", {
       mode: "authoring",
-      authoredState
+      authoredState,
+      hostFeatures: {
+        getFirebaseJwt: {version: "1.0.0"}
+      }
     });
   }, [id, libraryInteractiveId, onChange, authoredState, navImageUrl, navImageAltText]);
 
@@ -110,10 +122,10 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
           <div className={css.iframeContainer} style={{maxHeight: authoringOpened ? iframeHeight : 0 }}>
             <div className={css.navButtonField}>
               <label htmlFor="navImageUrl">Custom Navigation Button Image URL</label>
-              <input className="form-control" type="text" id="navImageUrl" defaultValue={navImageUrl} onChange={handleNavImageUrlChange} />
+              <ImageUploadComponent className="form-control" id="navImageUrl" defaultValue={navImageUrl} onChange={handleNavImageUrlChange} tokenServiceClient={tokenServiceClient} />
               <p className="help-block">To customize the button for this slide, enter an image URL. Optimal image size: 150x100 pixels.</p>
               <label htmlFor="navImageAltText">Custom Navigation Button Image Alt Text</label>
-              <input className="form-control" type="text" id="navImageAltText" defaultValue={navImageAltText} onChange={handleNavImageAltTextChange} />
+              <ImageUploadComponent className="form-control" id="navImageAltText" defaultValue={navImageAltText} onChange={handleNavImageAltTextChange} tokenServiceClient={tokenServiceClient} />
               <p className="help-block">To customize the alt text for a custom navigation button, enter your text.</p>
             </div>
             <iframe id={id} ref={iframeRef} width="100%" height={iframeHeight} frameBorder={0} />

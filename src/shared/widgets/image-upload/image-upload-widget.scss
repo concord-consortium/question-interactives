@@ -1,0 +1,18 @@
+.customImageUploadWidget {
+
+  .dropzone {
+    padding: 10px;
+    margin-bottom: 10px;
+    border: 1px dashed #000;
+    cursor: pointer;
+  }
+
+  .uploadProgress {
+    margin: 10px 0;
+  }
+
+  .uploadError {
+    margin: 10px 0;
+    color: #f00;
+  }
+}
