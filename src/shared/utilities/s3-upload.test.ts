@@ -2,7 +2,7 @@ import { TokenServiceClient, S3Resource, Credentials } from "@concord-consortium
 import { IS3UploadParams, s3Upload, uniqueFilename } from "./s3-upload";
 
 const putObject = jest.fn().mockImplementation(() => {
-  return Promise.resolve()
+  return Promise.resolve();
 });
 
 jest.mock("@aws-sdk/client-s3", () => {
@@ -61,7 +61,7 @@ describe("s3Upload", () => {
 
 describe("uniqueFilename", () => {
   it("prefixes the filename with a uuid", () => {
-    const [prefix, filename, ...rest] = uniqueFilename("test.png").split("-");
+    const [prefix, filename] = uniqueFilename("test.png").split("-");
     expect(prefix.length).toEqual(32);
     expect(filename).toEqual("test.png");
   });
