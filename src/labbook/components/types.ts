@@ -19,12 +19,14 @@ export interface IAuthoredStateBase extends IAuthoringImageQuestionMetadata {
 // Final IAuthoredState is combination of properties above and DrawingTool authored state (without questionType).
 export type IAuthoredState = IAuthoredStateBase & Omit<IDrawingToolAuthoredState, "questionType">;
 
-export interface ILabbookEntry extends IDrawingToolInteractiveState {
+export interface ILabbookEntry {
   comment: string;
+  data: IDrawingToolInteractiveState;
+  id: string;
 }
+
 export interface IBaseInteractiveState extends IRuntimeMetadataBase {
   answerType: "labbook_question_answer";
-  answerImageUrl?: string;
   entries: Array<ILabbookEntry>;
   selectedId: string|null;
 }

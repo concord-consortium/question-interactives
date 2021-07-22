@@ -13,7 +13,7 @@ export interface IThumbnailWrapperProps {
 
 export const ThumbnailWrapper: React.FC<IThumbnailWrapperProps> = (props) => {
   const { selected, setSelectedContainerId, clearContainer, content} = props;
-  const { onClick, empty, id } = content;
+  const { onClick, empty, id, label } = content;
   const classes = classNames(css["thumbnail-button"], { [css.selected]: selected,  [css.empty]: empty });
   const containerClasses = classNames(css.container, { [css.disabled]: !selected});
   const handleClose = empty
@@ -30,7 +30,7 @@ export const ThumbnailWrapper: React.FC<IThumbnailWrapperProps> = (props) => {
               onClick={clickHandler}
               data-testid="thumbnail-button"
       >
-        <ThumbnailTitle title={id} empty={empty}/>
+        <ThumbnailTitle title={label} empty={empty}/>
         {
           empty &&
           <div className={css["empty-content"]}>

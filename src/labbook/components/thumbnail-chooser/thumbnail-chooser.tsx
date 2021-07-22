@@ -39,9 +39,9 @@ const NextButton:React.FC<basicButtonProps> = (props: basicButtonProps) => {
 export interface IThumbnailChooserProps {
   items: Array<IThumbnailProps>;
   RenderingF: React.FC<IThumbnailProps>;
-  selectedItemID: ThumbnailModelID | null;
-  setSelectedItemID: (itemId: ThumbnailModelID) => void;
-  clearSelectedItemID: (itemId: ThumbnailModelID) => void;
+  selectedItemId: ThumbnailModelID | null;
+  setSelectedItemId: (itemId: ThumbnailModelID) => void;
+  clearSelectedItemId: (itemId: ThumbnailModelID) => void;
   disableUnselectedThumbnails?: boolean;
 }
 
@@ -49,8 +49,8 @@ export const ThumbnailChooser: React.FC<IThumbnailChooserProps> = (props) => {
   const [offset, setOffset] = useState(0);
 
   const {
-    items, selectedItemID,
-    setSelectedItemID: setSelectedItemId, clearSelectedItemID: clearSelectedItemId,
+    items, selectedItemId: selectedItemID,
+    setSelectedItemId: setSelectedItemId, clearSelectedItemId: clearSelectedItemId,
   } = props;
   const maxDisplayItems = 4;
   const effectiveOffset = Math.min(offset, items.length - maxDisplayItems);
