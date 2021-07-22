@@ -32,7 +32,7 @@ const convertMultipleChoice = (item: Record<string, any>, libraryInteractive: Re
     prompt: "prompt",
     enable_check_answer: "enableCheckAnswer",
     is_prediction: "required",
-    multi_answer: "multipleAnswer",
+    multi_answer: "multipleAnswers",
     hint: "hint",
     give_prediction_feedback: "customFeedback",
     prediction_feedback: "predictionFeedback"
