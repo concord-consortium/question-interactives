@@ -55,7 +55,8 @@ const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
   }
 });
 
-const isAnswered = (interactiveState: IInteractiveState | null) => !!interactiveState?.answerText;
+// TODO: Figure out a better huristic
+const isAnswered = (interactiveState: IInteractiveState | null) => true;
 
 export const App = () => (
   <BaseQuestionApp<IAuthoredState, IInteractiveState>

@@ -1,10 +1,10 @@
 import {
-  IAuthoredState as IDrawingToolAuthoredState, 
+  IAuthoredState as IDrawingToolAuthoredState,
   IInteractiveState as IDrawingToolInteractiveState
 } from "../../drawing-tool/components/types";
 
 import { 
-  IAuthoringImageQuestionMetadata, 
+  IAuthoringImageQuestionMetadata,
   IRuntimeMetadataBase
 } from "@concord-consortium/lara-interactive-api";
 
@@ -19,11 +19,14 @@ export interface IAuthoredStateBase extends IAuthoringImageQuestionMetadata {
 // Final IAuthoredState is combination of properties above and DrawingTool authored state (without questionType).
 export type IAuthoredState = IAuthoredStateBase & Omit<IDrawingToolAuthoredState, "questionType">;
 
+export interface ILabbookEntry extends IDrawingToolInteractiveState {
+  comment: string;
+}
 export interface IBaseInteractiveState extends IRuntimeMetadataBase {
-  answerType: "image_question_answer";
+  answerType: "labbook_question_answer";
   answerImageUrl?: string;
-  entries: Array<IDrawingToolInteractiveState>;
-  selectedIndex: number|null;
+  entries: Array<ILabbookEntry>;
+  selectedId: string|null;
 }
 
-export type IInteractiveState = IBaseInteractiveState & Omit<IDrawingToolInteractiveState, "answerType">;
+export type IInteractiveState = IBaseInteractiveState;

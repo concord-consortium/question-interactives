@@ -6,7 +6,7 @@ import { UploadButton } from "./uploadButton";
 import { CommentField } from "./comment-field";
 import { v4 as uuidv4 } from "uuid";
 import {IAuthoredState, IInteractiveState } from "./types";
-
+import { Runtime as DrawingToolComp } from "../../drawing-tool/components/runtime";
 import SnapShotIcon from "../assets/snapshot-image-icon.svg";
 import UploadIcon from "../assets/upload-image-icon.svg";
 
@@ -14,7 +14,7 @@ import css from "./runtime.scss";
 
 export interface IProps {
   authoredState: IAuthoredState;
-  interactiveState?: IInteractiveState | null;
+  interactiveState?: IInteractiveState;
   setInteractiveState?: (updateFunc: (prevState: IInteractiveState | null) => IInteractiveState) => void;
   report?: boolean;
 }
@@ -35,17 +35,24 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     initialItems={[]}
     minItems={showItems}
     maxItems={maxItems}
-    key={authoredState.maxItems}/>;
+    key={authoredState.maxItems}
+    authoredState={authoredState}
+    interactiveState={interactiveState as IInteractiveState}
+    setInteractiveState={setInteractiveState}
+    />;
 };
 
 interface intProps {
   initialItems:Array<IThumbnailProps>;
   minItems:number;
   maxItems:number;
+  authoredState: IAuthoredState;
+  interactiveState?: IInteractiveState;
+  setInteractiveState: ((updateFunc: (prevState: IInteractiveState | null) => IInteractiveState) => void) | undefined;
 }
 
 export const RenderRuntime: React.FC<intProps> = ({
-  initialItems, minItems, maxItems}) => {
+  initialItems, minItems, maxItems, authoredState, interactiveState, setInteractiveState}) => {
   const[items, setItems] = useState(initialItems);
   const[selectedItemID, _setSelectedItemID] = useState("nothing");
 
@@ -123,12 +130,35 @@ export const RenderRuntime: React.FC<intProps> = ({
     setItems(cleanItemsList(initialItems));
   },[initialItems]);
 
+  const setDrawingStateFn = (func:(prevState:any) => any) => {
+    const drawingState = func(null);
+    console.log(drawingState);
+    const nextState:IInteractiveState = {
+      ...interactiveState,
+      answerType: "labbook_question_answer",
+      selectedId: selectedItemID,
+      entries: [
+        drawingState
+      ]
+    };
+    setInteractiveState?.(prevState => ({
+      ...prevState,
+      ...nextState
+    }));
+  };
+  const drawToolState = interactiveState?.entries[0];
   return (
     <div className={css["app"]}>
-      <div>MinItems:{minItems}</div>
       <div className={css["container"]}>
         <ThumbnailChooser {...thumbnailChooserProps} />
-        <PreviewPanel item={selectedItem} />
+        {/* <PreviewPanel item={selectedItem} /> */}
+        <div className={css["draw-tool-wrapper"]}>
+          <DrawingToolComp
+            authoredState={{...authoredState,questionType:'iframe_interactive'}}
+            interactiveState={{...drawToolState, answerType:"interactive_state"}}
+            setInteractiveState={setDrawingStateFn}
+          />
+        </div>
         <div className={css["under-sketch"]}>
           <div className={css["buttons"]}>
             <UploadButton>
