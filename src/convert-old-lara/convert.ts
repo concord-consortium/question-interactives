@@ -71,7 +71,8 @@ const convertImage = (item: Record<string, any>, libraryInteractive: Record<stri
     credit: item.embeddable.credit,
     creditLink: item.embeddable.credit_url,
     creditLinkDisplayText: "",
-    allowLightbox: true
+    allowLightbox: true,
+    scaling: "fitWidth"
   };
 
   item.embeddable.authored_state = JSON.stringify(authoredState);
@@ -121,7 +122,6 @@ const convertVideoPlayer = (item: Record<string, any>, libraryInteractive: Recor
     prompt: item.embeddable.caption,
     credit: item.embeddable.credit,
     creditLinkDisplayText: "",
-    fixedHeight: item.embeddable.height,
     fixedAspectRatio: "",
     poster: item.embeddable.poster_url
   };
