@@ -108,6 +108,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const selectedItem = entries.find(i => i.id === selectedId);
+  const selectedIndex = entries.findIndex(i => i.id === selectedId);
+  const title = selectedIndex !== -1 ? numberToAlpha(selectedIndex) : "";
 
   const setDrawingStateFn = (func:(prevState:IDrawingToolInteractiveState|null) => IDrawingToolInteractiveState) => {
     const drawingState = func(null);
@@ -129,7 +131,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const drawToolState = selectedItem?.data;
-  const title="a"; // TODO: index → AlphaValue
   const setComment = (newComment:string) => {
     if(selectedItem) {
       // selectedItem.comment = newComment;
