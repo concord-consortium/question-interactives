@@ -3,13 +3,15 @@ import _screenfull from "screenfull";
 import queryString from "query-string";
 import { FullScreenButton } from "./full-screen-button";
 import { useForceUpdate } from "../../shared/hooks/use-force-update";
-
-import css from "./runtime.scss";
+import { IframeRuntime } from "../../shared/components/iframe-runtime";
+import { setHint, useInteractiveState } from "@concord-consortium/lara-interactive-api";
+import { IInteractiveState } from "./types";
 
 const screenfull = _screenfull.isEnabled ? _screenfull : undefined;
 
 export const Runtime: React.FC = () => {
   const forceUpdate = useForceUpdate();
+
   const toggleFullScreen = useCallback(() => {
     screenfull?.toggle();
   },[]);
@@ -23,7 +25,7 @@ export const Runtime: React.FC = () => {
       window.removeEventListener('resize', onChange);
     };
   }, [forceUpdate]);
-
+  const { interactiveState, setInteractiveState } = useInteractiveState<IInteractiveState>();
   const isFullScreen = screenfull?.isFullscreen;
   // This code is patterned after the jQuery-based implementation in 'fullscreen.ts' in the
   // [Cloud File Manager](https://github.com/concord-consortium/cloud-file-manager/blob/master/src/code/autolaunch/fullscreen.ts).
@@ -63,7 +65,13 @@ export const Runtime: React.FC = () => {
       width: scaledIframeWidth,
       height: scaledIframeHeight,
       transformOrigin: scaledIframeTransformOrigin,
-      transform: scaledIframeTransform
+      transform: scaledIframeTransform,
+      display: "inline",
+      position: "fixed",
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
     };
   };
 
@@ -80,7 +88,12 @@ export const Runtime: React.FC = () => {
   } else {
     return (
       <>
-        <iframe className={css.subInteractiveIframe} style={iframeStyle} src={subinteractiveUrl} />
+        <IframeRuntime url={subinteractiveUrl}
+                       iframeStyling={iframeStyle}
+                       interactiveState={interactiveState}
+                       setInteractiveState={setInteractiveState}
+                       setHint={setHint}
+        />
         {screenfull &&
           <FullScreenButton isFullScreen={screenfull.isFullscreen} handleToggleFullScreen={toggleFullScreen} />}
       </>

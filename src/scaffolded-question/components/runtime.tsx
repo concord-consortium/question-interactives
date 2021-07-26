@@ -1,5 +1,5 @@
 import React from "react";
-import { IframeRuntime } from "./iframe-runtime";
+import { IframeRuntime } from "../../shared/components/iframe-runtime";
 import { IInteractiveState, IAuthoredState } from "./types";
 import { SubmitButton } from "../../shared/components/submit-button";
 import { LockedInfo } from "../../shared/components/locked-info";
@@ -81,6 +81,14 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       log("scaffolded question hint used", { current_level: currentLevel, new_level: currentLevel - 1,  });
     }
   };
+  const subinteractiveUrl = libraryInteractiveIdToUrl(currentInteractive.libraryInteractiveId, "scaffolded-question");
+  const logRequestData: Record<string, unknown> =
+                                                  { subinteractive_url: subinteractiveUrl,
+                                                    subinteractive_type: currentInteractive.authoredState.questionType,
+                                                    subinteractive_sub_type: currentInteractive.authoredState.questionSubType,
+                                                    subinteractive_id: currentInteractive.id,
+                                                    scaffolded_question_level: currentLevel
+                                                  };
 
   return (
     <div className={css.runtime} tabIndex={1}>
@@ -91,12 +99,12 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       <IframeRuntime
         key={currentInteractive.id}
         id={currentInteractive.id}
-        url={libraryInteractiveIdToUrl(currentInteractive.libraryInteractiveId, "scaffolded-question")}
+        url={subinteractiveUrl}
         authoredState={currentInteractive.authoredState}
         interactiveState={subState}
         setInteractiveState={readOnly ? undefined : handleNewInteractiveState.bind(null, currentInteractive.id)}
-        scaffoldedQuestionLevel={currentLevel}
         report={readOnly}
+        logRequestData={logRequestData}
       />
       {
         !report &&
