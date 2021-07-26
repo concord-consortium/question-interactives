@@ -132,9 +132,22 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const title="a"; // TODO: index → AlphaValue
   const setComment = (newComment:string) => {
     if(selectedItem) {
-      selectedItem.comment = newComment;
+      // selectedItem.comment = newComment;
+      const updatedDrawing:ILabbookEntry = deepmerge(selectedItem, {comment: newComment}) as ILabbookEntry;
+      // Object.assign({}, selectedItem, {data: {drawingState});
+      const newEntries = entries.map(i=> i.id === selectedId ? updatedDrawing : i);
+      const nextState:IInteractiveState = {
+        ...interactiveState,
+        answerType: "interactive_state",
+        selectedId: selectedId,
+        entries: newEntries
+      };
+      setInteractiveState?.(prevState => ({
+        ...prevState,
+        ...nextState
+      }));
     }
-    setEntries([...entries]);
+
   };
 
   return (
