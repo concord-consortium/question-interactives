@@ -25,9 +25,9 @@ interface IProps {
 
 export const IframeRuntime: React.FC<IProps> =
   ({ authoredState, id, iframeStyling, interactiveState, logRequestData, report,
-      url, setInteractiveState }) => {
+      url, setHint, setInteractiveState }) => {
     const [ iframeHeight, setIframeHeight ] = useState(300);
-    const [ hint, setHint ] = useState("");
+    const [ internalHint, setInternalHint ] = useState("");
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const phoneRef = useRef<IframePhone>();
     // Why is interativeState and setInteractiveState kept in refs? So it's not necessary to declare these variables as
@@ -53,7 +53,7 @@ export const IframeRuntime: React.FC<IProps> =
         setIframeHeight(newHeight);
       });
       phone.addListener("hint", (newHint: IHintRequest) => {
-        setHint(newHint.text || "");
+        setHint? setHint(newHint.text || "") : setInternalHint(newHint.text || "");
       });
       phone.addListener("log", (logData: ILogRequest) => {
         log(logData.action, {
@@ -98,14 +98,14 @@ export const IframeRuntime: React.FC<IProps> =
         phoneRef.current.disconnect();
       }
     };
-  },[authoredState, logRequestData, report, url]);
+  },[authoredState, logRequestData, report, setHint, url]);
 
   const iframeStyle = iframeStyling ?? {width: "100%", height: iframeHeight, border: "none"};
   return (
     <>
       <iframe ref={iframeRef} src={url} style={iframeStyle} />
-      { hint &&
-        <div className={css.hint}>{renderHTML(hint)}</div> }
+      { internalHint &&
+        <div className={css.hint}>{renderHTML(internalHint)}</div> }
     </>
   );
 };
