@@ -30,7 +30,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const defaultState: IInteractiveState = {
     entries: [],
     selectedId: null,
-    answerType: "labbook_question_answer"
+    answerType: "interactive_state"
   };
   const {entries, selectedId} = {...defaultState, ...interactiveState};
 
@@ -117,7 +117,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       const newEntries = entries.map(i=> i.id === selectedId ? updatedDrawing : i);
       const nextState:IInteractiveState = {
         ...interactiveState,
-        answerType: "labbook_question_answer",
+        answerType: "interactive_state",
         selectedId: selectedId,
         entries: newEntries
       };

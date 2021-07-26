@@ -8,7 +8,7 @@ interface IProps {
 }
 
 export const ThumbnailTitle: React.FC<IProps> = ({ title, empty }) => {
-  const className = classNames(css["thumbnail-title"], {empty: css["empty"]});
+  const className = classNames([css["thumbnail-title"]], {[css.empty]: empty });
   return (
     <div className={className} data-testid="thumbnail-title">
         {title}

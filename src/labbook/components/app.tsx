@@ -15,7 +15,7 @@ const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
       },
       questionType: {
         type: "string",
-        default: "labbook"
+        default: "labbook_interactive"
       },
       maxItems: {
         type: "number",
@@ -55,7 +55,7 @@ const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
   }
 });
 
-// TODO: Figure out a better huristic
+// TODO: Figure out a better heuristic
 const isAnswered = (interactiveState: IInteractiveState | null) => true;
 
 export const App = () => (
