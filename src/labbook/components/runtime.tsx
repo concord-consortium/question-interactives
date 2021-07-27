@@ -115,7 +115,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     const drawingState = func(null);
     if(selectedItem && drawingState) {
       const updatedDrawing:ILabbookEntry = deepmerge(selectedItem, {data: drawingState}) as ILabbookEntry;
-      // Object.assign({}, selectedItem, {data: {drawingState});
       const newEntries = entries.map(i=> i.id === selectedId ? updatedDrawing : i);
       const nextState:IInteractiveState = {
         ...interactiveState,
