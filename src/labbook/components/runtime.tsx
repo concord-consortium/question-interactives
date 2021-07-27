@@ -3,6 +3,7 @@ import { ThumbnailChooser, IThumbnailChooserProps } from "./thumbnail-chooser/th
 import { Thumbnail, IThumbnailProps } from "./thumbnail-chooser/thumbnail";
 // import { PreviewPanel } from "./preview-panel";
 import { UploadButton } from "./uploadButton";
+import { UploadBackground} from "./upload-background";
 import { CommentField } from "./comment-field";
 import { v4 as uuidv4 } from "uuid";
 import {IAuthoredState, IInteractiveState, ILabbookEntry } from "./types";
@@ -10,7 +11,9 @@ import { Runtime as DrawingToolComp } from "../../drawing-tool/components/runtim
 import SnapShotIcon from "../assets/snapshot-image-icon.svg";
 import UploadIcon from "../assets/upload-image-icon.svg";
 import deepmerge from "deepmerge";
+
 import css from "./runtime.scss";
+
 import {IInteractiveState as IDrawingToolInteractiveState} from "../../drawing-tool/components/types";
 
 export interface IProps {
@@ -164,10 +167,13 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         </div>
         <div className={css["under-sketch"]}>
           <div className={css["buttons"]}>
-            <UploadButton>
+            <UploadBackground
+              authoredState={authoredState}
+              setInteractiveState={setDrawingStateFn}
+            >
               <UploadIcon />
               Upload Image
-            </UploadButton>
+            </UploadBackground>
 
             <UploadButton>
               <SnapShotIcon />
