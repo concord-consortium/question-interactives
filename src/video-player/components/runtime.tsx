@@ -168,8 +168,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const getPoster = () => {
-    if (!hasStartedPlayback && authoredState.poster !== "") {
-      return authoredState.poster;
+    const poster = (authoredState.poster || "").trim();
+    if (!hasStartedPlayback && !!poster) {
+      return poster;
     }
   };
 
