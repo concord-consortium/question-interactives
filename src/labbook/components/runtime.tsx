@@ -1,4 +1,4 @@
-import React from "react";
+import React, {useRef} from "react";
 import { ThumbnailChooser, IThumbnailChooserProps } from "./thumbnail-chooser/thumbnail-chooser";
 import { Thumbnail, IThumbnailProps } from "./thumbnail-chooser/thumbnail";
 // import { PreviewPanel } from "./preview-panel";
@@ -7,7 +7,7 @@ import { UploadBackground} from "./upload-background";
 import { CommentField } from "./comment-field";
 import { v4 as uuidv4 } from "uuid";
 import {IAuthoredState, IInteractiveState, ILabbookEntry } from "./types";
-import { Runtime as DrawingToolComp } from "../../drawing-tool/components/runtime";
+import { DrawingTool  } from "../../drawing-tool/components/drawing-tool";
 import SnapShotIcon from "../assets/snapshot-image-icon.svg";
 import UploadIcon from "../assets/upload-image-icon.svg";
 import deepmerge from "deepmerge";
@@ -58,8 +58,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       comment: "",
       id
     };
-    setSelectedItemId(id);
     setEntries([...entries, item]);
+    setSelectedItemId(id);
   };
 
   const addBlankItem = () => {
@@ -115,10 +115,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const title = selectedIndex !== -1 ? numberToAlpha(selectedIndex) : "";
 
   const setDrawingStateFn = (func:(prevState:IDrawingToolInteractiveState|null) => IDrawingToolInteractiveState) => {
-    const drawingState = func(null);
+    const drawingState = func(selectedItem?.data||null);
     if(selectedItem && drawingState) {
-      const updatedDrawing:ILabbookEntry = deepmerge(selectedItem, {data: drawingState}) as ILabbookEntry;
-      const newEntries = entries.map(i=> i.id === selectedId ? updatedDrawing : i);
+      const updatedEntry:ILabbookEntry = deepmerge(selectedItem, {data: drawingState}) as ILabbookEntry;
+      const newEntries = entries.map(i=> i.id === selectedId ? updatedEntry : i);
       const nextState:IInteractiveState = {
         ...interactiveState,
         answerType: "interactive_state",
@@ -132,12 +132,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
   };
 
-  const drawToolState = selectedItem?.data;
   const setComment = (newComment:string) => {
     if(selectedItem) {
       // selectedItem.comment = newComment;
       const updatedDrawing:ILabbookEntry = deepmerge(selectedItem, {comment: newComment}) as ILabbookEntry;
-      // Object.assign({}, selectedItem, {data: {drawingState});
       const newEntries = entries.map(i=> i.id === selectedId ? updatedDrawing : i);
       const nextState:IInteractiveState = {
         ...interactiveState,
@@ -159,9 +157,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         <ThumbnailChooser {...thumbnailChooserProps} />
         {/* <PreviewPanel item={selectedItem} /> */}
         <div className={css["draw-tool-wrapper"]}>
-          <DrawingToolComp
-            authoredState={{...authoredState,questionType:'iframe_interactive'}}
-            interactiveState={{...drawToolState, answerType:"interactive_state"}}
+          <DrawingTool
+            key={selectedId}
+            authoredState={authoredState}
+            interactiveState={{...selectedItem?.data, answerType: "interactive_state"}}
             setInteractiveState={setDrawingStateFn}
           />
         </div>
