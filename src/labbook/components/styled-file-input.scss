@@ -1,0 +1,13 @@
+// The goal is to have a stylized file upload button
+// but to enable screen reader access too.
+// https://stackoverflow.com/questions/572768/styling-an-input-type-file-button
+// http://jsfiddle.net/4cwpLvae/
+// https://webaim.org/techniques/css/invisiblecontent/
+input[type="file"] {
+  &.hidden {
+    // display: none;
+    left: -10000px;
+    position: absolute;
+    // ⬆ Wont display on screen, but screen readers will read it.
+  }
+}
