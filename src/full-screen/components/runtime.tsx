@@ -4,14 +4,14 @@ import queryString from "query-string";
 import { FullScreenButton } from "./full-screen-button";
 import { useForceUpdate } from "../../shared/hooks/use-force-update";
 import { IframeRuntime } from "../../shared/components/iframe-runtime";
-import { setHint, useInteractiveState } from "@concord-consortium/lara-interactive-api";
+import { setHint, setSupportedFeatures, useInitMessage, useInteractiveState } from "@concord-consortium/lara-interactive-api";
 import { IInteractiveState } from "./types";
 
 const screenfull = _screenfull.isEnabled ? _screenfull : undefined;
 
 export const Runtime: React.FC = () => {
   const forceUpdate = useForceUpdate();
-
+  const initMessage = useInitMessage();
   const toggleFullScreen = useCallback(() => {
     screenfull?.toggle();
   },[]);
@@ -25,6 +25,14 @@ export const Runtime: React.FC = () => {
       window.removeEventListener('resize', onChange);
     };
   }, [forceUpdate]);
+
+  useEffect(() => {
+    const aspectRatio = screen.width/screen.height;
+    setSupportedFeatures({
+      interactiveState: true,
+      aspectRatio
+    });
+  }, [initMessage]);
   const { interactiveState, setInteractiveState } = useInteractiveState<IInteractiveState>();
   const isFullScreen = screenfull?.isFullscreen;
   // This code is patterned after the jQuery-based implementation in 'fullscreen.ts' in the

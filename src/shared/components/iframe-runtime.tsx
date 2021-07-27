@@ -53,7 +53,7 @@ export const IframeRuntime: React.FC<IProps> =
         setIframeHeight(newHeight);
       });
       phone.addListener("hint", (newHint: IHintRequest) => {
-        setHint? setHint(newHint.text || "") : setInternalHint(newHint.text || "");
+        setHint ? setHint(newHint.text || "") : setInternalHint(newHint.text || "");
       });
       phone.addListener("log", (logData: ILogRequest) => {
         log(logData.action, {
@@ -86,7 +86,7 @@ export const IframeRuntime: React.FC<IProps> =
       });
     };
 
-    if (iframeRef.current && url) {
+    if (iframeRef.current) {
       // Reload the iframe.
       iframeRef.current.src = url;
       // Re-init interactive, this time using a new mode (report or runtime).
