@@ -21,7 +21,6 @@ export const StyledFileInput: React.FC<IStyledFileInputProps> = (props) => {
 
   const handleChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    console.dir(file);
     onChange?.(file);
   };
 
