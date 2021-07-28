@@ -21,7 +21,7 @@ export interface IProps {
   uploadIcon?: React.ReactNode;
 }
 
-export const UploadBackground: React.FC<IProps> = ({ authoredState, setInteractiveState, onUploadStart, onUploadComplete, uploadButtonClass, uploadIcon, children}) => {
+export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveState, onUploadStart, onUploadComplete, uploadButtonClass, uploadIcon, children}) => {
   const [ uploadInProgress, setUploadInProgress ] = useState(false);
 
   const uploadFile = (fileOrUrl: File | string) => {

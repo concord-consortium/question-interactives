@@ -1,6 +1,6 @@
 import React from "react";
 import { mount } from "enzyme";
-import { UploadBackground } from "./upload-background";
+import { UploadImage } from "./upload-image";
 import { copyImageToS3, copyLocalImageToS3 } from "../../shared/utilities/copy-image-to-s3";
 import { act } from "react-dom/test-utils";
 
@@ -25,18 +25,14 @@ describe("UploadBackground", () => {
 
   it("renders upload button", () => {
     const setMock = jest.fn();
-    const wrapper = mount(<UploadBackground authoredState={authoredState} setInteractiveState={setMock} />);
-
+    const wrapper = mount(<UploadImage authoredState={authoredState} setInteractiveState={setMock} />);
     expect(wrapper.find("[data-test='upload-btn']").length).toEqual(1);
-    wrapper.find("[data-test='upload-btn']").simulate("click");
-    expect(wrapper.find("[data-test='upload-btn']").length).toEqual(0);
   });
 
   it("lets user upload local file", () => {
     const setMock = jest.fn();
-    const wrapper = mount(<UploadBackground authoredState={authoredState} setInteractiveState={setMock} />);
+    const wrapper = mount(<UploadImage authoredState={authoredState} setInteractiveState={setMock} />);
     wrapper.find("[data-test='upload-btn']").simulate("click");
-    expect(wrapper.find("[data-test='upload-btn']").length).toEqual(0);
 
     const fileInput = wrapper.find("input[type='file']");
     expect(fileInput.length).toEqual(1);
@@ -51,23 +47,4 @@ describe("UploadBackground", () => {
     expect(copyImageToS3).not.toHaveBeenCalled();
   });
 
-  it("lets user upload image by dropping external URL", () => {
-    const setMock = jest.fn();
-    const wrapper = mount(<UploadBackground authoredState={authoredState} setInteractiveState={setMock} />);
-
-    expect(wrapper.find("[data-test='upload-btn']").length).toEqual(1);
-    wrapper.find("[data-test='upload-btn']").simulate("click");
-
-    expect(wrapper.find("[data-test='upload-btn']").length).toEqual(0);
-
-    const dropArea = wrapper.find("[data-test='drop-area']");
-    expect(dropArea.length).toEqual(1);
-
-    const url = "http://image.png";
-    act(() => {
-      dropArea.simulate("drop", { dataTransfer: { files: [ url ] }});
-    });
-    expect(copyImageToS3).toHaveBeenCalledWith(url);
-    expect(copyLocalImageToS3).not.toHaveBeenCalled();
-  });
 });

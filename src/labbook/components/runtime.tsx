@@ -1,9 +1,9 @@
-import React, {useRef} from "react";
+import React from "react";
 import { ThumbnailChooser, IThumbnailChooserProps } from "./thumbnail-chooser/thumbnail-chooser";
 import { Thumbnail, IThumbnailProps } from "./thumbnail-chooser/thumbnail";
 // import { PreviewPanel } from "./preview-panel";
 import { UploadButton } from "./uploadButton";
-import { UploadBackground} from "./upload-background";
+import { UploadImage} from "./upload-image";
 import { CommentField } from "./comment-field";
 import { v4 as uuidv4 } from "uuid";
 import {IAuthoredState, IInteractiveState, ILabbookEntry } from "./types";
@@ -166,13 +166,13 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         </div>
         <div className={css["under-sketch"]}>
           <div className={css["buttons"]}>
-            <UploadBackground
+            <UploadImage
               authoredState={authoredState}
               setInteractiveState={setDrawingStateFn}
             >
               <UploadIcon />
               Upload Image
-            </UploadBackground>
+            </UploadImage>
 
             <UploadButton>
               <SnapShotIcon />
