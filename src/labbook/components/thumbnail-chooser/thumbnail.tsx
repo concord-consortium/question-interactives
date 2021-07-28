@@ -7,7 +7,7 @@ export interface IThumbnailProps {
   id: ThumbnailModelID;
   empty: boolean;
   label?: string;
-  thumbContent?: React.FC|string;
+  thumbContent?: React.ReactNode;
   data: any;  // TODO: This is fine for now, type it later.
   onClick?: ()=> void;
 }
