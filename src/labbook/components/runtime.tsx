@@ -2,6 +2,7 @@ import React from "react";
 import deepmerge from "deepmerge";
 import Shutterbug from "shutterbug";
 import hash from "object-hash";
+import { debounce } from "ts-debounce";
 
 import { ThumbnailChooser, IThumbnailChooserProps } from "./thumbnail-chooser/thumbnail-chooser";
 import { Thumbnail, IThumbnailProps } from "./thumbnail-chooser/thumbnail";
@@ -118,20 +119,20 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const title = selectedIndex !== -1 ? numberToAlpha(selectedIndex) : "";
 
   const updateEntryId = (id: string, fields: Partial<ILabbookEntry>) => {
-    const item = entries.find(i => i.id === id);
-    if(item) {
-      const updatedEntry: ILabbookEntry = deepmerge(item, fields) as ILabbookEntry;
-      const newEntries = entries.map(i=> i.id === selectedId ? updatedEntry : i);
-      const nextState:IInteractiveState = {
-        ...interactiveState,
+    setInteractiveState?.((prevState: IInteractiveState) => {
+      const pEntries = prevState?.entries;
+      const item = pEntries?.find(i => i.id === id);
+      if(item) {
+        const updatedEntry: ILabbookEntry = deepmerge(item, fields) as ILabbookEntry;
+        const newEntries = pEntries.map(i=> i.id === selectedId ? updatedEntry : i);
+        return {
+        ...prevState,
         answerType: "interactive_state",
         entries: newEntries
-      };
-      setInteractiveState?.(prevState => ({
-        ...prevState,
-        ...nextState
-      }));
-    }
+        };
+      }
+      return prevState;
+    });
   };
 
   const updateSelectedEntryState = (fields: Partial<ILabbookEntry>) => {
@@ -140,8 +141,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
   };
 
-
-  const saveSelectedPreview = (itemId: string) => {
+  const _saveSelectedPreview = (itemId: string) => {
     Shutterbug.snapshot({
       selector: drawingToolCanvasSelector,
       done: (snapshotUrl: string) => {
@@ -158,15 +158,17 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     });
   };
 
+  const saveSelectedPreview = debounce(_saveSelectedPreview, 500);
+
   const setDrawingStateFn = (func:(prevState:IDrawingToolInteractiveState|null) => IDrawingToolInteractiveState) => {
     const drawingState = func(selectedItem?.data||null);
     if(drawingState) {
       const drawingHash = hash(drawingState);
       if(selectedItem?.dataHash !== drawingHash) {
+        updateSelectedEntryState({data: drawingState});
         if(selectedItem?.id) {
           saveSelectedPreview(selectedItem.id);
         }
-        updateSelectedEntryState({data: drawingState});
       }
     }
   };
