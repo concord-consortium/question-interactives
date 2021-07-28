@@ -168,8 +168,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const getPoster = () => {
-    if (!hasStartedPlayback) {
-      return authoredState.poster;
+    const poster = (authoredState.poster || "").trim();
+    if (!hasStartedPlayback && !!poster) {
+      return poster;
     }
   };
 
@@ -190,6 +191,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             onPause={readOnly ? undefined : handleStop}
             onSeeked={handleSeek}
             controls={!readOnly}
+            preload="metadata"
           />
         </div>
       </div>
