@@ -20,14 +20,14 @@ export interface ILabbookEntry {
   comment: string;
   imageUrl?: string|null;
   data: IDrawingToolInteractiveState;
-  dataHash?: string|null; 
+  dataHash?: string|null;
   id: string;
 }
 
 export interface IBaseInteractiveState extends IRuntimeInteractiveMetadata {
   answerType: "interactive_state";
   entries: Array<ILabbookEntry>;
-  selectedId?: string|null;
+  selectedId: string;
 }
 
 export type IInteractiveState = IBaseInteractiveState;

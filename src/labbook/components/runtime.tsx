@@ -30,15 +30,34 @@ export interface IProps {
 // convert 1-26 to A-Z.
 const numberToAlpha = (value:number) => (value + 10).toString(26).toUpperCase();
 
-export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
-  const {maxItems, showItems} = authoredState;
-
-  const defaultState: IInteractiveState = {
-    entries: [],
-    selectedId: null,
-    answerType: "interactive_state"
+const generateItem = () => {
+  const id = uuidv4();
+  const item:ILabbookEntry = {
+    data: {answerType: "interactive_state"},
+    comment: "",
+    id
   };
-  const {entries, selectedId} = {...defaultState, ...interactiveState};
+  return item;
+};
+
+
+export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
+
+
+  const ensureSelected = (prev: Partial<IInteractiveState>) => {
+    const result = { ...prev };
+    if ((result?.entries?.length|| -1) < 0) {
+      result.entries = [generateItem()];
+    }
+
+    if(result?.entries?.find(e => e.id === result.selectedId) === undefined) {
+      result.selectedId = result.entries?.[0].id;
+    }
+    return result;
+  };
+
+  const {maxItems, showItems} = authoredState;
+  const {entries, selectedId} = ensureSelected(interactiveState as IInteractiveState) as IInteractiveState;
 
   const setEntries = (newEntries: Array<ILabbookEntry>) => {
     setInteractiveState?.(prevState => ({
@@ -55,14 +74,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const addItem = () => {
-    const id = uuidv4();
-    const item:ILabbookEntry = {
-      data: {answerType: "interactive_state"},
-      comment: "",
-      id
-    };
-    setEntries([...entries, item]);
-    setSelectedItemId(id);
+    const item = generateItem();
+    setEntries([...entries||[], item]);
+    setSelectedItemId(item.id);
   };
 
   const addBlankItem = () => {
@@ -120,7 +134,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const updateEntryId = (id: string, fields: Partial<ILabbookEntry>) => {
     setInteractiveState?.((prevState: IInteractiveState) => {
-      const pEntries = prevState?.entries;
+      const pEntries = prevState?.entries||entries;
       const item = pEntries?.find(i => i.id === id);
       if(item) {
         const updatedEntry: ILabbookEntry = deepmerge(item, fields) as ILabbookEntry;
@@ -216,3 +230,4 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     </div>
   );
 };
+
