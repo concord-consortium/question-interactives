@@ -13,6 +13,7 @@ import { CommentField } from "./comment-field";
 import { v4 as uuidv4 } from "uuid";
 import { IAuthoredState, IInteractiveState, ILabbookEntry } from "./types";
 import { DrawingTool, drawingToolCanvasSelector  } from "../../drawing-tool/components/drawing-tool";
+import { TakeSnapshot } from "../../drawing-tool/components/take-snapshot";
 import { IInteractiveState as IDrawingToolInteractiveState} from "../../drawing-tool/components/types";
 
 import SnapShotIcon from "../assets/snapshot-image-icon.svg";
@@ -214,10 +215,17 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               Upload Image
             </UploadImage>
 
-            <UploadButton>
+            <TakeSnapshot
+              authoredState={authoredState}
+              interactiveState={{...selectedItem?.data, answerType: "interactive_state"}}
+              setInteractiveState={setDrawingStateFn}
+              onUploadStart={ ()=> console.log("START")  }
+              onUploadComplete={ ()=> console.log("END") }
+            />
+            {/* <UploadButton>
               <SnapShotIcon />
               Take Snapshot
-            </UploadButton>
+            </UploadButton> */}
           </div>
           <CommentField
             title={title}
