@@ -1,9 +1,14 @@
 import React, { useState } from "react";
-import 'drawing-tool/dist/drawing-tool.css';
+import classNames from "classNames";
+
 import { StyledFileInput } from "./styled-file-input";
 import { copyImageToS3, copyLocalImageToS3 } from "../../shared/utilities/copy-image-to-s3";
+
 import css from "./uploadButton.scss";
+
 export interface IUploadButtonProps {label?:string}
+
+import UploadIcon from "../assets/upload-image-icon.svg";
 
 import {
   getAnswerType,
@@ -54,20 +59,17 @@ export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveSta
     }
   };
 
+  const classes = classNames(css["button-back"], {[css.disabled]: uploadInProgress});
+
   return (
     <>
-      {
-        !uploadInProgress &&
-        <StyledFileInput buttonClass={css["button-back"]}  onChange={handleFileUpload}>
-          {children}
-        </StyledFileInput>
-      }
-      {
-        uploadInProgress &&
-        <div className={css.uploadInfo}>
-          Please wait while image is being uploaded...
-        </div>
-      }
+      <StyledFileInput buttonClass={classes}  onChange={handleFileUpload}>
+        <UploadIcon />
+        { uploadInProgress
+          ? "Please Wait"
+          : "Upload Image"
+        }
+      </StyledFileInput>
     </>
   );
 };

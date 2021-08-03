@@ -16,6 +16,9 @@
   &:active {
     background-color: var(--cc-teal-light-3);
   }
+  &.disabled {
+    opacity: 0.3;
+  }
   svg {
     margin-right: 5px;
   }

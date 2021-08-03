@@ -7,17 +7,16 @@ import { debounce } from "ts-debounce";
 import { ThumbnailChooser, IThumbnailChooserProps } from "./thumbnail-chooser/thumbnail-chooser";
 import { Thumbnail, IThumbnailProps } from "./thumbnail-chooser/thumbnail";
 // import { PreviewPanel } from "./preview-panel";
-import { UploadButton } from "./uploadButton";
 import { UploadImage } from "./upload-image";
 import { CommentField } from "./comment-field";
 import { v4 as uuidv4 } from "uuid";
 import { IAuthoredState, IInteractiveState, ILabbookEntry } from "./types";
 import { DrawingTool, drawingToolCanvasSelector  } from "../../drawing-tool/components/drawing-tool";
-import { TakeSnapshot } from "../../drawing-tool/components/take-snapshot";
+import { TakeSnapshot } from "./take-snapshot";
 import { IInteractiveState as IDrawingToolInteractiveState} from "../../drawing-tool/components/types";
 
-import SnapShotIcon from "../assets/snapshot-image-icon.svg";
-import UploadIcon from "../assets/upload-image-icon.svg";
+
+
 
 import css from "./runtime.scss";
 
@@ -165,10 +164,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       fail: (jqXHR: any, textStatus: any, errorThrown: any) => {
         window.alert("Image saving has failed. Please try to close the dialog again. If it continues to fail, try to reload the whole page.");
         console.error("Snapshot has failed", textStatus, errorThrown);
-      },
-      always: () => {
-        // setSavingAnnotatedImage(false);
-        console.warn("💀 hmn-kay");
       }
     });
   };
@@ -210,22 +205,14 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             <UploadImage
               authoredState={authoredState}
               setInteractiveState={setDrawingStateFn}
-            >
-              <UploadIcon />
-              Upload Image
-            </UploadImage>
+            />
 
             <TakeSnapshot
               authoredState={authoredState}
               interactiveState={{...selectedItem?.data, answerType: "interactive_state"}}
               setInteractiveState={setDrawingStateFn}
-              onUploadStart={ ()=> console.log("START")  }
-              onUploadComplete={ ()=> console.log("END") }
             />
-            {/* <UploadButton>
-              <SnapShotIcon />
-              Take Snapshot
-            </UploadButton> */}
+
           </div>
           <CommentField
             title={title}
