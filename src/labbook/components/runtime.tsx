@@ -15,9 +15,6 @@ import { DrawingTool, drawingToolCanvasSelector  } from "../../drawing-tool/comp
 import { TakeSnapshot } from "./take-snapshot";
 import { IInteractiveState as IDrawingToolInteractiveState} from "../../drawing-tool/components/types";
 
-
-
-
 import css from "./runtime.scss";
 
 export interface IProps {
