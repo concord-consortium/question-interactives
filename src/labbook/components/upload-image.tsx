@@ -24,9 +24,10 @@ export interface IProps {
   onUploadComplete?: (result: { success: boolean }) => void;
   uploadButtonClass?: 'string';
   uploadIcon?: React.ReactNode;
+  disabled?: boolean;
 }
 
-export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveState, onUploadStart, onUploadComplete, uploadButtonClass, uploadIcon, children}) => {
+export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveState, onUploadStart, onUploadComplete, uploadButtonClass, uploadIcon, children, disabled}) => {
   const [ uploadInProgress, setUploadInProgress ] = useState(false);
 
   const uploadFile = (fileOrUrl: File | string) => {
@@ -46,26 +47,29 @@ export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveSta
       .catch((error) => {
         window.alert(error);
         console.error(error);
-        onUploadComplete?.({ success: false });
       })
       .finally(() => {
+        onUploadComplete?.({ success: false });
         setUploadInProgress(false);
       });
   };
 
   const handleFileUpload = (file: File|undefined) => {
-    if (file) {
-      uploadFile(file);
+    if(!disabled) {
+      if (file) {
+        onUploadStart?.();
+        uploadFile(file);
+      }
     }
   };
 
-  const classes = classNames(css["button-back"], {[css.disabled]: uploadInProgress});
+  const classes = classNames(css["button-back"], {[css.disabled]: uploadInProgress||disabled});
 
   return (
     <>
-      <StyledFileInput buttonClass={classes}  onChange={handleFileUpload}>
+      <StyledFileInput buttonClass={classes} onChange={handleFileUpload}>
         <UploadIcon />
-        { uploadInProgress
+        { uploadInProgress || disabled
           ? "Please Wait"
           : "Upload Image"
         }

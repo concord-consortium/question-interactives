@@ -11,10 +11,11 @@ export interface IProps {
   interactiveState?: IGenericInteractiveState | null;
   setInteractiveState?: (updateFunc: (prevState: IGenericInteractiveState | null) => IGenericInteractiveState) => void;
   onUploadStart?: () => void;
+  disabled?: boolean;
   onUploadComplete?: (result: { success: boolean }) => void;
 }
 
-export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, onUploadStart, onUploadComplete }) => {
+export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, onUploadStart, onUploadComplete, disabled}) => {
   const [ snapshotInProgress, setSnapshotInProgress ] = useState(false);
 
   const handleSnapshot = async () => {
@@ -42,10 +43,10 @@ export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState
       {
         authoredState.snapshotTarget &&
           <UploadButton onClick={handleSnapshot}
-            disabled={snapshotInProgress}
+            disabled={snapshotInProgress || disabled}
             data-test="snapshot-btn">
                 <SnapShotIcon />
-                { snapshotInProgress
+                { snapshotInProgress || disabled
                   ? "Please Wait"
                   : "Take Snapshot"
                 }

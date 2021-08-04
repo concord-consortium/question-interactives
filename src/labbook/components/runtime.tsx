@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import deepmerge from "deepmerge";
 import Shutterbug from "shutterbug";
 import hash from "object-hash";
@@ -41,6 +41,7 @@ const generateItem = () => {
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
 
 
+  const [disableUI, setDisableUI] = useState(false);
   const ensureSelected = (prev: Partial<IInteractiveState>) => {
     const result = { ...prev };
     if ((result?.entries?.length|| -1) < 0) {
@@ -185,6 +186,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     updateSelectedEntryState({comment: newComment});
   };
 
+  const onUploadStart = () => setDisableUI(true);
+  const onUploadEnd = () => setDisableUI(false);
+
   return (
     <div className={css["app"]}>
       <div className={css["container"]}>
@@ -203,12 +207,18 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             <UploadImage
               authoredState={authoredState}
               setInteractiveState={setDrawingStateFn}
+              disabled={disableUI}
+              onUploadStart={onUploadStart}
+              onUploadComplete={onUploadEnd}
             />
 
             <TakeSnapshot
               authoredState={authoredState}
               interactiveState={{...selectedItem?.data, answerType: "interactive_state"}}
               setInteractiveState={setDrawingStateFn}
+              disabled={disableUI}
+              onUploadStart={onUploadStart}
+              onUploadComplete={onUploadEnd}
             />
 
           </div>
