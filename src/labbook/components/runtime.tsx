@@ -123,6 +123,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     selectedItemId: selectedId||null,
     setSelectedItemId: setSelectedItemId,
     clearSelectedItemId: clearSelectedItemID,
+    maxDisplayItems: showItems
   };
 
   const selectedItem = entries.find(i => i.id === selectedId);

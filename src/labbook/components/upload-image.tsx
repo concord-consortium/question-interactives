@@ -1,10 +1,10 @@
 import React, { useState } from "react";
-import classNames from "classNames";
+import classNames from "classnames";
 
 import { StyledFileInput } from "./styled-file-input";
 import { copyImageToS3, copyLocalImageToS3 } from "../../shared/utilities/copy-image-to-s3";
 
-import css from "./uploadButton.scss";
+import css from "./upload-button.scss";
 
 export interface IUploadButtonProps {label?:string}
 

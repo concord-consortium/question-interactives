@@ -43,16 +43,13 @@ export interface IThumbnailChooserProps {
   setSelectedItemId: (itemId: ThumbnailModelID) => void;
   clearSelectedItemId: (itemId: ThumbnailModelID) => void;
   disableUnselectedThumbnails?: boolean;
+  maxDisplayItems: number;
 }
 
 export const ThumbnailChooser: React.FC<IThumbnailChooserProps> = (props) => {
   const [offset, setOffset] = useState(0);
 
-  const {
-    items, selectedItemId: selectedItemID,
-    setSelectedItemId: setSelectedItemId, clearSelectedItemId: clearSelectedItemId,
-  } = props;
-  const maxDisplayItems = 4;
+  const { items, selectedItemId, setSelectedItemId, maxDisplayItems, clearSelectedItemId} = props;
   const effectiveOffset = Math.min(offset, items.length - maxDisplayItems);
 
   return (
@@ -64,7 +61,7 @@ export const ThumbnailChooser: React.FC<IThumbnailChooserProps> = (props) => {
           if(index < effectiveOffset) { return null; }
           if(index - effectiveOffset >= maxDisplayItems) { return null; }
           const {id} = item;
-          const selected = id === selectedItemID;
+          const selected = id === selectedItemId;
           return (
             <ThumbnailWrapper
               key={item.id}

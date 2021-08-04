@@ -1,7 +1,7 @@
 import React from "react";
-import classNames from "classNames";
+import classNames from "classnames";
 
-import css from "./uploadButton.scss";
+import css from "./upload-button.scss";
 
 export interface IUploadButtonProps {
   label?:string;

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { UploadButton } from "./uploadButton";
+import { UploadButton } from "./upload-button";
 
 import { getInteractiveSnapshot } from "@concord-consortium/lara-interactive-api";
 import { getAnswerType, IGenericAuthoredState, IGenericInteractiveState } from "../../drawing-tool/components/types";
