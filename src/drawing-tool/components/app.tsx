@@ -269,8 +269,8 @@ export const baseAuthoringProps = {
     if (formData.backgroundImageUrl && formData.backgroundSource === "url") {
       try {
         const url = new URL(formData.backgroundImageUrl);
-        if (!url.host.match(/concord\.org/)) {
-          errors.backgroundImageUrl.addError(`Please use only images hosted at *.concord.org.`);
+        if (!url.host.match(/concord\.org/) && !url.host.match(/token-service-files\.s3\.amazonaws\.com/)) {
+          errors.backgroundImageUrl.addError(`Please use only uploaded images or images hosted at *.concord.org.`);
         }
       } catch (e) {
         errors.backgroundImageUrl.addError(`Invalid background image URL.`);

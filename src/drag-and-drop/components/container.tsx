@@ -8,6 +8,7 @@ import { DropZoneWrapper, DropZoneWrapperType, IDropZoneWrapper } from "./drop-z
 import css from "./container.scss";
 import { generateDataset } from "../utils/generate-dataset";
 import { flushStateUpdates } from "@concord-consortium/lara-interactive-api";
+import { cssUrlValue } from "../../shared/utilities/css-url-value";
 
 export interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {
   // Used only for authoring (initial state is part of the authored state).
@@ -100,9 +101,9 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
   // It'll also set initial, empty dataset that only includes bin labels and lets graph interactive render correctly.
   useEffect(() => {
     // PJ 16/6/2021: setTimeout should not be necessary. There might be a bug in LARA Interactive API client
-    // in or Activity Player. I was debugging that and I noticed that when two interactive state updates happen 
+    // in or Activity Player. I was debugging that and I noticed that when two interactive state updates happen
     // right after each other, one of them is lost. And it seems to be the latest one.
-    // In this particular case, one state update was coming from `handleItemDrop` function that was updating 
+    // In this particular case, one state update was coming from `handleItemDrop` function that was updating
     // `droppedItemData` and the second one was coming from this callback. Unfortunately, Firestore was reporting
     // only the first state update. 1ms setTimeout seems to workaround this issue for now.
     setTimeout(() => {
@@ -113,7 +114,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
       }));
       flushStateUpdates();
     }, 1);
-    // The dependency array should also include `setInteractiveState`, but this function seems to be updated 
+    // The dependency array should also include `setInteractiveState`, but this function seems to be updated
     // on each state update. It results in an infinite loop. Probably a bug in LARA Interactive API client.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [authoredState.dropZones, interactiveState?.droppedItemData]);
@@ -205,7 +206,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
   const draggingAreaStyle = {
     width: canvasWidth + "px",
     height: canvasHeight + "px",
-    backgroundImage: authoredState.backgroundImageUrl ? `url("${authoredState.backgroundImageUrl}")` : undefined
+    backgroundImage: authoredState.backgroundImageUrl ? cssUrlValue(authoredState.backgroundImageUrl) : undefined
   };
 
   const getItemsInTarget = (targetId: string) => {
