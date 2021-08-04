@@ -65,4 +65,9 @@ describe("uniqueFilename", () => {
     expect(prefix.length).toEqual(32);
     expect(filename).toEqual("test.png");
   });
+
+  it("replaces spaces in the filename with dashes", () => {
+    const [prefix, ...rest] = uniqueFilename("   test filename   with   multiple spaces.png").split("-");
+    expect(rest.join("-")).toEqual("test-filename-with-multiple-spaces.png");
+  });
 });
