@@ -4,6 +4,7 @@ import { IAuthoredState, IInteractiveState } from "./types";
 import { renderHTML } from "../../shared/utilities/render-html";
 import { Carousel } from "react-responsive-carousel";
 import { libraryInteractiveIdToUrl } from "../../shared/utilities/library-interactives";
+import { cssUrlValue } from "../../shared/utilities/css-url-value";
 
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
 import css from "./runtime.scss";
@@ -128,7 +129,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           let buttonStyle = {};
           let buttonClass = currentSlide === index ? css.activeButton : "";
           if (interactive.navImageUrl) {
-            buttonStyle = { backgroundImage: "url(" + interactive.navImageUrl + ")" };
+            buttonStyle = { backgroundImage: cssUrlValue(interactive.navImageUrl)};
             buttonClass += " " + css.customButton;
           }
           const buttonText = interactive.navImageAltText ? interactive.navImageAltText : `Go to slide ${index + 1}`;
