@@ -28,4 +28,4 @@ export const s3Upload = async ({client, credentials, filename, resource, body, c
   return client.getPublicS3Url(resource, filename);
 };
 
-export const uniqueFilename = (filename: string) => `${uuid().replace(/-/g, "")}-${filename}`;
+export const uniqueFilename = (filename: string) => `${uuid().replace(/-/g, "")}-${filename.trim().replace(/\s+/g, "-")}`;
