@@ -5,6 +5,7 @@ import { DraggableItemWrapper } from "./draggable-item-wrapper";
 import { ContainerWithDndProvider } from "./container-with-dnd-provider";
 import { DraggableItemPreview } from "./draggable-item-preview";
 import { IDropZone } from "./types";
+import { cssUrlValue } from "../../shared/utilities/css-url-value";
 
 const authoredState = {
   version: 1,
@@ -27,7 +28,7 @@ describe("Container", () => {
   it("renders dragging area with provided dimensions", () => {
     const wrapper = mount(<ContainerWithDndProvider authoredState={authoredState} />);
     expect(wrapper.find("[data-cy='dnd-container']").prop("style")).toEqual({
-      backgroundImage: `url("${authoredState.backgroundImageUrl}")`,
+      backgroundImage: cssUrlValue(authoredState.backgroundImageUrl),
       height: "200px",
       width: "300px"
     });
