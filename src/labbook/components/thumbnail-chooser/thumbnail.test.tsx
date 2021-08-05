@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { IThumbnailProps, Thumbnail } from "./thumbnail";
-import "@testing-library/jest-dom";
+
 
 describe("Thumbnail component", () => {
 

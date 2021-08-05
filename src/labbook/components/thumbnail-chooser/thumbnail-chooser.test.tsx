@@ -1,5 +1,4 @@
 import React from "react";
-import "@testing-library/jest-dom";
 import { render, screen } from "@testing-library/react";
 import { IThumbnailChooserProps, ThumbnailChooser } from "./thumbnail-chooser";
 
@@ -22,7 +21,7 @@ describe("ThumbnailChooser component", () => {
     };
 
     render(<ThumbnailChooser {...thumbnailChooserProps} />);
-    expect(screen.getAllByTestId("thumbnail-chooser")).toHaveLength(1);
-    expect(screen.getAllByTestId("thumbnail")).toHaveLength(1);
+    expect(screen.getByTestId("thumbnail-chooser")).toBeInTheDocument;
+    expect(screen.getByTestId("thumbnail")).toBeInTheDocument;
   });
 });

@@ -44,11 +44,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const [disableUI, setDisableUI] = useState(false);
   const ensureSelected = (prev: Partial<IInteractiveState>) => {
     const result = { ...prev };
-    if ((result?.entries?.length|| -1) < 0) {
+    if (!result.entries?.length){
       result.entries = [generateItem()];
     }
 
-    if(result?.entries?.find(e => e.id === result.selectedId) === undefined) {
+    if(!result.entries?.find(e => e.id === result.selectedId)) {
       result.selectedId = result.entries?.[0].id;
     }
     return result;
