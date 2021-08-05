@@ -5,6 +5,7 @@ import { getInteractiveSnapshot } from "@concord-consortium/lara-interactive-api
 import { getAnswerType, IGenericAuthoredState, IGenericInteractiveState } from "../../drawing-tool/components/types";
 
 import SnapShotIcon from "../assets/snapshot-image-icon.svg";
+import { Log } from "../labbook-logging";
 
 export interface IProps {
   authoredState: IGenericAuthoredState; // so it works with DrawingTool and ImageQuestion
@@ -30,9 +31,11 @@ export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState
           userBackgroundImageUrl: response.snapshotUrl,
           answerType: getAnswerType(authoredState.questionType)
         }));
+        Log({action: "snapshot uploaded", data:{url: response.snapshotUrl}});
         onUploadComplete?.({ success: true });
       } else {
         window.alert("Snapshot has failed. Please try again.");
+        Log({action: "upload fail"});
         onUploadComplete?.({ success: false });
       }
     }

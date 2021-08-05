@@ -3,11 +3,8 @@ import classNames from "classnames";
 
 import { StyledFileInput } from "./styled-file-input";
 import { copyImageToS3, copyLocalImageToS3 } from "../../shared/utilities/copy-image-to-s3";
-
+import { Log } from "../labbook-logging";
 import css from "./upload-button.scss";
-
-export interface IUploadButtonProps {label?:string}
-
 import UploadIcon from "../assets/upload-image-icon.svg";
 
 import {
@@ -16,6 +13,7 @@ import {
   IGenericInteractiveState
 } from "../../drawing-tool/components/types";
 
+export interface IUploadButtonProps {label?:string}
 
 export interface IProps {
   authoredState: IGenericAuthoredState;
@@ -42,9 +40,11 @@ export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveSta
           userBackgroundImageUrl: url,
           answerType: getAnswerType(authoredState.questionType)
         }));
+        Log({action: "picture uploaded", data: {url}});
         onUploadComplete?.({ success: true });
       })
       .catch((error) => {
+        Log({action: "upload fail", data: {error}});
         window.alert(error);
         console.error(error);
       })

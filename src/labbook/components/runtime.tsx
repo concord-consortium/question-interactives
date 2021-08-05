@@ -3,17 +3,19 @@ import deepmerge from "deepmerge";
 import Shutterbug from "shutterbug";
 import hash from "object-hash";
 import { debounce } from "ts-debounce";
+import { v4 as uuidv4 } from "uuid";
 
+import { IInteractiveState as IDrawingToolInteractiveState} from "../../drawing-tool/components/types";
+import { DrawingTool, drawingToolCanvasSelector  } from "../../drawing-tool/components/drawing-tool";
+
+// import { PreviewPanel } from "./preview-panel"; // For mockup / Zeplin matching.
+import { Log } from "../labbook-logging";
 import { ThumbnailChooser, IThumbnailChooserProps } from "./thumbnail-chooser/thumbnail-chooser";
 import { Thumbnail, IThumbnailProps } from "./thumbnail-chooser/thumbnail";
-// import { PreviewPanel } from "./preview-panel";
 import { UploadImage } from "./upload-image";
 import { CommentField } from "./comment-field";
-import { v4 as uuidv4 } from "uuid";
 import { IAuthoredState, IInteractiveState, ILabbookEntry } from "./types";
-import { DrawingTool, drawingToolCanvasSelector  } from "../../drawing-tool/components/drawing-tool";
 import { TakeSnapshot } from "./take-snapshot";
-import { IInteractiveState as IDrawingToolInteractiveState} from "../../drawing-tool/components/types";
 
 import css from "./runtime.scss";
 
@@ -65,6 +67,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const setSelectedItemId = (id:string) => {
+    Log({action: "item selected", data:{id}});
     setInteractiveState?.(prevState => ({
       ...prevState as IInteractiveState,
       selectedId: id
@@ -72,6 +75,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const addItem = () => {
+    Log({action: "item added"});
     const item = generateItem();
     setEntries([...entries||[], item]);
     setSelectedItemId(item.id);
@@ -100,6 +104,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const clearSelectedItemID = (id: string) => {
+    Log({action: "item deleted", data: {id}});
     const newEntries = entries.filter((i:ILabbookEntry) => i.id !== id);
     setSelectedItemId("nothing");
     setEntries(newEntries);
