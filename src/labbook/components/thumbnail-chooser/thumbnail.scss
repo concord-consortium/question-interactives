@@ -1,0 +1,12 @@
+@import "../vars.scss";
+
+.thumbnail {
+  height: 90px;
+  width: 90px;
+  position: relative;
+  font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}

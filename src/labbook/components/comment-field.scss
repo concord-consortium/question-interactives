@@ -1,0 +1,21 @@
+
+.comment-field{
+  display: flex;
+  flex: 1;
+  margin: 10px;
+  margin-left: 5px;
+  position: relative;
+  border-radius: 8px;
+  border: solid 1.5px var(--cc-charcoal-light-2);
+  &:focus, &:focus-visible {
+    border: solid 1.5px var(--cc-charcoal-light-3);
+  }
+  textarea {
+    border-radius: 8px;
+    border: none;
+    padding-left: 32px;
+    font-family: Lato;
+    flex: 1;
+  }
+}
+
