@@ -26,6 +26,11 @@ const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
         type: "number",
         title: "How many thumbnails to display",
         default: 4
+      },
+      backgroundSource: {
+        title: "Background source",
+        type: "string",
+        default: "any"
       }
     }
   } as JSONSchema6,
@@ -44,6 +49,9 @@ const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
       "ui:widget": "hidden"
     },
     questionType: {
+      "ui:widget": "hidden"
+    },
+    backgroundSource: {
       "ui:widget": "hidden"
     }
   },
