@@ -55,10 +55,6 @@ export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState
                 }
           </UploadButton>
       }
-      {
-        authoredState.snapshotTarget === undefined &&
-        <p>Snapshot won&apos;t work, as no target interactive is selected</p>
-      }
     </>
   );
 };
