@@ -101,8 +101,8 @@ module.exports = (env, argv) => {
           test: /\.svg$/,
           oneOf: [
             {
-              // Do not apply SVGR import in (S)CSS files.
-              issuer: /\.(sa|sc|c)ss$/,
+              // Do not apply SVGR import in (S)CSS files or Javascript files (for the drawing tool).
+              issuer: /\.((sa|sc|c)ss|js)$/,
               use: 'url-loader'
             },
             {
