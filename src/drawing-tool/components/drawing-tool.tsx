@@ -18,6 +18,10 @@ export interface IProps {
   interactiveState?: IGenericInteractiveState | null;
   setInteractiveState?: (updateFunc: (prevState: IGenericInteractiveState | null) => IGenericInteractiveState) => void;
   readOnly?: boolean;
+  buttons?: string[];
+  width?: number;
+  height?: number;
+  onDrawingChanged?: () => void;
 }
 
 interface StampCollections {
@@ -28,6 +32,8 @@ interface DrawingToolOpts {
   width: number;
   height: number;
   stamps?: StampCollections;
+  buttons?: string[];
+  onDrawingChanged?: () => void;
 }
 
 const drawingToolContainerId = "drawing-tool-container";
@@ -35,7 +41,7 @@ const drawingToolContainerId = "drawing-tool-container";
 // it'll be easier to update selectors and find usages.
 export const drawingToolCanvasSelector = `#${drawingToolContainerId} canvas.lower-canvas`;
 
-export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, readOnly }) => {
+export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, readOnly, buttons, width, height, onDrawingChanged }) => {
   const drawingToolRef = useRef<any>();
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -81,54 +87,57 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
   }, [authoredState.backgroundImageUrl, authoredState.backgroundSource, authoredState.imageFit, authoredState.imagePosition]);
 
   useEffect(() => {
-    const stampCollections: StampCollections = {};
-    authoredState.stampCollections?.forEach(collection => {
-      const baseName = collection.name || collection.collection.charAt(0).toUpperCase() + collection.collection.slice(1);
-      let name = baseName;
-      let i = 0;
-      while (stampCollections[name]) {
-        name = `${baseName} ${++i}`;
-      }
-      let stamps: string[];
-      if (collection.collection === "custom") {
-        stamps = collection.stamps || [];
-        const urlRegex = /^(https:|http:)\/\/\S+/;
-        stamps = stamps.map(url => url.replace(/ /g,'')).filter(url => url.match(urlRegex));
-      } else {
-        stamps = predefinedStampCollections[collection.collection];
-      }
-      if (stamps && stamps.length) {
-        stampCollections[name] = stamps;
-      }
-    });
+    if (!drawingToolRef.current) {
+      const stampCollections: StampCollections = {};
+      authoredState.stampCollections?.forEach(collection => {
+        const baseName = collection.name || collection.collection.charAt(0).toUpperCase() + collection.collection.slice(1);
+        let name = baseName;
+        let i = 0;
+        while (stampCollections[name]) {
+          name = `${baseName} ${++i}`;
+        }
+        let stamps: string[];
+        if (collection.collection === "custom") {
+          stamps = collection.stamps || [];
+          const urlRegex = /^(https:|http:)\/\/\S+/;
+          stamps = stamps.map(url => url.replace(/ /g,'')).filter(url => url.match(urlRegex));
+        } else {
+          stamps = predefinedStampCollections[collection.collection];
+        }
+        if (stamps && stamps.length) {
+          stampCollections[name] = stamps;
+        }
+      });
 
-    // window.innerWidth should never be used in practice. It's here just to make TypeScript happy
-    // and/or handle some unexpected edge case where containerRef is really undefined.
-    const availableWidth = containerRef.current?.clientWidth || window.innerWidth;
-    const drawingToolOpts: DrawingToolOpts = {
-      // Drawing Tool width and height describe canvas dimensions. They do NOT include toolbar dimensions.
-      width: Math.min(kDrawingToolPreferredWidth, availableWidth - kToolbarWidth),
-      height: kDrawingToolHeight
-    };
+      // window.innerWidth should never be used in practice. It's here just to make TypeScript happy
+      // and/or handle some unexpected edge case where containerRef is really undefined.
+      const availableWidth = containerRef.current?.clientWidth || window.innerWidth;
+      const drawingToolOpts: DrawingToolOpts = {
+        // Drawing Tool width and height describe canvas dimensions. They do NOT include toolbar dimensions.
+        width: width || Math.min(kDrawingToolPreferredWidth, availableWidth - kToolbarWidth),
+        height: height || kDrawingToolHeight,
+        buttons,
+        onDrawingChanged
+      };
 
-    if (Object.keys(stampCollections).length > 0) {
-      drawingToolOpts.stamps = stampCollections;
+      if (Object.keys(stampCollections).length > 0) {
+        drawingToolOpts.stamps = stampCollections;
+      }
+
+      drawingToolRef.current = new DrawingToolLib("#drawing-tool-container", drawingToolOpts);
+      if (initialInteractiveStateRef.current) {
+        drawingToolRef.current.load(initialInteractiveStateRef.current.drawingState, () => {
+          // Load finished callback. Set manually background that is stored outside in the interactive or authored state.
+          setBackground(initialInteractiveStateRef.current?.userBackgroundImageUrl);
+        }, true);
+      }
+
+      drawingToolRef.current.on("drawing:changed", () => {
+        if (readOnly) return;
+        setInteractiveStateRef.current({ drawingState: drawingToolRef.current.save() });
+      });
     }
-
-    drawingToolRef.current = new DrawingToolLib("#drawing-tool-container", drawingToolOpts);
-
-    if (initialInteractiveStateRef.current) {
-      drawingToolRef.current.load(initialInteractiveStateRef.current.drawingState, () => {
-        // Load finished callback. Set manually background that is stored outside in the interactive or authored state.
-        setBackground(initialInteractiveStateRef.current?.userBackgroundImageUrl);
-      }, true);
-    }
-
-    drawingToolRef.current.on("drawing:changed", () => {
-      if (readOnly) return;
-      setInteractiveStateRef.current({ drawingState: drawingToolRef.current.save() });
-    });
-  }, [authoredState, readOnly, setBackground]);
+  }, [authoredState, readOnly, setBackground, buttons, width, height, onDrawingChanged]);
 
   useEffect(() => {
     setBackground(interactiveState?.userBackgroundImageUrl);

@@ -194,6 +194,15 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const onUploadStart = () => setDisableUI(true);
   const onUploadEnd = () => setDisableUI(false);
 
+  const drawingToolButtons = [
+    'select',
+    'free',
+    'shapesPalette',
+    'stamp',
+    'annotation',
+    'trash',
+  ];
+
   return (
     <div className={css["app"]}>
       <div className={css["container"]}>
@@ -205,6 +214,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             authoredState={authoredState}
             interactiveState={{...selectedItem?.data, answerType: "interactive_state"}}
             setInteractiveState={setDrawingStateFn}
+            buttons={drawingToolButtons}
+            width={465}
+            height={495}
           />
         </div>
         <div className={css["under-sketch"]}>
