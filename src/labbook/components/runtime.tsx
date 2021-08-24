@@ -42,6 +42,7 @@ const generateItem = () => {
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
 
+  const readOnly = !!(report || (authoredState.required && interactiveState?.submitted));
 
   const [disableUI, setDisableUI] = useState(false);
   const ensureSelected = (prev: Partial<IInteractiveState>) => {
@@ -129,7 +130,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     selectedItemId: selectedId||null,
     setSelectedItemId: setSelectedItemId,
     clearSelectedItemId: clearSelectedItemID,
-    maxDisplayItems: showItems
+    maxDisplayItems: showItems,
+    readOnly
   };
 
   const selectedItem = entries.find(i => i.id === selectedId);
@@ -207,7 +209,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     <div className={css["app"]}>
       <div className={css["container"]}>
         <ThumbnailChooser {...thumbnailChooserProps} />
-        {/* <PreviewPanel item={selectedItem} /> */}
         <div className={css["draw-tool-wrapper"]}>
           <DrawingTool
             key={selectedId}
@@ -217,9 +218,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             buttons={drawingToolButtons}
             width={465}
             height={495}
+            readOnly={readOnly}
           />
         </div>
         <div className={css["under-sketch"]}>
+          {!readOnly &&
           <div className={css["buttons"]}>
             <UploadImage
               authoredState={authoredState}
@@ -238,11 +241,12 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               onUploadComplete={onUploadEnd}
             />
 
-          </div>
+          </div>}
           <CommentField
             title={title}
             comment={selectedItem?.comment||""}
             empty={!selectedItem}
+            readOnly={readOnly}
             setComment={setComment}
           />
         </div>

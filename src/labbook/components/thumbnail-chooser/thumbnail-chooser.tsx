@@ -44,12 +44,13 @@ export interface IThumbnailChooserProps {
   clearSelectedItemId: (itemId: ThumbnailModelID) => void;
   disableUnselectedThumbnails?: boolean;
   maxDisplayItems: number;
+  readOnly: boolean;
 }
 
 export const ThumbnailChooser: React.FC<IThumbnailChooserProps> = (props) => {
   const [offset, setOffset] = useState(0);
 
-  const { items, selectedItemId, setSelectedItemId, maxDisplayItems, clearSelectedItemId} = props;
+  const { items, selectedItemId, setSelectedItemId, maxDisplayItems, clearSelectedItemId, readOnly} = props;
   const effectiveOffset = Math.min(offset, items.length - maxDisplayItems);
 
   return (
@@ -57,10 +58,11 @@ export const ThumbnailChooser: React.FC<IThumbnailChooserProps> = (props) => {
       <PrevButton enabled={effectiveOffset > 0} onClick={() => setOffset(effectiveOffset -1)} />
       <div className={css["thumbnail-chooser-list"]}>
         {items.map( (item, index) => {
+          const {id, empty} = item;
           // Only display a subset of items
           if(index < effectiveOffset) { return null; }
           if(index - effectiveOffset >= maxDisplayItems) { return null; }
-          const {id} = item;
+          if(readOnly && empty) { return null; }
           const selected = id === selectedItemId;
           return (
             <ThumbnailWrapper
@@ -69,6 +71,7 @@ export const ThumbnailChooser: React.FC<IThumbnailChooserProps> = (props) => {
               content={item}
               setSelectedContainerId={setSelectedItemId}
               clearContainer={clearSelectedItemId}
+              readOnly={readOnly}
             />
           );
         })}
