@@ -13,6 +13,13 @@ const thumb:IThumbnailProps = {
   thumbContent: content
 };
 
+const emptyThumb:IThumbnailProps = {
+  id: "one",
+  data: {},
+  label: "one",
+  empty: true,
+  thumbContent: content
+};
 
 describe("ThumbnailWrapper component", () => {
   it("renders wrapper with saved title icon", () => {
@@ -21,13 +28,16 @@ describe("ThumbnailWrapper component", () => {
       selected: true,
       setSelectedContainerId: (id: string) => undefined,
       clearContainer: (id: string) => undefined,
-      content: thumb
+      content: thumb,
+      readOnly: false
     };
 
     render(<ThumbnailWrapper {...thumbnailWrapperProps} />);
     expect(screen.getAllByTestId("thumbnail-wrapper")).toHaveLength(1);
     expect(screen.getAllByTestId("thumbnail-button")).toHaveLength(1);
     expect(screen.getAllByTestId("thumbnail-title")).toHaveLength(1);
+    expect(screen.queryAllByTestId("thumbnail-plus-button")).toHaveLength(0);
+    expect(screen.getAllByTestId("thumbnail-close-button")).toHaveLength(1);
     expect(screen.getAllByTestId("thumbnail")).toHaveLength(1);
   });
 
@@ -36,13 +46,44 @@ describe("ThumbnailWrapper component", () => {
       selected: true,
       setSelectedContainerId: (containerId: string) => undefined,
       clearContainer: (containerId: string) => undefined,
-      content: thumb
+      content: thumb,
+      readOnly: false
     };
 
     render(<ThumbnailWrapper { ...thumbnailWrapperProps } />);
     expect(screen.getAllByTestId("thumbnail-wrapper")).toHaveLength(1);
     expect(screen.getAllByTestId("thumbnail-button")).toHaveLength(1);
     expect(screen.getAllByTestId("thumbnail-title")).toHaveLength(1);
+    expect(screen.queryAllByTestId("thumbnail-plus-button")).toHaveLength(0);
+    expect(screen.getAllByTestId("thumbnail-close-button")).toHaveLength(1);
     expect(screen.getAllByTestId("thumbnail")).toHaveLength(1);
+  });
+
+  it("renders wrapper with plus button with empty content", () => {
+    const thumbnailWrapperProps: IThumbnailWrapperProps= {
+      selected: true,
+      setSelectedContainerId: (containerId: string) => undefined,
+      clearContainer: (containerId: string) => undefined,
+      content: emptyThumb,
+      readOnly: false
+    };
+
+    render(<ThumbnailWrapper { ...thumbnailWrapperProps } />);
+    expect(screen.getAllByTestId("thumbnail-plus-button")).toHaveLength(1);
+    expect(screen.queryAllByTestId("thumbnail-close-button")).toHaveLength(0);
+  });
+
+  it("renders a readonly view", () => {
+    const thumbnailWrapperProps: IThumbnailWrapperProps= {
+      selected: true,
+      setSelectedContainerId: (containerId: string) => undefined,
+      clearContainer: (containerId: string) => undefined,
+      content: emptyThumb,
+      readOnly: true
+    };
+
+    render(<ThumbnailWrapper { ...thumbnailWrapperProps } />);
+    expect(screen.queryAllByTestId("thumbnail-plus-button")).toHaveLength(0);
+    expect(screen.queryAllByTestId("thumbnail-close-button")).toHaveLength(0);
   });
 });

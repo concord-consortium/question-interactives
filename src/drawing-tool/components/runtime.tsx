@@ -19,7 +19,7 @@ export interface IProps {
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const decorateOptions = useGlossaryDecoration();
-  const readOnly = report || (authoredState.required && interactiveState?.submitted);
+  const readOnly = !!(report || (authoredState.required && interactiveState?.submitted));
   const useSnapshot = authoredState?.backgroundSource === "snapshot";
   const useUpload = authoredState?.backgroundSource === "upload";
   const authoredBgCorsError = useCorsImageErrorCheck({

@@ -8,12 +8,11 @@ export interface ICommentFieldProps {
   comment: string,
   setComment: (comment:string) => void,
   empty: boolean;
+  readOnly: boolean;
 }
 
-
-
 export const CommentField: React.FC<ICommentFieldProps> = (props) => {
-  const {title, comment, empty, setComment } = props;
+  const {title, comment, empty, setComment, readOnly } = props;
   const placeholder = comment
     ? comment
     : "Add comment … "; // TODO: I18n
@@ -24,10 +23,10 @@ export const CommentField: React.FC<ICommentFieldProps> = (props) => {
   };
 
   return (
-      <div className={css["comment-field"]}>
+      <div className={css["comment-field"]} data-testid="comment-field">
         <ThumbnailTitle title={title} empty={empty}/>
-        <textarea disabled={empty} placeholder={placeholder} value={comment} onChange={handleTextAreaChange}>
-        </textarea>
+        {readOnly ? <div className={css["comment-field-text"]} data-testid="comment-field-text">{comment.length === 0 ? <em>No comment.</em> : comment}</div> : null}
+        {!readOnly ? <textarea disabled={empty} placeholder={placeholder} value={comment} onChange={handleTextAreaChange} data-testid="comment-field-textarea"></textarea> : null}
       </div>
   );
 };

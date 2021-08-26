@@ -143,9 +143,30 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
     setBackground(interactiveState?.userBackgroundImageUrl);
   }, [interactiveState?.userBackgroundImageUrl, setBackground]);
 
+  const interceptMouseEvent = (e: React.MouseEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+  const interceptTouchEvent = (e: React.TouchEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+  };
+
   return (
     <div ref={containerRef} className={css.drawingtoolWrapper}>
-      { readOnly && <div className={css.clickShield} /> }
+      { readOnly &&
+          <div
+            className={css.clickShield}
+            onMouseDownCapture={interceptMouseEvent}
+            onMouseMoveCapture={interceptMouseEvent}
+            onMouseUpCapture={interceptMouseEvent}
+            onClickCapture={interceptMouseEvent}
+            onTouchStartCapture={interceptTouchEvent}
+            onTouchMoveCapture={interceptTouchEvent}
+            onTouchEndCapture={interceptTouchEvent}
+            onTouchCancelCapture={interceptTouchEvent}
+          />
+      }
       <div id={drawingToolContainerId} className={css.runtime} />
     </div>
   );
