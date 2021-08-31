@@ -37,6 +37,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const snapshotOrUploadFinished = ({ success }: { success: boolean }) => {
     setControlsHidden(false);
     if (success) {
+      console.log("image is uploaded. should open draw tool now");
       openDrawingToolDialog();
     }
   };
@@ -44,6 +45,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const openDrawingToolDialog = () => {
     // notCloseable: true disabled click-to-close backdrop and X icon in the corner.
     // Dialog can be closed only via closeModal API.
+    console.log(" in openDrawingToolDialog, url: ", window.location.href + "?" + drawingToolDialogUrlParam);
     showModal({ type: "dialog", url: window.location.href + "?" + drawingToolDialogUrlParam, notCloseable: true });
   };
 
