@@ -27,6 +27,7 @@ export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState
         setInteractiveState?.(prevState => ({
           ...prevState,
           userBackgroundImageUrl: response.snapshotUrl,
+          answerImageUrl: response.snapshotUrl,
           answerType: getAnswerType(authoredState.questionType)
         }));
         onUploadComplete?.({ success: true });
