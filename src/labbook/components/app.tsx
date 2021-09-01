@@ -13,10 +13,6 @@ const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
         type: "number",
         default: 1
       },
-      questionType: {
-        type: "string",
-        default: "labbook_interactive"
-      },
       maxItems: {
         type: "number",
         title: "Maximum number of lab book entries",
