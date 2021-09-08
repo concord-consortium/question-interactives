@@ -6,6 +6,7 @@ npm-error.log
 .yalc
 yalc.lock
 /temp
+CHANGES.md
 
 # Editors
 .idea
