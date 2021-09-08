@@ -26,7 +26,7 @@ const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
       backgroundSource: {
         title: "Background source",
         type: "string",
-        default: "any"
+        default: "snapshot"
       }
     }
   } as JSONSchema6,
@@ -46,9 +46,6 @@ const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
     },
     questionType: {
       "ui:widget": "hidden"
-    },
-    backgroundSource: {
-      "ui:widget": "hidden"
     }
   },
   // Just overwrite array, don't merge values.
@@ -66,7 +63,7 @@ export const App = () => (
   <BaseQuestionApp<IAuthoredState, IInteractiveState>
     Runtime={Runtime}
     baseAuthoringProps={baseAuthoringProps}
-    disableAutoHeight={true}
+    disableAutoHeight={false}
     isAnswered={isAnswered}
     linkedInteractiveProps={[{ label: "snapshotTarget", supportsSnapshots: true }]}
   />
