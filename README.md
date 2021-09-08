@@ -99,15 +99,15 @@ To deploy a production release:
 3. Push current branch and tag to GitHub
   - `git push origin master`
   - `git push origin v<new version>`
-5. Create a GitHub Release
+4. Create a GitHub Release
     1. Find the new tag at https://github.com/concord-consortium/activity-player/tags open it, and edit it
     2. Copy the title from CHANGES.md
     3. Copy the content from CHANGES.md
     4. Hit "Publish Release" button
-6. Verify the build and tests in Travis at https://app.travis-ci.com/github/concord-consortium/question-interactives/builds
-7. Once built, update the production library interactives by individually opening each one and updating the baseUrl with this new version **<-- this step actually releases the new code to the interactives in production**
-8. Test a few sample question interactives by creating a test activity in Production that uses the updated interactives
-9. Clean up your working directory by deleting `CHANGES.md`
+5. Verify the build and tests in Travis at https://app.travis-ci.com/github/concord-consortium/question-interactives/builds
+6. Once built, update the production library interactives by individually opening each one and updating the baseUrl with this new version **<-- this step actually releases the new code to the interactives in production**
+7. Test a few sample question interactives by creating a test activity in Production that uses the updated interactives
+8. Clean up your working directory by deleting `CHANGES.md`
 
 ### Testing
 
