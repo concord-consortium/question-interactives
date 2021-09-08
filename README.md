@@ -80,11 +80,9 @@ You can view the status of all the branch deploys [here](https://travis-ci.org/c
 
 To deploy a production release:
 
-1. Copy CHANGELOG.md to CHANGES.md, and add a list of PT stories related to the release into temporary CHANGES.md
-    - Update the version and date at the top of the CHANGES.md
-    - Run `git log --reverse v<last version>...HEAD | grep '#'` to see a list of PR merges and stories that include PT ids in their message
-    - In a PT workspace that includes Orange and Teal boards, search for the `label:"question-interactives-<new version>" includedone:true`. You can select all, and export as CSV. Then copy the id and title columns.
-    - Review recently merged PRs in GitHub UI
+1. Copy CHANGELOG.md to CHANGES.md
+    - Update CHANGES.md with the output of running `npm run release-notes question-interactives-[new=version-string]` from dev-templates/scripts. More details on how to do this are given [here](https://github.com/concord-consortium/dev-templates/tree/main/scripts)
+    - Review this list against recently merged PRs in GitHub UI
 2. Update package, commit, and tag
     - **Mac or Linux**:
         - Run `npm version -m "$(< CHANGES.md)" [new-version-string]`
