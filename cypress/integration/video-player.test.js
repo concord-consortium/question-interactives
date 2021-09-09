@@ -66,7 +66,6 @@ context("Test Video Player interactive", () => {
       });
       phoneListen("interactiveState");
       cy.getIframeBody().find(".vjs-big-play-button").click();
-      cy.getIframeBody().find(".vjs-text-track-cue").should("include.text", "This is a drake");
       cy.getIframeBody().find(".vjs-current-time-display").should("include.text", "0:01");
       cy.getIframeBody().find(".vjs-poster.vjs-hidden").should("exist");
 

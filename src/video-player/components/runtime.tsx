@@ -32,7 +32,7 @@ export const getAspectRatio = (aspectRatio: string) => {
 };
 
 // If we want to allow authors to choose whether to show/hide captions by default, make this authorable
-const captionsOnByDefault = true;
+const captionsOnByDefault = false;
 
 // small sample mp4
 // "https://models-resources.s3.amazonaws.com/geniblocks/resources/fablevision/video/charcoal.mp4";
