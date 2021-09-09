@@ -17,7 +17,7 @@
 #### Adding a new Interactive type:
 In addition to copying your component source into `./src/your-component/` you will also
 need to add a few new entries to webpack.config.js:
- 
+
  ```javascript
    // webpack.config.js
    ...
@@ -77,6 +77,35 @@ Merges into production are deployed to https://models-resources.concord.org/ques
 Other branches are deployed to https://models-resources.concord.org/question-interactives/branch/<name>.
 
 You can view the status of all the branch deploys [here](https://travis-ci.org/concord-consortium/question-interactives/branches).
+
+To deploy a production release:
+
+1. Copy CHANGELOG.md to CHANGES.md
+    - Update CHANGES.md with the output of running `npm run release-notes question-interactives-[new=version-string]` from dev-templates/scripts. More details on how to do this are given [here](https://github.com/concord-consortium/dev-templates/tree/main/scripts)
+    - Review this list against recently merged PRs in GitHub UI
+2. Update package, commit, and tag
+    - **Mac or Linux**:
+        - Run `npm version -m "$(< CHANGES.md)" [new-version-string]`
+        - This updates the version in package.json and package-lock.json and creates a commit with the comment from CHANGES.md, and creates a tag with the name `v[new-version-string]` that has a description based on CHANGES.md.
+    - **Windows**: the command above that injects `CHANGES.md` as the message won't work in the standard windows command application.
+        - git-bash: same as above
+        - PowerShell: `npm version -m "(type CHANGES.md)" [new-version-string]` might work, I haven't tried it though.
+        - Do the steps manually and use a git client so you can paste in the multi line message
+            1. `npm version --no-git-tag-version [new-version-string]` (updates package.json and package-lock.json with the new version)
+            2. create a new commit with the CHANGES.md message
+            3. create a tag `v[new-version-string]` with the CHANGES.md message
+3. Push current branch and tag to GitHub
+  - `git push origin master`
+  - `git push origin v<new version>`
+4. Create a GitHub Release
+    1. Find the new tag at https://github.com/concord-consortium/activity-player/tags open it, and edit it
+    2. Copy the title from CHANGES.md
+    3. Copy the content from CHANGES.md
+    4. Hit "Publish Release" button
+5. Verify the build and tests in Travis at https://app.travis-ci.com/github/concord-consortium/question-interactives/builds
+6. Once built, update the production library interactives by individually opening each one and updating the baseUrl with this new version **<-- this step actually releases the new code to the interactives in production**
+7. Test a few sample question interactives by creating a test activity in Production that uses the updated interactives
+8. Clean up your working directory by deleting `CHANGES.md`
 
 ### Testing
 
