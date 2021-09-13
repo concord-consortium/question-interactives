@@ -47,7 +47,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const playerRef = useRef<HTMLVideoElement>(null);
   const captionsTrackRef = useRef<TextTrack | null>(null);
   const saveStateInterval = useRef<number>(0);
-  const [captionDisplayState, setCaptionDisplayState] = useState("showing");
+  const [captionDisplayState, setCaptionDisplayState] = useState("disabled"); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [hasStartedPlayback, setHasStartedPlayback] = useState(viewedTimestamp > 0 || viewedProgress > 0);
 
   // Keep viewedTimestamp in ref, so the useEffect below doesn"t need to list it in its dependency array, and doesn't
@@ -127,7 +127,13 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const handlePlaying = () => {
     setHasStartedPlayback(true);
     if (captionsTrackRef.current) {
-      setCaptionDisplayState(captionsTrackRef.current.mode);
+      const {mode} = captionsTrackRef.current;
+      setCaptionDisplayState(prevMode => {
+        if (prevMode !== mode) {
+          log("video captions toggled", { videoUrl: authoredState.videoUrl, captions: mode });
+        }
+        return mode;
+      });
     }
     updateState(false, null);
   };
@@ -159,10 +165,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       }));
       if (logMessage) {
         log(logMessage, { videoUrl: authoredState.videoUrl, percentage_viewed: percentageViewed });
-      }
-      if (captionsTrackRef.current && captionsTrackRef.current.mode !== captionDisplayState) {
-        log(`video captions toggled: ${captionsTrackRef.current.mode}`, { videoUrl: authoredState.videoUrl });
-        setCaptionDisplayState(captionsTrackRef.current.mode);
       }
     }
   };
