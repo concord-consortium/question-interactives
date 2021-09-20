@@ -10,9 +10,9 @@ const kThemeColor = "#34a5be";
 function exportHtml(value: any) {
   const html = slateToHtml(value);
   // convert empty paragraph to empty string
-  return (/<p>\s*<\/p>/i.test(html))
-          ? ""
-          : html;
+  const emptyParagraphsRegex = /<p>\s*<\/p>/gi;
+  const cleanedHTML = html.replace(emptyParagraphsRegex, "");
+  return cleanedHTML;
 }
 
 export const RichTextWidget = (props: WidgetProps) => {
