@@ -23,6 +23,11 @@ const baseAuthoringProps = {
         type: "boolean",
         default: true
       },
+      autoscaleYAxis: {
+        title: "Autoscale Y axis",
+        type: "boolean",
+        default: true
+      },
       dataSourceInteractive1: {
         title: "Data Source Interactive 1",
         type: "string",
@@ -71,6 +76,29 @@ const baseAuthoringProps = {
             type: "string"
           }
         }
+      },
+      autoscaleYAxis: {
+        oneOf: [
+          {
+            properties: {
+              autoscaleYAxis: {
+                const: true
+              }
+            }
+          },
+          {
+            properties: {
+              autoscaleYAxis: {
+                const: false
+              },
+              yAxisMax: {
+                title: "Y-Axis max",
+                type: "number",
+                default: 100
+              }
+            }
+          }
+        ]
       }
     }
   } as JSONSchema6,
@@ -84,7 +112,14 @@ const baseAuthoringProps = {
       "ui:options": {
         "inline": true
       }
-    }
+    },
+    "ui:order": [
+      "graphsPerRow",
+      "displayXAxisLabels",
+      "autoscaleYAxis",
+      "yAxisMax",
+      "*"
+    ],
   }
 };
 

@@ -4,7 +4,7 @@ import {
   addLinkedInteractiveStateListener, IInteractiveStateWithDataset, removeLinkedInteractiveStateListener, IDataset
 } from "@concord-consortium/lara-interactive-api";
 import { Bar } from "react-chartjs-2";
-import { ChartOptions } from "chart.js";
+import { ChartOptions, LinearScale } from "chart.js";
 import { generateChartData, emptyChartData } from "../generate-chart-data";
 import css from "./runtime.scss";
 
@@ -13,6 +13,18 @@ export interface IProps {
 }
 
 const getGraphOptions = (authoredState: IAuthoredState, { displayLegend }: { displayLegend: boolean }): ChartOptions => {
+  const yAxis: LinearScale = {
+    ticks: {
+      beginAtZero: true,
+      maxTicksLimit: 5
+    }
+  };
+  if (authoredState.autoscaleYAxis === false) {
+    const maxY = typeof authoredState.yAxisMax === "number" ? authoredState.yAxisMax : 100;
+    // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
+    yAxis.ticks!.max = maxY;
+  }
+
   return {
     legend: {
       display: displayLegend, // top legend with datasets and their colors
@@ -21,12 +33,7 @@ const getGraphOptions = (authoredState: IAuthoredState, { displayLegend }: { dis
     },
     maintainAspectRatio: false,
     scales: {
-      yAxes: [{
-        ticks: {
-          beginAtZero: true,
-          maxTicksLimit: 5
-        }
-      }],
+      yAxes: [yAxis],
       xAxes: [{
         ticks: {
           display: authoredState.displayXAxisLabels // this will show/hide labels only
@@ -81,8 +88,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
   const anyData = datasets.filter(d => d !== null).length > 0;
   const graphContainerClassName = css.graph + " " + css["graphLayout" + (authoredState.graphsPerRow || 1)];
   const datasetNames = [
-    authoredState.dataSourceInteractive1Name, 
-    authoredState.dataSourceInteractive2Name, 
+    authoredState.dataSourceInteractive1Name,
+    authoredState.dataSourceInteractive2Name,
     authoredState.dataSourceInteractive3Name
   ];
   return (
