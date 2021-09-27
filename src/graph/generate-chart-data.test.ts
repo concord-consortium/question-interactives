@@ -1,5 +1,6 @@
 import { generateChartData } from "./generate-chart-data";
 import { IDataset } from "@concord-consortium/lara-interactive-api";
+import { IAuthoredState } from "./components/types";
 
 const dataset1: IDataset = {
   type: "dataset",
@@ -32,9 +33,13 @@ const datasetWithoutXProp: IDataset = {
   rows: [ [100], [200] ]
 };
 
+const authoredState: IAuthoredState = {
+  version: 1,
+};
+
 describe("generateChartData", () => {
   it("works for a single dataset", () => {
-    const result = generateChartData([dataset1], []);
+    const result = generateChartData([dataset1], [], authoredState);
     expect(result[0].labels).toEqual([1, 2]);
     expect(result[0].datasets[0]).toMatchObject({
       label: "y",
@@ -46,7 +51,7 @@ describe("generateChartData", () => {
   });
 
   it("works for multiple datasets", () => {
-    const result = generateChartData([dataset1, dataset2], []);
+    const result = generateChartData([dataset1, dataset2], [], authoredState);
     expect(result[0].labels).toEqual([1, 2]);
     expect(result[0].datasets[0]).toMatchObject({
       label: "y",
@@ -67,7 +72,7 @@ describe("generateChartData", () => {
   });
 
   it("generates X axis labels (row indices) when xAxisProp is not specified", () => {
-    const result = generateChartData([datasetWithoutXProp], []);
+    const result = generateChartData([datasetWithoutXProp], [], authoredState);
     expect(result[0].labels).toEqual([1, 2]);
     expect(result[0].datasets[0]).toMatchObject({
       label: "y",
@@ -78,8 +83,36 @@ describe("generateChartData", () => {
     });
   });
 
+  it("hides labels when not requested by authoring", () => {
+    const result = generateChartData([datasetWithoutXProp], [], authoredState);
+    expect(result[0].labels).toEqual([1, 2]);
+    expect(result[0].datasets[0]).toMatchObject({
+      datalabels: {
+        align: 'end',
+        anchor: 'end',
+        display: false
+      }
+    });
+  });
+
+  it("shows labels when requested by authoring", () => {
+    const displayBarValuesAuthoredState: IAuthoredState = {
+      version: 1,
+      displayBarValues: true
+    };
+    const result = generateChartData([datasetWithoutXProp], [], displayBarValuesAuthoredState);
+    expect(result[0].labels).toEqual([1, 2]);
+    expect(result[0].datasets[0]).toMatchObject({
+      datalabels: {
+        align: 'end',
+        anchor: 'end',
+        display: true
+      }
+    });
+  });
+
   it("merges multiple datasets when possible and provides index labels automatically", () => {
-    const result = generateChartData([dataset1, dataset1A], []);
+    const result = generateChartData([dataset1, dataset1A], [], authoredState);
     expect(result[0].labels).toEqual([1, 2, 1.5, 3]);
     expect(result[0].datasets[0]).toMatchObject({
       label: "y #1",
@@ -98,7 +131,7 @@ describe("generateChartData", () => {
   });
 
   it("merges multiple datasets when possible and uses provided dataset names", () => {
-    const result = generateChartData([dataset1, dataset1A], ["Data Source 1", "Data Source 2"]);
+    const result = generateChartData([dataset1, dataset1A], ["Data Source 1", "Data Source 2"], authoredState);
     expect(result[0].labels).toEqual([1, 2, 1.5, 3]);
     expect(result[0].datasets[0]).toMatchObject({
       label: "y - Data Source 1",

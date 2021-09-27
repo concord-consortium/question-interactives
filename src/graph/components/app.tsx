@@ -28,6 +28,11 @@ const baseAuthoringProps = {
         type: "boolean",
         default: true
       },
+      displayBarValues: {
+        title: "Display values on bars",
+        type: "boolean",
+        default: false
+      },
       dataSourceInteractive1: {
         title: "Data Source Interactive 1",
         type: "string",
@@ -118,6 +123,7 @@ const baseAuthoringProps = {
       "displayXAxisLabels",
       "autoscaleYAxis",
       "yAxisMax",
+      "displayBarValues",
       "*"
     ],
   }

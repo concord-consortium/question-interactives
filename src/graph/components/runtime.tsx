@@ -5,6 +5,7 @@ import {
 } from "@concord-consortium/lara-interactive-api";
 import { Bar } from "react-chartjs-2";
 import { ChartOptions, LinearScale } from "chart.js";
+import ChartDataLabels from "chartjs-plugin-datalabels";
 import { generateChartData, emptyChartData } from "../generate-chart-data";
 import css from "./runtime.scss";
 
@@ -96,9 +97,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
     <div>
       {
         anyData ?
-          generateChartData(datasets, datasetNames).map((chartData, idx: number) =>
+          generateChartData(datasets, datasetNames, authoredState).map((chartData, idx: number) =>
             <div key={idx} className={graphContainerClassName}>
-              <Bar data={chartData} options={getGraphOptions(authoredState, { displayLegend: true })} />
+              <Bar data={chartData} options={getGraphOptions(authoredState, { displayLegend: true })}
+                plugins={[ChartDataLabels]}
+              />
             </div>
           ) :
           // Hide legend, as it'd show "undefined" (no data available yet).
