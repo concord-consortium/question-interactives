@@ -19,9 +19,14 @@ const baseAuthoringProps = {
         default: 3
       },
       displayXAxisLabels: {
-        title: "Display X axis labels",
+        title: "Display X axis category labels",
         type: "boolean",
         default: true
+      },
+      xAxisLabel: {
+        title: "X axis label (optional)",
+        type: "string",
+        default: ""
       },
       autoscaleYAxis: {
         title: "Autoscale Y axis",
@@ -121,6 +126,7 @@ const baseAuthoringProps = {
     "ui:order": [
       "graphsPerRow",
       "displayXAxisLabels",
+      "xAxisLabel",
       "autoscaleYAxis",
       "yAxisMax",
       "displayBarValues",

@@ -2,6 +2,7 @@ export interface IAuthoredState {
   version: number;
   graphsPerRow?: number;
   displayXAxisLabels?: boolean;
+  xAxisLabel?: string;
   autoscaleYAxis?: boolean;
   yAxisMax?: number;
   displayBarValues?: boolean;

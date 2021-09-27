@@ -36,6 +36,10 @@ const getGraphOptions = (authoredState: IAuthoredState, { displayLegend }: { dis
     scales: {
       yAxes: [yAxis],
       xAxes: [{
+        scaleLabel: {
+          display: !!authoredState.xAxisLabel,
+          labelString: authoredState.xAxisLabel || "",
+        },
         ticks: {
           display: authoredState.displayXAxisLabels // this will show/hide labels only
         }
