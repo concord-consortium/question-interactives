@@ -6,15 +6,26 @@ import {
 import { Bar } from "react-chartjs-2";
 import { ChartOptions, LinearScale } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
-import { generateChartData, emptyChartData } from "../generate-chart-data";
+import { generateChartData, emptyChartData, CustomChartData } from "../generate-chart-data";
 import css from "./runtime.scss";
 
 export interface IProps {
   authoredState: IAuthoredState;
 }
 
-const getGraphOptions = (authoredState: IAuthoredState, { displayLegend }: { displayLegend: boolean }): ChartOptions => {
+const getGraphOptions = (authoredState: IAuthoredState, { displayLegend }: { displayLegend: boolean }, chartData?: CustomChartData): ChartOptions => {
+  let yAxisLabel;
+  if (authoredState.useYAxisLabelFromData && chartData && chartData.datasets.length > 0) {
+    yAxisLabel = chartData.datasets[0].label;
+  } else if (!authoredState.useYAxisLabelFromData && authoredState.yAxisLabel) {
+    yAxisLabel = authoredState.yAxisLabel;
+  }
+
   const yAxis: LinearScale = {
+    scaleLabel: {
+      display: !!yAxisLabel,
+      labelString: yAxisLabel,
+    },
     ticks: {
       beginAtZero: true,
       maxTicksLimit: 5
@@ -103,7 +114,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
         anyData ?
           generateChartData(datasets, datasetNames, authoredState).map((chartData, idx: number) =>
             <div key={idx} className={graphContainerClassName}>
-              <Bar data={chartData} options={getGraphOptions(authoredState, { displayLegend: true })}
+              <Bar data={chartData} options={getGraphOptions(authoredState, { displayLegend: true }, chartData)}
                 plugins={[ChartDataLabels]}
               />
             </div>

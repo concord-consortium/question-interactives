@@ -28,6 +28,11 @@ const baseAuthoringProps = {
         type: "string",
         default: ""
       },
+      useYAxisLabelFromData: {
+        title: "Use default Y axis label from data source",
+        type: "boolean",
+        default: true
+      },
       autoscaleYAxis: {
         title: "Autoscale Y axis",
         type: "boolean",
@@ -109,6 +114,29 @@ const baseAuthoringProps = {
             }
           }
         ]
+      },
+      useYAxisLabelFromData: {
+        oneOf: [
+          {
+            properties: {
+              useYAxisLabelFromData: {
+                const: true
+              }
+            }
+          },
+          {
+            properties: {
+              useYAxisLabelFromData: {
+                const: false
+              },
+              yAxisLabel: {
+                title: "Y axis label (optional)",
+                type: "string",
+                default: ""
+              },
+            }
+          }
+        ]
       }
     }
   } as JSONSchema6,
@@ -127,6 +155,8 @@ const baseAuthoringProps = {
       "graphsPerRow",
       "displayXAxisLabels",
       "xAxisLabel",
+      "useYAxisLabelFromData",
+      "yAxisLabel",
       "autoscaleYAxis",
       "yAxisMax",
       "displayBarValues",

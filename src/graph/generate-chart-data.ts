@@ -10,7 +10,7 @@ interface CustomChartDataSet extends ChartDataSets {
   data: DataPoint[];
 }
 
-interface CustomChartData extends ChartData {
+export interface CustomChartData extends ChartData {
   labels: Label[];
   datasets: Array<CustomChartDataSet>
 }

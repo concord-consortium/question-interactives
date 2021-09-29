@@ -3,6 +3,8 @@ export interface IAuthoredState {
   graphsPerRow?: number;
   displayXAxisLabels?: boolean;
   xAxisLabel?: string;
+  useYAxisLabelFromData?: boolean;
+  yAxisLabel?: string;
   autoscaleYAxis?: boolean;
   yAxisMax?: number;
   displayBarValues?: boolean;
