@@ -13,7 +13,7 @@ export interface IProps {
   authoredState: IAuthoredState;
 }
 
-const getGraphOptions = (authoredState: IAuthoredState, { displayLegend }: { displayLegend: boolean }, chartData?: CustomChartData): ChartOptions => {
+const getGraphOptions = (authoredState: IAuthoredState, chartData?: CustomChartData): ChartOptions => {
   let yAxisLabel;
   if (authoredState.useYAxisLabelFromData && chartData && chartData.datasets.length > 0) {
     yAxisLabel = chartData.datasets[0].label;
@@ -36,6 +36,7 @@ const getGraphOptions = (authoredState: IAuthoredState, { displayLegend }: { dis
     // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
     yAxis.ticks!.max = maxY;
   }
+  const displayLegend = chartData ? authoredState.displayLegend : false;
 
   return {
     legend: {
@@ -114,13 +115,13 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
         anyData ?
           generateChartData(datasets, datasetNames, authoredState).map((chartData, idx: number) =>
             <div key={idx} className={graphContainerClassName}>
-              <Bar data={chartData} options={getGraphOptions(authoredState, { displayLegend: true }, chartData)}
+              <Bar data={chartData} options={getGraphOptions(authoredState, chartData)}
                 plugins={[ChartDataLabels]}
               />
             </div>
           ) :
-          // Hide legend, as it'd show "undefined" (no data available yet).
-          <Bar data={emptyChartData} options={getGraphOptions(authoredState, { displayLegend: false })} />
+          // Without passing chartData, we won't add things like the legend
+          <Bar data={emptyChartData} options={getGraphOptions(authoredState)} />
       }
     </div>
   );

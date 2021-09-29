@@ -43,6 +43,11 @@ const baseAuthoringProps = {
         type: "boolean",
         default: false
       },
+      displayLegend: {
+        title: "Display legend",
+        type: "boolean",
+        default: true
+      },
       dataSourceInteractive1: {
         title: "Data Source Interactive 1",
         type: "string",
@@ -160,6 +165,7 @@ const baseAuthoringProps = {
       "autoscaleYAxis",
       "yAxisMax",
       "displayBarValues",
+      "displayLegend",
       "*"
     ],
   }
