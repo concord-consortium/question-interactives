@@ -16,6 +16,7 @@ import { UploadImage } from "./upload-image";
 import { CommentField } from "./comment-field";
 import { IAuthoredState, IInteractiveState, ILabbookEntry } from "./types";
 import { TakeSnapshot } from "./take-snapshot";
+import { ThumbnailTitle } from "./thumbnail-chooser/thumbnail-title";
 
 import css from "./runtime.scss";
 
@@ -127,7 +128,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const thumbnailChooserProps: IThumbnailChooserProps = {
     items: thumbnailItems,
     RenderingF: Thumbnail,
-    selectedItemId: selectedId||null,
+    selectedItemId: selectedId || null,
     setSelectedItemId: setSelectedItemId,
     clearSelectedItemId: clearSelectedItemID,
     maxDisplayItems: showItems,
@@ -210,6 +211,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       <div className={css["container"]}>
         <ThumbnailChooser {...thumbnailChooserProps} />
         <div className={css["draw-tool-wrapper"]}>
+          <ThumbnailTitle className={css["draw-tool-title"]} title={title} />
           <DrawingTool
             key={selectedId}
             authoredState={authoredState}
