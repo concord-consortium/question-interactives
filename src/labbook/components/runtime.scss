@@ -60,6 +60,15 @@
   .draw-tool-wrapper {
     height: 500px;
     overflow: hidden;
+    position: relative;
+
+    .draw-tool-title {
+      top: 1px;
+      left: 42px;
+      border-color: var(--cc-charcoal-light-1);
+      border-top-left-radius: 0;
+      pointer-events: none;
+    }
   }
 }
 
