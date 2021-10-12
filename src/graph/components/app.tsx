@@ -19,7 +19,32 @@ const baseAuthoringProps = {
         default: 3
       },
       displayXAxisLabels: {
-        title: "Display X axis labels",
+        title: "Display X axis category labels",
+        type: "boolean",
+        default: true
+      },
+      xAxisLabel: {
+        title: "X axis label (optional)",
+        type: "string",
+        default: ""
+      },
+      useYAxisLabelFromData: {
+        title: "Use default Y axis label from data source",
+        type: "boolean",
+        default: true
+      },
+      autoscaleYAxis: {
+        title: "Autoscale Y axis",
+        type: "boolean",
+        default: true
+      },
+      displayBarValues: {
+        title: "Display values on bars",
+        type: "boolean",
+        default: false
+      },
+      displayLegend: {
+        title: "Display legend",
         type: "boolean",
         default: true
       },
@@ -71,6 +96,52 @@ const baseAuthoringProps = {
             type: "string"
           }
         }
+      },
+      autoscaleYAxis: {
+        oneOf: [
+          {
+            properties: {
+              autoscaleYAxis: {
+                const: true
+              }
+            }
+          },
+          {
+            properties: {
+              autoscaleYAxis: {
+                const: false
+              },
+              yAxisMax: {
+                title: "Y-Axis max",
+                type: "number",
+                default: 100
+              }
+            }
+          }
+        ]
+      },
+      useYAxisLabelFromData: {
+        oneOf: [
+          {
+            properties: {
+              useYAxisLabelFromData: {
+                const: true
+              }
+            }
+          },
+          {
+            properties: {
+              useYAxisLabelFromData: {
+                const: false
+              },
+              yAxisLabel: {
+                title: "Y axis label (optional)",
+                type: "string",
+                default: ""
+              },
+            }
+          }
+        ]
       }
     }
   } as JSONSchema6,
@@ -84,7 +155,19 @@ const baseAuthoringProps = {
       "ui:options": {
         "inline": true
       }
-    }
+    },
+    "ui:order": [
+      "graphsPerRow",
+      "displayXAxisLabels",
+      "xAxisLabel",
+      "useYAxisLabelFromData",
+      "yAxisLabel",
+      "autoscaleYAxis",
+      "yAxisMax",
+      "displayBarValues",
+      "displayLegend",
+      "*"
+    ],
   }
 };
 

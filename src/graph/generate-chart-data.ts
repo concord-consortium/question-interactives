@@ -1,5 +1,6 @@
 import { ChartData, ChartDataSets } from "chart.js";
 import { IDataset } from "@concord-consortium/lara-interactive-api";
+import { IAuthoredState } from "./components/types";
 
 // Make Chart.js types a bit more specific (remove ? from properties definitions), so it's easier to work with them.
 type Label = number | string;
@@ -9,7 +10,7 @@ interface CustomChartDataSet extends ChartDataSets {
   data: DataPoint[];
 }
 
-interface CustomChartData extends ChartData {
+export interface CustomChartData extends ChartData {
   labels: Label[];
   datasets: Array<CustomChartDataSet>
 }
@@ -48,7 +49,8 @@ export const emptyChartData = {
 };
 
 // It accepts array of IDataset and returns array of Chart.JS ChartData objects.
-export const generateChartData = (datasets: Array<IDataset | null | undefined>, datasetNames: Array<string | undefined>) => {
+export const generateChartData = (datasets: Array<IDataset | null | undefined>, datasetNames: Array<string | undefined>,
+    authoredState: IAuthoredState) => {
   const result: CustomChartData[] = [];
   const chartDataForProp: {[key: string]: CustomChartData} = {};
   const multipleDatasets = datasets.length > 1;
@@ -84,7 +86,12 @@ export const generateChartData = (datasets: Array<IDataset | null | undefined>, 
             data,
             backgroundColor: getBgColor(colorIdx),
             borderColor: getBorderColor(colorIdx),
-            borderWidth
+            borderWidth,
+            datalabels: {
+              align: 'end',
+              anchor: 'end',
+              display: !!authoredState.displayBarValues
+            }
           }]
         };
         result.push(chartDataForProp[prop]);
