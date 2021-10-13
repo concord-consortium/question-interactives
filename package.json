@@ -1,6 +1,6 @@
 {
   "name": "question-interactives",
-  "version": "1.3.0",
+  "version": "1.4.0",
   "description": "Concord Consortium question interactives",
   "main": "index.js",
   "jest": {
