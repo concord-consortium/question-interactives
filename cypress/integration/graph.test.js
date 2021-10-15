@@ -159,9 +159,29 @@ context("Test graph interactive", () => {
         // Generally, labels need to match authored state properties, and IDs become values in the authored state.
         linkedInteractives: [ {id: "testInt1", label: "dataSourceInteractive1"}, {id: "testInt2", label: "dataSourceInteractive2"} ]
       });
+
+      // We'd still like to make this work , but couldn't get it to work at the moment.
+      // So instead adding the cy.wait() on line 179
+      // so that the test doesn't remain flakey which it currently is.
+      // phoneListen("getInteractiveList", msg => {
+      //   phonePost("interactiveList", {
+      //     requestId: msg.requestId,
+      //     interactives: [
+      //       { id: "testInt1", name: "Test Interactive 1" },
+      //       { id: "testInt2", name: "Test Interactive 2" },
+      //       { id: "testInt3", name: "Test Interactive 3" },
+      //       { id: "testInt4", name: "Test Interactive 4" },
+      //     ]
+      //   });
+      // });
+
       phoneListen("getInteractiveList");
       phoneListen("authoredState");
 
+      cy.wait(1000);
+
+      // The messages that are returned can have an authored state and/or an interactive list request
+      // Ideally, we'd like to look for the message type which is currently not present in the receivedMessage
       getAndClearAllPhoneMessage(messages => {
         messages.forEach(msg => {
           phonePost("interactiveList", {
