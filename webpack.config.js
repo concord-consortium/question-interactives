@@ -26,6 +26,7 @@ module.exports = (env, argv) => {
       'drag-and-drop': './src/drag-and-drop/index.tsx',
       'full-screen': './src/full-screen/index.tsx',
       'labbook': './src/labbook/index.tsx',
+      'side-by-side': './src/side-by-side/index.tsx',
       'wrapper': './src/shared/wrapper.tsx'
     },
     mode: 'development',
@@ -203,6 +204,11 @@ module.exports = (env, argv) => {
       new HtmlWebpackPlugin({
         chunks: ['labbook'],
         filename: 'labbook/index.html',
+        template: 'src/shared/index.html'
+      }),
+      new HtmlWebpackPlugin({
+        chunks: ['side-by-side'],
+        filename: 'side-by-side/index.html',
         template: 'src/shared/index.html'
       }),
       // Wrapper page, useful for testing and Cypress.
