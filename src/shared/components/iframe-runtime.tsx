@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { renderHTML } from "../../shared/utilities/render-html";
 import { IframePhone } from "../types";
 import iframePhone from "iframe-phone";
-import { closeModal, ICloseModal, IHintRequest, IShowModal, log, showModal } from "@concord-consortium/lara-interactive-api";
+import { closeModal, IAddLinkedInteractiveStateListenerRequest, ICloseModal, IHintRequest, IShowModal, log, showModal } from "@concord-consortium/lara-interactive-api";
 import { getLibraryInteractive } from "../utilities/library-interactives";
 import css from "./iframe-runtime.scss";
 
@@ -22,11 +22,12 @@ interface IProps {
   url: string;
   setInteractiveState: (state: any) => void | null;
   setHint?: (state: any) => void | null;
+  addLocalLinkedDataListener?: (request: IAddLinkedInteractiveStateListenerRequest, phone: IframePhone) => void;
 }
 
 export const IframeRuntime: React.FC<IProps> =
   ({ authoredState, id, iframeStyling, interactiveState, logRequestData, report,
-      url, setHint, setInteractiveState }) => {
+      url, setHint, setInteractiveState, addLocalLinkedDataListener }) => {
     const [ iframeHeight, setIframeHeight ] = useState(300);
     const [ internalHint, setInternalHint ] = useState("");
     const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -79,6 +80,11 @@ export const IframeRuntime: React.FC<IProps> =
       phone.addListener("closeModal", (modalOptions: ICloseModal) => {
         closeModal(modalOptions);
       });
+      phone.addListener("addLinkedInteractiveStateListener", (request: IAddLinkedInteractiveStateListenerRequest) => {
+        if (addLocalLinkedDataListener) {
+          addLocalLinkedDataListener(request, phone);
+        }
+      });
       // if we have local linked interactives, we need to pass them in the linkedInteractives array
       let linkedInteractives: {id: string; label: string}[] = [];
       const libraryInteractive = getLibraryInteractive(url);
@@ -106,7 +112,7 @@ export const IframeRuntime: React.FC<IProps> =
         phoneRef.current.disconnect();
       }
     };
-  },[authoredState, logRequestData, report, setHint, url]);
+  },[addLocalLinkedDataListener, authoredState, logRequestData, report, setHint, url]);
 
   const iframeStyle = iframeStyling ?? {width: "100%", height: iframeHeight, border: "none"};
   return (

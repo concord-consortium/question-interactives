@@ -17,6 +17,11 @@ interface IProps {
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState }) => {
 
   const { prompt, leftInteractive, rightInteractive } = authoredState;
+  const [dataListeners, setDataListeners] = useState<{id: string, phone: IframePhone}[]>([]);
+
+  const handleAddLocalLinkedDataListener = useCallback((request: IAddLinkedInteractiveStateListenerRequest, phone: IframePhone) => {
+    setDataListeners(listeners => [...listeners, {id: request.listenerId, phone}]);
+  }, []);
 
   if (!leftInteractive && !rightInteractive) {
     return <div>No sub items available. Please add them using the authoring interface.</div>;
@@ -26,6 +31,16 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const handleNewInteractiveState = (interactiveStateSide: InteractiveStateSide, newInteractiveState: any) => {
     setInteractiveState?.((prevState: IInteractiveState) => {
+      if (newInteractiveState.dataset && dataListeners.length > 0) {
+        dataListeners.forEach(listener => {
+          listener.phone.post("linkedInteractiveState", {
+            listenerId: listener.id,
+            interactiveState: {
+              dataset: newInteractiveState.dataset
+            }
+          });
+        });
+      }
       return {
         ...prevState,
         [interactiveStateSide]: newInteractiveState
@@ -47,6 +62,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               interactiveState={interactiveState?.leftInteractiveState}
               // logRequestData={logRequestData}
               setInteractiveState={handleNewInteractiveState.bind(null, "leftInteractiveState")}
+              addLocalLinkedDataListener={handleAddLocalLinkedDataListener}
             />
         </div> }
         { rightInteractive &&
@@ -58,6 +74,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               interactiveState={interactiveState?.leftInteractiveState}
               // logRequestData={logRequestData}
               setInteractiveState={handleNewInteractiveState.bind(null, "rightInteractiveState")}
+              addLocalLinkedDataListener={handleAddLocalLinkedDataListener}
             />
         </div> }
       </div>
