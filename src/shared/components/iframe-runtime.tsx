@@ -3,6 +3,7 @@ import { renderHTML } from "../../shared/utilities/render-html";
 import { IframePhone } from "../types";
 import iframePhone from "iframe-phone";
 import { closeModal, ICloseModal, IHintRequest, IShowModal, log, showModal } from "@concord-consortium/lara-interactive-api";
+import { getLibraryInteractive } from "../utilities/library-interactives";
 import css from "./iframe-runtime.scss";
 
 // This should be part of lara-interactive-api
@@ -78,11 +79,18 @@ export const IframeRuntime: React.FC<IProps> =
       phone.addListener("closeModal", (modalOptions: ICloseModal) => {
         closeModal(modalOptions);
       });
+      // if we have local linked interactives, we need to pass them in the linkedInteractives array
+      let linkedInteractives: {id: string; label: string}[] = [];
+      const libraryInteractive = getLibraryInteractive(url);
+      if (libraryInteractive?.localLinkedInteractiveProp && authoredState?.[libraryInteractive.localLinkedInteractiveProp]) {
+        linkedInteractives = [ {id: authoredState[libraryInteractive.localLinkedInteractiveProp], label: libraryInteractive.localLinkedInteractiveProp} ];
+      }
       phone.post("initInteractive", {
         mode: report ? "report" : "runtime",
         authoredState,
         // This is a trick not to depend on interactiveState.
-        interactiveState: interactiveStateRef.current
+        interactiveState: interactiveStateRef.current,
+        linkedInteractives
       });
     };
 

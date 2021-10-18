@@ -88,12 +88,19 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
         }
       );
     });
+    // if we have local linked interactives, we need to pass them in the linkedInteractives array
+    let linkedInteractives: {id: string; label: string}[] = [];
+    const libraryInteractive = libraryInteractives.find(i => i.libraryInteractiveId === libraryInteractiveId);
+    if (libraryInteractive?.localLinkedInteractiveProp && authoredState?.[libraryInteractive.localLinkedInteractiveProp]) {
+      linkedInteractives = [ {id: authoredState[libraryInteractive.localLinkedInteractiveProp], label: libraryInteractive.localLinkedInteractiveProp} ];
+    }
     phone.post("initInteractive", {
       mode: "authoring",
       authoredState,
       hostFeatures: {
         getFirebaseJwt: {version: "1.0.0"}
-      }
+      },
+      linkedInteractives
     });
   }, [id, libraryInteractiveId, onChange, authoredState, navImageUrl, navImageAltText]);
 
