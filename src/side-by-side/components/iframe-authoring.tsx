@@ -12,6 +12,9 @@ import css from "./iframe-authoring.scss";
 // This is only temporary list. In the future, it will be replaced by LARA Interactive API call that returns all the available managed interactives.
 const availableInteractives = libraryInteractives;
 
+// This is the id used by the Side-by-Side interactive to connect one of its children as a linked interactive to the other
+export const LocalLinkedInteractiveId = "Side-by-side Data";
+
 export const IframeAuthoring: React.FC<FieldProps> = props => {
   const { onChange, formData } = props;
   const { libraryInteractiveId, authoredState, id, navImageUrl, navImageAltText } = formData;
@@ -60,6 +63,30 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
       const jwt = await getFirebaseJwt(firebase_app);
       const response = {requestId, ...jwt};
       phone.post("firebaseJWT", response);
+    });
+    // Nested interactives Side-By-Side interactives can't link to other top-level interactives in order to consume
+    // their data, but we want to allow a graph (or any other consumer) to request the data from the other sibling
+    // nested interactive. This response to `getInteractiveList` allows the author to select "Side-by-side Data" from
+    // the drop-down list.
+    // We can do this "blindly" without needing the id of the other interactive because the Side-by-Side runtime will
+    // be handling the data connection.
+    phone.addListener("getInteractiveList", (request)=> {
+      phone.post("interactiveList",
+        {
+          requestId: request.requestId,
+          interactives: [
+            {
+              id: LocalLinkedInteractiveId,
+              pageId: 0,
+              name: "",
+              section: "interactive_box",
+              url: "",
+              thumbnailUrl: null,
+              supportsSnapshots: false
+            }
+          ]
+        }
+      );
     });
     phone.post("initInteractive", {
       mode: "authoring",
