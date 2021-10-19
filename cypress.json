@@ -5,5 +5,6 @@
   "defaultCommandTimeout": 8000,
   "retries": 2,
   "chromeWebSecurity": false,
-  "modifyObstructiveCode": false
+  "modifyObstructiveCode": false,
+  "projectId": "6pog58"
 }
