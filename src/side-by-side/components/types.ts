@@ -2,6 +2,7 @@ import { IAuthoringInteractiveMetadata, IRuntimeInteractiveMetadata } from "@con
 
 export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   version: 1;
+  division: number;
   leftInteractive?: {
     id: string;
     libraryInteractiveId: string;

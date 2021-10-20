@@ -20,6 +20,12 @@ const baseAuthoringProps = {
         title: "Prompt",
         type: "string"
       },
+      division: {
+        title: "Division %",
+        type: "integer",
+        minimum: 10,
+        maximum: 90
+      },
       leftInteractive: {
         title: "Left interactive",
         type: "object",
@@ -67,6 +73,9 @@ const baseAuthoringProps = {
     },
     prompt: {
       "ui:widget": "richtext"
+    },
+    division: {
+      "ui:widget": "range"
     },
     leftInteractive: {
       "ui:field": "iframeAuthoring"

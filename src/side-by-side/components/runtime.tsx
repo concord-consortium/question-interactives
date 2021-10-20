@@ -16,7 +16,7 @@ interface IProps {
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState }) => {
 
-  const { prompt, leftInteractive, rightInteractive } = authoredState;
+  const { prompt, leftInteractive, rightInteractive, division } = authoredState;
   const [dataListeners, setDataListeners] = useState<{id: string, phone: IframePhone}[]>([]);
 
   const handleAddLocalLinkedDataListener = useCallback((request: IAddLinkedInteractiveStateListenerRequest, phone: IframePhone) => {
@@ -52,7 +52,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     <div>
       { prompt &&
       <div>{renderHTML(prompt)}</div> }
-      <div className={css.split}>
+      <div className={css.split} style={{gridTemplateColumns: `${division}% ${100 - division}%`}}>
         { leftInteractive &&
         <div className={css.runtime}>
             <IframeRuntime
