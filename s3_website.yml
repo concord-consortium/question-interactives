@@ -3,7 +3,7 @@ s3_key_prefix: question-interactives
 s3_endpoint: us-east-1
 gzip: true
 
-<% if ENV['TRAVIS_BRANCH'] == 'production' %>
+<% if ENV['BRANCH_OR_TAG'] == 'production' %>
 # in this case we are going to deploy this branch to the top level of the domain
 # so we need to ignore the version and branch folders
 ignore_on_server: ^question-interactives/(version/|branch/)
