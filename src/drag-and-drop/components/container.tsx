@@ -150,6 +150,21 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
     const targetId = targetData.id;
     const targetDroppedItem = {targetId, targetPosition, droppedItem};
 
+    // nudge item into target. Prioritize the top left corner if the item is too small.
+    const nudgedItemPosition = {...newItemPosition};
+    if (nudgedItemPosition.left + draggableItem.rect.width > targetPosition.left + targetData.targetWidth) {
+      nudgedItemPosition.left = (targetPosition.left + targetData.targetWidth) - draggableItem.rect.width;
+    }
+    if (nudgedItemPosition.top + draggableItem.rect.height > targetPosition.top + targetData.targetHeight) {
+      nudgedItemPosition.top = (targetPosition.top + targetData.targetHeight) - draggableItem.rect.height;
+    }
+    if (nudgedItemPosition.left < targetPosition.left) {
+      nudgedItemPosition.left = targetPosition.left;
+    }
+    if (nudgedItemPosition.top < targetPosition.top) {
+      nudgedItemPosition.top = targetPosition.top;
+    }
+
     if (setInteractiveState) {
       // Runtime mode.
       setInteractiveState(prevState => {
@@ -159,7 +174,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
         };
         const newItemPositions = {
           ...prevState?.itemPositions,
-          [droppedItem.id]: newItemPosition
+          [droppedItem.id]: nudgedItemPosition
         };
         return {
           ...prevState,
