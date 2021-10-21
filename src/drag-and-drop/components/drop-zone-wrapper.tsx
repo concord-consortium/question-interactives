@@ -1,20 +1,17 @@
 import React from "react";
 import { DropTargetMonitor, useDrop } from "react-dnd";
-import { IDroppedItem, IDropZone, IPosition } from "./types";
+import { IDropZone, IPosition } from "./types";
 import { DragSourceMonitor, useDrag } from "react-dnd";
 import { DropZone } from "./drop-zone";
 import { DropZonePreview } from "./drop-zone-preview";
-import { DraggableItemWrapper, DraggableItemWrapperType, IDraggableItemWrapper } from "./draggable-item-wrapper";
+import { DraggableItemWrapperType, IDraggableItemWrapper } from "./draggable-item-wrapper";
 import css from "./drop-zone-wrapper.scss";
-
-const kDropOffset = 30;
 
 export interface IProps {
   target: IDropZone;
   position: IPosition;
   draggable: boolean;
-  itemsInTarget: IDroppedItem[];
-  onItemDrop: (targetData: IDropZone, targetPosition: IPosition, draggableItem: IDraggableItemWrapper) => void
+  onItemDrop: (targetData: IDropZone, targetPosition: IPosition, draggableItem: IDraggableItemWrapper, newItemPosition: IPosition) => void
 }
 
 // These types are used by react-dnd.
@@ -26,7 +23,7 @@ export interface IDropZoneWrapper {
 }
 
 // Provides dragging logic and renders basic draggable item.
-export const DropZoneWrapper: React.FC<IProps> = ({ target, position, draggable, itemsInTarget, onItemDrop }) => {
+export const DropZoneWrapper: React.FC<IProps> = ({ target, position, draggable, onItemDrop }) => {
   const [{ isDragging }, drag] = useDrag<IDropZoneWrapper, any, any>({
     item: { type: "drop-zone-wrapper", item: target, position },
     collect: (monitor: DragSourceMonitor) => ({
@@ -37,8 +34,10 @@ export const DropZoneWrapper: React.FC<IProps> = ({ target, position, draggable,
 
   const [{ isOver, canDrop, getItem }, drop] = useDrop({
     accept: DraggableItemWrapperType,
-    drop: (droppedItem: any) => {
-      onItemDrop(target, position, getItem);
+    drop: (droppedItem: any, monitor) => {
+      const delta = monitor.getDifferenceFromInitialOffset() as { x: number, y: number };
+      const newItemPosition = { left: droppedItem.position.left + delta.x, top: droppedItem.position.top + delta.y };
+      onItemDrop(target, position, getItem, newItemPosition);
     },
     collect: (monitor: DropTargetMonitor) => ({
       isOver: monitor.isOver(),
@@ -60,14 +59,6 @@ export const DropZoneWrapper: React.FC<IProps> = ({ target, position, draggable,
         style={zoneStyle}
         data-cy="drop-zone-wrapper"
       >
-        { itemsInTarget.map((item: any, idx: number) =>
-            <DraggableItemWrapper
-              key={`draggable-item-${idx}`}
-              item={item.droppedItem}
-              position={{ top: kDropOffset * idx, left: kDropOffset * idx }}
-              draggable={true}
-            />)
-        }
         <DropZone target={target} />
         <div className={css.targetLabel}>{target.targetLabel}</div>
       </div>
