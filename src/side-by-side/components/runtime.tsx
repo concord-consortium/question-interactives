@@ -35,9 +35,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         dataListeners.forEach(listener => {
           listener.phone.post("linkedInteractiveState", {
             listenerId: listener.id,
-            interactiveState: {
-              dataset: newInteractiveState.dataset
-            }
+            interactiveState: newInteractiveState
           });
         });
       }
