@@ -1,5 +1,5 @@
 // This is only temporary list. It will be replaced by LARA Interactive API call that returns all the available library interactives.
-type ParentInteractiveID =  "scaffolded-question" | "carousel";
+type ParentInteractiveID =  "scaffolded-question" | "carousel" | "side-by-side";
 export const libraryInteractives = [
   {
     libraryInteractiveId: "",
@@ -24,6 +24,17 @@ export const libraryInteractives = [
   {
     libraryInteractiveId: "image",
     name: "Image"
+  },
+  {
+    libraryInteractiveId: "drag-and-drop",
+    name: "Drag and Drop"
+  },
+  {
+    libraryInteractiveId: "graph",
+    name: "Graph",
+    // If this interactive is being used in a nested container, it is helpful to know the name of the prop that may
+    // have a local linked interactive, so we can include it in the linkedInteractives array on init if needed
+    localLinkedInteractiveProp: "dataSourceInteractive1"
   }
 ];
 
@@ -34,4 +45,13 @@ export const libraryInteractiveIdToUrl = (libraryInteractiveId: string, parentIn
   // scaffolded question URL that includes version number to keep subinteractives updated too.
   const parentInteractiveSegment = new RegExp(`${parentInteractiveId}/?$`);
   return window.location.href.replace(parentInteractiveSegment, `${libraryInteractiveId}/`);
+};
+
+export const getLibraryInteractive = (url: string) => {
+  for (const libraryInteractive of libraryInteractives) {
+    if (libraryInteractive.libraryInteractiveId && url.indexOf(libraryInteractive.libraryInteractiveId) > -1) {
+      return libraryInteractive;
+    }
+  }
+  return null;
 };

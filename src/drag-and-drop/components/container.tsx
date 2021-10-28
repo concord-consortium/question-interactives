@@ -145,10 +145,25 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
     }
   }, [authoredState.initialState?.itemPositions, authoredState.initialState?.targetPositions, setInitialState, setInteractiveState]);
 
-  const handleItemDrop = useCallback((targetData: IDropZone, targetPosition: IPosition, draggableItem: IDraggableItemWrapper) => {
+  const handleItemDrop = useCallback((targetData: IDropZone, targetPosition: IPosition, draggableItem: IDraggableItemWrapper, newItemPosition: IPosition) => {
     const droppedItem = draggableItem.item;
     const targetId = targetData.id;
     const targetDroppedItem = {targetId, targetPosition, droppedItem};
+
+    // nudge item into target. Prioritize the top left corner if the item is too small.
+    const nudgedItemPosition = {...newItemPosition};
+    if (nudgedItemPosition.left + draggableItem.rect.width > targetPosition.left + targetData.targetWidth) {
+      nudgedItemPosition.left = (targetPosition.left + targetData.targetWidth) - draggableItem.rect.width;
+    }
+    if (nudgedItemPosition.top + draggableItem.rect.height > targetPosition.top + targetData.targetHeight) {
+      nudgedItemPosition.top = (targetPosition.top + targetData.targetHeight) - draggableItem.rect.height;
+    }
+    if (nudgedItemPosition.left < targetPosition.left) {
+      nudgedItemPosition.left = targetPosition.left;
+    }
+    if (nudgedItemPosition.top < targetPosition.top) {
+      nudgedItemPosition.top = targetPosition.top;
+    }
 
     if (setInteractiveState) {
       // Runtime mode.
@@ -157,10 +172,15 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
           ...prevState?.droppedItemData,
           [droppedItem.id]: targetDroppedItem
         };
+        const newItemPositions = {
+          ...prevState?.itemPositions,
+          [droppedItem.id]: nudgedItemPosition
+        };
         return {
           ...prevState,
           answerType: "interactive_state",
-          droppedItemData: newDroppedItemData
+          droppedItemData: newDroppedItemData,
+          itemPositions: newItemPositions
         };
       });
     }
@@ -176,8 +196,8 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
         const delta = monitor.getDifferenceFromInitialOffset() as { x: number, y: number };
         // if the item was in a drop container, we need to also take into account the top-left position of the container
         const dropTargetData = droppedItemData[wrapper.item.id];
-        const left = Math.round((dropTargetData ? dropTargetData.targetPosition.left : 0) + wrapper.position.left + delta.x);
-        const top = Math.round((dropTargetData ? dropTargetData.targetPosition.top : 0) + wrapper.position.top + delta.y);
+        const left = Math.round(wrapper.position.left + delta.x);
+        const top = Math.round(wrapper.position.top + delta.y);
         moveDraggableItem(wrapper.item.id, left, top);
 
         // if the item was in a drop container, remove it
@@ -209,17 +229,6 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
     backgroundImage: authoredState.backgroundImageUrl ? cssUrlValue(authoredState.backgroundImageUrl) : undefined
   };
 
-  const getItemsInTarget = (targetId: string) => {
-    let key = "";
-    const itemsDropped=[];
-    for (key in droppedItemData) {
-      if (droppedItemData[key].targetId === targetId) {
-        itemsDropped.push(droppedItemData[key]);
-      }
-    }
-    return itemsDropped;
-  };
-
   return (
     <div ref={drop} className={css.draggingArea} style={draggingAreaStyle} data-cy="dnd-container">
       <div ref={draggingAreaPromptRef} className={css.prompt} style={{top: marginTop, left: marginLeft}}>
@@ -227,7 +236,6 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
       </div>
       { authoredState.dropZones?.map((target, idx) => {
           let position = targetPositions[target.id];
-          const itemsInTarget = getItemsInTarget(target.id);
           if (!position) {
             // If position is not available, calculate it dynamically using dimensions of other draggable items.
             // Put them all right below the dragging area prompt, in one column.
@@ -244,13 +252,11 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
                    position={position}
                    draggable={!readOnly && !setInteractiveState}
                    onItemDrop={handleItemDrop}
-                   itemsInTarget={itemsInTarget}
                  />;
         })
       }
       { authoredState.draggableItems?.map((item, idx) => {
           let position = itemPositions[item.id];
-          const targetId = droppedItemData[item.id];
           if (!position) {
             // If position is not available, calculate it dynamically using dimensions of other draggable items.
             // Put them all right below the dragging area prompt, in one column.
@@ -261,8 +267,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
               top: Math.min(canvasHeight - margin, top)
             };
           }
-          return !targetId &&
-            <DraggableItemWrapper key={item.id} item={item} position={position} draggable={!readOnly} />;
+          return <DraggableItemWrapper key={item.id} item={item} position={position} draggable={!readOnly} />;
         })
       }
     </div>

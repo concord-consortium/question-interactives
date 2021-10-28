@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 import { IDraggableItem, IPosition } from "./types";
 import { DragSourceMonitor, useDrag } from "react-dnd";
 import { DraggableItem } from "./draggable-item";
@@ -17,12 +17,14 @@ export interface IDraggableItemWrapper {
   type: "draggable-item-wrapper";
   item: IDraggableItem;
   position: IPosition;
+  rect: { width: number; height: number; };
 }
 
 // Provides dragging logic and renders basic draggable item.
 export const DraggableItemWrapper: React.FC<IProps> = ({ item, position, draggable }) => {
+  const draggableElement = useRef<HTMLDivElement>(null);
   const [{ isDragging }, drag] = useDrag<IDraggableItemWrapper, any, any>({
-    item: {type: "draggable-item-wrapper", item, position},
+    item: {type: "draggable-item-wrapper", item, position, rect: draggableElement.current?.getBoundingClientRect() || {width: 1, height: 1}},
     collect: (monitor: DragSourceMonitor) => ({
       isDragging: monitor.isDragging()
     })
@@ -37,7 +39,9 @@ export const DraggableItemWrapper: React.FC<IProps> = ({ item, position, draggab
         style={position}
         data-cy="draggable-item-wrapper"
       >
-        <DraggableItem item={item} />
+        <div ref={draggableElement}>
+          <DraggableItem item={item} />
+        </div>
         <div className={css.itemLabel}>{item.label}</div>
       </div>
   );
