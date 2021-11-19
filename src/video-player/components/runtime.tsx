@@ -197,7 +197,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           />
         </div>
       </div>
-      {interactiveState?.lastViewedTimestamp && <div className={css.lastViewed}>{interactiveState.lastViewedTimestamp}</div>}
       {authoredState.credit && <div className={css.credit}>{authoredState.credit}</div>}
       {
         authoredState.creditLink &&
