@@ -10,7 +10,7 @@
 
 ### Local development setup:
 
-1. At the moment there is no way to preview your components in isolation. You will need to **create a new Library Interactive in your local LARA instance** to develop in this repo. You could also create a Library Interactive on the staging server, but you should clean up after yourself, so that we don't end up with a lot of `https://localhost/` development references on the staging server.
+1. At the moment there is no way to preview your components in isolation. You will need to **create a new Library Interactive in your local LARA instance** to develop in this repo. You could also create a Library Interactive on the staging server, but you should clean up after yourself so that we don't end up with a lot of `https://localhost/` development references on the staging server.
 2. The `Base URL` of your Library interactive will be something like: `http://localhost:8080/<your component directory>/` where your component directory would be something like `open-response`. That should point to the top-level index of your component, e.g. `open-response/index.tsx`.
 3. You will probably want to check the `Save Interactive State` checkbox, and possibly the checkbox for `Interactive provides an authoring UI.`
 
@@ -69,7 +69,7 @@ npm run lara-api:unlink    # removes the global symlink
 
 ## Deployment
 
-Production releases to S3 are based on the contents of the /dist folder and are built automatically by Travis
+Production releases to S3 are based on the contents of the `/dist` folder and are built automatically by Travis
 for each branch pushed to GitHub and each merge into production.
 
 Merges into production are deployed to https://models-resources.concord.org/question-interactives.
