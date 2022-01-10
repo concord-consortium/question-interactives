@@ -22,6 +22,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
   const decorateOptions = useGlossaryDecoration();
   const { url, highResUrl, altText, caption, credit, creditLink, creditLinkDisplayText, scaling } = authoredState;
   const imageSize = useRef<IImageSize>();
+  const defaultImageUrl = url ? url : highResUrl;
 
   const getImageLayout = () => {
     switch (authoredState.scaling) {
@@ -46,7 +47,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
 
   const handleClick = () => {
     const allowUpscale = scaling === "fitWidth";
-    const modalImageUrl = highResUrl || url;
+    const modalImageUrl = highResUrl || defaultImageUrl;
     const title = `<strong>${caption || ""}</strong> <em>${credit || ""}</em> ${ReactDOMServer.renderToString(getCreditLink(false) || <span/>)}`;
     modalImageUrl && showModal({ type: "lightbox", url: modalImageUrl, isImage: true, allowUpscale, title });
     log("image zoomed in", { url });
@@ -72,7 +73,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
     <div className={css.runtime}>
       <div className={`${css.imageContainer} ${getImageLayout()}`} onClick={handleClick}>
         <img
-          src={url}
+          src={defaultImageUrl}
           alt={altText}
           title={altText}
           onLoad={getOriginalImageSize}
