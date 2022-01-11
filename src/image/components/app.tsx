@@ -13,12 +13,12 @@ const baseAuthoringProps = {
         default: 1
       },
       url: {
-        title: "Url",
+        title: "URL",
         type: "string",
         format: "uri"
       },
       highResUrl: {
-        title: "Url (high resolution image)",
+        title: "URL (high-resolution image)",
         type: "string",
         format: "uri"
       },

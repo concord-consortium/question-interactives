@@ -7,7 +7,7 @@ import css from "./runtime.scss";
 const authoredState: IAuthoredState = {
   version: 1,
   url: "http://concord.org/sites/default/files/images/logos/cc/cc-logo.png",
-  highResUrl: "http://concord.org/sites/default/files/images/logos/cc/cc-logo.png",
+  highResUrl: "http://concord.org/sites/default/files/images/logos/cc/cc-logo-high-res.png",
   altText: "CC Logo",
   caption: "Image showing the CC Logo",
   credit: "Copyright Concord Consortium",
@@ -19,7 +19,7 @@ const authoredState: IAuthoredState = {
 const naturalWidthImageAuthoredState: IAuthoredState = {
   version: 1,
   url: "http://concord.org/sites/default/files/images/logos/cc/cc-logo.png",
-  highResUrl: "http://concord.org/sites/default/files/images/logos/cc/cc-logo.png",
+  highResUrl: "http://concord.org/sites/default/files/images/logos/cc/cc-logo-high-res.png",
   altText: "CC Logo",
   caption: "Image showing the CC Logo",
   credit: "Copyright Concord Consortium",
@@ -28,10 +28,10 @@ const naturalWidthImageAuthoredState: IAuthoredState = {
   allowLightbox: true,
   scaling: "originalDimensions"
 };
-const onlyHighResUrlSpecifiedAuthoredState: IAuthoredState = {
+const onlyHighResUrlAuthoredState: IAuthoredState = {
   version: 1,
   url: "",
-  highResUrl: "http://concord.org/sites/default/files/images/logos/cc/cc-logo.png",
+  highResUrl: "http://concord.org/sites/default/files/images/logos/cc/cc-logo-high-res.png",
   altText: "CC Logo",
   caption: "Image showing the CC Logo",
   credit: "Copyright Concord Consortium",
@@ -60,9 +60,16 @@ describe("Runtime", () => {
     expect(wrapper.find("img").at(0).hasClass(css.originalDimensions));
 
   });
-  it("renders high res image using highResUrl when no url value is specified", () => {
-    const wrapper = shallow(<Runtime authoredState={onlyHighResUrlSpecifiedAuthoredState} />);
-    expect(wrapper.find("img").at(0).props().src).toEqual(authoredState.highResUrl);
+  it("renders image using highResUrl when an invalid url value is specified", () => {
+    const wrapper = shallow(<Runtime authoredState={onlyHighResUrlAuthoredState} />);
+    expect(wrapper.find("img").at(0).props().src).toEqual(onlyHighResUrlAuthoredState.url);
+    wrapper.find("img").at(0).simulate("error", {
+      currentTarget: {
+        src: onlyHighResUrlAuthoredState.highResUrl
+      }
+    });
+    expect(wrapper.find("img").at(0).props().src).toEqual(onlyHighResUrlAuthoredState.highResUrl);
+
   });
 
 });

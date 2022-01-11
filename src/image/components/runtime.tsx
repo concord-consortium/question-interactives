@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { SyntheticEvent, useRef } from "react";
 import { IAuthoredState } from "./types";
 import { setSupportedFeatures, showModal } from "@concord-consortium/lara-interactive-api";
 import ReactDOMServer from "react-dom/server";
@@ -22,7 +22,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
   const decorateOptions = useGlossaryDecoration();
   const { url, highResUrl, altText, caption, credit, creditLink, creditLinkDisplayText, scaling } = authoredState;
   const imageSize = useRef<IImageSize>();
-  const defaultImageUrl = url ? url : highResUrl;
 
   const getImageLayout = () => {
     switch (authoredState.scaling) {
@@ -47,10 +46,18 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
 
   const handleClick = () => {
     const allowUpscale = scaling === "fitWidth";
-    const modalImageUrl = highResUrl || defaultImageUrl;
+    const modalImageUrl = highResUrl || url;
     const title = `<strong>${caption || ""}</strong> <em>${credit || ""}</em> ${ReactDOMServer.renderToString(getCreditLink(false) || <span/>)}`;
     modalImageUrl && showModal({ type: "lightbox", url: modalImageUrl, isImage: true, allowUpscale, title });
     log("image zoomed in", { url });
+  };
+
+  const handleImageError = (e: SyntheticEvent<HTMLImageElement, Event>) => {
+    const image = e.currentTarget as HTMLImageElement;
+    image.onerror = null;
+    if (highResUrl) {
+      image.src = highResUrl;
+    }
   };
 
   const getCreditLink = (displayBlock = true) => {
@@ -73,7 +80,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
     <div className={css.runtime}>
       <div className={`${css.imageContainer} ${getImageLayout()}`} onClick={handleClick}>
         <img
-          src={defaultImageUrl}
+          src={url}
+          onError={handleImageError}
           alt={altText}
           title={altText}
           onLoad={getOriginalImageSize}
