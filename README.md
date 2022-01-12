@@ -98,13 +98,13 @@ To deploy a production release:
   - `git push origin master`
   - `git push origin v<new version>`
 4. Create a GitHub Release
-    1. Find the new tag at https://github.com/concord-consortium/activity-player/tags open it, and edit it
+    1. Find the new tag at https://github.com/concord-consortium/question-interactives/tags open it, and edit it
     2. Copy the title from CHANGES.md
     3. Copy the content from CHANGES.md
     4. Hit "Publish Release" button
 5. Verify the build and tests in Travis at https://app.travis-ci.com/github/concord-consortium/question-interactives/builds
-6. Once built, update the production library interactives by individually opening each one and updating the baseUrl with this new version **<-- this step actually releases the new code to the interactives in production**
-7. Test a few sample question interactives by creating a test activity in Production that uses the updated interactives
+6. Once built, update the production library interactives by individually opening each one and updating the baseUrl with this new version **<-- this step actually releases the new code to the interactives in production**. If the release features involve adding one or more new question types in the library interactives, we will need to add them in the library interactives page in LARA production
+7. Test a few sample question interactives by creating a test activity in Production that uses the updated or added interactives
 8. Clean up your working directory by deleting `CHANGES.md`
 
 ### Testing
