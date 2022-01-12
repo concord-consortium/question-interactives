@@ -11,6 +11,8 @@ interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInterac
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
+  const placeholderText = "Please type your answer here.";
+  const answerText = !interactiveState?.answerText ? authoredState.defaultAnswer : interactiveState.answerText;
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInteractiveState?.(prevState => ({...prevState, answerType: "open_response_answer", answerText: event.target.value }));
   };
@@ -25,12 +27,12 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         </DecorateChildren> }
       <div>
         <textarea
-          value={interactiveState?.answerText}
+          value={answerText}
           onChange={readOnly ? undefined : handleChange}
           readOnly={readOnly}
           disabled={readOnly}
           rows={8}
-          placeholder={authoredState.defaultAnswer || "Please type your answer here."}
+          placeholder={placeholderText}
         />
       </div>
     </fieldset>
