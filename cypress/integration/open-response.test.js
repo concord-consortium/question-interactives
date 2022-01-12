@@ -30,7 +30,7 @@ context("Test open response interactive", () => {
 
       cy.getIframeBody().find("#app fieldset legend").should("include.text", "Test prompt");
 
-      cy.getIframeBody().find("textarea").should("have.attr", "placeholder", "Default answer");
+      cy.getIframeBody().find("textarea").should("have.attr", "placeholder", "Please type your answer here.");
       cy.getIframeBody().find("textarea").should("have.value", "Test response");
     });
 
@@ -46,10 +46,10 @@ context("Test open response interactive", () => {
         }
       });
       phoneListen("interactiveState");
-
-      cy.getIframeBody().find("textarea").type("test answer");
+      cy.getIframeBody().find("textarea").should("have.value", "Default answer");
+      cy.getIframeBody().find("textarea").type(". Test answer");
       getAndClearLastPhoneMessage((state) => {
-        expect(state).eql({ answerType: "open_response_answer", answerText: "test answer" });
+        expect(state).eql({ answerType: "open_response_answer", answerText: "Default answer. Test answer" });
       });
     });
   });
@@ -63,7 +63,7 @@ context("Test open response interactive", () => {
           version: 1,
           prompt: "Test prompt",
           hint: "Hint",
-          defaultAnswer: "Default answer",
+          defaultAnswer: "",
           required: true,
           predictionFeedback: "Good guess"
         }
@@ -154,7 +154,7 @@ context("Test open response interactive", () => {
 
       cy.getIframeBody().find("#app").should("include.text", "Test prompt");
 
-      cy.getIframeBody().find("textarea").should("have.attr", "placeholder", "Default answer");
+      cy.getIframeBody().find("textarea").should("have.attr", "placeholder", "Please type your answer here.");
       cy.getIframeBody().find("textarea").should("have.value", "Test response");
 
       cy.getIframeBody().find("textarea").type("New answer", { force: true });
