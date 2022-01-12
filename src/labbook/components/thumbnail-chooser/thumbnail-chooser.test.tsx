@@ -22,8 +22,8 @@ describe("ThumbnailChooser component", () => {
     };
 
     render(<ThumbnailChooser {...thumbnailChooserProps} />);
-    expect(screen.getByTestId("thumbnail-chooser")).toBeInTheDocument;
-    expect(screen.getByTestId("thumbnail")).toBeInTheDocument;
+    expect(screen.getByTestId("thumbnail-chooser")).toBeInTheDocument();
+    expect(screen.getByTestId("thumbnail")).toBeInTheDocument();
   });
 
   it("does not render when readOnly and there is no content", () => {
