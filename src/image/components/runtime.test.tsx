@@ -65,10 +65,10 @@ describe("Runtime", () => {
     expect(wrapper.find("img").at(0).props().src).toEqual(onlyHighResUrlAuthoredState.url);
     wrapper.find("img").at(0).simulate("error", {
       currentTarget: {
-        src: onlyHighResUrlAuthoredState.highResUrl
+        src: onlyHighResUrlAuthoredState.url
       }
     });
-    expect(wrapper.find("img").at(0).props().src).toEqual(onlyHighResUrlAuthoredState.highResUrl);
+    setTimeout(() => expect(wrapper.find("img").at(0).props().src).toEqual(onlyHighResUrlAuthoredState.highResUrl), 0);
 
   });
 
