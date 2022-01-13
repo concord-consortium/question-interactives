@@ -1,4 +1,4 @@
-import React, { useRef } from "react";
+import React, { SyntheticEvent, useRef } from "react";
 import { IAuthoredState } from "./types";
 import { setSupportedFeatures, showModal } from "@concord-consortium/lara-interactive-api";
 import ReactDOMServer from "react-dom/server";
@@ -52,6 +52,14 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
     log("image zoomed in", { url });
   };
 
+  const handleImageError = (e: SyntheticEvent<HTMLImageElement, Event>) => {
+    const image = e.currentTarget as HTMLImageElement;
+    image.onerror = null;
+    if (highResUrl) {
+      image.src = highResUrl;
+    }
+  };
+
   const getCreditLink = (displayBlock = true) => {
     // const { creditLink, creditLinkDisplayText } = authoredState;
     const link = <a href={creditLink} target="_blank" rel="noreferrer noopener">
@@ -73,6 +81,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
       <div className={`${css.imageContainer} ${getImageLayout()}`} onClick={handleClick}>
         <img
           src={url}
+          onError={handleImageError}
           alt={altText}
           title={altText}
           onLoad={getOriginalImageSize}

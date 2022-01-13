@@ -77,8 +77,8 @@ context("Test Image interactive", () => {
       });
 
       const app = cy.getIframeBody().find("#app");
-      app.should("include.text", "Url");
-      app.should("include.text", "Url (high resolution image)");
+      app.should("include.text", "URL");
+      app.should("include.text", "URL (high-resolution image)");
       app.should("include.text", "Alt Text");
       app.should("include.text", "Caption");
       app.should("include.text", "Credit");
