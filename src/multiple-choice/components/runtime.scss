@@ -18,6 +18,7 @@ legend.prompt {     // clear bootstrap stuff
 
   &.vertical {
     div {
+      align-items: flex-start;
       display: flex;
     }
   }
