@@ -119,7 +119,7 @@ const convertVideoPlayer = (item: Record<string, any>, libraryInteractive: Recor
     version: 1,
     questionType: "iframe_interactive",
     videoUrl: videoSource,
-    prompt: item.embeddable.caption,
+    caption: item.embeddable.caption,
     credit: item.embeddable.credit,
     creditLinkDisplayText: "",
     fixedAspectRatio: "",
@@ -187,9 +187,9 @@ const deleteRedundantProperties = (item: Record<string, any>) => {
 };
 
 const addNewProperties = (item: Record<string, any>, libraryInteractive: Record<string, any>) => {
-  const hasSnapshotTarget = item.embeddable.type === "Embeddable::ImageQuestion" 
+  const hasSnapshotTarget = item.embeddable.type === "Embeddable::ImageQuestion"
                             && item.embeddable.interactive_ref_id !== undefined;
-  const linkedInteractives =  hasSnapshotTarget ? [{"ref_id": item.embeddable.interactive_ref_id, "label": "snapshotTarget"}] 
+  const linkedInteractives =  hasSnapshotTarget ? [{"ref_id": item.embeddable.interactive_ref_id, "label": "snapshotTarget"}]
                                                 : [];
   // add other new properties with default values
   item.embeddable.url_fragment = null;
