@@ -19,6 +19,7 @@ import { TakeSnapshot } from "./take-snapshot";
 import { ThumbnailTitle } from "./thumbnail-chooser/thumbnail-title";
 
 import css from "./runtime.scss";
+import { renderHTML } from "../../shared/utilities/render-html";
 
 export interface IProps {
   authoredState: IAuthoredState;
@@ -207,6 +208,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   ];
 
   return (
+    <>
+    { authoredState.prompt &&
+      <div>{renderHTML(authoredState.prompt)}</div>
+    }
     <div className={css["app"]}>
       <div className={css["container"]}>
         <ThumbnailChooser {...thumbnailChooserProps} />
@@ -254,6 +259,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         </div>
       </div>
     </div>
+    </>
   );
 };
 
