@@ -16,13 +16,15 @@ interface DomElement {
 export type ParseHTMLReplacer = (domNode: DomElement) => JSX.Element | object | void | undefined | null | false;
 
 DOMPurify.setConfig({ ADD_ATTR: ['target'] });
-export function renderHTML(html: string, replace?: ParseHTMLReplacer) {
-  let newHtml;
-  if (html.includes("<a")) {
-    const position = html.indexOf("<a") + 2;
-    newHtml = [html.slice(0, position), " target=\"_blank\"", html.slice(position)].join("");
-  } else {
-    newHtml = html;
+DOMPurify.addHook("afterSanitizeAttributes", function(node) {
+  // Fix `a` elements:
+  // - add `target="_blank"
+  // - add `rel="noopener noreferrer"` to prevent https://www.owasp.org/index.php/Reverse_Tabnabbing
+  if (node.tagName.toLowerCase() === "a") {
+    node.setAttribute("target", "_blank");
+    node.setAttribute("rel", "noopener noreferrer");
   }
-  return parse(DOMPurify.sanitize(newHtml || ""), { replace });
+});
+export function renderHTML(html: string, replace?: ParseHTMLReplacer) {
+  return parse(DOMPurify.sanitize(html || ""), { replace });
 }
