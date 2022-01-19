@@ -8,6 +8,7 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   videoUrl?: string;
   captionUrl?: string;
   poster?: string;
+  caption?: string;
   credit?: string;
   creditLink?: string;
   creditLinkDisplayText?: string;

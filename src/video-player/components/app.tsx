@@ -32,6 +32,10 @@ export const baseAuthoringProps = {
         title: "Description",
         type: "string"
       },
+      caption: {
+        title: "Caption",
+        type: "string"
+      },
       credit: {
         title: "Credit",
         type: "string"
@@ -75,7 +79,12 @@ export const baseAuthoringProps = {
       "ui:help": "Path to a static image to display before video playback begins"
     },
     prompt: {
-      "ui:widget": "textarea"
+      "ui:widget": "textarea",
+      "ui:help": "Text that will appear above the video"
+    },
+    caption: {
+      "ui:widget": "textarea",
+      "ui:help": "Text that will appear below the video, before the credits"
     },
     credit: {
       "ui:widget": "textarea"
