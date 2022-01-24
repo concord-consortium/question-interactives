@@ -197,6 +197,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           />
         </div>
       </div>
+      {authoredState.caption && <div className={css.caption}>{authoredState.caption}</div>}
       {authoredState.credit && <div className={css.credit}>{authoredState.credit}</div>}
       {
         authoredState.creditLink &&
