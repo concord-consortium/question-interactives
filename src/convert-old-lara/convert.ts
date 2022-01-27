@@ -119,6 +119,7 @@ const convertVideoPlayer = (item: Record<string, any>, libraryInteractive: Recor
     version: 1,
     questionType: "iframe_interactive",
     videoUrl: videoSource,
+    description: item.embeddable.prompt,
     caption: item.embeddable.caption,
     credit: item.embeddable.credit,
     creditLinkDisplayText: "",
@@ -345,7 +346,7 @@ const convert = async (laraResource: string, laraRoot: string, libraryInteractiv
     "multiple_choice": "Multiple Choice",
     "open_response": "Open Response",
     "image": "Image Interactive",
-    "video": "Video Player",
+    "video": "Video player",
     "image_question": "Image Question"
   };
 
