@@ -119,6 +119,7 @@ const convertVideoPlayer = (item: Record<string, any>, libraryInteractive: Recor
     version: 1,
     questionType: "iframe_interactive",
     videoUrl: videoSource,
+    description: item.embeddable.prompt,
     caption: item.embeddable.caption,
     credit: item.embeddable.credit,
     creditLinkDisplayText: "",
