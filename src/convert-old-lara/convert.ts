@@ -346,7 +346,7 @@ const convert = async (laraResource: string, laraRoot: string, libraryInteractiv
     "multiple_choice": "Multiple Choice",
     "open_response": "Open Response",
     "image": "Image Interactive",
-    "video": "Video player",
+    "video": "Video Player",
     "image_question": "Image Question"
   };
 
