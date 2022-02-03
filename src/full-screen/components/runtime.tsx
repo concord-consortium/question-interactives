@@ -93,7 +93,7 @@ export const Runtime: React.FC = () => {
 
   if (!subinteractiveUrl) {
     return <div>No sub items available. Please add them using the authoring interface.</div>;
-  } else {
+  } else if (initMessage) {
     return (
       <>
         <IframeRuntime url={subinteractiveUrl}
@@ -101,10 +101,13 @@ export const Runtime: React.FC = () => {
                        interactiveState={interactiveState}
                        setInteractiveState={setInteractiveState}
                        setHint={setHint}
+                       initMessage={initMessage}
         />
         {screenfull &&
           <FullScreenButton isFullScreen={screenfull.isFullscreen} handleToggleFullScreen={toggleFullScreen} />}
       </>
     );
+  } else {
+    return <div>Loading...</div>;
   }
 };
