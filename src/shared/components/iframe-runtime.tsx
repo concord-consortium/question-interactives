@@ -93,14 +93,16 @@ export const IframeRuntime: React.FC<IProps> =
         linkedInteractives = [ {id: authoredState[libraryInteractive.localLinkedInteractiveProp], label: libraryInteractive.localLinkedInteractiveProp} ];
       }
 
-      phone.post("initInteractive", {
+      const initInteractiveMessage = {
         ...initMessage,   // for now only fullscreen sets this prop so that the needed info for cfm interactiveApi is passed
         mode: report ? "report" : "runtime",
         authoredState,
         // This is a trick not to depend on interactiveState.
         interactiveState: interactiveStateRef.current,
         linkedInteractives
-      });
+      };
+
+      phone.post("initInteractive", initInteractiveMessage);
     };
 
     if (iframeRef.current) {
