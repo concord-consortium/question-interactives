@@ -85,22 +85,21 @@ export const Runtime: React.FC = () => {
 
   const iframeStyle = setScaling();
 
-  const params = queryString.parse(location.search);
-  const hash = queryString.parse(location.hash);
-  const sharedDoc = hash.shared ? "#shared="+hash.shared : "";
-  const preUrl = params?.wrappedInteractive + sharedDoc;
-  const subinteractiveUrl = preUrl && encodeURI(preUrl);
+  const wrappedInteractive = queryString.parse(location.search)?.wrappedInteractive;
 
-  if (!subinteractiveUrl) {
+  if (!wrappedInteractive) {
     return <div>No sub items available. Please add them using the authoring interface.</div>;
   } else {
+    const url = Array.isArray(wrappedInteractive) ? wrappedInteractive[0] : wrappedInteractive;
+
     return (
       <>
-        <IframeRuntime url={subinteractiveUrl}
+        <IframeRuntime url={url}
                        iframeStyling={iframeStyle}
                        interactiveState={interactiveState}
                        setInteractiveState={setInteractiveState}
                        setHint={setHint}
+                       initMessage={initMessage}
         />
         {screenfull &&
           <FullScreenButton isFullScreen={screenfull.isFullscreen} handleToggleFullScreen={toggleFullScreen} />}
