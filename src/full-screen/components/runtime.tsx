@@ -90,8 +90,7 @@ export const Runtime: React.FC = () => {
   if (!wrappedInteractive) {
     return <div>No sub items available. Please add them using the authoring interface.</div>;
   } else {
-    const shared = queryString.parse(location.hash)?.shared;
-    const url = `${wrappedInteractive}${shared ? `#shared=${shared}` : ""}`;
+    const url = Array.isArray(wrappedInteractive) ? wrappedInteractive[0] : wrappedInteractive;
 
     return (
       <>
