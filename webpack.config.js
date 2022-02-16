@@ -2,6 +2,8 @@
 
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
+const GenerateJsonFromJsPlugin = require('generate-json-from-js-webpack-plugin');
+
 const path = require("path");
 
 module.exports = (env, argv) => {
@@ -216,6 +218,11 @@ module.exports = (env, argv) => {
         chunks: ['wrapper'],
         filename: 'wrapper.html',
         template: 'src/shared/wrapper.html'
+      }),
+      // generate version.json
+      new GenerateJsonFromJsPlugin({
+        path: './generate-version-json.js',
+        filename: 'version.json'
       })
     ]
   };
