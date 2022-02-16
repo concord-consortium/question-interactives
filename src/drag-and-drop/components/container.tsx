@@ -13,6 +13,7 @@ import { cssUrlValue } from "../../shared/utilities/css-url-value";
 export interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {
   // Used only for authoring (initial state is part of the authored state).
   setInitialState?: (initialState: IInitialState) => void;
+  view?: string;
 }
 
 interface IDimensions {
@@ -56,13 +57,16 @@ const getTargetTop = (
   return top;
 };
 
-export const Container: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, setInitialState, report }) => {
+export const Container: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, setInitialState, report, view }) => {
   const readOnly = !!(report || (authoredState.required && interactiveState?.submitted));
   const [ itemDimensions, setItemDimensions ] = useState<Record<ItemId, IDimensions>>({});
   const [ targetDimensions, setTargetDimensions ] = useState<Record<TargetId, IDimensions>>({});
   const draggingAreaPromptRef = useRef<HTMLDivElement>(null);
   const canvasWidth = authoredState.canvasWidth || 330;
   const canvasHeight = authoredState.canvasHeight || 300;
+  const xScaleRatioForReport = canvasWidth > 338 ? 338/canvasWidth : 1;
+  const yScaleRatioForReport = canvasHeight > 250 ? 250/canvasHeight : 1;
+  const scaleRatioForReport = Math.min(xScaleRatioForReport, yScaleRatioForReport);
   const draggingAreaPromptHeight = draggingAreaPromptRef.current?.offsetHeight || 0;
   // There are 2 sources from where item positions can be obtained. Note that order is very important here.
   const itemPositions: Record<string, IPosition> = {
@@ -226,7 +230,9 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
   const draggingAreaStyle = {
     width: canvasWidth + "px",
     height: canvasHeight + "px",
-    backgroundImage: authoredState.backgroundImageUrl ? cssUrlValue(authoredState.backgroundImageUrl) : undefined
+    backgroundImage: authoredState.backgroundImageUrl ? cssUrlValue(authoredState.backgroundImageUrl) : undefined,
+    transform: report && view !== "standalone" ? `scale(${scaleRatioForReport})` : undefined,
+    transformOrigin: report && view !== "standalone" ? "left top" : undefined
   };
 
   return (
