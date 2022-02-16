@@ -39,20 +39,19 @@ if [ "$BRANCH_OR_TAG" = "$CURRENT_TAG" ]; then
   mkdir -p _site/version
   S3_DEPLOY_DIR="version/$BRANCH_OR_TAG"
   DEPLOY_DEST="_site/$S3_DEPLOY_DIR"
-  # used by s3_website.yml
-  export S3_DEPLOY_DIR
-
 # production branch builds deploy to root of site
 elif [ "$BRANCH_OR_TAG" = "$PRODUCTION_BRANCH" ]; then
+  S3_DEPLOY_DIR=""
   DEPLOY_DEST="_site"
 # branch builds deploy to /branch/BRANCH_NAME
 else
   mkdir -p _site/branch
   S3_DEPLOY_DIR="branch/$DEPLOY_DIR_NAME"
   DEPLOY_DEST="_site/$S3_DEPLOY_DIR"
-  # used by s3_website.yml
-  export S3_DEPLOY_DIR
 fi
+
+# used by s3_website.yml
+export S3_DEPLOY_DIR
 
 # copy files to destination
 mv $SRC_DIR $DEPLOY_DEST
