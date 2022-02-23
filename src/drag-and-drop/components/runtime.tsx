@@ -4,17 +4,10 @@ import { IAuthoredState, IInteractiveState } from "./types";
 import { renderHTML } from "../../shared/utilities/render-html";
 import { ContainerWithDndProvider } from "./container-with-dnd-provider";
 
-interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {
-  view?: string;
-}
+interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
 
 export const Runtime: React.FC<IProps> = (props) => {
-  const { authoredState, report } = props;
-  const urlParams = new URLSearchParams(window.location.search);
-  const view = urlParams.get("view");
-  if (view) {
-    props  = {...props, view: view};
-  }
+  const { authoredState, report, view } = props;
   return (
     <div>
       <div>{(!report || view === "standalone") && renderHTML(authoredState.prompt || "")}</div>

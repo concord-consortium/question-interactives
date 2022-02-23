@@ -30,6 +30,7 @@ export interface IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveStat
   interactiveState?: IInteractiveState | null,
   setInteractiveState?: (updateFunc: UpdateFunc<IInteractiveState>) => void;
   report?: boolean;
+  view?: string;
 }
 
 interface IProps<IAuthoredState, IInteractiveState> {
@@ -116,7 +117,7 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
     }
     return (
       <div className={css.runtime}>
-        <Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} report={true} />
+        <Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} report={true} view={initMessage?.view} />
         { authoredState?.required && <div>Question has been { interactiveState?.submitted ? "" : "NOT" } submitted.</div> }
       </div>
     );
