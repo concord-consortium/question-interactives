@@ -13,7 +13,7 @@ import { cssUrlValue } from "../../shared/utilities/css-url-value";
 export interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {
   // Used only for authoring (initial state is part of the authored state).
   setInitialState?: (initialState: IInitialState) => void;
-  view?: string;
+  view?: "standalone";
 }
 
 interface IDimensions {
