@@ -29,10 +29,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   }, [dataListeners]);
 
   useEffect(() => {
-    if (interactiveState?.leftInteractiveState.dataset) {
+    if (interactiveState?.leftInteractiveState?.dataset) {
       updateDataListeners(interactiveState.leftInteractiveState);
     }
-    if (interactiveState?.rightInteractiveState && interactiveState?.rightInteractiveState.dataset) {
+    if (interactiveState?.rightInteractiveState?.dataset) {
       updateDataListeners(interactiveState.rightInteractiveState);
     }
   },
