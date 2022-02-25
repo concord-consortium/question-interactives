@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { IframeRuntime } from "../../shared/components/iframe-runtime";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { renderHTML } from "../../shared/utilities/render-html";
@@ -19,6 +19,25 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const { prompt, leftInteractive, rightInteractive, division } = authoredState;
   const [dataListeners, setDataListeners] = useState<{id: string, phone: IframePhone}[]>([]);
 
+  const updateDataListeners = useCallback((newInteractiveState: any) => {
+    dataListeners.forEach(listener => {
+      listener.phone.post("linkedInteractiveState", {
+        listenerId: listener.id,
+        interactiveState: newInteractiveState
+      });
+    });
+  }, [dataListeners]);
+
+  useEffect(() => {
+    if (interactiveState?.leftInteractiveState?.dataset) {
+      updateDataListeners(interactiveState.leftInteractiveState);
+    }
+    if (interactiveState?.rightInteractiveState?.dataset) {
+      updateDataListeners(interactiveState.rightInteractiveState);
+    }
+  },
+  [interactiveState?.leftInteractiveState, interactiveState?.rightInteractiveState, updateDataListeners]);
+
   const handleAddLocalLinkedDataListener = useCallback((request: IAddLinkedInteractiveStateListenerRequest, phone: IframePhone) => {
     setDataListeners(listeners => [...listeners, {id: request.listenerId, phone}]);
   }, []);
@@ -32,12 +51,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const handleNewInteractiveState = (interactiveStateSide: InteractiveStateSide, newInteractiveState: any) => {
     setInteractiveState?.((prevState: IInteractiveState) => {
       if (newInteractiveState.dataset && dataListeners.length > 0) {
-        dataListeners.forEach(listener => {
-          listener.phone.post("linkedInteractiveState", {
-            listenerId: listener.id,
-            interactiveState: newInteractiveState
-          });
-        });
+        updateDataListeners(newInteractiveState);
       }
       return {
         ...prevState,
