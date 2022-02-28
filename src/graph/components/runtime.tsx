@@ -11,9 +11,11 @@ import css from "./runtime.scss";
 
 export interface IProps {
   authoredState: IAuthoredState;
+  report?: boolean;
+  view?: "standalone"
 }
 
-const getGraphOptions = (authoredState: IAuthoredState, chartData?: CustomChartData): ChartOptions => {
+const getGraphOptions = (authoredState: IAuthoredState, report: boolean | undefined, view: string | undefined, chartData?: CustomChartData): ChartOptions => {
   let yAxisLabel;
   if (authoredState.useYAxisLabelFromData && chartData && chartData.datasets.length > 0) {
     yAxisLabel = chartData.datasets[0].label;
@@ -45,6 +47,7 @@ const getGraphOptions = (authoredState: IAuthoredState, chartData?: CustomChartD
       fullWidth: false // this will put each legend in its own line (name of the property doesn't suggest that)
     },
     maintainAspectRatio: false,
+    responsive: true,
     scales: {
       yAxes: [yAxis],
       xAxes: [{
@@ -60,7 +63,7 @@ const getGraphOptions = (authoredState: IAuthoredState, chartData?: CustomChartD
   };
 };
 
-export const Runtime: React.FC<IProps> = ({ authoredState }) => {
+export const Runtime: React.FC<IProps> = ({ authoredState, report, view }) => {
   const [ datasets, setDatasets ] = useState<Array<IDataset | null | undefined>>([]);
 
   useEffect(() => {
@@ -109,19 +112,26 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
     authoredState.dataSourceInteractive2Name,
     authoredState.dataSourceInteractive3Name
   ];
+  const availableWidth = window.innerWidth - 40;
+  const scaleRatioForReport = availableWidth < 600 ? availableWidth/600 : 1;
+  const graphStyle = {
+    transform: report && view !== "standalone" ? `scale(${scaleRatioForReport})` : undefined,
+    transformOrigin: report && view !== "standalone" ? "left top" : undefined,
+    width: report && view !== "standalone" ? `${100/scaleRatioForReport}%` : undefined
+  };
   return (
     <div>
       {
         anyData ?
           generateChartData(datasets, datasetNames, authoredState).map((chartData, idx: number) =>
             <div key={idx} className={graphContainerClassName}>
-              <Bar data={chartData} options={getGraphOptions(authoredState, chartData)}
+              <Bar data={chartData} options={getGraphOptions(authoredState, report, view, chartData)}
                 plugins={[ChartDataLabels]}
               />
             </div>
           ) :
           // Without passing chartData, we won't add things like the legend
-          <Bar data={emptyChartData} options={getGraphOptions(authoredState)} />
+          <Bar data={emptyChartData} options={getGraphOptions(authoredState, report, view)} />
       }
     </div>
   );

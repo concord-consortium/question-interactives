@@ -56,7 +56,7 @@ const getTargetTop = (
   return top;
 };
 
-export const Container: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, setInitialState, report }) => {
+export const Container: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, setInitialState, report, view }) => {
   const readOnly = !!(report || (authoredState.required && interactiveState?.submitted));
   const [ itemDimensions, setItemDimensions ] = useState<Record<ItemId, IDimensions>>({});
   const [ targetDimensions, setTargetDimensions ] = useState<Record<TargetId, IDimensions>>({});
@@ -64,6 +64,12 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
   const canvasWidth = authoredState.canvasWidth || 330;
   const canvasHeight = authoredState.canvasHeight || 300;
   const draggingAreaPromptHeight = draggingAreaPromptRef.current?.offsetHeight || 0;
+  const availableWidth = window.innerWidth - 40;
+  const xScaleRatioForReport = canvasWidth > availableWidth
+                                 ? availableWidth/canvasWidth
+                                 : 1;
+  const yScaleRatioForReport = canvasHeight > window.innerHeight ? window.innerHeight/canvasHeight : 1;
+  const scaleRatioForReport = Math.min(xScaleRatioForReport, yScaleRatioForReport);
   // There are 2 sources from where item positions can be obtained. Note that order is very important here.
   const itemPositions: Record<string, IPosition> = {
     // Initial state coming from authored state. Used when this component is used in runtime mode or in authoring mode.
@@ -226,7 +232,9 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
   const draggingAreaStyle = {
     width: canvasWidth + "px",
     height: canvasHeight + "px",
-    backgroundImage: authoredState.backgroundImageUrl ? cssUrlValue(authoredState.backgroundImageUrl) : undefined
+    backgroundImage: authoredState.backgroundImageUrl ? cssUrlValue(authoredState.backgroundImageUrl) : undefined,
+    transform: report && view !== "standalone" ? `scale(${scaleRatioForReport})` : undefined,
+    transformOrigin: report && view !== "standalone" ? "left top" : undefined
   };
 
   return (
