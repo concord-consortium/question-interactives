@@ -13,6 +13,11 @@ legend.prompt {     // clear bootstrap stuff
   font-size: unset;
   border: unset;
   padding-bottom: 5px;
+
+  img {
+    height: auto;
+    max-width: 100%;
+  }
 }
 
 .choices {
