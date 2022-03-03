@@ -3,10 +3,10 @@ import { mount } from "enzyme";
 import { DrawingTool, LARA_IMAGE_PROXY } from "./drawing-tool";
 
 jest.mock("drawing-tool", () => class DrawingToolLib {
-  on = jest.fn()
-  pauseHistory = jest.fn()
-  unpauseHistory = jest.fn()
-  setBackgroundImage = setBackgroundImageMock
+  on = jest.fn();
+  pauseHistory = jest.fn();
+  unpauseHistory = jest.fn();
+  setBackgroundImage = setBackgroundImageMock;
 });
 
 const setBackgroundImageMock = jest.fn();

@@ -3,6 +3,7 @@
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const GenerateJsonFromJsPlugin = require('generate-json-from-js-webpack-plugin');
+const ESLintPlugin = require("eslint-webpack-plugin");
 
 const path = require("path");
 
@@ -33,21 +34,11 @@ module.exports = (env, argv) => {
     },
     mode: 'development',
     output: {
-      filename: '[name]/assets/index.[hash].js'
+      filename: '[name]/assets/index.[contenthash].js'
     },
     performance: { hints: false },
     module: {
       rules: [
-        {
-          test: /\.tsx?$/,
-          enforce: 'pre',
-          use: [
-            {
-              loader: 'eslint-loader',
-              options: {}
-            }
-          ]
-        },
         {
           test: /\.tsx?$/,
           loader: 'ts-loader'
@@ -223,6 +214,9 @@ module.exports = (env, argv) => {
       new GenerateJsonFromJsPlugin({
         path: './generate-version-json.js',
         filename: 'version.json'
+      }),
+      new ESLintPlugin({
+        extensions: ["tsx"]
       })
     ]
   };
