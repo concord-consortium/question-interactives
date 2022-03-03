@@ -96,4 +96,36 @@ context("Test drag and drop interactive", () => {
       }, 100);
     });
   });
+
+  context("Report view", () => {
+    it("handles pre-existing authored state, scales interactive, and does not include prompt", () => {
+      phonePost("initInteractive", {
+        mode: "report",
+        authoredState: {
+          version: 1,
+          prompt: "Test prompt",
+          draggingAreaPrompt: "Test dragging area prompt",
+          hint: "",
+          canvasWidth: 400,
+          canvasHeight: 400,
+          backgroundImageUrl: "https://placekitten.com/200/200",
+          draggableItems: [
+            {id: "1", imageUrl: "https://placekitten.com/40/40"},
+            {id: "2", imageUrl: "https://placekitten.com/60/60"}
+          ]
+        },
+        interactiveState: {
+          itemPositions: {
+            "1": {left: 30, top: 30},
+            "2": {left: 70, top: 70},
+          }
+        }
+      });
+
+      cy.getIframeBody().find("#app").should("not.include.text", "Prompt");
+      cy.getIframeBody().find("[data-cy='dnd-container']").should("have.attr", "style", "width: 400px; height: 400px; background-image: url(\"https://placekitten.com/200/200\"); transform: scale(0.625); transform-origin: left top;");
+      cy.getIframeBody().find("[data-cy='draggable-item-wrapper']").eq(0).should("have.attr", "style", "left: 30px; top: 30px;");
+      cy.getIframeBody().find("[data-cy='draggable-item-wrapper']").eq(1).should("have.attr", "style", "left: 70px; top: 70px;");
+    });
+  });
 });
