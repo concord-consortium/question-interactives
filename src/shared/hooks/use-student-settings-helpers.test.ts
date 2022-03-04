@@ -1,5 +1,6 @@
-import * as firebase from "firebase";
-import "firebase/firestore";
+import firebase from "firebase/compat/app";
+import 'firebase/compat/auth';
+import "firebase/compat/firestore";
 import { getFirebaseJwt, IJwtResponse } from "@concord-consortium/lara-interactive-api";
 import {
   getFirestore, watchStudentSettings, signInWithToken, settingsPath, getStudentInfoAndSignInToFirestore
@@ -48,7 +49,7 @@ describe("useStudentSettings and related Firestore helpers", () => {
     jest.spyOn(firebase, "firestore").mockImplementation(jest.fn(() => firestoreMock));
     const auth: any = {
       signInWithCustomToken: jest.fn(),
-      signOut: jest.fn(() => new Promise((resolve) => resolve()))
+      signOut: jest.fn(() => new Promise<void>((resolve) => resolve()))
     };
     jest.spyOn(firebase, "auth").mockImplementation(() => auth);
   });

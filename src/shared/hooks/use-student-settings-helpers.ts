@@ -1,5 +1,6 @@
-import * as firebase from "firebase";
-import "firebase/firestore";
+import firebase from "firebase/compat/app";
+import 'firebase/compat/auth';
+import "firebase/compat/firestore";
 import { getFirebaseJwt, IJwtResponse } from "@concord-consortium/lara-interactive-api";
 
 export interface IStudentSettings {
