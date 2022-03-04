@@ -108,7 +108,7 @@ describe("useLinkedInteractives", () => {
         schema: {}
       });
     };
-    renderHook(HookWrapper);
+    act(() => { renderHook(HookWrapper); });
     expect(setLinkedInteractivesMock).not.toHaveBeenCalled();
   });
 
@@ -130,12 +130,12 @@ describe("useLinkedInteractives", () => {
     };
     const { rerender } = renderHook(HookWrapper);
     expect(setLinkedInteractivesMock).not.toHaveBeenCalled(); // Nothing should happen during initial render!
-    rerender();
+    act(() => { rerender(); });
     expect(setLinkedInteractivesMock).not.toHaveBeenCalled(); // Still nothing, authored state wasn't updated.
     authoredState = {
       linkedInteractive1: "ID2"
     };
-    rerender();
+    act(() => { rerender(); });
     expect(setLinkedInteractivesMock).toHaveBeenCalledWith({
       linkedInteractives: [{id: "ID2", label: "linkedInteractive1"}]
     });
@@ -159,7 +159,7 @@ describe("useLinkedInteractives", () => {
     };
     const { rerender } = renderHook(HookWrapper);
     expect(setLinkedInteractivesMock).not.toHaveBeenCalled(); // Nothing should happen during initial render!
-    rerender();
+    act(() => { rerender(); });
     expect(setLinkedInteractivesMock).not.toHaveBeenCalled(); // Still nothing, authored state wasn't updated.
     authoredState = {
       linkedInteractive1: undefined
@@ -188,12 +188,12 @@ describe("useLinkedInteractives", () => {
     };
     const { rerender } = renderHook(HookWrapper);
     expect(setLinkedInteractivesMock).not.toHaveBeenCalled(); // Nothing should happen during initial render!
-    rerender();
+    act(() => { rerender(); });
     expect(setLinkedInteractivesMock).not.toHaveBeenCalled(); // Still nothing, authored state wasn't updated.
     authoredState = {
       linkedInteractive1: "new ID 2"
     };
-    rerender();
+    act(() => { rerender(); });
     expect(setLinkedInteractivesMock).toHaveBeenCalledWith({
       linkedInteractives: [{id: "new ID 2", label: "linkedInteractive1"}]
     });
