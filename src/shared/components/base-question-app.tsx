@@ -7,7 +7,8 @@ import { BaseAuthoring, IBaseAuthoringProps } from "./base-authoring";
 import { SubmitButton } from "./submit-button";
 import { LockedInfo } from "./locked-info";
 import {
-  IAuthoringMetadata, IRuntimeMetadata, setSupportedFeatures, useAuthoredState, useInitMessage, useInteractiveState
+  IAuthoringMetadata, IRuntimeMetadata, setSupportedFeatures, useAuthoredState, useInitMessage, useInteractiveState,
+  IReportInitInteractive
 } from "@concord-consortium/lara-interactive-api";
 import { IBaseAuthoredState, UpdateFunc, IAuthoringComponentProps, IRuntimeComponentProps } from "./base-app";
 import { useBasicLogging } from "../hooks/use-basic-logging";
@@ -30,6 +31,7 @@ export interface IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveStat
   interactiveState?: IInteractiveState | null,
   setInteractiveState?: (updateFunc: UpdateFunc<IInteractiveState>) => void;
   report?: boolean;
+  view?: "standalone";
 }
 
 interface IProps<IAuthoredState, IInteractiveState> {
@@ -111,12 +113,14 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
   };
 
   const renderReport = () => {
+    const reportInitMessage = initMessage as IReportInitInteractive;
+    const view = reportInitMessage?.view;
     if (!authoredState) {
       return "Authored state is missing.";
     }
     return (
       <div className={css.runtime}>
-        <Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} report={true} />
+        <Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} report={true} view={view} />
         { authoredState?.required && <div>Question has been { interactiveState?.submitted ? "" : "NOT" } submitted.</div> }
       </div>
     );
