@@ -13,6 +13,7 @@ import { cssUrlValue } from "../../shared/utilities/css-url-value";
 export interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {
   // Used only for authoring (initial state is part of the authored state).
   setInitialState?: (initialState: IInitialState) => void;
+  view?: "standalone";
 }
 
 interface IDimensions {
@@ -65,9 +66,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
   const canvasHeight = authoredState.canvasHeight || 300;
   const draggingAreaPromptHeight = draggingAreaPromptRef.current?.offsetHeight || 0;
   const availableWidth = window.innerWidth - 40;
-  const xScaleRatioForReport = canvasWidth > availableWidth
-                                 ? availableWidth/canvasWidth
-                                 : 1;
+  const xScaleRatioForReport = canvasWidth > availableWidth ? availableWidth/canvasWidth : 1;
   const yScaleRatioForReport = canvasHeight > window.innerHeight ? window.innerHeight/canvasHeight : 1;
   const scaleRatioForReport = Math.min(xScaleRatioForReport, yScaleRatioForReport);
   // There are 2 sources from where item positions can be obtained. Note that order is very important here.

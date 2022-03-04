@@ -7,9 +7,10 @@ import { ContainerWithDndProvider } from "./container-with-dnd-provider";
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
 
 export const Runtime: React.FC<IProps> = (props) => {
+  const { authoredState, report, view } = props;
   return (
     <div>
-      <div>{renderHTML(props.authoredState.prompt || "")}</div>
+      <div>{(!report || view === "standalone") && renderHTML(authoredState.prompt || "")}</div>
       <ContainerWithDndProvider {...props} />
     </div>
   );
