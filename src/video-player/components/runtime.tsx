@@ -44,7 +44,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
   const viewedProgress = interactiveState?.percentageViewed || 0;
   const viewedTimestamp = interactiveState?.lastViewedTimestamp || 0;
-  const playerRef = useRef<HTMLVideoElement>(null);
+  const playerRef = useRef<HTMLVideoElement | null>(null);
   const captionsTrackRef = useRef<TextTrack | null>(null);
   const saveStateInterval = useRef<number>(0);
   const [captionDisplayState, setCaptionDisplayState] = useState("disabled"); // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -57,55 +57,57 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   viewedTimestampRef.current = viewedTimestamp;
 
   useEffect(() => {
-    const player: videojs.Player = videojs(playerRef.current,
-      {
-        controls: true,
-        fluid: !(authoredState.fixedAspectRatio || authoredState.fixedHeight),
-        // This is a new property not supported by the current types
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        crossOrigin: "anonymous"
-      }, () => {
-        const url = authoredState.videoUrl ? authoredState.videoUrl : "";
-        player.src(url);
+    if (playerRef.current) {
+      const player: videojs.Player = videojs(playerRef.current,
+        {
+          controls: true,
+          fluid: !(authoredState.fixedAspectRatio || authoredState.fixedHeight),
+          // This is a new property not supported by the current types
+          // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+          // @ts-ignore
+          crossOrigin: "anonymous"
+        }, () => {
+          const url = authoredState.videoUrl ? authoredState.videoUrl : "";
+          player.src(url);
 
-        if (authoredState.captionUrl && player.textTracks().length === 0) {
-          player.addRemoteTextTrack({
-            kind: "captions",
-            language: "en",
-            label: "English",
-            src: authoredState.captionUrl,
-            default: captionsOnByDefault
-          }, false);
-          // Store a ref to the captions track s we can check visibility later. There is no easy toggle event for captions show/hide
-          captionsTrackRef.current = player.textTracks()[0];
-          if (captionsTrackRef.current) {
-            captionsTrackRef.current.addEventListener("cuechange", () => {
-              const currentCue = captionsTrackRef.current?.activeCues?.length && captionsTrackRef.current?.activeCues.length > 0 && captionsTrackRef.current?.activeCues[0];
-              log("cue change", { videoUrl: authoredState.videoUrl, currentCue: (currentCue as VTTCue).text });
-            });
+          if (authoredState.captionUrl && player.textTracks().length === 0) {
+            player.addRemoteTextTrack({
+              kind: "captions",
+              language: "en",
+              label: "English",
+              src: authoredState.captionUrl,
+              default: captionsOnByDefault
+            }, false);
+            // Store a ref to the captions track s we can check visibility later. There is no easy toggle event for captions show/hide
+            captionsTrackRef.current = player.textTracks()[0];
+            if (captionsTrackRef.current) {
+              captionsTrackRef.current.addEventListener("cuechange", () => {
+                const currentCue = captionsTrackRef.current?.activeCues?.length && captionsTrackRef.current?.activeCues.length > 0 && captionsTrackRef.current?.activeCues[0];
+                log("cue change", { videoUrl: authoredState.videoUrl, currentCue: (currentCue as VTTCue).text });
+              });
+            }
           }
+        });
+
+      if (authoredState.fixedAspectRatio) {
+        const aspectRatio = getAspectRatio(authoredState.fixedAspectRatio);
+        if (aspectRatio.length > 0) {
+          player.aspectRatio(aspectRatio);
+        }
+      }
+      if (authoredState.fixedHeight) {
+        player.height(authoredState.fixedHeight);
+      }
+      player.ready(() => {
+        if (viewedTimestampRef.current) {
+          player.currentTime(viewedTimestampRef.current);
         }
       });
 
-    if (authoredState.fixedAspectRatio) {
-      const aspectRatio = getAspectRatio(authoredState.fixedAspectRatio);
-      if (aspectRatio.length > 0) {
-        player.aspectRatio(aspectRatio);
-      }
+      return () => {
+        player.dispose();
+      };
     }
-    if (authoredState.fixedHeight) {
-      player.height(authoredState.fixedHeight);
-    }
-    player.ready(() => {
-      if (viewedTimestampRef.current) {
-        player.currentTime(viewedTimestampRef.current);
-      }
-    });
-
-    return () => {
-      player.dispose();
-    };
   }, [authoredState]);
 
   const getViewTime = () => {

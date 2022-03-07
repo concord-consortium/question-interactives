@@ -86,12 +86,11 @@ export const Runtime: React.FC = () => {
   const iframeStyle = setScaling();
 
   const wrappedInteractive = queryString.parse(location.search)?.wrappedInteractive;
+  const url = Array.isArray(wrappedInteractive) ? wrappedInteractive[0] : wrappedInteractive;
 
-  if (!wrappedInteractive) {
+  if (!url) {
     return <div>No sub items available. Please add them using the authoring interface.</div>;
   } else {
-    const url = Array.isArray(wrappedInteractive) ? wrappedInteractive[0] : wrappedInteractive;
-
     return (
       <>
         <IframeRuntime url={url}
