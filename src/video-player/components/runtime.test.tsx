@@ -7,12 +7,16 @@ const authoredState = {
   questionType: "iframe_interactive" as const,
   prompt: "Test prompt",
   videoUrl: "https://models-resources.concord.org/geniblocks/resources/fablevision/video/charcoal.mp4",
+  caption: "This is a test caption for the video.",
   captionUrl: "https://models-resources.concord.org/question-interactives/test-captions.vtt",
   poster: "https://models-resources.concord.org/geniblocks/resources/fablevision/rooms/missioncontrol.jpg",
   credit: "Concord.org",
   creditLink: "https://geniventure.concord.org",
   creditLinkDisplayText: "Geniventure",
-  required: true
+  required: true,
+  fixedAspectRatio: "2:1",
+  fixedHeight: 300,
+  fixedWidth: 600
 };
 
 // const interactiveState = {
@@ -27,6 +31,7 @@ describe("Runtime", () => {
     // not sure, for now, how to pull the content from the DecorateChildren component
     expect(wrapper.text()).toEqual(expect.stringContaining("<DecorateChildren />"));
     expect(wrapper.find("video").length).toEqual(1);
+    expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.caption));
     expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.credit));
     expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.creditLinkDisplayText));
     expect(wrapper.find(".video-js").prop("poster")).toEqual(authoredState.poster);
