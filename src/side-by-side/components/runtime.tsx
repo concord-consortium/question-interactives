@@ -12,12 +12,16 @@ interface IProps {
   authoredState: IAuthoredState;
   interactiveState?: IInteractiveState | null;
   setInteractiveState?: (updateFunc: (prevState: IInteractiveState | null) => IInteractiveState) => void;
+  report?: boolean;
+  view?: "standalone";
 }
 
-export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState }) => {
+export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report, view }) => {
 
   const { prompt, leftInteractive, rightInteractive, division } = authoredState;
   const [dataListeners, setDataListeners] = useState<{id: string, phone: IframePhone}[]>([]);
+  const leftDivision = division;
+  const rightDivision = 100 - division;
 
   const updateDataListeners = useCallback((newInteractiveState: any) => {
     dataListeners.forEach(listener => {
@@ -60,11 +64,17 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     });
   };
 
+  const availableWidth = window.innerWidth - 40;
+  const availableWidthLeft = availableWidth * (leftDivision * .01);
+  const availableWidthRight = availableWidth * (rightDivision * .01);
+  const scaleForReportLeft = availableWidthLeft < 600 ? availableWidthLeft/600 : 1;
+  const scaleForReportRight = availableWidthRight < 600 ? availableWidthRight/600 : 1;
+
   return (
     <div>
-      { prompt &&
-      <div>{renderHTML(prompt)}</div> }
-      <div className={css.split} style={{gridTemplateColumns: `${division}% ${100 - division}%`}}>
+      { (!report || view === "standalone") && prompt &&
+        <div>{renderHTML(prompt)}</div> }
+      <div className={css.split} style={{gridTemplateColumns: `${leftDivision}% ${rightDivision}%`}}>
         { leftInteractive &&
         <div className={css.runtime}>
             <IframeRuntime
@@ -75,6 +85,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               // logRequestData={logRequestData}
               setInteractiveState={handleNewInteractiveState.bind(null, "leftInteractiveState")}
               addLocalLinkedDataListener={handleAddLocalLinkedDataListener}
+              report={report}
+              scale={report && view !== "standalone" ? scaleForReportLeft : undefined}
             />
         </div> }
         { rightInteractive &&
@@ -83,10 +95,12 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               id={rightInteractive.id}
               url={libraryInteractiveIdToUrl(rightInteractive.libraryInteractiveId, "side-by-side")}
               authoredState={rightInteractive.authoredState}
-              interactiveState={interactiveState?.leftInteractiveState}
+              interactiveState={interactiveState?.rightInteractiveState}
               // logRequestData={logRequestData}
               setInteractiveState={handleNewInteractiveState.bind(null, "rightInteractiveState")}
               addLocalLinkedDataListener={handleAddLocalLinkedDataListener}
+              report={report}
+              scale={report && view !== "standalone" ? scaleForReportRight : undefined}
             />
         </div> }
       </div>

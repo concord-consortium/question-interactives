@@ -45,6 +45,7 @@ const getGraphOptions = (authoredState: IAuthoredState, chartData?: CustomChartD
       fullWidth: false // this will put each legend in its own line (name of the property doesn't suggest that)
     },
     maintainAspectRatio: false,
+    responsive: true,
     scales: {
       yAxes: [yAxis],
       xAxes: [{
