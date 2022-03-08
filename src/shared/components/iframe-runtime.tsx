@@ -25,13 +25,12 @@ interface IProps {
   setHint?: (state: any) => void | null;
   addLocalLinkedDataListener?: (request: IAddLinkedInteractiveStateListenerRequest, phone: IframePhone) => void;
   scale?: number;
-  view?: "standalone";
 }
 
 export const IframeRuntime: React.FC<IProps> =
   ({ authoredState, id, iframeStyling, interactiveState, logRequestData, report,
       url, setHint, setInteractiveState, addLocalLinkedDataListener, initMessage, 
-      scale, view }) => {
+      scale }) => {
     const [ iframeHeight, setIframeHeight ] = useState(300);
     const [ internalHint, setInternalHint ] = useState("");
     const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -99,7 +98,6 @@ export const IframeRuntime: React.FC<IProps> =
       const initInteractiveMessage = {
         ...initMessage,   // for now only fullscreen sets this prop so that the needed info for cfm interactiveApi is passed
         mode: report ? "report" : "runtime",
-        view: view,
         authoredState,
         // This is a trick not to depend on interactiveState.
         interactiveState: interactiveStateRef.current,
@@ -121,23 +119,23 @@ export const IframeRuntime: React.FC<IProps> =
         phoneRef.current.disconnect();
       }
     };
-  },[addLocalLinkedDataListener, authoredState, logRequestData, report, setHint, url, initMessage, view]);
+  },[addLocalLinkedDataListener, authoredState, logRequestData, report, setHint, url, initMessage]);
 
   let scaledIframeStyle = undefined;
-  if (scale && report && view !== "standalone") {
+  if (scale && report) {
     scaledIframeStyle = {
       border: "none",
-      height: `${300/scale}px`,
+      height: `${iframeHeight/scale}px`,
       transform: `scale(${scale})`,
       transformOrigin: "left top",
       width: `${100/scale}%`
     };
   }
 
-  const iframeStyle = scaledIframeStyle
-                        ? scaledIframeStyle
-                        : iframeStyling
-                          ? iframeStyling
+  const iframeStyle = iframeStyling
+                        ? iframeStyling
+                        : scaledIframeStyle
+                          ? scaledIframeStyle
                           : {width: "100%", height: iframeHeight, border: "none"};
   return (
     <>

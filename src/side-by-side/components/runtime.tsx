@@ -86,8 +86,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               setInteractiveState={handleNewInteractiveState.bind(null, "leftInteractiveState")}
               addLocalLinkedDataListener={handleAddLocalLinkedDataListener}
               report={report}
-              view={view}
-              scale={scaleForReportLeft}
+              scale={report && view !== "standalone" ? scaleForReportLeft : undefined}
             />
         </div> }
         { rightInteractive &&
@@ -101,8 +100,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               setInteractiveState={handleNewInteractiveState.bind(null, "rightInteractiveState")}
               addLocalLinkedDataListener={handleAddLocalLinkedDataListener}
               report={report}
-              view={view}
-              scale={scaleForReportRight}
+              scale={report && view !== "standalone" ? scaleForReportRight : undefined}
             />
         </div> }
       </div>
