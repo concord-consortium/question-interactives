@@ -12,8 +12,8 @@ import {
 } from "@concord-consortium/lara-interactive-api";
 import { IBaseAuthoredState, UpdateFunc, IAuthoringComponentProps, IRuntimeComponentProps } from "./base-app";
 import { useBasicLogging } from "../hooks/use-basic-logging";
-import {useLinkedInteractives} from "../hooks/use-linked-interactives";
-import {ILinkedInteractiveProp} from "../hooks/use-linked-interactives-authoring";
+import { useLinkedInteractives } from "../hooks/use-linked-interactives";
+import { ILinkedInteractiveProp } from "../hooks/use-linked-interactives-authoring";
 import css from "./base-app.scss";
 
 

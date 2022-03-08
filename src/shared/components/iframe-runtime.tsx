@@ -24,11 +24,13 @@ interface IProps {
   setInteractiveState: (state: any) => void | null;
   setHint?: (state: any) => void | null;
   addLocalLinkedDataListener?: (request: IAddLinkedInteractiveStateListenerRequest, phone: IframePhone) => void;
+  scale?: number;
 }
 
 export const IframeRuntime: React.FC<IProps> =
   ({ authoredState, id, iframeStyling, interactiveState, logRequestData, report,
-      url, setHint, setInteractiveState, addLocalLinkedDataListener, initMessage }) => {
+      url, setHint, setInteractiveState, addLocalLinkedDataListener, initMessage, 
+      scale }) => {
     const [ iframeHeight, setIframeHeight ] = useState(300);
     const [ internalHint, setInternalHint ] = useState("");
     const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -119,7 +121,22 @@ export const IframeRuntime: React.FC<IProps> =
     };
   },[addLocalLinkedDataListener, authoredState, logRequestData, report, setHint, url, initMessage]);
 
-  const iframeStyle = iframeStyling ?? {width: "100%", height: iframeHeight, border: "none"};
+  let scaledIframeStyle = undefined;
+  if (scale && report) {
+    scaledIframeStyle = {
+      border: "none",
+      height: `${iframeHeight/scale}px`,
+      transform: `scale(${scale})`,
+      transformOrigin: "left top",
+      width: `${100/scale}%`
+    };
+  }
+
+  const iframeStyle = iframeStyling
+                        ? iframeStyling
+                        : scaledIframeStyle
+                          ? scaledIframeStyle
+                          : {width: "100%", height: iframeHeight, border: "none"};
   return (
     <>
       <iframe ref={iframeRef} src={url} style={iframeStyle} />

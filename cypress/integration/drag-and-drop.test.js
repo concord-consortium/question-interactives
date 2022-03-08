@@ -106,7 +106,7 @@ context("Test drag and drop interactive", () => {
           prompt: "Test prompt",
           draggingAreaPrompt: "Test dragging area prompt",
           hint: "",
-          canvasWidth: 400,
+          canvasWidth: 1100,
           canvasHeight: 400,
           backgroundImageUrl: "https://placekitten.com/200/200",
           draggableItems: [
@@ -123,7 +123,9 @@ context("Test drag and drop interactive", () => {
       });
 
       cy.getIframeBody().find("#app").should("not.include.text", "Prompt");
-      cy.getIframeBody().find("[data-cy='dnd-container']").should("have.attr", "style", "width: 400px; height: 400px; background-image: url(\"https://placekitten.com/200/200\"); transform: scale(0.625); transform-origin: left top;");
+      cy.getIframeBody().find("[data-cy='dnd-container']")
+                        .should("have.attr", "style")
+                        .and("match", /transform: scale\(0\.\d*\); transform-origin: left top;/);
       cy.getIframeBody().find("[data-cy='draggable-item-wrapper']").eq(0).should("have.attr", "style", "left: 30px; top: 30px;");
       cy.getIframeBody().find("[data-cy='draggable-item-wrapper']").eq(1).should("have.attr", "style", "left: 70px; top: 70px;");
     });

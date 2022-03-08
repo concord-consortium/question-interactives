@@ -64,10 +64,12 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
   const draggingAreaPromptRef = useRef<HTMLDivElement>(null);
   const canvasWidth = authoredState.canvasWidth || 330;
   const canvasHeight = authoredState.canvasHeight || 300;
-  const xScaleRatioForReport = canvasWidth > 338 ? 338/canvasWidth : 1;
-  const yScaleRatioForReport = canvasHeight > 250 ? 250/canvasHeight : 1;
-  const scaleRatioForReport = Math.min(xScaleRatioForReport, yScaleRatioForReport);
   const draggingAreaPromptHeight = draggingAreaPromptRef.current?.offsetHeight || 0;
+  const availableWidth = window.innerWidth - 40;
+  const availableHeight = window.innerHeight;
+  const xScaleRatioForReport = canvasWidth > availableWidth ? availableWidth/canvasWidth : 1;
+  const yScaleRatioForReport = canvasHeight > availableHeight ? availableHeight/canvasHeight : 1;
+  const scaleRatioForReport = Math.min(xScaleRatioForReport, yScaleRatioForReport);
   // There are 2 sources from where item positions can be obtained. Note that order is very important here.
   const itemPositions: Record<string, IPosition> = {
     // Initial state coming from authored state. Used when this component is used in runtime mode or in authoring mode.

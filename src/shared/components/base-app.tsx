@@ -4,8 +4,8 @@ import { useShutterbug } from "../hooks/use-shutterbug";
 import { BaseAuthoring, IBaseAuthoringProps } from "./base-authoring";
 import { setSupportedFeatures, useAuthoredState, useInitMessage } from "@concord-consortium/lara-interactive-api";
 import { useBasicLogging } from "../hooks/use-basic-logging";
-import {useLinkedInteractives} from "../hooks/use-linked-interactives";
-import {ILinkedInteractiveProp} from "../hooks/use-linked-interactives-authoring";
+import { useLinkedInteractives } from "../hooks/use-linked-interactives";
+import { ILinkedInteractiveProp } from "../hooks/use-linked-interactives-authoring";
 import css from "./base-app.scss";
 
 export type UpdateFunc<State> = (prevState: State | null) => State;
