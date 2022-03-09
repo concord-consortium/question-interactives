@@ -100,6 +100,7 @@ export const Runtime: React.FC = () => {
                        setInteractiveState={setInteractiveState}
                        setHint={setHint}
                        initMessage={initMessage}
+                       report={initMessage?.mode === "report"}
         />
         {screenfull &&
           <FullScreenButton isFullScreen={screenfull.isFullscreen} handleToggleFullScreen={toggleFullScreen} />}
