@@ -93,6 +93,17 @@ export const IframeRuntime: React.FC<IProps> =
         // To ensure that this request isn't mixed up with an existing request the request id
         // is set to a random large id when it is passed to the enclosing host and then restored
         // when passed back to the client
+
+        //--------------------------------------
+        // FIXME: (from Scott during code review)
+        //
+        // A problem with this approach is the file names. This iframe-runtime is used by interactives that host multiple
+        // sub interactives like the side-by-side or carousel. Let's say there are two CFM sub interactives. They will each choose
+        // a file name of file.json so they will clobber each other since there will just be one folder managed by the parent interactive.
+        //
+        // This is a general problem broader then just this one case. Leslie is aware of it, so I think we'll take some time in the future
+        // to fix this up so we can properly support this multiple sub-interactives.
+        //--------------------------------------
         const minRequestId = 100000;
         const savedRequestId = request.requestId;
         request.requestId = minRequestId + Math.round(Math.random() * (Number.MAX_SAFE_INTEGER - minRequestId));
