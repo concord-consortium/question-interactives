@@ -3,14 +3,12 @@ import { render, screen } from "@testing-library/react";
 import { IThumbnailProps } from "./thumbnail";
 import { IThumbnailWrapperProps, ThumbnailWrapper } from "./thumbnail-wrapper";
 
-const content: React.FC<IThumbnailProps> = () => <div data-testid="thumbnail">Thumbnail</div>;
-
 const thumb:IThumbnailProps = {
   id: "one",
   data: {},
   label: "one",
   empty: false,
-  thumbContent: content
+  thumbContent: "Thumbnail"
 };
 
 const emptyThumb:IThumbnailProps = {
@@ -18,7 +16,7 @@ const emptyThumb:IThumbnailProps = {
   data: {},
   label: "one",
   empty: true,
-  thumbContent: content
+  thumbContent: null
 };
 
 describe("ThumbnailWrapper component", () => {

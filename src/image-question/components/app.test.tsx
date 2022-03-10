@@ -1,5 +1,5 @@
 import React from "react";
-import { render } from "@testing-library/react";
+import { act, render } from "@testing-library/react";
 import { useAuthoredState, useInitMessage, useInteractiveState } from "@concord-consortium/lara-interactive-api";
 import { App } from "./app";
 import { IAuthoredState, IInteractiveState } from "./types";
@@ -50,7 +50,9 @@ describe("Image question", () => {
   it("renders in authoring mode", async () => {
     const { container } = render(<App />);
     expect(container).toBeDefined();
-    const promptEditor = await container.querySelector("#root_prompt");
-    expect(promptEditor?.className.includes("slate-editor")).toBe(true);
+    await act(async () => {
+      const promptEditor = await container.querySelector("#root_prompt");
+      expect(promptEditor?.className.includes("slate-editor")).toBe(true);
+    });
   });
 });
