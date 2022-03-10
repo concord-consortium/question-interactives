@@ -8,6 +8,11 @@ export interface IAuthoredState extends IAuthoringOpenResponseMetadata {
   defaultAnswer?: string;
   hint?: string;
   predictionFeedback?: string;
+  audioEnabled?: boolean;
 }
 
-export interface IInteractiveState extends IRuntimeOpenResponseMetadata {}
+export interface IInteractiveState extends IRuntimeOpenResponseMetadata {
+  answerText?: string;
+  audioFile?: string;
+  submitted?: boolean;
+}

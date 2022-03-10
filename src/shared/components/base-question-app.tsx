@@ -18,6 +18,7 @@ import css from "./base-app.scss";
 
 
 interface IBaseQuestionAuthoredState extends IBaseAuthoredState {
+  audioEnabled?: boolean;
   hint?: string;
   required?: boolean;
   predictionFeedback?: string;

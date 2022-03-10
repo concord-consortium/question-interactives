@@ -1,0 +1,170 @@
+// This is slightly updated style.css file provided by IcoMoon.
+// Changes has been made, so it can work with CSS modules. It makes sense here, as LARA and other projects are also
+// using IcoMoon. If we kept the default CSS, there would be a conflicts in font-family specification, not to mention
+// that some class name might not be unique too.
+// Changes:
+//  - %icon base class created.
+//  - all the icons use camelCase (easier with CSS modules) and they extend %icon base class.
+// To add an ew icon, update font files and add a new class following the same convention.
+
+@font-face {
+  font-family: 'icomoon';
+  src: url('../fonts/icomoon.ttf?f6usiw') format('truetype'),
+  url('../fonts/icomoon.woff?f6usiw') format('woff'),
+  url('../fonts/icomoon.svg?f6usiw#icomoon') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
+%icon {
+  /* use !important to prevent issues with browser extensions that change fonts */
+  font-family: 'icomoon' !important;
+  speak: none;
+  font-style: normal;
+  font-weight: normal;
+  font-variant: normal;
+  text-transform: none;
+  line-height: 1;
+
+  /* Better Font Rendering =========== */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  // Custom tweaks
+  display: inline-block;
+  vertical-align: middle;
+  transition: transform 0.5s;
+}
+
+
+.iconButton {
+  font-size: 1.2em;
+  color: #999;
+  cursor: pointer;
+  margin-left: 10px;
+  &:hover {
+    color: #444;
+  }
+}
+
+.iconAudio {
+  @extend %icon;
+  &:before {
+    content: "\e900";
+  }
+}
+.iconImage {
+  @extend %icon;
+  &:before {
+    content: "\e901";
+  }
+}
+.iconVideo {
+  @extend %icon;
+  &:before {
+    content: "\e902";
+  }
+}
+.iconCaret {
+  @extend %icon;
+  &:before {
+    content: "\e904";
+  }
+  transform: rotate(0);
+}
+.iconCaretExpanded {
+  @extend %icon;
+  &:before {
+    content: "\e904";
+  }
+  transform: rotate(90deg);
+}
+.iconBook {
+  @extend %icon;
+  &:before {
+    content: "\e903";
+  }
+}
+.iconPlus {
+  @extend %icon;
+  &:before {
+    content: "\ea0a";
+  }
+}
+.iconCross {
+  @extend %icon;
+  &:before {
+    content: "\ea0f";
+  }
+}
+.iconFileText {
+  @extend %icon;
+  &:before {
+    content: "\e922";
+  }
+}
+.iconEnlarge2 {
+  @extend %icon;
+  &:before {
+    content: "\e98b";
+  }
+  transform: rotate(45deg);
+}
+.iconShrink2 {
+  @extend %icon;
+  &:before {
+    content: "\e98c";
+  }
+  transform: rotate(45deg);
+}
+.iconCheckmark {
+  @extend %icon;
+  &:before {
+    content: "\ea10";
+  }
+}
+.iconCheckmark2 {
+  @extend %icon;
+  &:before {
+    content: "\ea11";
+  }
+}
+.iconRadioUnchecked {
+  @extend %icon;
+  &:before {
+    content: "\ea56";
+  }
+}
+.iconZoomIn {
+  @extend %icon;
+  &:before {
+    content: "\e906";
+  }
+  color: #fff;
+  background: #c9c9c9;
+  padding: 2px;
+}
+.iconDeleteAudio {
+  @extend %icon;
+  &:before {
+    content: "\e90a";
+  }
+}
+.iconPause {
+  @extend %icon;
+  &:before {
+    content: "\e909";
+  }
+}
+.iconStop {
+  @extend %icon;
+  &:before {
+    content: "\e908";
+  }
+}
+.iconRecord {
+  @extend %icon;
+  &:before {
+    content: "\e907";
+  }
+}
