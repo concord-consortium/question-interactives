@@ -216,7 +216,7 @@ module.exports = (env, argv) => {
         filename: 'version.json'
       }),
       new ESLintPlugin({
-        extensions: ["tsx"]
+        extensions: ["ts","tsx"]
       })
     ]
   };

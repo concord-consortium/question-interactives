@@ -64,7 +64,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           fluid: !(authoredState.fixedAspectRatio || authoredState.fixedHeight),
           // This is a new property not supported by the current types
           // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-          // @ts-ignore
+          // @ts-expect-error
           crossOrigin: "anonymous"
         }, () => {
           const url = authoredState.videoUrl ? authoredState.videoUrl : "";

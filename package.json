@@ -6,7 +6,7 @@
   "jest": {
     "testURL": "https://question-interactives.unexisting.url.com",
     "setupFilesAfterEnv": [
-      "<rootDir>src/setupTests.js"
+      "<rootDir>src/setupTests.ts"
     ],
     "transform": {
       "^.+\\.tsx?$": "ts-jest"
