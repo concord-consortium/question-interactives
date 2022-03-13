@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { renderHTML } from "../../shared/utilities/render-html";
 import { IframePhone } from "../types";
 import iframePhone from "iframe-phone";
-import { closeModal, getClient, IAddLinkedInteractiveStateListenerRequest, IAttachmentUrlRequest, IAttachmentUrlResponse, ICloseModal, IHintRequest, IInitInteractive, IShowModal, log, showModal } from "@concord-consortium/lara-interactive-api";
+import { closeModal, getClient, IAddLinkedInteractiveStateListenerRequest, IAttachmentUrlRequest, IAttachmentUrlResponse, ICloseModal, IGetInteractiveState, IHintRequest, IInitInteractive, IShowModal, log, setOnUnload, showModal } from "@concord-consortium/lara-interactive-api";
 import { getLibraryInteractive } from "../utilities/library-interactives";
 import css from "./iframe-runtime.scss";
 
@@ -29,7 +29,7 @@ interface IProps {
 
 export const IframeRuntime: React.FC<IProps> =
   ({ authoredState, id, iframeStyling, interactiveState, logRequestData, report,
-      url, setHint, setInteractiveState, addLocalLinkedDataListener, initMessage, 
+      url, setHint, setInteractiveState, addLocalLinkedDataListener, initMessage,
       scale }) => {
     const [ iframeHeight, setIframeHeight ] = useState(300);
     const [ internalHint, setInternalHint ] = useState("");
@@ -45,14 +45,31 @@ export const IframeRuntime: React.FC<IProps> =
     interactiveStateRef.current = interactiveState;
     setInteractiveStateRef.current = setInteractiveState;
 
+    const resolveOnUnload = useRef<(value: any | PromiseLike<any>) => void>();
+
   useEffect(() => {
     const initInteractive = () => {
       const phone = phoneRef.current;
       if (!phone) {
         return;
       }
+
+      // Handle proxying the unloading request from Lara/AP through to the wrapped interactive.
+      // The promise that is saved is resolved in the subsequent interactiveState listener callback
+      setOnUnload((options: IGetInteractiveState) => {
+        if (options.unloading) {
+          return new Promise<any>(resolve => {
+            resolveOnUnload.current = resolve;
+            // send the unload request to the wrapped interactive
+            phone.post("getInteractiveState", options);
+          });
+        }
+        return Promise.resolve({});
+      });
+
       phone.addListener("interactiveState", (newInteractiveState: any) => {
         setInteractiveStateRef.current?.(newInteractiveState);
+        resolveOnUnload.current?.(newInteractiveState);
       });
       phone.addListener("height", (newHeight: number) => {
         setIframeHeight(newHeight);
