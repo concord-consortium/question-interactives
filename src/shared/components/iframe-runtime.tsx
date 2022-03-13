@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { renderHTML } from "../../shared/utilities/render-html";
 import { IframePhone } from "../types";
 import iframePhone from "iframe-phone";
-import { closeModal, IAddLinkedInteractiveStateListenerRequest, ICloseModal, IHintRequest, IInitInteractive, IShowModal, log, showModal } from "@concord-consortium/lara-interactive-api";
+import { closeModal, getClient, IAddLinkedInteractiveStateListenerRequest, IAttachmentUrlRequest, IAttachmentUrlResponse, ICloseModal, IHintRequest, IInitInteractive, IShowModal, log, showModal } from "@concord-consortium/lara-interactive-api";
 import { getLibraryInteractive } from "../utilities/library-interactives";
 import css from "./iframe-runtime.scss";
 
@@ -88,6 +88,34 @@ export const IframeRuntime: React.FC<IProps> =
           addLocalLinkedDataListener(request, phone);
         }
       });
+      phone.addListener("getAttachmentUrl", async (request: IAttachmentUrlRequest) => {
+        const client = getClient();
+
+        // This proxies the attachment request to the enclosing host (AP or Lara).
+        // To ensure that this request isn't mixed up with an existing request the request id
+        // is set to a random large id when it is passed to the enclosing host and then restored
+        // when passed back to the client
+
+        //--------------------------------------
+        // FIXME: (from Scott during code review)
+        //
+        // A problem with this approach is the file names. This iframe-runtime is used by interactives that host multiple
+        // sub interactives like the side-by-side or carousel. Let's say there are two CFM sub interactives. They will each choose
+        // a file name of file.json so they will clobber each other since there will just be one folder managed by the parent interactive.
+        //
+        // This is a general problem broader then just this one case. Leslie is aware of it, so I think we'll take some time in the future
+        // to fix this up so we can properly support this multiple sub-interactives.
+        //--------------------------------------
+        const minRequestId = 100000;
+        const savedRequestId = request.requestId;
+        request.requestId = minRequestId + Math.round(Math.random() * (Number.MAX_SAFE_INTEGER - minRequestId));
+        client.post("getAttachmentUrl", request);
+        client.addListener("attachmentUrl", (response: IAttachmentUrlResponse) => {
+          response.requestId = savedRequestId;
+          phone.post("attachmentUrl", response);
+        }, request.requestId);
+      });
+
       // if we have local linked interactives, we need to pass them in the linkedInteractives array
       let linkedInteractives: {id: string; label: string}[] = [];
       const libraryInteractive = getLibraryInteractive(url);
