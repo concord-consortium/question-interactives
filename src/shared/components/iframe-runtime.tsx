@@ -54,6 +54,9 @@ export const IframeRuntime: React.FC<IProps> =
         return;
       }
 
+      // FIXME: this will need to be updated to handle multiple sub interactives being hosted
+      // by a main interactive like carousel, side-by-side, or scaffolded question
+      //
       // Handle proxying the unloading request from Lara/AP through to the wrapped interactive.
       // The promise that is saved is resolved in the subsequent interactiveState listener callback
       setOnUnload((options: IGetInteractiveState) => {
