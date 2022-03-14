@@ -18,6 +18,48 @@ describe("BaseApp", () => {
     useAuthoredStateResult = { authoredState: {}, setAuthoredState: jest.fn() };
   });
 
+  it("renders 'Loading...' when mode is not yet set", () => {
+    useAuthoredStateResult = { authoredState: {
+        version: 1,
+        foo: "bar"
+      }, setAuthoredState: jest.fn() };
+    initMessage = { mode: undefined };
+
+    const Runtime = () => null;
+    const wrapper = mount(<BaseApp Runtime={Runtime} />);
+
+    expect(wrapper.text()).toEqual("Loading...");
+  });
+
+  it("renders authoring when mode is set to 'authoring'", () => {
+    useAuthoredStateResult = { authoredState: {
+        version: 1,
+        foo: "bar"
+      }, setAuthoredState: jest.fn() };
+    initMessage = { mode: "authoring" };
+
+    const Authoring = () => null;
+    const Runtime = () => null;
+    const wrapper = mount(<BaseApp Authoring={Authoring} Runtime={Runtime} />);
+
+    expect(wrapper.find(Authoring).length).toEqual(1);
+    expect(wrapper.find(Authoring).prop("authoredState")).toEqual({
+      version: 1,
+      foo: "bar"
+    });
+  });
+
+  it("returns an error when authoredState is not set", () => {
+    useAuthoredStateResult = { authoredState: null, setAuthoredState: jest.fn() };
+    initMessage = { mode: "runtime" };
+
+    const Runtime = () => null;
+    const wrapper = mount(<BaseApp Runtime={Runtime} />);
+
+    expect(wrapper.find(Runtime).length).toEqual(0);
+    expect(wrapper.text()).toEqual("Authored state is missing.");
+  });
+
   it("applies authored state migrations in runtime mode", () => {
     useAuthoredStateResult = { authoredState: {
         version: 1,

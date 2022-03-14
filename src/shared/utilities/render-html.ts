@@ -12,8 +12,8 @@ interface DomElement {
     prev?: DomElement;
     type?: string;
 }
-// eslint-disable-next-line @typescript-eslint/ban-types
-export type ParseHTMLReplacer = (domNode: DomElement) => JSX.Element | object | void | undefined | null | false;
+
+export type ParseHTMLReplacer = (domNode: DomElement) => JSX.Element | Record<string, unknown> | void | undefined | null | false;
 
 DOMPurify.setConfig({ ADD_ATTR: ['target'] });
 DOMPurify.addHook("afterSanitizeAttributes", function(node) {

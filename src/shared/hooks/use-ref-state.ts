@@ -6,7 +6,7 @@ import { useEffect, useRef, useState, Dispatch, MutableRefObject, SetStateAction
  * cf. https://blog.castiel.me/posts/2019-02-19-react-hooks-get-current-state-back-to-the-future/
  * @param {*} initialValue
  */
-export const useRefState = <T extends unknown>(initialValue: T)
+export const useRefState = <T>(initialValue: T)
               : [T, MutableRefObject<T>, Dispatch<SetStateAction<T>>] => {
   const [state, setState] = useState<T>(initialValue);
   const stateRef = useRef<T>(state);

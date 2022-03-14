@@ -7,10 +7,11 @@ const authoredState = {
   questionType: "multiple_choice" as const,
   prompt: "Test prompt",
   choices: [
-    {id: "id1", content: "Choice A"},
-    {id: "id2", content: "Choice B"}
+    {id: "id1", content: "Choice A", correct: true},
+    {id: "id2", content: "Choice B", correct: false}
   ],
-  layout: "vertical" as const
+  layout: "vertical" as const,
+  enableCheckAnswer: true
 };
 
 const interactiveState = {
@@ -47,7 +48,7 @@ describe("Runtime", () => {
     const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} />);
     wrapper.find("input[value='id1']").simulate("change", { target: { checked: true } });
     let newState = setState.mock.calls[0][0](interactiveState);
-    expect(newState).toEqual({answerType: "multiple_choice_answer", selectedChoiceIds: ["id1"], answerText: "Choice A"});
+    expect(newState).toEqual({answerType: "multiple_choice_answer", selectedChoiceIds: ["id1"], answerText: "(correct) Choice A"});
     wrapper.find("input[value='id2']").simulate("change", { target: { checked: true } });
     newState = setState.mock.calls[1][0](interactiveState);
     expect(newState).toEqual({answerType: "multiple_choice_answer", selectedChoiceIds: ["id2"], answerText: "Choice B"});
@@ -58,12 +59,77 @@ describe("Runtime", () => {
     const wrapper = shallow(<Runtime authoredState={Object.assign({}, authoredState, {multipleAnswers: true})} interactiveState={interactiveState} setInteractiveState={setState}/>);
     wrapper.find("input[value='id1']").simulate("change", { target: { checked: true } });
     let newState = setState.mock.calls[0][0](interactiveState);
-    expect(newState).toEqual({answerType: "multiple_choice_answer", selectedChoiceIds: ["id2", "id1"], answerText: "Choice B, Choice A"});
+    expect(newState).toEqual({answerType: "multiple_choice_answer", selectedChoiceIds: ["id2", "id1"], answerText: "Choice B, (correct) Choice A"});
     // Note that correct state below is an empty array. This is a controlled component, it doesn't have its own state,
     // so the previous click didn't really update interactiveState for it. We're just unchecking initially checked "id2".
     wrapper.find("input[value='id2']").simulate("change", { target: { checked: false } });
     newState = setState.mock.calls[1][0](interactiveState);
     expect(newState).toEqual({answerType: "multiple_choice_answer", selectedChoiceIds: [], answerText: ""});
+  });
+
+  it("has a Check Answer button that is disabled until an answer is selected", () => {
+    const setState = jest.fn();
+    interactiveState.selectedChoiceIds = [];
+    const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} />);
+    const checkAnswerButton = wrapper.find("[data-cy='check-answer-button']");
+    expect(checkAnswerButton.length).toEqual(1);
+    expect(checkAnswerButton.props().disabled).toEqual(true);
+  });
+
+  it("has a Check Answer button that is enabled when an answer is selected and when clicked shows correct feedback when correct answer is selected", () => {
+    const setState = jest.fn();
+    interactiveState.selectedChoiceIds = ['id1'];
+    const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} />);
+    const checkAnswerButton = wrapper.find("[data-cy='check-answer-button']");
+    expect(checkAnswerButton.length).toEqual(1);
+    expect(checkAnswerButton.props().disabled).toEqual(false);
+    checkAnswerButton.simulate("click");
+    expect(wrapper.find(".answerFeedback").length).toEqual(1);
+    expect(wrapper.find(".correctSymbol").length).toEqual(1);
+    expect(wrapper.find(".feedback").text()).toEqual("Yes! You are correct.");
+  });
+
+  it("has a Check Answer button that is enabled when at least one answer in a multiple-answer MC question is selected and when clicked shows partially correct feedback if only one of many correct answers is selected", () => {
+    const setState = jest.fn();
+    interactiveState.selectedChoiceIds = ['id1'];
+    const multiChoices = [
+      {id: "id1", content: "Choice A", correct: true},
+      {id: "id2", content: "Choice B", correct: false},
+      {id: "id3", content: "Choice C", correct: true}
+    ];
+    const wrapper = shallow(<Runtime authoredState={Object.assign({}, authoredState, {choices: multiChoices, multipleAnswers: true})} interactiveState={interactiveState} setInteractiveState={setState} />);
+    const checkAnswerButton = wrapper.find("[data-cy='check-answer-button']");
+    checkAnswerButton.simulate("click");
+    expect(wrapper.find(".answerFeedback").length).toEqual(1);
+    expect(wrapper.find(".feedback").text()).toEqual("You're on the right track, but you didn't select all the right answers yet.");
+  });
+
+  it("has a Check Answer button that is enabled when multiple answers in a multiple-answer MC question are selected and when clicked shows correct feedback if all correct answers are selected", () => {
+    const setState = jest.fn();
+    interactiveState.selectedChoiceIds = ['id1', 'id3'];
+    const multiChoices = [
+      {id: "id1", content: "Choice A", correct: true},
+      {id: "id2", content: "Choice B", correct: false},
+      {id: "id3", content: "Choice C", correct: true}
+    ];
+    const wrapper = shallow(<Runtime authoredState={Object.assign({}, authoredState, {choices: multiChoices, multipleAnswers: true})} interactiveState={interactiveState} setInteractiveState={setState} />);
+    const checkAnswerButton = wrapper.find("[data-cy='check-answer-button']");
+    checkAnswerButton.simulate("click");
+    expect(wrapper.find(".answerFeedback").length).toEqual(1);
+    expect(wrapper.find(".feedback").text()).toEqual("Yes! You are correct.");
+  });
+
+  it("has a Check Answer button that is enabled when an answer is selected and when clicked shows incorrect feedback if an incorrect answer is selected", () => {
+    const setState = jest.fn();
+    interactiveState.selectedChoiceIds = ['id2'];
+    const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} />);
+    const checkAnswerButton = wrapper.find("[data-cy='check-answer-button']");
+    expect(checkAnswerButton.length).toEqual(1);
+    expect(checkAnswerButton.props().disabled).toEqual(false);
+    checkAnswerButton.simulate("click");
+    expect(wrapper.find(".answerFeedback").length).toEqual(1);
+    expect(wrapper.find(".incorrectSymbol").length).toEqual(1);
+    expect(wrapper.find(".feedback").text()).toEqual("Sorry, that is incorrect.");
   });
 
   describe("report mode", () => {
@@ -76,12 +142,15 @@ describe("Runtime", () => {
 
       expect(wrapper.find("input[value='id1']").props().disabled).toEqual(true);
       expect(wrapper.find("input[value='id2']").props().disabled).toEqual(true);
+
+      expect(wrapper.find(".radio-choice").at(0).props().className).toMatch(/incorrectChoice/);
     });
 
     it("handles passed interactiveState", () => {
       const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} report={true} />);
       expect(wrapper.find("input[value='id1']").props().checked).toEqual(false);
       expect(wrapper.find("input[value='id2']").props().checked).toEqual(true);
+      expect(wrapper.find(".radio-choice").at(0).props().className).toMatch(/correctChoice/);
     });
 
     it("never calls setInteractiveState when user selects an answer", () => {
