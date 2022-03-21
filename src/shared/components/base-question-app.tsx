@@ -28,7 +28,7 @@ interface IBaseQuestionInteractiveState {
 }
 
 export interface IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> extends IRuntimeComponentProps<IAuthoredState> {
-  interactiveState?: IInteractiveState | null,
+  interactiveState?: IInteractiveState | null;
   setInteractiveState?: (updateFunc: UpdateFunc<IInteractiveState>) => void;
   report?: boolean;
   view?: "standalone";

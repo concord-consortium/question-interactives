@@ -86,6 +86,7 @@ export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps
       case "authoring":
         return renderAuthoring();
       case "runtime":
+      case "report":
         return renderRuntime();
       default:
         return "Loading...";
