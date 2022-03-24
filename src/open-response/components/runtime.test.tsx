@@ -1,6 +1,8 @@
 import React from "react";
-import { shallow } from "enzyme";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import * as Component from "./runtime";
 import { Runtime } from "./runtime";
+import { IInteractiveState } from "./types";
 
 const authoredState = {
   version: 1,
@@ -8,7 +10,8 @@ const authoredState = {
   prompt: "Test prompt",
   hint: "hint",
   required: false,
-  defaultAnswer: ""
+  defaultAnswer: "",
+  audioEnabled: false
 };
 
 const authoredRichState = {
@@ -16,56 +19,146 @@ const authoredRichState = {
   prompt: "<p><strong>Rich</strong> <em>text</em> <u>prompt</u>"
 };
 
-const interactiveState = {
+const interactiveState: IInteractiveState = {
   answerType: "open_response_answer" as const,
-  answerText: "Test answer",
+  answerText: "Test answer"
 };
+
+const authoredStateWithAudioEnabled = {...authoredState, audioEnabled: true};
+const savedAudioFileName = "test-audio.ogg";
+const interactiveStateWithSavedAudio = {...interactiveState, audioFile: savedAudioFileName};
+
+const mockGetUserMedia = jest.fn(
+  async(params) => {
+    return true;
+  }
+);
+const mockMediaRecorder = {
+  start: jest.fn(),
+  stop: jest.fn(),
+  pause: jest.fn()
+};
+const mockPause = jest.fn(() => { return true; });
+const mockPlay = jest.fn(() => { return true; });
+
+Object.defineProperty(window.navigator, "mediaDevices", {
+  value: {
+    getUserMedia: mockGetUserMedia
+  }
+});
+Object.defineProperty(window, "MediaRecorder", {
+  writable: true,
+  value: jest.fn().mockImplementation(() => mockMediaRecorder)
+});
+Object.defineProperty(window.HTMLMediaElement.prototype, "pause", {
+  writable: true,
+  value: mockPause
+});
+Object.defineProperty(window.HTMLMediaElement.prototype, "play", {
+  writable: true,
+  value: mockPlay
+});
+
+beforeEach(() => {
+  jest.useFakeTimers();
+  window.confirm = jest.fn(() => true) as jest.Mock<any>;
+});
+
+afterEach(() => {
+  jest.useRealTimers();
+  jest.restoreAllMocks();
+});
 
 describe("Runtime", () => {
   it("renders prompt and textarea", () => {
-    const wrapper = shallow(<Runtime authoredState={authoredState} />);
-    const prompt = wrapper.find("legend");
-    expect(prompt.html()).toEqual(expect.stringContaining(authoredState.prompt));
-    expect(wrapper.find("textarea").length).toEqual(1);
+    render(<Runtime authoredState={authoredState} />);
+    const prompt = screen.getByTestId("legend");
+    expect(prompt.innerHTML).toEqual(expect.stringContaining(authoredState.prompt));
+    expect(screen.getByTestId("response-textarea")).toBeDefined();
   });
 
   it("renders rich text prompt and textarea", () => {
-    const wrapper = shallow(<Runtime authoredState={authoredRichState} />);
-    const prompt = wrapper.find("legend");
-    expect(prompt.html()).toEqual(expect.stringContaining(authoredRichState.prompt));
-    expect(wrapper.find("textarea").length).toEqual(1);
+    render(<Runtime authoredState={authoredRichState} />);
+    const prompt = screen.getByTestId("legend");
+    expect(prompt.innerHTML).toEqual(expect.stringContaining(authoredRichState.prompt));
+    expect(screen.getByTestId("response-textarea")).toBeDefined();
   });
 
   it("handles passed interactiveState", () => {
-    const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} />);
-    expect(wrapper.find("textarea").props().value).toEqual(interactiveState.answerText);
+    render(<Runtime authoredState={authoredState} interactiveState={interactiveState} />);
+    expect(screen.getByTestId("response-textarea")).toHaveValue(interactiveState.answerText);
   });
 
   it("calls setInteractiveState when user provides an answer", () => {
     const setState = jest.fn();
-    const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} />);
-    wrapper.find("textarea").simulate("change", { target: { value: "new answer" } });
+    render(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} />);
+    fireEvent.change(screen.getByTestId("response-textarea"), { target: { value: "new answer" } });
     const newState = setState.mock.calls[0][0](interactiveState);
     expect(newState).toEqual({answerType: "open_response_answer", answerText: "new answer"});
   });
 
+  it("does not render an audio record button if audioEnabled is false", () => {
+    render(<Runtime authoredState={authoredState} interactiveState={interactiveState} />);
+    expect(screen.queryAllByTestId("audio-record-button")).toHaveLength(0);
+    expect(screen.getByTestId("response-textarea")).toHaveAttribute("placeholder", "Please type your answer here.");
+  });
+
+  it("renders an audio record button if audioEnabled is true", () => {
+    render(<Runtime authoredState={authoredStateWithAudioEnabled} interactiveState={interactiveState} />);
+    expect(screen.getByTestId("audio-record-button")).toBeDefined();
+    expect(screen.getByTestId("response-textarea")).toHaveAttribute("placeholder", "Please type your answer here, or record your answer using the microphone.");
+  });
+
+  it("allows user to record an audio response if audioEnabled is true", async () => {
+    render(<Runtime authoredState={authoredStateWithAudioEnabled} interactiveState={interactiveState} />);
+    const recordButton = screen.getByTestId("audio-record-button");
+    expect(recordButton).toBeDefined();
+    await waitFor(() => {
+       fireEvent.click(recordButton);
+       expect(MediaRecorder).toHaveBeenCalledTimes(2);
+       // TODO: check if .start and .stop have been called, check if play, stop, and delete buttons appear after recording ended
+    });
+  });
+
+  it("loads a previously saved audio response", async () => {
+    const mockFetchAudioUrl = jest.spyOn(Component, "fetchAudioUrl").mockResolvedValue(`https://concord.org/${savedAudioFileName}`);
+    render(<Runtime authoredState={authoredStateWithAudioEnabled} interactiveState={interactiveStateWithSavedAudio} />);
+    expect(mockFetchAudioUrl).toHaveBeenCalledTimes(1);
+    expect(screen.getByTestId("response-textarea")).toBeDefined();
+    await waitFor(() => {
+      const playButton = screen.getByTestId("audio-play-button");
+      const stopButton = screen.getByTestId("audio-stop-button");
+      const deleteButton = screen.getByTestId("audio-delete-button");
+      expect(playButton).toBeDefined();
+      expect(stopButton).toBeDefined();
+      expect(deleteButton).toBeDefined();
+      fireEvent.click(playButton);
+      expect(mockPlay).toHaveBeenCalledTimes(1);
+      fireEvent.click(stopButton);
+      expect(mockPause).toHaveBeenCalledTimes(1);
+      fireEvent.click(deleteButton);
+      expect(window.confirm).toHaveBeenCalledTimes(1);
+    });
+    mockFetchAudioUrl.mockRestore();
+  });
+
   describe("report mode", () => {
     it("renders prompt and *disabled* textarea", () => {
-      const wrapper = shallow(<Runtime authoredState={authoredState} report={true} />);
-      const prompt = wrapper.find("legend");
-      expect(prompt.html()).toEqual(expect.stringContaining(authoredState.prompt));
-      expect(wrapper.find("textarea").props().disabled).toEqual(true);
+      render(<Runtime authoredState={authoredState} report={true} />);
+      const prompt = screen.getByTestId("legend");
+      expect(prompt.innerHTML).toEqual(expect.stringContaining(authoredState.prompt));
+      expect(screen.getByTestId("response-textarea")).toHaveAttribute("disabled");
     });
 
     it("handles passed interactiveState", () => {
-      const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} report={true} />);
-      expect(wrapper.find("textarea").props().value).toEqual(interactiveState.answerText);
+      render(<Runtime authoredState={authoredState} interactiveState={interactiveState} report={true} />);
+      expect(screen.getByTestId("response-textarea")).toHaveValue(interactiveState.answerText);
     });
 
     it("never calls setInteractiveState when user selects an answer", () => {
       const setState = jest.fn();
-      const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} report={true} />);
-      wrapper.find("textarea").simulate("change", { target: { value: "diff answer" } });
+      render(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} report={true} />);
+      fireEvent.change(screen.getByTestId("response-textarea"), { target: { value: "diff answer" } });
       expect(setState).not.toHaveBeenCalled();
     });
   });

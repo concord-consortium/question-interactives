@@ -4,18 +4,23 @@ import { renderHTML } from "../../shared/utilities/render-html";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { DecorateChildren } from "@concord-consortium/text-decorator";
 import { useGlossaryDecoration } from "../../shared/hooks/use-glossary-decoration";
-import { IAttachmentUrlRequest, IWriteAttachmentRequest, IAttachmentUrlResponse,
-  writeAttachment, readAttachment, getAttachmentUrl
-} from "@concord-consortium/lara-interactive-api";
+import { writeAttachment, getAttachmentUrl } from "@concord-consortium/lara-interactive-api";
 
 import css from "./runtime.scss";
 import iconCss from "../../shared/components/icons.scss";
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
 
+export const fetchAudioUrl = async (attachedAudioFile: string) => {
+  if (attachedAudioFile) {
+    return await getAttachmentUrl({name: attachedAudioFile});
+  }
+};
+
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
   const audioEnabled = authoredState.audioEnabled;
+  const browserSupportsAudio = !!navigator.mediaDevices && !!navigator.mediaDevices.getUserMedia;
   const placeholderText = audioEnabled 
                             ? "Please type your answer here, or record your answer using the microphone."
                             : "Please type your answer here.";
@@ -23,6 +28,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const attachedAudioFile = interactiveState?.audioFile ? interactiveState.audioFile : undefined;
   let recordedBlobs: Blob[] = [];
   const [audioUrl, setAudioUrl] = React.useState<string | undefined>(undefined);
+  const [audioSupported, setAudioSupported] = React.useState<boolean>(browserSupportsAudio);
   const [startDisabled, setStartDisabled] = React.useState<boolean>(false);
   const [playDisabled, setPlayDisabled] = React.useState<boolean>(false);
   const [stopDisabled, setStopDisabled] = React.useState<boolean>(true);
@@ -41,21 +47,27 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   // }, []);
 
   React.useEffect(() => {
-    const fetchAudioUrl = async () => {
+    const getAudioUrl = async () => {
       if (attachedAudioFile) {
-        const s3Url = await getAttachmentUrl({name: attachedAudioFile});
+        const s3Url = await fetchAudioUrl(attachedAudioFile);
         setAudioUrl(s3Url);
       }
     };
-    fetchAudioUrl();
+    getAudioUrl();
   }, [attachedAudioFile]);
 
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInteractiveState?.(prevState => ({...prevState, answerType: "open_response_answer", answerText: event.target.value}));
+    const { value } = event.target;
+    setInteractiveState?.(prevState => ({
+      ...prevState,
+      answerType: "open_response_answer",
+      answerText: value
+    }));
   };
 
   const handleAudioRecord = () => {
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    if (audioSupported) {
+      setAudioSupported(true);
       navigator.mediaDevices
                .getUserMedia ({ audio: true })
                .then((stream: any) => {
@@ -73,10 +85,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                  };
                })
                .catch((error: string) => {
-                 console.log(`getUserMedia Error: ${error}`);
+                 console.error(`getUserMedia Error: ${error}`);
                });
     } else {
-      console.log('getUserMedia is not supported by your web browser!');
+      setAudioSupported(false);
+      alert("The audio recording feature is not supported by your web browser. Please upgrade your browser if you wish to record an audio response.");
     }
   };
 
@@ -100,13 +113,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     setStopDisabled(true);
   };
 
-  // this probably isn't needed
   const generateFileName = () => {
     const timestamp = Date.now();
-    // const characters = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-    // const randString = Array(12).join().split(',').map(() => {
-    //   return characters.charAt(Math.floor(Math.random() * characters.length));
-    // }).join('');
     return  "audio-" + timestamp + ".ogg";
   };
 
@@ -119,10 +127,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         const s3Url = await getAttachmentUrl({name: fileName});
         setAudioUrl(s3Url);
       } else {
-        console.log("Error: " + saveFileResponse.statusText);
+        console.error(`Error saving audio: ${saveFileResponse.statusText}`);
       }
     } else {
-      console.log("No file data.");
+      console.error("Error saving audio: No file data.");
     }
   };
 
@@ -141,7 +149,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     <fieldset className={css.openResponse}>
       { authoredState.prompt &&
         <DecorateChildren decorateOptions={decorateOptions}>
-          <legend className={css.prompt}>
+          <legend className={css.prompt} data-testid="legend">
             {renderHTML(authoredState.prompt)}
           </legend>
         </DecorateChildren> }
@@ -153,6 +161,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           disabled={readOnly}
           rows={8}
           placeholder={placeholderText}
+          data-testid="response-textarea"
         />
         { audioEnabled && !audioUrl &&
           <div className={css.recordButtonContainer}>
@@ -162,6 +171,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               className={`${iconCss.iconRecord} ${css.audioControl} ${startDisabled ? css.active : ""}`}
               disabled={startDisabled}
               onClick={handleAudioRecord}
+              data-testid="audio-record-button"
             >
               <span className={css.buttonText}>Record</span>
             </button>
@@ -178,6 +188,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                 className={`${iconCss.iconAudio} ${css.audioControl} ${playDisabled ? css.active : ""}`}
                 disabled={playDisabled}
                 onClick={handleAudioPlay}
+                data-testid="audio-play-button"
               >
                 <span className={css.buttonText}>Play</span>
               </button>
@@ -187,6 +198,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                 className={`${iconCss.iconStop} ${css.audioControl} ${stopDisabled ? css.disabled : ""}`}
                 disabled={stopDisabled}
                 onClick={handleAudioPlayStop}
+                data-testid="audio-stop-button"
               >
                 <span className={css.buttonText}>Stop</span>
               </button>
@@ -196,6 +208,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                   title="Delete Audio"
                   className={`${iconCss.iconDeleteAudio} ${css.audioControl}`}
                   onClick={handleAudioDelete}
+                  data-testid="audio-delete-button"
                 >
                   <span className={css.buttonText}>Delete</span>
                 </button> }
