@@ -80,7 +80,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                  };
                  mediaRecorderRef.current.onstop = () => {
                    clearTimeout(recordingTimer);
-                   const audioBlobData: Blob | MediaSource = new Blob(recordedBlobs, {type: "audio/ogg;codecs=opus"});
+                   const audioBlobData: Blob | MediaSource = new Blob(recordedBlobs, {type: "audio/mp3"});
                    handleAudioSave(audioBlobData);
                  };
                })
@@ -115,7 +115,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const generateFileName = () => {
     const timestamp = Date.now();
-    return  "audio-" + timestamp + ".ogg";
+    return  "audio-" + timestamp + ".mp3";
   };
 
   const handleAudioSave = async (fileData: Blob) => {
