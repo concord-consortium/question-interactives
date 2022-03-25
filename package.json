@@ -132,6 +132,7 @@
     "@concord-consortium/text-decorator": "^1.0.2",
     "@concord-consortium/token-service": "^2.1.0",
     "acorn": "^8.7.0",
+    "audio-recorder-polyfill": "^0.4.1",
     "chart.js": "^2.5.0",
     "chartjs-plugin-datalabels": "^1.0.0",
     "classnames": "^2.3.1",

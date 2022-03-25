@@ -5,6 +5,7 @@ import { IAuthoredState, IInteractiveState } from "./types";
 import { DecorateChildren } from "@concord-consortium/text-decorator";
 import { useGlossaryDecoration } from "../../shared/hooks/use-glossary-decoration";
 import { writeAttachment, getAttachmentUrl } from "@concord-consortium/lara-interactive-api";
+import AudioRecorder from "audio-recorder-polyfill";
 
 import css from "./runtime.scss";
 import iconCss from "../../shared/components/icons.scss";
@@ -20,6 +21,7 @@ export const fetchAudioUrl = async (attachedAudioFile: string) => {
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
   const audioEnabled = authoredState.audioEnabled;
+  window.MediaRecorder = AudioRecorder;
   const browserSupportsAudio = !!navigator.mediaDevices && !!navigator.mediaDevices.getUserMedia;
   const placeholderText = audioEnabled 
                             ? "Please type your answer here, or record your answer using the microphone."
@@ -67,22 +69,21 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const handleAudioRecord = () => {
     if (audioSupported) {
-      setAudioSupported(true);
       navigator.mediaDevices
                .getUserMedia ({ audio: true })
                .then((stream: any) => {
                  mediaRecorderRef.current = new MediaRecorder(stream);
+                 mediaRecorderRef.current.addEventListener("dataavailable", (event: BlobEvent) => {
+                   recordedBlobs.push(event.data);
+                 });
+                 mediaRecorderRef.current.addEventListener("stop", () => {
+                   clearTimeout(recordingTimer);
+                   const audioBlobData: Blob | MediaSource = new Blob(recordedBlobs, {type: "audio/mpeg"});
+                   handleAudioSave(audioBlobData);
+                 });
                  mediaRecorderRef.current.start();
                  setStartDisabled(true);
-                 const recordingTimer = setTimeout(handleAudioRecordStop, 3000);
-                 mediaRecorderRef.current.ondataavailable = (event: BlobEvent) => {
-                   recordedBlobs.push(event.data);
-                 };
-                 mediaRecorderRef.current.onstop = () => {
-                   clearTimeout(recordingTimer);
-                   const audioBlobData: Blob | MediaSource = new Blob(recordedBlobs, {type: "audio/mp3"});
-                   handleAudioSave(audioBlobData);
-                 };
+                 const recordingTimer = setTimeout(handleAudioRecordStop, 5000);
                })
                .catch((error: string) => {
                  console.error(`getUserMedia Error: ${error}`);
@@ -140,7 +141,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       setStartDisabled(false);
       recordedBlobs = [];
       setInteractiveState?.(prevState => ({...prevState, answerType: "open_response_answer", audioFile: undefined}));
-      // delete attachment data and file in S3?
     }
   };
 
@@ -178,8 +178,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           </div> }
         { audioEnabled && audioUrl &&
           <div className={css.audioPlayer}>
-            <audio ref={audioPlayerRef} controls onEnded={handleAudioPlayEnded}>
-              <source src={audioUrl} type="audio/ogg" />
+            <audio ref={audioPlayerRef} controls preload="auto" onEnded={handleAudioPlayEnded}>
+              <source src={audioUrl} type="audio/mpeg" />
             </audio>
             <div className={css.audioControls}>
               <button
