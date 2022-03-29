@@ -31,22 +31,12 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   let recordedBlobs: Blob[] = [];
   const [audioUrl, setAudioUrl] = React.useState<string | undefined>(undefined);
   const [audioSupported, setAudioSupported] = React.useState<boolean>(browserSupportsAudio);
-  const [startDisabled, setStartDisabled] = React.useState<boolean>(false);
+  const [recordingStarted, setRecordingStarted] = React.useState<boolean>(false);
+  const [recordingDisabled, setRecordingDisabled] = React.useState<boolean>(false);
   const [playDisabled, setPlayDisabled] = React.useState<boolean>(false);
   const [stopDisabled, setStopDisabled] = React.useState<boolean>(true);
   const mediaRecorderRef = React.useRef<MediaRecorder>();
   const audioPlayerRef = React.useRef<HTMLAudioElement>(null);
-
-  // This useEffect ensures that a Firestore record exists before we try saving an audio 
-  // file. Unless a Firestore record exists, the audio file's attachment metadata will not 
-  // be recorded. There should be a better way to handle this. For example, a Firestore 
-  // record should be created when an attachment is created, even if there is nothing else 
-  // to record in that record. Right now it seems like the Activity Player will only add 
-  // attachments to question reponses if some other response content already exists (e.g., 
-  // answer text). It won't initialize a Firestore record with only an attachment.
-  // React.useEffect(() => {
-  //   setInteractiveState?.(prevState => ({...prevState, answerType: "open_response_answer"}));
-  // }, []);
 
   React.useEffect(() => {
     const getAudioUrl = async () => {
@@ -82,8 +72,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                    handleAudioSave(audioBlobData);
                  });
                  mediaRecorderRef.current.start();
-                 setStartDisabled(true);
-                 const recordingTimer = setTimeout(handleAudioRecordStop, 5000);
+                 setRecordingStarted(true);
+                 const recordingTimer = setTimeout(handleAudioRecordStop, 60000);
                })
                .catch((error: string) => {
                  console.error(`getUserMedia Error: ${error}`);
@@ -96,6 +86,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const handleAudioRecordStop = () => {
     mediaRecorderRef.current?.stop();
+    setRecordingStarted(false);
   };
 
   const handleAudioPlay = () => {
@@ -120,6 +111,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const handleAudioSave = async (fileData: Blob) => {
+    setRecordingDisabled(true);
     if (fileData) {
       const fileName = attachedAudioFile ? attachedAudioFile : generateFileName();
       const saveFileResponse = await writeAttachment({name: fileName, content: fileData, contentType: "audio/ogg"});
@@ -138,7 +130,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const handleAudioDelete = () => {
     if (confirm("Are you sure you want to delete the audio recording?")) {
       setAudioUrl(undefined);
-      setStartDisabled(false);
+      setRecordingStarted(false);
+      setRecordingDisabled(false);
       recordedBlobs = [];
       setInteractiveState?.(prevState => ({...prevState, answerType: "open_response_answer", audioFile: undefined}));
     }
@@ -163,14 +156,15 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           placeholder={placeholderText}
           data-testid="response-textarea"
         />
-        { audioEnabled && !audioUrl &&
+        { audioEnabled && !audioUrl && !readOnly && 
           <div className={css.recordButtonContainer}>
+            { recordingDisabled && <span className={css.saveIndicator}>Saving. Please wait...</span> }
             <button
               aria-label="Record Audio"
               title="Record Audio"
-              className={`${iconCss.iconRecord} ${css.audioControl} ${startDisabled ? css.active : ""}`}
-              disabled={startDisabled}
-              onClick={handleAudioRecord}
+              className={`${iconCss.iconRecord} ${css.audioControl} ${recordingStarted ? css.recordingActive : ""}`}
+              onClick={recordingStarted ? handleAudioRecordStop : handleAudioRecord }
+              disabled={recordingDisabled}
               data-testid="audio-record-button"
             >
               <span className={css.buttonText}>Record</span>
@@ -187,7 +181,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                 title="Play Audio"
                 className={`${iconCss.iconAudio} ${css.audioControl} ${playDisabled ? css.active : ""}`}
                 disabled={playDisabled}
-                onClick={handleAudioPlay}
+                onClick={playDisabled ? undefined : handleAudioPlay}
                 data-testid="audio-play-button"
               >
                 <span className={css.buttonText}>Play</span>
@@ -197,7 +191,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                 title="Stop Audio"
                 className={`${iconCss.iconStop} ${css.audioControl} ${stopDisabled ? css.disabled : ""}`}
                 disabled={stopDisabled}
-                onClick={handleAudioPlayStop}
+                onClick={stopDisabled ? undefined : handleAudioPlayStop}
                 data-testid="audio-stop-button"
               >
                 <span className={css.buttonText}>Stop</span>
@@ -206,8 +200,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                 <button
                   aria-label="Delete Audio"
                   title="Delete Audio"
-                  className={`${iconCss.iconDeleteAudio} ${css.audioControl}`}
-                  onClick={handleAudioDelete}
+                  className={`${iconCss.iconDeleteAudio} ${css.audioControl} ${readOnly ? css.disabled : ""}`}
+                  onClick={readOnly ? undefined : handleAudioDelete}
+                  disabled={readOnly}
                   data-testid="audio-delete-button"
                 >
                   <span className={css.buttonText}>Delete</span>
