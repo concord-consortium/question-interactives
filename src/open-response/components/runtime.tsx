@@ -114,7 +114,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     setRecordingDisabled(true);
     if (fileData) {
       const fileName = attachedAudioFile ? attachedAudioFile : generateFileName();
-      const saveFileResponse = await writeAttachment({name: fileName, content: fileData, contentType: "audio/ogg"});
+      const saveFileResponse = await writeAttachment({name: fileName, content: fileData, contentType: "audio/mpeg"});
       if (saveFileResponse.status === 200) {
         setInteractiveState?.(prevState => ({...prevState, answerType: "open_response_answer", audioFile: fileName}));
         const s3Url = await getAttachmentUrl({name: fileName});
