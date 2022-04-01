@@ -1,13 +1,102 @@
-legend.prompt {     // clear bootstrap stuff
-  display: unset;
-  width: unset;
-  margin-bottom: unset;
-  font-size: unset;
-  border: unset;
-  padding-bottom: 5px;
+.openResponse {
+  legend.prompt {     // clear bootstrap stuff
+    display: unset;
+    width: unset;
+    margin-bottom: unset;
+    font-size: unset;
+    border: unset;
+    padding-bottom: 5px;
 
-  img {
-    height: auto;
-    max-width: 100%;
+    img {
+      height: auto;
+      max-width: 100%;
+    }
   }
+  button.audioControl {
+    background: transparent;
+    border: solid 2px #313131;
+    border-radius: 100%;
+    color: #313131;
+    font-size: 24px;
+    height: 28px;
+    margin-left: 5px;
+    padding: 0;
+    position: relative;
+    transition: .2s;
+    width: 28px;
+
+    .buttonText {
+      display: block;
+      overflow: hidden;
+      text-indent: 100%;
+      white-space: nowrap;
+      width: 100%;
+    }
+
+    &:hover {
+      border-color: #0592af;
+      color: #0592af;
+    }
+    &:active {
+      border-color: #02607c;
+      color: #02607c;
+    }
+    &.active {
+      animation: isActive .7s infinite;
+      border-color: #0592af;
+      color: #0592af;
+      cursor: not-allowed;
+    }
+    &.recordingActive {
+      animation: isActive .7s infinite;
+      border-color: #0592af;
+      color: #0592af;
+      cursor: pointer;
+    }
+    &.disabled {
+      cursor: not-allowed;
+      opacity: .5;
+      &:hover {
+        border-color: #313131;
+        color: #313131;
+      }
+    }
+  }
+  .inputContainer {
+    position: relative;
+
+    .recordButtonContainer {
+      bottom: 10px;
+      position: absolute;
+      right: 10px;
+      text-align: right;
+      width: 100%;
+
+      .saveIndicator {
+        animation: isActive .7s infinite;
+        font-size: 14px;
+      }
+    }
+
+    .audioPlayer {
+      bottom: 10px;
+      position: absolute;
+      right: 10px;
+      width: 100%;
+  
+      audio {
+        display: none;
+      }
+      .audioControls {
+        text-align: right;
+      }
+    }
+  }
+
+  @keyframes isActive {
+    0% { opacity: 1; }
+    50% { opacity: .6 }
+    100% { opacity: 1; }
+  }
+
 }

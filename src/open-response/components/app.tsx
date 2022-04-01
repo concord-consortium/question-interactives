@@ -24,6 +24,10 @@ const baseAuthoringProps = {
         title: "Required (Show submit and lock button)",
         type: "boolean"
       },
+      audioEnabled: {
+        title: "Allow students to record audio response",
+        type: "boolean"
+      },
       hint: {
         title: "Hint",
         type: "string"
@@ -67,6 +71,7 @@ const baseAuthoringProps = {
     "ui:order": [
       "prompt",
       "required",
+      "audioEnabled",
       "predictionFeedback",
       "*"
     ],
@@ -91,7 +96,7 @@ const baseAuthoringProps = {
   }
 };
 
-const isAnswered = (interactiveState: IInteractiveState | null) => !!interactiveState?.answerText;
+const isAnswered = (interactiveState: IInteractiveState | null) => !!interactiveState?.answerText || !!interactiveState?.audioFile;
 
 export const App = () => (
   <BaseQuestionApp<IAuthoredState, IInteractiveState>
