@@ -52,6 +52,59 @@ context("Test open response interactive", () => {
         expect(state).eql({ answerType: "open_response_answer", answerText: "Default answer. Test answer" });
       });
     });
+
+    it("allows the recording of an audio response if audioEnabled is true", () => {
+      phonePost("initInteractive", {
+        mode: "runtime",
+        authoredState: {
+          version: 1,
+          prompt: "Test prompt",
+          defaultAnswer: "Default answer",
+          audioEnabled: true
+        },
+        interactiveState: {
+          answerType: "open_response_answer",
+          answerText: ""
+        }
+      });
+
+      cy.getIframeBody().find("[data-testid=audio-record-button]").should("be.visible");
+      cy.getIframeBody().find("[data-testid=record-timer-readout]").should("be.visible");
+      cy.getIframeBody().find("[data-testid=audio-stop-record-button]").should("be.visible");
+      cy.getIframeBody().find("[data-testid=record-timer-readout]").should("include.text", "00:00");
+      cy.getIframeBody().find("[data-testid=audio-record-button]").click();
+      cy.wait(1000);
+      cy.getIframeBody().find("[data-testid=record-timer-readout]").should("include.text", "00:01");
+      cy.getIframeBody().find("[data-testid=audio-stop-record-button]").click();
+      cy.getIframeBody().find("[data-testid=record-timer-readout]").should("include.text", "00:00");
+      cy.getIframeBody().find("[data-testid=saving-indicator]").should("be.visible");
+      cy.getIframeBody().find("[data-testid=saving-indicator]").should("include.text", "Saving. Please wait...");
+    });
+
+    it("automatically increases height of textarea if audioEnabled is true", () => {
+      phonePost("initInteractive", {
+        mode: "runtime",
+        authoredState: {
+          version: 1,
+          prompt: "Test prompt",
+          defaultAnswer: "Default answer",
+          audioEnabled: true
+        },
+        interactiveState: {
+          answerType: "open_response_answer",
+          answerText: ""
+        }
+      });
+
+      cy.getIframeBody().find("textarea").invoke("height").should("not.be.lessThan", 123);
+      cy.getIframeBody().find("textarea").type(
+        "Hydrogen atoms shores of the cosmic ocean tesseract citizens of distant epochs rings of Uranus Euclid? Star stuff harvesting star light descended from astronomers another world Champollion two ghostly white figures in coveralls and helmets are softly dancing cosmos. Encyclopaedia galactica vanquish the impossible inconspicuous motes of rock and gas preserve and cherish that pale blue dot a very small stage in a vast cosmic arena Sea of Tranquility and billions upon billions upon billions upon billions upon billions upon billions upon billions. Hydrogen atoms shores of the cosmic ocean tesseract citizens of distant epochs rings of Uranus Euclid? Star stuff harvesting star light descended from astronomers another world Champollion two ghostly white figures in coveralls and helmets are softly dancing cosmos.",
+        { delay: 0 }
+      );
+      cy.getIframeBody().find("textarea").invoke("height").should("be.greaterThan", 123);
+      cy.getIframeBody().find("textarea").type("{backspace}".repeat(300), { delay: 0 });
+      cy.getIframeBody().find("textarea").invoke("height").should("not.be.lessThan", 123);
+    });
   });
 
   context("Submit button", () => {
