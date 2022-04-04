@@ -4,7 +4,7 @@ import { renderHTML } from "../../shared/utilities/render-html";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { DecorateChildren } from "@concord-consortium/text-decorator";
 import { useGlossaryDecoration } from "../../shared/hooks/use-glossary-decoration";
-import { writeAttachment, getAttachmentUrl } from "@concord-consortium/lara-interactive-api";
+import { getAttachmentUrl, log, writeAttachment } from "@concord-consortium/lara-interactive-api";
 import AudioRecorder from "audio-recorder-polyfill";
 
 import css from "./runtime.scss";
@@ -33,6 +33,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const [audioSupported, setAudioSupported] = React.useState<boolean>(browserSupportsAudio);
   const [recordingStarted, setRecordingStarted] = React.useState<boolean>(false);
   const [recordingDisabled, setRecordingDisabled] = React.useState<boolean>(false);
+  const [recordingFailed, setRecordingFailed] = React.useState<boolean>(false);
   const [playDisabled, setPlayDisabled] = React.useState<boolean>(false);
   const [stopDisabled, setStopDisabled] = React.useState<boolean>(true);
   const mediaRecorderRef = React.useRef<MediaRecorder>();
@@ -59,6 +60,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const handleAudioRecord = () => {
     if (audioSupported) {
+      setRecordingFailed(false);
       navigator.mediaDevices
                .getUserMedia ({ audio: true })
                .then((stream: any) => {
@@ -76,7 +78,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                  const recordingTimer = setTimeout(handleAudioRecordStop, 60000);
                })
                .catch((error: string) => {
-                 console.error(`getUserMedia Error: ${error}`);
+                 handleRecordingFailure(`${error}`);
                });
     } else {
       setAudioSupported(false);
@@ -119,11 +121,12 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         setInteractiveState?.(prevState => ({...prevState, answerType: "open_response_answer", audioFile: fileName}));
         const s3Url = await getAttachmentUrl({name: fileName});
         setAudioUrl(s3Url);
+        log("audio response recorded", {fileName});
       } else {
-        console.error(`Error saving audio: ${saveFileResponse.statusText}`);
+        handleRecordingFailure(saveFileResponse.statusText);
       }
     } else {
-      console.error("Error saving audio: No file data.");
+      handleRecordingFailure("No file data.");
     }
   };
 
@@ -135,6 +138,13 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       recordedBlobs = [];
       setInteractiveState?.(prevState => ({...prevState, answerType: "open_response_answer", audioFile: undefined}));
     }
+  };
+
+  const handleRecordingFailure = (error: string) => {
+    setRecordingFailed(true);
+    setRecordingDisabled(false);
+    console.error(`Error: ${error}`);
+    log("audio response recording failed", {error});
   };
 
   const decorateOptions = useGlossaryDecoration();
@@ -159,6 +169,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         { audioEnabled && !audioUrl && !readOnly && 
           <div className={css.recordButtonContainer}>
             { recordingDisabled && <span className={css.saveIndicator}>Saving. Please wait...</span> }
+            { recordingFailed && <span className={css.saveIndicator}>Recording failed. Please try again.</span> }
             <button
               aria-label="Record Audio"
               title="Record Audio"
@@ -196,17 +207,16 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               >
                 <span className={css.buttonText}>Stop</span>
               </button>
-              { audioUrl && 
-                <button
-                  aria-label="Delete Audio"
-                  title="Delete Audio"
-                  className={`${iconCss.iconDeleteAudio} ${css.audioControl} ${readOnly ? css.disabled : ""}`}
-                  onClick={readOnly ? undefined : handleAudioDelete}
-                  disabled={readOnly}
-                  data-testid="audio-delete-button"
-                >
-                  <span className={css.buttonText}>Delete</span>
-                </button> }
+              <button
+                aria-label="Delete Audio"
+                title="Delete Audio"
+                className={`${iconCss.iconDeleteAudio} ${css.audioControl} ${readOnly ? css.disabled : ""}`}
+                onClick={readOnly ? undefined : handleAudioDelete}
+                disabled={readOnly}
+                data-testid="audio-delete-button"
+              >
+                <span className={css.buttonText}>Delete</span>
+              </button>
             </div>
           </div> }
       </div>
