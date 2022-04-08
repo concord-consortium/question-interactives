@@ -5,6 +5,7 @@ import cssHelpers from "../../shared/styles/helpers.scss";
 import CameraIcon from "../../shared/icons/camera.svg";
 import { getInteractiveSnapshot } from "@concord-consortium/lara-interactive-api";
 import { getAnswerType, IGenericAuthoredState, IGenericInteractiveState } from "./types";
+import { useLinkedInteractiveId } from "../../shared/hooks/use-linked-interactive-id";
 
 export interface IProps {
   authoredState: IGenericAuthoredState; // so it works with DrawingTool and ImageQuestion
@@ -16,12 +17,14 @@ export interface IProps {
 
 export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, onUploadStart, onUploadComplete }) => {
   const [ snapshotInProgress, setSnapshotInProgress ] = useState(false);
+  const snapshotTarget = useLinkedInteractiveId("snapshotTarget");
 
   const handleSnapshot = async () => {
-    if (authoredState.snapshotTarget) {
+
+    if (snapshotTarget) {
       onUploadStart?.();
       setSnapshotInProgress(true);
-      const response = await getInteractiveSnapshot({ interactiveItemId: authoredState.snapshotTarget });
+      const response = await getInteractiveSnapshot({ interactiveItemId: snapshotTarget });
       setSnapshotInProgress(false);
       if (response.success && response.snapshotUrl) {
         setInteractiveState?.(prevState => ({
@@ -41,14 +44,14 @@ export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState
   return (
     <>
       {
-        authoredState.snapshotTarget &&
+        snapshotTarget &&
         <button className={cssHelpers.apButton} onClick={handleSnapshot} disabled={snapshotInProgress} data-test="snapshot-btn">
           <CameraIcon className={cssHelpers.smallIcon} /> { interactiveState?.userBackgroundImageUrl ? "Replace Snapshot" : "Take a Snapshot" }
         </button>
       }
       { snapshotInProgress && <p>Please wait while the snapshot is being taken...</p> }
       {
-        authoredState.snapshotTarget === undefined &&
+        snapshotTarget === undefined &&
         <p className={css.warn}>Snapshot won&apos;t work, as no target interactive is selected</p>
       }
     </>

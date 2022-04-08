@@ -3,6 +3,7 @@ import { UploadButton } from "./upload-button";
 
 import { getInteractiveSnapshot } from "@concord-consortium/lara-interactive-api";
 import { getAnswerType, IGenericAuthoredState, IGenericInteractiveState } from "../../drawing-tool/components/types";
+import { useLinkedInteractiveId } from "../../shared/hooks/use-linked-interactive-id";
 
 import SnapShotIcon from "../assets/snapshot-image-icon.svg";
 import { Log } from "../labbook-logging";
@@ -18,12 +19,13 @@ export interface IProps {
 
 export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, onUploadStart, onUploadComplete, disabled}) => {
   const [ snapshotInProgress, setSnapshotInProgress ] = useState(false);
+  const snapshotTarget = useLinkedInteractiveId("snapshotTarget");
 
   const handleSnapshot = async () => {
-    if (authoredState.snapshotTarget) {
+    if (snapshotTarget) {
       onUploadStart?.();
       setSnapshotInProgress(true);
-      const response = await getInteractiveSnapshot({ interactiveItemId: authoredState.snapshotTarget });
+      const response = await getInteractiveSnapshot({ interactiveItemId: snapshotTarget });
       setSnapshotInProgress(false);
       if (response.success && response.snapshotUrl) {
         setInteractiveState?.(prevState => ({
@@ -44,7 +46,7 @@ export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState
   return (
     <>
       {
-        authoredState.snapshotTarget &&
+        snapshotTarget &&
           <UploadButton onClick={handleSnapshot}
             disabled={snapshotInProgress || disabled}
             data-test="snapshot-btn">
