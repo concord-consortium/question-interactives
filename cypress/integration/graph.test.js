@@ -13,6 +13,7 @@ context("Test graph interactive", () => {
           version: 1,
           dataSourceInteractive1: "testInt1"
         },
+        linkedInteractives: [ {id: "testInt1", label: "dataSourceInteractive1"} ]
       });
       cy.getIframeBody().find("canvas").should("have.length", 1);
     });

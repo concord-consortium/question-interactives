@@ -45,7 +45,7 @@ export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState
     <>
       {
         snapshotTarget &&
-        <button className={cssHelpers.apButton} onClick={handleSnapshot} disabled={snapshotInProgress} data-test="snapshot-btn">
+        <button className={cssHelpers.apButton} onClick={handleSnapshot} disabled={snapshotInProgress} data-testid="snapshot-btn">
           <CameraIcon className={cssHelpers.smallIcon} /> { interactiveState?.userBackgroundImageUrl ? "Replace Snapshot" : "Take a Snapshot" }
         </button>
       }

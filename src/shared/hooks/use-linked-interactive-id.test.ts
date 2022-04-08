@@ -1,10 +1,10 @@
+import { useContextInitMessage } from "./use-context-init-message";
 import { useLinkedInteractiveId } from "./use-linked-interactive-id";
-import { useInitMessage } from "@concord-consortium/lara-interactive-api";
 
-jest.mock("@concord-consortium/lara-interactive-api", () => ({
-  useInitMessage: jest.fn()
+jest.mock("./use-context-init-message", () => ({
+  useContextInitMessage: jest.fn()
 }));
-const useInitMessageMock = useInitMessage as jest.Mock;
+const useContextInitMessageMock = useContextInitMessage as jest.Mock;
 
 const initMessageWithSnapshotTarget = {
   mode: "runtime",
@@ -16,13 +16,23 @@ const initMessageWithSnapshotTarget = {
   ]
 };
 
+const initMessageWithoutSnapshotTarget = {
+  mode: "runtime",
+  linkedInteractives: []
+};
+
 describe("useLinkedInteractiveId", () => {
   beforeEach(() => {
-    useInitMessageMock.mockClear();
+    useContextInitMessageMock.mockClear();
   });
   it("should return the ID of an interactive that has a specified label", () => {
-    useInitMessageMock.mockReturnValue(initMessageWithSnapshotTarget);
+    useContextInitMessageMock.mockReturnValue(initMessageWithSnapshotTarget);
     const snapshotTargetId = useLinkedInteractiveId("snapshotTarget");
     expect(snapshotTargetId).toEqual("123-MwInteractive");
+  });
+  it("should return undefined when there is no interactive that has a specified label", () => {
+    useContextInitMessageMock.mockReturnValue(initMessageWithoutSnapshotTarget);
+    const snapshotTargetId = useLinkedInteractiveId("snapshotTarget");
+    expect(snapshotTargetId).toEqual(undefined);
   });
 });

@@ -1,14 +1,14 @@
 import { renderHook } from "@testing-library/react-hooks";
 import { useLinkedInteractivesAuthoring } from "./use-linked-interactives-authoring";
 import { act } from "@testing-library/react";
-import {getInteractiveList, setLinkedInteractives} from "@concord-consortium/lara-interactive-api";
+import { getInteractiveList, setLinkedInteractives } from "@concord-consortium/lara-interactive-api";
+import { useContextInitMessage } from "./use-context-init-message";
 
-let initMessage: any;
+let contextInitMessage: any;
 let authoredState: any;
 let interactiveList: any;
 
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
-  useInitMessage: jest.fn(() => initMessage),
   useAuthoredState: jest.fn(() => ({
     authoredState
   })),
@@ -19,17 +19,23 @@ jest.mock("@concord-consortium/lara-interactive-api", () => ({
 const getInteractiveListMock = getInteractiveList as jest.Mock;
 const setLinkedInteractivesMock = setLinkedInteractives as jest.Mock;
 
+jest.mock("./use-context-init-message", () => ({
+  useContextInitMessage: jest.fn(() => contextInitMessage)
+}));
+const useContextInitMessageMock = useContextInitMessage as jest.Mock;
+
 describe("useLinkedInteractives", () => {
   beforeEach(() => {
-    initMessage = {};
+    contextInitMessage = {};
     authoredState = {};
     interactiveList = [];
     getInteractiveListMock.mockClear();
     setLinkedInteractivesMock.mockClear();
+    useContextInitMessageMock.mockClear();
   });
 
   it("downloads list of page interactives for properties present in schema and listed in linkedInteractiveProps", async () => {
-    initMessage = {
+    contextInitMessage = {
       mode: "authoring"
     };
     interactiveList = [
@@ -93,7 +99,7 @@ describe("useLinkedInteractives", () => {
   });
 
   it("does not call setLinkedInteractives when it's not necessary (linkedInteractives array and authoredState are matching)", () => {
-    initMessage = {
+    contextInitMessage = {
       mode: "authoring",
       linkedInteractives: [{id: "ID1", label: "linkedInteractive1"}]
     };
@@ -113,7 +119,7 @@ describe("useLinkedInteractives", () => {
   });
 
   it("monitors authoredState updates and calls setLinkedInteractives when necessary - 1", async () => {
-    initMessage = {
+    contextInitMessage = {
       mode: "authoring",
       linkedInteractives: []
     };
@@ -142,7 +148,7 @@ describe("useLinkedInteractives", () => {
   });
 
   it("monitors authoredState updates and calls setLinkedInteractives when necessary - 2", () => {
-    initMessage = {
+    contextInitMessage = {
       mode: "authoring",
       linkedInteractives: [{id: "ID1", label: "linkedInteractive1"}]
     };
@@ -171,7 +177,7 @@ describe("useLinkedInteractives", () => {
   });
 
   it("monitors authoredState updates and calls setLinkedInteractives when necessary - 3", () => {
-    initMessage = {
+    contextInitMessage = {
       mode: "authoring",
       linkedInteractives: [{id: "ID1", label: "linkedInteractive1"}]
     };

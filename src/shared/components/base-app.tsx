@@ -6,6 +6,7 @@ import { setSupportedFeatures, useAuthoredState, useInitMessage } from "@concord
 import { useBasicLogging } from "../hooks/use-basic-logging";
 import { useLinkedInteractives } from "../hooks/use-linked-interactives";
 import { ILinkedInteractiveProp } from "../hooks/use-linked-interactives-authoring";
+import { InitMessageContext } from "../hooks/use-context-init-message";
 import css from "./base-app.scss";
 
 export type UpdateFunc<State> = (prevState: State | null) => State;
@@ -94,6 +95,10 @@ export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps
   };
 
   return (
-    <div ref={container}>{ renderMode() }</div>
+    <div ref={container}>
+      <InitMessageContext.Provider value={initMessage}>
+        { renderMode() }
+      </InitMessageContext.Provider>
+    </div>
   );
 };

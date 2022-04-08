@@ -2,6 +2,7 @@ import React from "react";
 import {
   addLinkedInteractiveStateListener, IInteractiveStateWithDataset, removeLinkedInteractiveStateListener
 } from "@concord-consortium/lara-interactive-api";
+import { useContextInitMessage } from "../../shared/hooks/use-context-init-message";
 import { mount } from "enzyme";
 import { Runtime } from "./runtime";
 import { Bar } from "react-chartjs-2";
@@ -16,6 +17,11 @@ jest.mock("@concord-consortium/lara-interactive-api", () => ({
 
 const addLinkedInteractiveStateListenerMock = addLinkedInteractiveStateListener as jest.Mock;
 const removeLinkedInteractiveStateListenerMock = removeLinkedInteractiveStateListener as jest.Mock;
+
+jest.mock("../../shared/hooks/use-context-init-message", () => ({
+  useContextInitMessage: jest.fn()
+}));
+const useContextInitMessageMock = useContextInitMessage as jest.Mock;
 
 const authoredState: IAuthoredState = {
   version: 1,
@@ -40,17 +46,38 @@ const fakeDatasetUpdate = (index: number, intState: IInteractiveStateWithDataset
   });
 };
 
+const initMessageWithDataSources = {
+  mode: "runtime",
+  linkedInteractives: [
+    {
+      id: "123-MwInteractive",
+      label: "dataSourceInteractive1"
+    },
+    {
+      id: "456-MwInteractive",
+      label: "dataSourceInteractive2"
+    }
+  ]
+};
+
+const initMessageWithoutDataSources = {
+  mode: "runtime",
+  linkedInteractives: []
+};
+
 describe("Graph runtime", () => {
   beforeEach(() => {
     addLinkedInteractiveStateListenerMock.mockClear();
     removeLinkedInteractiveStateListenerMock.mockClear();
+    useContextInitMessageMock.mockClear();
   });
 
   it("calls addLinkedInteractiveStateListener on mount and removeLinkedInteractiveStateListener for each observed source interactive", () => {
+    useContextInitMessageMock.mockReturnValue(initMessageWithDataSources);
     const wrapper = mount(<Runtime authoredState={authoredState} />);
     expect(addLinkedInteractiveStateListenerMock).toHaveBeenCalledTimes(2);
-    expect(addLinkedInteractiveStateListenerMock.mock.calls[0][1]).toEqual({interactiveItemId: "linkedInt1"});
-    expect(addLinkedInteractiveStateListenerMock.mock.calls[1][1]).toEqual({interactiveItemId: "linkedInt2"});
+    expect(addLinkedInteractiveStateListenerMock.mock.calls[0][1]).toEqual({interactiveItemId: "123-MwInteractive"});
+    expect(addLinkedInteractiveStateListenerMock.mock.calls[1][1]).toEqual({interactiveItemId: "456-MwInteractive"});
     expect(removeLinkedInteractiveStateListener).toHaveBeenCalledTimes(0);
     wrapper.unmount();
     expect(removeLinkedInteractiveStateListenerMock).toHaveBeenCalledTimes(2);
@@ -61,11 +88,13 @@ describe("Graph runtime", () => {
   });
 
   it("renders empty graph when there's no data available yet", () => {
+    useContextInitMessageMock.mockReturnValue(initMessageWithoutDataSources);
     const wrapper = mount(<Runtime authoredState={authoredState} />);
     expect(wrapper.find(Bar).length).toEqual(1);
   });
 
   it("renders two separate graphs when datasets cannot be merged", () => {
+    useContextInitMessageMock.mockReturnValue(initMessageWithDataSources);
     const wrapper = mount(<Runtime authoredState={authoredState} />);
     const intState1: IInteractiveStateWithDataset = {
       dataset: {
@@ -97,6 +126,7 @@ describe("Graph runtime", () => {
   });
 
   it("renders one graph when two datasets can be merged", () => {
+    useContextInitMessageMock.mockReturnValue(initMessageWithDataSources);
     const wrapper = mount(<Runtime authoredState={authoredState} />);
     fakeDatasetUpdate(0, defaultLinkedState);
     fakeDatasetUpdate(1, defaultLinkedState);
@@ -106,6 +136,7 @@ describe("Graph runtime", () => {
   });
 
   it("ignores incompatible datasets", () => {
+    useContextInitMessageMock.mockReturnValue(initMessageWithDataSources);
     const wrapper = mount(<Runtime authoredState={authoredState} />);
     const intStateWithWrongVersion = {
       dataset: {
@@ -124,6 +155,7 @@ describe("Graph runtime", () => {
   it("respects graphsPerRow setting", () => {
     const graphsPerRow = 2;
     const customAuthoredState = {...authoredState, graphsPerRow};
+    useContextInitMessageMock.mockReturnValue(initMessageWithDataSources);
     const wrapper = mount(<Runtime authoredState={customAuthoredState} />);
     fakeDatasetUpdate(0, defaultLinkedState);
     fakeDatasetUpdate(1, {
