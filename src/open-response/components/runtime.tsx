@@ -61,6 +61,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const handleAudioRecord = () => {
     if (audioSupported) {
       setRecordingFailed(false);
+      const startTime = Date.now();
       navigator.mediaDevices
                .getUserMedia ({ audio: true })
                .then((stream: any) => {
@@ -70,8 +71,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                  });
                  mediaRecorderRef.current.addEventListener("stop", () => {
                    clearTimeout(recordingTimer);
+                   const timeElapsed = Math.round((Date.now() - startTime)/1000);
                    const audioBlobData: Blob | MediaSource = new Blob(recordedBlobs, {type: "audio/mpeg"});
-                   handleAudioSave(audioBlobData);
+                   handleAudioSave(audioBlobData, timeElapsed);
                  });
                  mediaRecorderRef.current.start();
                  setRecordingStarted(true);
@@ -112,16 +114,21 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     return  "audio-" + timestamp + ".mp3";
   };
 
-  const handleAudioSave = async (fileData: Blob) => {
+  const handleAudioSave = async (fileData: Blob, timeElapsed: number) => {
     setRecordingDisabled(true);
     if (fileData) {
       const fileName = attachedAudioFile ? attachedAudioFile : generateFileName();
       const saveFileResponse = await writeAttachment({name: fileName, content: fileData, contentType: "audio/mpeg"});
       if (saveFileResponse.status === 200) {
+        const fileLocation = saveFileResponse.url;
+        // Saving the file path to the log is a temporary solution for showing where the audio file can be found 
+        // in the S3 bucket. Eventually, the log should be updated to include an accessible, full URL that a 
+        // researcher can use to access the audio file in their web browser.
+        const filePath = fileLocation.split("?")[0].split("/").slice(-3).join("/");
         setInteractiveState?.(prevState => ({...prevState, answerType: "open_response_answer", audioFile: fileName}));
         const s3Url = await getAttachmentUrl({name: fileName});
         setAudioUrl(s3Url);
-        log("audio response recorded", {fileName});
+        log("audio response recorded", {filePath, fileName, timeElapsed});
       } else {
         handleRecordingFailure(saveFileResponse.statusText);
       }
