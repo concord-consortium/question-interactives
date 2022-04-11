@@ -14,6 +14,7 @@ import { IBaseAuthoredState, UpdateFunc, IAuthoringComponentProps, IRuntimeCompo
 import { useBasicLogging } from "../hooks/use-basic-logging";
 import { useLinkedInteractives } from "../hooks/use-linked-interactives";
 import { ILinkedInteractiveProp } from "../hooks/use-linked-interactives-authoring";
+import { InitMessageContext } from "../hooks/use-context-init-message";
 import css from "./base-app.scss";
 
 
@@ -140,6 +141,10 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
   };
 
   return (
-    <div ref={container}>{ renderMode() }</div>
+    <div ref={container}>
+      <InitMessageContext.Provider value={initMessage}>
+        { renderMode() }
+      </InitMessageContext.Provider>
+    </div>
   );
 };

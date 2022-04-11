@@ -1,8 +1,9 @@
 import React from "react";
-import { shallow } from "enzyme";
+import { fireEvent, render, screen } from "@testing-library/react";
 import { TakeSnapshot } from "./take-snapshot";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { getInteractiveSnapshot, useInitMessage } from "@concord-consortium/lara-interactive-api";
+import { InitMessageContext } from "../../shared/hooks/use-context-init-message";
 
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
   getInteractiveSnapshot: jest.fn(() => new Promise(resolve => resolve({success: true, snapshotUrl: "http://snapshot/123" }))),
@@ -25,9 +26,43 @@ const authoredState: IAuthoredState = {
 const interactiveState: IInteractiveState = {
   answerType: "interactive_state" as const,
 };
+const baseInitMessage = {
+  authInfo: {
+    provider: "",
+    loggedIn: true,
+    email: "fake@concord.org"
+  },
+  authoredState: authoredState,
+  classInfoUrl: "",
+  collaboratorUrls: [],
+  error: null,
+  globalInteractiveState: null,
+  hostFeatures: {},
+  interactive: {
+    id: "456",
+    name: "snapshot"
+  },
+  interactiveItemId: "456-MwInteractive",
+  interactiveState: null,
+  interactiveStateUrl: "",
+  mode: "runtime" as const,
+  linkedInteractives: [
+    {
+      id: "123-MwInteractive",
+      label: "snapshotTarget"
+    }
+  ],
+  themeInfo: {
+    colors: {
+      colorA: "orange",
+      colorB: "blue"
+    }
+  },
+  version: 1 as const
+};
 
 const initMessageWithSnapshotTarget = {
-  mode: "runtime",
+  ...baseInitMessage,
   linkedInteractives: [
     {
       id: "123-MwInteractive",
@@ -37,7 +72,7 @@ const initMessageWithSnapshotTarget = {
 };
 
 const initMessageWithoutSnapshotTarget = {
-  mode: "runtime",
+  ...baseInitMessage,
   linkedInteractives: []
 };
 
@@ -49,18 +84,25 @@ describe("TakeSnapshot", () => {
 
   it("renders snapshot button when snapshotTarget is set", () => {
     useInitMessageMock.mockReturnValue(initMessageWithSnapshotTarget);
-    const wrapper = shallow(<TakeSnapshot authoredState={authoredState} interactiveState={interactiveState} />);
+    render(
+      <InitMessageContext.Provider value={initMessageWithSnapshotTarget}>
+        <TakeSnapshot authoredState={authoredState} interactiveState={interactiveState} />
+      </InitMessageContext.Provider>
+    );
 
-    expect(wrapper.find("[data-test='snapshot-btn']").length).toEqual(1);
-    wrapper.find("[data-test='snapshot-btn']").simulate("click");
+    fireEvent.click(screen.getByTestId("snapshot-btn"));
     expect(getInteractiveSnapshotMock).toHaveBeenCalledWith({ interactiveItemId: "123-MwInteractive" });
   });
 
   it("renders warning snapshotTarget is not set", () => {
     useInitMessageMock.mockReturnValue(initMessageWithoutSnapshotTarget);
-    const wrapper = shallow(<TakeSnapshot authoredState={authoredState} interactiveState={interactiveState} />);
+    render(
+      <InitMessageContext.Provider value={initMessageWithoutSnapshotTarget}>
+        <TakeSnapshot authoredState={authoredState} interactiveState={interactiveState} />
+      </InitMessageContext.Provider>
+    );
 
-    expect(wrapper.find("[data-test='snapshot-btn']").length).toEqual(0);
-    expect(wrapper.text()).toEqual(expect.stringContaining("Snapshot won't work, as no target interactive is selected"));
+    expect(screen.queryByTestId("snapshot-btn")).toBeNull();
+    expect(screen.getByText("Snapshot won't work, as no target interactive is selected")).toBeInTheDocument();
   });
 });

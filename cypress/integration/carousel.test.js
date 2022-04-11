@@ -126,7 +126,7 @@ context("Test carousel interactive", () => {
             target_id: '',
             target_name: '',
             target_value: '',
-            subinteractive_url: "http://localhost:8080/open-response/",
+            subinteractive_url: cy.config().baseUrl + "/open-response/",
             subinteractive_type: "open_response",
             subinteractive_sub_type: undefined,
             subinteractive_id: 'int1'
@@ -141,7 +141,7 @@ context("Test carousel interactive", () => {
             target_id: '',
             target_name: '',
             target_value: 'Test subquestion answer',
-            subinteractive_url: "http://localhost:8080/open-response/",
+            subinteractive_url: cy.config().baseUrl + "/open-response/",
             subinteractive_type: 'open_response',
             subinteractive_sub_type: undefined,
             subinteractive_id: 'int1',

@@ -1,27 +1,33 @@
 import { renderHook } from "@testing-library/react-hooks";
 import { useLinkedInteractives } from "./use-linked-interactives";
+import { useContextInitMessage } from "./use-context-init-message";
 
-let initMessage: any;
+let contextInitMessage: any;
 let authoredState: any;
 const setAuthoredState = jest.fn();
 
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
-  useInitMessage: jest.fn(() => initMessage),
   useAuthoredState: jest.fn(() => ({
     authoredState,
     setAuthoredState
   }))
 }));
 
+jest.mock("./use-context-init-message", () => ({
+  useContextInitMessage: jest.fn(() => contextInitMessage)
+}));
+const useContextInitMessageMock = useContextInitMessage as jest.Mock;
+
 describe("useLinkedInteractives", () => {
   beforeEach(() => {
-    initMessage = {};
+    contextInitMessage = {};
     authoredState = {};
     setAuthoredState.mockClear();
+    useContextInitMessageMock.mockClear();
   });
 
   it("removes linked interactive IDs from authored state if linkedInteractives array is empty or undefined", () => {
-    initMessage = {
+    contextInitMessage = {
       mode: "authoring"
     };
     authoredState = {
@@ -38,7 +44,7 @@ describe("useLinkedInteractives", () => {
   });
 
   it("overwrites linked interactive IDs in authored state if linkedInteractives array is defined - 1", () => {
-    initMessage = {
+    contextInitMessage = {
       mode: "authoring",
       linkedInteractives: [
         { id: "new ID 1", label: "linkedInteractive1" },
@@ -62,7 +68,7 @@ describe("useLinkedInteractives", () => {
   });
 
   it("overwrites linked interactive IDs in authored state if linkedInteractives array is defined - 2", () => {
-    initMessage = {
+    contextInitMessage = {
       mode: "authoring",
       linkedInteractives: [
         { id: "new ID 1", label: "linkedInteractive1" },
@@ -88,7 +94,7 @@ describe("useLinkedInteractives", () => {
   });
 
   it("does nothing if the mode is not authoring or runtime", () => {
-    initMessage = {
+    contextInitMessage = {
       mode: "report",
       linkedInteractives: [
         { id: "new ID 1", label: "linkedInteractive1" },
@@ -108,7 +114,7 @@ describe("useLinkedInteractives", () => {
   });
 
   it("does nothing if linkedInteractives array is matching authored state", () => {
-    initMessage = {
+    contextInitMessage = {
       mode: "authoring",
       linkedInteractives: [
         { id: "ID 1", label: "linkedInteractive1" }

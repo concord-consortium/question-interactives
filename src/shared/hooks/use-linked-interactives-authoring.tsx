@@ -2,8 +2,9 @@ import { useEffect, useState } from "react";
 import deepmerge from "deepmerge";
 import { JSONSchema6 } from "json-schema";
 import {
-  useAuthoredState, useInitMessage, getInteractiveList, ILinkedInteractive, setLinkedInteractives
+  useAuthoredState, getInteractiveList, ILinkedInteractive, setLinkedInteractives
 } from "@concord-consortium/lara-interactive-api";
+import { useContextInitMessage } from "./use-context-init-message";
 import usePrevious from "react-hooks-use-previous";
 
 export interface ILinkedInteractiveProp {
@@ -46,7 +47,7 @@ export const useLinkedInteractivesAuthoring = ({ linkedInteractiveProps, schema 
 // linkedInteractives array to LARA parent window. currentLinkedInteractives acts only as a cache, so we don't
 // send the message each time the authoredState is updated (e.g. its other, unrelated fields).
 const useLinkedInteractivesInAuthoredState = (linkedInteractiveProps?: ILinkedInteractiveProp[]) => {
-  const initMessage = useInitMessage<AuthoredState>();
+  const initMessage = useContextInitMessage();
   const [ cachedLinkedInteractives, setCachedLinkedInteractives ] = useState<ILinkedInteractive[]>();
   const { authoredState } = useAuthoredState<AuthoredState>();
   const previousAuthoredState = usePrevious<AuthoredState | null>(authoredState, null);
@@ -67,7 +68,7 @@ const useLinkedInteractivesInAuthoredState = (linkedInteractiveProps?: ILinkedIn
           // This is very important, as it'll prevent overwriting linkedInteractives on the initial load.
           return;
         }
-        const linkedInteractive = currentLinkedInteractives.find(l => l.label === name);
+        const linkedInteractive = currentLinkedInteractives.find((l: ILinkedInteractive) => l.label === name);
         if (!linkedInteractive && authoredStateVal !== undefined) {
           // Add a new item.
           newArray = [...currentLinkedInteractives, {
@@ -77,11 +78,11 @@ const useLinkedInteractivesInAuthoredState = (linkedInteractiveProps?: ILinkedIn
           anyUpdate = true;
         } else if (linkedInteractive && authoredStateVal === undefined) {
           // Remove item from the array.
-          newArray = currentLinkedInteractives.filter(int => int.id !== linkedInteractive.id);
+          newArray = currentLinkedInteractives.filter((int: ILinkedInteractive) => int.id !== linkedInteractive.id);
           anyUpdate = true;
         } else if (linkedInteractive && linkedInteractive.id !== authoredStateVal) {
           // Update array item.
-          newArray = [...currentLinkedInteractives.filter(int => int.id !== linkedInteractive.id), {
+          newArray = [...currentLinkedInteractives.filter((int: ILinkedInteractive) => int.id !== linkedInteractive.id), {
             id: authoredStateVal,
             label: name
           }];
@@ -98,7 +99,7 @@ const useLinkedInteractivesInAuthoredState = (linkedInteractiveProps?: ILinkedIn
 
 // Get the list of interactives that are on the same page.
 const useLinkedInteractivesInSchema = (schema: JSONSchema6, linkedInteractiveProps?: ILinkedInteractiveProp[]) => {
-  const initMessage = useInitMessage<AuthoredState>();
+  const initMessage = useContextInitMessage();
   const [ interactiveList, setInteractiveList ] = useState<{[label: string]: {names: string[], ids: string[]}}>({});
 
   const interactiveItemId = initMessage?.mode === "authoring" && initMessage.interactiveItemId;

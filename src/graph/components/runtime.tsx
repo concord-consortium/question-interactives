@@ -3,6 +3,7 @@ import { IAuthoredState } from "./types";
 import {
   addLinkedInteractiveStateListener, IInteractiveStateWithDataset, removeLinkedInteractiveStateListener, IDataset
 } from "@concord-consortium/lara-interactive-api";
+import { useLinkedInteractiveId } from "../../shared/hooks/use-linked-interactive-id";
 import { Bar } from "react-chartjs-2";
 import { ChartOptions, LinearScale } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
@@ -63,14 +64,16 @@ const getGraphOptions = (authoredState: IAuthoredState, chartData?: CustomChartD
 
 export const Runtime: React.FC<IProps> = ({ authoredState }) => {
   const [ datasets, setDatasets ] = useState<Array<IDataset | null | undefined>>([]);
+  const dataSourceInteractive1 = useLinkedInteractiveId("dataSourceInteractive1");
+  const dataSourceInteractive2 = useLinkedInteractiveId("dataSourceInteractive2");
+  const dataSourceInteractive3 = useLinkedInteractiveId("dataSourceInteractive3");
 
   useEffect(() => {
     const linkedInteractives: string[] = [
-      authoredState.dataSourceInteractive1,
-      authoredState.dataSourceInteractive2,
-      authoredState.dataSourceInteractive3
+      dataSourceInteractive1,
+      dataSourceInteractive2,
+      dataSourceInteractive3
     ].filter(intItemId => intItemId !== undefined) as string[];
-
     const unsubscribeMethods = linkedInteractives.map((dataSourceInteractive, datasetIdx) => {
       const listener = (newLinkedIntState: IInteractiveStateWithDataset | undefined) => {
         const newDataset = newLinkedIntState && newLinkedIntState.dataset;
@@ -101,7 +104,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
     return () => {
       unsubscribeMethods.forEach(unsubscribeMethod => unsubscribeMethod());
     };
-  }, [authoredState.dataSourceInteractive1, authoredState.dataSourceInteractive2, authoredState.dataSourceInteractive3]);
+  }, [dataSourceInteractive1, dataSourceInteractive2, dataSourceInteractive3]);
 
   const anyData = datasets.filter(d => d !== null).length > 0;
   const graphContainerClassName = css.graph + " " + css["graphLayout" + (authoredState.graphsPerRow || 1)];
