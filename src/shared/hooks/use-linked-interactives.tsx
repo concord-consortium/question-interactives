@@ -9,7 +9,7 @@ export const useLinkedInteractives = (linkedInteractiveNames: string[] | undefin
   const initMessage = useContextInitMessage();
   const { authoredState, setAuthoredState } = useAuthoredState<Record<string, unknown>>();
   const initialLinkedInteractivesProcessed = useRef(false);
-  const linkedInteractives = (initMessage?.mode === "authoring" || initMessage?.mode === "runtime") && initMessage.linkedInteractives;
+  const linkedInteractives = initMessage?.mode === "authoring" && initMessage.linkedInteractives;
 
   useEffect(() => {
     // Note that this hook needs to be executed only once, right after interactive is initialized.
@@ -19,7 +19,7 @@ export const useLinkedInteractives = (linkedInteractiveNames: string[] | undefin
       !initialLinkedInteractivesProcessed.current &&
       linkedInteractiveNames &&
       authoredState &&
-      (initMessage?.mode === "authoring" || initMessage?.mode === "runtime")
+      initMessage?.mode === "authoring"
     ) {
       const newStateProps: Record<string, unknown> = {};
       linkedInteractiveNames.forEach(name => {
