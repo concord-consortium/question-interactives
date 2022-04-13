@@ -85,7 +85,7 @@
     "@types/react-dom": "^16.9.14",
     "@types/react-jsonschema-form": "^1.7.8",
     "@types/uuid": "^8.3.4",
-    "@types/video.js": "^7.3.31",
+    "@types/video.js": "7.3.10",
     "@typescript-eslint/eslint-plugin": "^5.13.0",
     "@typescript-eslint/parser": "^5.13.0",
     "autoprefixer": "^9.8.8",
@@ -168,6 +168,6 @@
     "striptags": "^3.2.0",
     "ts-debounce": "^3.0.0",
     "uuid": "^8.3.0",
-    "video.js": "^7.17.0"
+    "video.js": "7.8.4"
   }
 }
