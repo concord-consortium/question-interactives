@@ -49,7 +49,7 @@ export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps
   useAutoHeight({ container: container.current, disabled: isRuntimeView && disableAutoHeight || isLoading });
   useShutterbug({ container: "." + css.runtime });
   useBasicLogging({ disabled: !isRuntimeView });
-  useLinkedInteractives(linkedInteractiveProps?.map(li => li.label));
+  useLinkedInteractives(linkedInteractiveProps?.map(li => li.label), initMessage);
 
   useEffect(() => {
     setSupportedFeatures({

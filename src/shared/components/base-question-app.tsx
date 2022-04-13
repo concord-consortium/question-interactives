@@ -65,10 +65,10 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
 
   useAutoHeight({ container: container.current, disabled: isRuntimeView && disableAutoHeight || isLoading });
   useHint();
-  useRequiredQuestion();
+  useRequiredQuestion(initMessage);
   useShutterbug({ container: "." + css.runtime });
   useBasicLogging({ disabled: !isRuntimeView });
-  useLinkedInteractives(linkedInteractiveProps?.map(li => li.label));
+  useLinkedInteractives(linkedInteractiveProps?.map(li => li.label), initMessage);
 
   useEffect(() => {
     setSupportedFeatures({
