@@ -1,8 +1,7 @@
 import { renderHook } from "@testing-library/react-hooks";
 import { useLinkedInteractives } from "./use-linked-interactives";
-import { useContextInitMessage } from "./use-context-init-message";
 
-let contextInitMessage: any;
+let initMessage: any;
 let authoredState: any;
 const setAuthoredState = jest.fn();
 
@@ -13,21 +12,15 @@ jest.mock("@concord-consortium/lara-interactive-api", () => ({
   }))
 }));
 
-jest.mock("./use-context-init-message", () => ({
-  useContextInitMessage: jest.fn(() => contextInitMessage)
-}));
-const useContextInitMessageMock = useContextInitMessage as jest.Mock;
-
 describe("useLinkedInteractives", () => {
   beforeEach(() => {
-    contextInitMessage = {};
+    initMessage = {};
     authoredState = {};
     setAuthoredState.mockClear();
-    useContextInitMessageMock.mockClear();
   });
 
   it("removes linked interactive IDs from authored state if linkedInteractives array is empty or undefined", () => {
-    contextInitMessage = {
+    initMessage = {
       mode: "authoring"
     };
     authoredState = {
@@ -35,7 +28,7 @@ describe("useLinkedInteractives", () => {
       linkedInteractive2: "ID 2"
     };
     const HookWrapper = () => {
-      return useLinkedInteractives([ "linkedInteractive1", "linkedInteractive2" ]);
+      return useLinkedInteractives([ "linkedInteractive1", "linkedInteractive2" ], initMessage);
     };
     renderHook(HookWrapper);
     expect(setAuthoredState).toHaveBeenCalledTimes(1);
@@ -44,7 +37,7 @@ describe("useLinkedInteractives", () => {
   });
 
   it("overwrites linked interactive IDs in authored state if linkedInteractives array is defined - 1", () => {
-    contextInitMessage = {
+    initMessage = {
       mode: "authoring",
       linkedInteractives: [
         { id: "new ID 1", label: "linkedInteractive1" },
@@ -55,7 +48,7 @@ describe("useLinkedInteractives", () => {
       linkedInteractive2: "ID 2"
     };
     const HookWrapper = () => {
-      return useLinkedInteractives([ "linkedInteractive1", "linkedInteractive2" ]);
+      return useLinkedInteractives([ "linkedInteractive1", "linkedInteractive2" ], initMessage);
     };
     const { rerender } = renderHook(HookWrapper);
     expect(setAuthoredState).toHaveBeenCalledTimes(1);
@@ -68,7 +61,7 @@ describe("useLinkedInteractives", () => {
   });
 
   it("overwrites linked interactive IDs in authored state if linkedInteractives array is defined - 2", () => {
-    contextInitMessage = {
+    initMessage = {
       mode: "authoring",
       linkedInteractives: [
         { id: "new ID 1", label: "linkedInteractive1" },
@@ -81,7 +74,7 @@ describe("useLinkedInteractives", () => {
       linkedInteractive2: "ID 2"
     };
     const HookWrapper = () => {
-      return useLinkedInteractives([ "linkedInteractive1", "linkedInteractive2" ]);
+      return useLinkedInteractives([ "linkedInteractive1", "linkedInteractive2" ], initMessage);
     };
     const { rerender } = renderHook(HookWrapper);
     expect(setAuthoredState).toHaveBeenCalledTimes(1);
@@ -94,7 +87,7 @@ describe("useLinkedInteractives", () => {
   });
 
   it("does nothing if the mode is not authoring or runtime", () => {
-    contextInitMessage = {
+    initMessage = {
       mode: "report",
       linkedInteractives: [
         { id: "new ID 1", label: "linkedInteractive1" },
@@ -107,14 +100,14 @@ describe("useLinkedInteractives", () => {
       linkedInteractive2: "ID 2"
     };
     const HookWrapper = () => {
-      return useLinkedInteractives([ "linkedInteractive1", "linkedInteractive2" ]);
+      return useLinkedInteractives([ "linkedInteractive1", "linkedInteractive2" ], initMessage);
     };
     renderHook(HookWrapper);
     expect(setAuthoredState).not.toHaveBeenCalled();
   });
 
   it("does nothing if linkedInteractives array is matching authored state", () => {
-    contextInitMessage = {
+    initMessage = {
       mode: "authoring",
       linkedInteractives: [
         { id: "ID 1", label: "linkedInteractive1" }
@@ -124,7 +117,7 @@ describe("useLinkedInteractives", () => {
       linkedInteractive1: "ID 1"
     };
     const HookWrapper = () => {
-      return useLinkedInteractives([ "linkedInteractive1", "linkedInteractive2" ]);
+      return useLinkedInteractives([ "linkedInteractive1", "linkedInteractive2" ], initMessage);
     };
     renderHook(HookWrapper);
     expect(setAuthoredState).not.toHaveBeenCalled();
