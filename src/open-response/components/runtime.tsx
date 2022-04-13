@@ -1,10 +1,10 @@
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { IRuntimeQuestionComponentProps } from "../../shared/components/base-question-app";
 import { renderHTML } from "../../shared/utilities/render-html";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { DecorateChildren } from "@concord-consortium/text-decorator";
 import { useGlossaryDecoration } from "../../shared/hooks/use-glossary-decoration";
-import { getAttachmentUrl, log, writeAttachment } from "@concord-consortium/lara-interactive-api";
+import { getAttachmentUrl, IGetInteractiveState, log, setOnUnload, writeAttachment } from "@concord-consortium/lara-interactive-api";
 import AudioRecorder from "audio-recorder-polyfill";
 
 import css from "./runtime.scss";
@@ -29,17 +29,35 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const answerText = !interactiveState?.answerText ? authoredState.defaultAnswer : interactiveState.answerText;
   const attachedAudioFile = interactiveState?.audioFile ? interactiveState.audioFile : undefined;
   let recordedBlobs: Blob[] = [];
-  const [audioUrl, setAudioUrl] = React.useState<string | undefined>(undefined);
-  const [audioSupported, setAudioSupported] = React.useState(browserSupportsAudio);
-  const [recordingStarted, setRecordingStarted] = React.useState(false);
-  const [recordingDisabled, setRecordingDisabled] = React.useState(false);
-  const [recordingFailed, setRecordingFailed] = React.useState(false);
-  const [playDisabled, setPlayDisabled] = React.useState(false);
-  const [stopDisabled, setStopDisabled] = React.useState(true);
-  const mediaRecorderRef = React.useRef<MediaRecorder>();
-  const audioPlayerRef = React.useRef<HTMLAudioElement>(null);
+  const [audioUrl, setAudioUrl] = useState<string | undefined>(undefined);
+  const [audioSupported, setAudioSupported] = useState(browserSupportsAudio);
+  const [recordingStarted, setRecordingStarted] = useState(false);
+  const [recordingDisabled, setRecordingDisabled] = useState(false);
+  const [recordingFailed, setRecordingFailed] = useState(false);
+  const [playDisabled, setPlayDisabled] = useState(false);
+  const [stopDisabled, setStopDisabled] = useState(true);
+  const mediaRecorderRef = useRef<MediaRecorder>();
+  const audioPlayerRef = useRef<HTMLAudioElement>(null);
 
-  React.useEffect(() => {
+  useEffect(() => {
+    setOnUnload((options: IGetInteractiveState) => {
+      if (options.unloading) {
+        return new Promise(resolve => {
+          if (mediaRecorderRef.current) {
+            // Do not resolve to update the final interactive state. 
+            // The stop() method will do that, which will complete the 
+            // onUnload promise in the host.
+            mediaRecorderRef.current.stop();
+          } else {
+            resolve(interactiveState || {});
+          }
+        });
+      }
+      return Promise.resolve(interactiveState || {});
+    });
+  }, [interactiveState]);
+
+  useEffect(() => {
     const getAudioUrl = async () => {
       if (attachedAudioFile) {
         const s3Url = await fetchAudioUrl(attachedAudioFile);
