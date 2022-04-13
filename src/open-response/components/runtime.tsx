@@ -42,20 +42,20 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   useEffect(() => {
     setOnUnload((options: IGetInteractiveState) => {
       if (options.unloading) {
-        return new Promise<Record<string, unknown>>((resolve) => {
+        return new Promise(resolve => {
           if (mediaRecorderRef.current) {
+            // Do not resolve to update the final interactive state. 
+            // The stop() method will do that, which will complete the 
+            // onUnload promise in the host.
             mediaRecorderRef.current.stop();
-            if (audioUrl) {
-              resolve;
-            }
           } else {
-            resolve({});
+            resolve(interactiveState || {});
           }
         });
       }
-      return Promise.resolve({});
+      return Promise.resolve(interactiveState || {});
     });
-  }, [audioUrl]);
+  }, [interactiveState]);
 
   useEffect(() => {
     const getAudioUrl = async () => {
