@@ -118,6 +118,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                   interactiveState={subState}
                   logRequestData={logRequestData}
                   setInteractiveState={handleNewInteractiveState.bind(null, interactive.id)}
+                  onUnloadCallback={handleNewInteractiveState.bind(null, interactive.id)}
                 />
             </div>
           );
