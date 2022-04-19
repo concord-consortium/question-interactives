@@ -25,12 +25,13 @@ interface IProps {
   setHint?: (state: any) => void | null;
   addLocalLinkedDataListener?: (request: IAddLinkedInteractiveStateListenerRequest, phone: IframePhone) => void;
   scale?: number;
+  onUnloadCallback?: (state: any) => void;
 }
 
 export const IframeRuntime: React.FC<IProps> =
   ({ authoredState, id, iframeStyling, interactiveState, logRequestData, report,
       url, setHint, setInteractiveState, addLocalLinkedDataListener, initMessage,
-      scale }) => {
+      scale, onUnloadCallback }) => {
     const [ iframeHeight, setIframeHeight ] = useState(300);
     const [ internalHint, setInternalHint ] = useState("");
     const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -54,9 +55,6 @@ export const IframeRuntime: React.FC<IProps> =
         return;
       }
 
-      // FIXME: this will need to be updated to handle multiple sub interactives being hosted
-      // by a main interactive like carousel, side-by-side, or scaffolded question
-      //
       // Handle proxying the unloading request from Lara/AP through to the wrapped interactive.
       // The promise that is saved is resolved in the subsequent interactiveState listener callback
       setOnUnload((options: IGetInteractiveState) => {
@@ -69,10 +67,17 @@ export const IframeRuntime: React.FC<IProps> =
         }
         return Promise.resolve({});
       });
-
       phone.addListener("interactiveState", (newInteractiveState: any) => {
         setInteractiveStateRef.current?.(newInteractiveState);
-        resolveOnUnload.current?.(newInteractiveState);
+        if (onUnloadCallback && resolveOnUnload.current) {
+          // send the interactive state to any parent interactive that has provided an onUnload 
+          // callback, and then resolve the promise that was saved in the setOnUnload function 
+          // with undefined so the parent interactive doesn't have its state overwritten.
+          onUnloadCallback(newInteractiveState);
+          resolveOnUnload.current(undefined);
+        } else {
+          resolveOnUnload.current?.(newInteractiveState);
+        }
       });
       phone.addListener("height", (newHeight: number) => {
         setIframeHeight(newHeight);
@@ -167,7 +172,7 @@ export const IframeRuntime: React.FC<IProps> =
         phoneRef.current.disconnect();
       }
     };
-  },[addLocalLinkedDataListener, authoredState, logRequestData, report, setHint, url, initMessage]);
+  },[addLocalLinkedDataListener, authoredState, logRequestData, report, setHint, url, initMessage, onUnloadCallback]);
 
   let scaledIframeStyle = undefined;
   if (scale && report) {

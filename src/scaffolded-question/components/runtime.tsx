@@ -105,6 +105,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         setInteractiveState={readOnly ? undefined : handleNewInteractiveState.bind(null, currentInteractive.id)}
         report={readOnly}
         logRequestData={logRequestData}
+        onUnloadCallback={readOnly ? undefined : handleNewInteractiveState.bind(null, currentInteractive.id)}
       />
       {
         !report &&
