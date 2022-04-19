@@ -1,12 +1,13 @@
 import { useEffect, useRef } from "react";
-import { ILinkedInteractive, useAuthoredState } from "@concord-consortium/lara-interactive-api";
-import { useContextInitMessage } from "./use-context-init-message";
+import { IInitInteractive, ILinkedInteractive, useAuthoredState } from "@concord-consortium/lara-interactive-api";
 
 // This hook accepts a list of props that are pointing to other interactives and ensures the most recent ID
 // coming from LARA is being used. Note that ID might change when activity is copied or when interactive is removed.
 // It works both in authoring and runtime mode.
-export const useLinkedInteractives = (linkedInteractiveNames: string[] | undefined) => {
-  const initMessage = useContextInitMessage();
+export const useLinkedInteractives = (
+  linkedInteractiveNames: string[] | undefined,
+  initMessage: IInitInteractive | null
+  ) => {
   const { authoredState, setAuthoredState } = useAuthoredState<Record<string, unknown>>();
   const initialLinkedInteractivesProcessed = useRef(false);
   const linkedInteractives = initMessage?.mode === "authoring" && initMessage.linkedInteractives;
