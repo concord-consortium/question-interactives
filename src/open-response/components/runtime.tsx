@@ -129,7 +129,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const generateFileName = () => {
     const timestamp = Date.now();
-    return  "audio-" + timestamp + ".mp3";
+    return  "audio" + timestamp + ".mp3";
   };
 
   const handleAudioSave = async (fileData: Blob, timeElapsed: number) => {

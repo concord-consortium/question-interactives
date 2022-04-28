@@ -19,6 +19,7 @@ module.exports = (env, argv) => {
       'multiple-choice': './src/multiple-choice/index.tsx',
       'multiple-choice-alerts': './src/multiple-choice-alerts/index.tsx',
       'open-response': './src/open-response/index.tsx',
+      'open-response/report-item': './src/open-response/report-item-index.tsx',
       'fill-in-the-blank': './src/fill-in-the-blank/index.tsx',
       'scaffolded-question': './src/scaffolded-question/index.tsx',
       'video-player': './src/video-player/index.tsx',
@@ -147,6 +148,11 @@ module.exports = (env, argv) => {
       new HtmlWebpackPlugin({
         chunks: ['open-response'],
         filename: 'open-response/index.html',
+        template: 'src/shared/index.html'
+      }),
+      new HtmlWebpackPlugin({
+        chunks: ['open-response/report-item'],
+        filename: 'open-response/report-item/index.html',
         template: 'src/shared/index.html'
       }),
       new HtmlWebpackPlugin({
