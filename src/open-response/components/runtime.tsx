@@ -29,6 +29,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const answerText = !interactiveState?.answerText ? authoredState.defaultAnswer : interactiveState.answerText;
   const attachedAudioFile = interactiveState?.audioFile ? interactiveState.audioFile : undefined;
   let recordedBlobs: Blob[] = [];
+  const defaultHeight = 212;
+  const [textareaHeight, setTextareaHeight] = useState<number>(defaultHeight);
+  const [textareaWidth, setTextareaWidth] = useState<number | undefined>(undefined);
   const [audioUrl, setAudioUrl] = useState<string | undefined>(undefined);
   const [audioSupported, setAudioSupported] = useState(browserSupportsAudio);
   const [recordingStarted, setRecordingStarted] = useState(false);
@@ -36,15 +39,17 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const [recordingFailed, setRecordingFailed] = useState(false);
   const [playDisabled, setPlayDisabled] = useState(false);
   const [stopDisabled, setStopDisabled] = useState(true);
+  const [timerReading, setTimerReading] = useState<string>("00:00");
   const mediaRecorderRef = useRef<MediaRecorder>();
   const audioPlayerRef = useRef<HTMLAudioElement>(null);
+  const audioTimerRef = useRef<any>();
 
   useEffect(() => {
     setOnUnload((options: IGetInteractiveState) => {
       if (options.unloading) {
         return new Promise(resolve => {
           if (mediaRecorderRef.current) {
-            // Do not resolve to update the final interactive state. 
+            // Do not resolve in order to update the final interactive state. 
             // The stop() method will do that, which will complete the 
             // onUnload promise in the host.
             mediaRecorderRef.current.stop();
@@ -69,6 +74,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { value } = event.target;
+    const target = event.currentTarget as HTMLTextAreaElement;
+    if (audioEnabled && target.scrollHeight >= defaultHeight) {
+      setTextareaHeight(target.scrollHeight);
+    }
     setInteractiveState?.(prevState => ({
       ...prevState,
       answerType: "open_response_answer",
@@ -76,7 +85,14 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }));
   };
 
+  const handleMouseUp = (event: React.MouseEvent<HTMLTextAreaElement>) => {
+    const target = event.currentTarget as HTMLTextAreaElement;
+    setTextareaHeight(target.offsetHeight);
+    setTextareaWidth(target.offsetWidth);
+  };
+
   const handleAudioRecord = () => {
+    let secondsElapsed = 0;
     if (audioSupported) {
       setRecordingFailed(false);
       const startTime = Date.now();
@@ -95,7 +111,14 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                  });
                  mediaRecorderRef.current.start();
                  setRecordingStarted(true);
-                 const recordingTimer = setTimeout(handleAudioRecordStop, 60000);
+                 const recordingTimer = setTimeout(handleAudioRecordStop, 61000);
+                 audioTimerRef.current = setInterval(() => {
+                   secondsElapsed = audioTimerRef.current === 60 ? 0 : secondsElapsed + 1;
+                   const minutesElapsed = audioTimerRef.current >= 60 ? Math.floor(secondsElapsed / 60) : 0;
+                   const mins = String(minutesElapsed).padStart(2, "0");
+                   const secs = String(secondsElapsed).padStart(2, "0");
+                   setTimerReading(`${mins}:${secs}`);
+                 }, 1000);
                })
                .catch((error: string) => {
                  handleRecordingFailure(`${error}`);
@@ -109,17 +132,28 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const handleAudioRecordStop = () => {
     mediaRecorderRef.current?.stop();
     setRecordingStarted(false);
+    clearInterval(audioTimerRef.current);
+    setTimerReading("00:00");
   };
 
   const handleAudioPlay = () => {
     audioPlayerRef.current?.play();
     setPlayDisabled(true);
     setStopDisabled(false);
+
+    audioTimerRef.current = setInterval(() => {
+      if (audioPlayerRef.current) {
+        const mins = String(Math.floor(audioPlayerRef.current.currentTime / 60)).padStart(2, "0");
+        const secs = String(Math.floor(audioPlayerRef.current.currentTime % 60)).padStart(2, "0");
+        setTimerReading(`${mins}:${secs}`);
+      }
+    }, 100);
   };
 
   const handleAudioPlayStop = () => {
     audioPlayerRef.current?.pause();
     handleAudioPlayEnded();
+    clearInterval(audioTimerRef.current);
   };
 
   const handleAudioPlayEnded = () => {
@@ -160,6 +194,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       setAudioUrl(undefined);
       setRecordingStarted(false);
       setRecordingDisabled(false);
+      setTimerReading("00:00");
       recordedBlobs = [];
       setInteractiveState?.(prevState => ({...prevState, answerType: "open_response_answer", audioFile: undefined}));
     }
@@ -173,6 +208,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const decorateOptions = useGlossaryDecoration();
+  const containerWidth = audioEnabled && textareaWidth ? textareaWidth + "px" : undefined;
+  const containerStyle = audioEnabled && textareaHeight ? { height: textareaHeight + "px", width: containerWidth } : undefined;
+  const textareaStyle = audioEnabled && textareaHeight ? { height: textareaHeight + "px" } : undefined;
   return (
     <fieldset className={css.openResponse}>
       { authoredState.prompt &&
@@ -181,7 +219,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             {renderHTML(authoredState.prompt)}
           </legend>
         </DecorateChildren> }
-      <div className={css.inputContainer}>
+      <div className={`${css.inputContainer} ${audioEnabled ? css.audioEnabled : ""}`} style={containerStyle}>
         <textarea
           value={answerText}
           onChange={readOnly ? undefined : handleChange}
@@ -190,27 +228,53 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           rows={8}
           placeholder={placeholderText}
           data-testid="response-textarea"
+          className={css.openResponseTextarea}
+          onMouseUp={audioEnabled ? handleMouseUp : undefined}
+          style={textareaStyle}
         />
         { audioEnabled && !audioUrl && !readOnly && 
-          <div className={css.recordButtonContainer}>
-            { recordingDisabled && <span className={css.saveIndicator}>Saving. Please wait...</span> }
-            { recordingFailed && <span className={css.saveIndicator}>Recording failed. Please try again.</span> }
-            <button
-              aria-label="Record Audio"
-              title="Record Audio"
-              className={`${iconCss.iconRecord} ${css.audioControl} ${recordingStarted ? css.recordingActive : ""}`}
-              onClick={recordingStarted ? handleAudioRecordStop : handleAudioRecord }
-              disabled={recordingDisabled}
-              data-testid="audio-record-button"
-            >
-              <span className={css.buttonText}>Record</span>
-            </button>
+          <div className={css.recordUIContainer}>
+            { recordingDisabled && <span className={css.saveIndicator} data-testid="saving-indicator">Saving. Please wait...</span> }
+            { recordingFailed && <span className={css.saveIndicator} data-testid="saving-indicator">Recording failed. Please try again.</span> }
+            <div className={css.audioControls}>
+              <button
+                aria-label="Record Audio"
+                title="Record Audio"
+                className={`${iconCss.iconRecord} ${css.audioControl} ${recordingStarted ? css.recordingActive : ""}`}
+                onClick={handleAudioRecord}
+                disabled={recordingDisabled}
+                data-testid="audio-record-button"
+              >
+                <span className={css.buttonText}>Record</span>
+              </button>
+              <span className="timer" data-testid="record-timer-readout">{timerReading}</span>
+              <button
+                aria-label="Stop Recording Audio"
+                title="Stop Recording Audio"
+                className={`${iconCss.iconStop} ${css.audioControl} ${!recordingStarted ? css.disabled : ""}`}
+                onClick={handleAudioRecordStop}
+                disabled={recordingDisabled}
+                data-testid="audio-stop-record-button"
+              >
+                <span className={css.buttonText}>Stop</span>
+              </button>
+            </div>
           </div> }
         { audioEnabled && audioUrl &&
-          <div className={css.audioPlayer}>
+          <div className={css.audioPlayerUIContainer}>
             <audio ref={audioPlayerRef} controls preload="auto" onEnded={handleAudioPlayEnded}>
               <source src={audioUrl} type="audio/mpeg" />
             </audio>
+            <button
+                  aria-label="Delete Audio"
+                  title="Delete Audio"
+                  className={`${iconCss.iconDeleteAudio} ${css.audioControl} ${readOnly ? css.disabled : ""}`}
+                  onClick={readOnly ? undefined : handleAudioDelete}
+                  disabled={readOnly}
+                  data-testid="audio-delete-button"
+              >
+                <span className={css.buttonText}>Delete</span>
+              </button>
             <div className={css.audioControls}>
               <button
                 aria-label="Play Audio"
@@ -222,6 +286,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               >
                 <span className={css.buttonText}>Play</span>
               </button>
+              <span className="timer" data-testid="playback-timer-readout">{timerReading}</span>
               <button
                 aria-label="Stop Audio"
                 title="Stop Audio"
@@ -231,16 +296,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                 data-testid="audio-stop-button"
               >
                 <span className={css.buttonText}>Stop</span>
-              </button>
-              <button
-                aria-label="Delete Audio"
-                title="Delete Audio"
-                className={`${iconCss.iconDeleteAudio} ${css.audioControl} ${readOnly ? css.disabled : ""}`}
-                onClick={readOnly ? undefined : handleAudioDelete}
-                disabled={readOnly}
-                data-testid="audio-delete-button"
-              >
-                <span className={css.buttonText}>Delete</span>
               </button>
             </div>
           </div> }

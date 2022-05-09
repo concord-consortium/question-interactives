@@ -35,9 +35,10 @@ const mockGetUserMedia = jest.fn(
 );
 const mockMediaRecorder = {
   start: jest.fn(),
-  stop: jest.fn(),
-  pause: jest.fn()
+  stop: jest.fn()
 };
+const mockStart = jest.fn(() => { return true; });
+const mockStop = jest.fn(() => { return true; });
 const mockPause = jest.fn(() => { return true; });
 const mockPlay = jest.fn(() => { return true; });
 
@@ -50,13 +51,21 @@ Object.defineProperty(window, "MediaRecorder", {
   writable: true,
   value: jest.fn().mockImplementation(() => mockMediaRecorder)
 });
-Object.defineProperty(window.HTMLMediaElement.prototype, "pause", {
+Object.defineProperty(window.HTMLMediaElement.prototype, "start", {
   writable: true,
-  value: mockPause
+  value: mockStart
 });
-Object.defineProperty(window.HTMLMediaElement.prototype, "play", {
+Object.defineProperty(window.HTMLMediaElement.prototype, "stop", {
+  writable: true,
+  value: mockStop
+});
+Object.defineProperty(window.HTMLAudioElement.prototype, "play", {
   writable: true,
   value: mockPlay
+});
+Object.defineProperty(window.HTMLAudioElement.prototype, "pause", {
+  writable: true,
+  value: mockPause
 });
 
 beforeEach(() => {
@@ -114,9 +123,9 @@ describe("Runtime", () => {
     const recordButton = screen.getByTestId("audio-record-button");
     expect(recordButton).toBeDefined();
     // await waitFor(() => {
-    //    fireEvent.click(recordButton);
-    //    expect(MediaRecorder).toHaveBeenCalledTimes(2);
-    //    // TODO: check if .start and .stop have been called, check if play, stop, and delete buttons appear after recording ended
+    //  fireEvent.click(recordButton);
+    //  expect(MediaRecorder).toHaveBeenCalledTimes(1);
+    //  // TODO: check if .start and .stop have been called, check if play, stop, and delete buttons appear after recording ended
     // });
   });
 
@@ -129,13 +138,20 @@ describe("Runtime", () => {
       const playButton = screen.getByTestId("audio-play-button");
       const stopButton = screen.getByTestId("audio-stop-button");
       const deleteButton = screen.getByTestId("audio-delete-button");
+      const playbackTimerReadout = screen.getByTestId("playback-timer-readout");
       expect(playButton).toBeDefined();
       expect(stopButton).toBeDefined();
       expect(deleteButton).toBeDefined();
+      expect(playbackTimerReadout).toBeDefined();
+      expect(playbackTimerReadout).toHaveTextContent("00:00");
       fireEvent.click(playButton);
       expect(mockPlay).toHaveBeenCalledTimes(1);
+      expect(playButton).toHaveAttribute("disabled");
+      expect(stopButton).not.toHaveAttribute("disabled");
       fireEvent.click(stopButton);
       expect(mockPause).toHaveBeenCalledTimes(1);
+      expect(playButton).not.toHaveAttribute("disabled");
+      expect(stopButton).toHaveAttribute("disabled");
       fireEvent.click(deleteButton);
       expect(window.confirm).toHaveBeenCalledTimes(1);
     });
