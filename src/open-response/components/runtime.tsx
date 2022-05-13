@@ -34,7 +34,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const [textareaWidth, setTextareaWidth] = useState<number | undefined>(undefined);
   const [audioUrl, setAudioUrl] = useState<string | undefined>(undefined);
   const [audioSupported, setAudioSupported] = useState(browserSupportsAudio);
-  const [recordingStarted, setRecordingStarted] = useState(false);
+  const [recordingActive, setRecordingActive] = useState(false);
   const [recordingDisabled, setRecordingDisabled] = useState(false);
   const [recordingFailed, setRecordingFailed] = useState(false);
   const [playDisabled, setPlayDisabled] = useState(false);
@@ -48,11 +48,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     setOnUnload((options: IGetInteractiveState) => {
       if (options.unloading) {
         return new Promise(resolve => {
-          if (mediaRecorderRef.current) {
+          if (mediaRecorderRef.current && recordingActive) {
             // Do not resolve in order to update the final interactive state. 
-            // The stop() method will do that, which will complete the 
+            // The stop handler will do that, which will complete the 
             // onUnload promise in the host.
-            mediaRecorderRef.current.stop();
+            handleAudioRecordStop();
           } else {
             resolve(interactiveState || {});
           }
@@ -60,7 +60,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       }
       return Promise.resolve(interactiveState || {});
     });
-  }, [interactiveState]);
+  }, [interactiveState, recordingActive]);
 
   useEffect(() => {
     const getAudioUrl = async () => {
@@ -110,7 +110,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                    handleAudioSave(audioBlobData, timeElapsed);
                  });
                  mediaRecorderRef.current.start();
-                 setRecordingStarted(true);
+                 setRecordingActive(true);
                  const recordingTimer = setTimeout(handleAudioRecordStop, 61000);
                  audioTimerRef.current = setInterval(() => {
                    secondsElapsed = audioTimerRef.current === 60 ? 0 : secondsElapsed + 1;
@@ -131,7 +131,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const handleAudioRecordStop = () => {
     mediaRecorderRef.current?.stop();
-    setRecordingStarted(false);
+    setRecordingActive(false);
     clearInterval(audioTimerRef.current);
     setTimerReading("00:00");
   };
@@ -192,7 +192,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const handleAudioDelete = () => {
     if (confirm("Are you sure you want to delete the audio recording?")) {
       setAudioUrl(undefined);
-      setRecordingStarted(false);
+      setRecordingActive(false);
       setRecordingDisabled(false);
       setTimerReading("00:00");
       recordedBlobs = [];
@@ -240,8 +240,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               <button
                 aria-label="Record Audio"
                 title="Record Audio"
-                className={`${iconCss.iconRecord} ${css.audioControl} ${recordingStarted ? css.recordingActive : ""}`}
-                onClick={handleAudioRecord}
+                className={`${iconCss.iconRecord} ${css.audioControl} ${recordingActive ? css.recordingActive : ""}`}
+                onClick={!recordingActive ? handleAudioRecord : undefined}
                 disabled={recordingDisabled}
                 data-testid="audio-record-button"
               >
@@ -251,7 +251,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               <button
                 aria-label="Stop Recording Audio"
                 title="Stop Recording Audio"
-                className={`${iconCss.iconStop} ${css.audioControl} ${!recordingStarted ? css.disabled : ""}`}
+                className={`${iconCss.iconStop} ${css.audioControl} ${!recordingActive ? css.disabled : ""}`}
                 onClick={handleAudioRecordStop}
                 disabled={recordingDisabled}
                 data-testid="audio-stop-record-button"
