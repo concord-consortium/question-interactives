@@ -37,6 +37,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const [recordingActive, setRecordingActive] = useState(false);
   const [recordingDisabled, setRecordingDisabled] = useState(false);
   const [recordingFailed, setRecordingFailed] = useState(false);
+  const [recordingSaved, setRecordingSaved] = useState(false);
   const [playDisabled, setPlayDisabled] = useState(false);
   const [stopDisabled, setStopDisabled] = useState(true);
   const [timerReading, setTimerReading] = useState<string>("00:00");
@@ -47,8 +48,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   useEffect(() => {
     setOnUnload((options: IGetInteractiveState) => {
       if (options.unloading) {
+        const activeRecordingNotYetSaved = recordingActive || (recordingDisabled && !recordingSaved);
         return new Promise(resolve => {
-          if (mediaRecorderRef.current && recordingActive) {
+          if (mediaRecorderRef.current && activeRecordingNotYetSaved) {
             // Do not resolve in order to update the final interactive state. 
             // The stop handler will do that, which will complete the 
             // onUnload promise in the host.
@@ -60,7 +62,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       }
       return Promise.resolve(interactiveState || {});
     });
-  }, [interactiveState, recordingActive]);
+  }, [interactiveState, recordingActive, recordingDisabled, recordingSaved]);
 
   useEffect(() => {
     const getAudioUrl = async () => {
@@ -111,6 +113,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                  });
                  mediaRecorderRef.current.start();
                  setRecordingActive(true);
+                 setRecordingSaved(false);
                  const recordingTimer = setTimeout(handleAudioRecordStop, 61000);
                  audioTimerRef.current = setInterval(() => {
                    secondsElapsed = audioTimerRef.current === 60 ? 0 : secondsElapsed + 1;
@@ -180,12 +183,15 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         setInteractiveState?.(prevState => ({...prevState, answerType: "open_response_answer", audioFile: fileName}));
         const s3Url = await getAttachmentUrl({name: fileName});
         setAudioUrl(s3Url);
+        setRecordingSaved(true);
         log("audio response recorded", {filePath, fileName, timeElapsed});
       } else {
         handleRecordingFailure(saveFileResponse.statusText);
+        setRecordingDisabled(false);
       }
     } else {
       handleRecordingFailure("No file data.");
+      setRecordingDisabled(false);
     }
   };
 
