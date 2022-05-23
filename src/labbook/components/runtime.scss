@@ -39,7 +39,6 @@
   color: var(--cc-charcoal);
   .container {
     position: relative;
-    width: 514px;
     margin: 0px;
     display: flex;
     flex-direction: column;
@@ -50,11 +49,13 @@
   .under-sketch {
     display: flex;
     flex-direction: row;
-    align-items: stretch;
+    justify-content: space-around;
     width: 100%;
     .buttons {
       display: flex;
       flex-direction: column;
+      width: 40%;
+      align-items: center;
     }
   }
   .draw-tool-wrapper {
