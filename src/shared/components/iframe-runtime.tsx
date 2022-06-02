@@ -26,12 +26,13 @@ interface IProps {
   addLocalLinkedDataListener?: (request: IAddLinkedInteractiveStateListenerRequest, phone: IframePhone) => void;
   scale?: number;
   onUnloadCallback?: (state: any) => void;
+  scrolling?: string;
 }
 
 export const IframeRuntime: React.FC<IProps> =
   ({ authoredState, id, iframeStyling, interactiveState, logRequestData, report,
       url, setHint, setInteractiveState, addLocalLinkedDataListener, initMessage,
-      scale, onUnloadCallback }) => {
+      scale, onUnloadCallback, scrolling }) => {
     const [ iframeHeight, setIframeHeight ] = useState(300);
     const [ internalHint, setInternalHint ] = useState("");
     const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -70,8 +71,8 @@ export const IframeRuntime: React.FC<IProps> =
       phone.addListener("interactiveState", (newInteractiveState: any) => {
         setInteractiveStateRef.current?.(newInteractiveState);
         if (onUnloadCallback && resolveOnUnload.current) {
-          // send the interactive state to any parent interactive that has provided an onUnload 
-          // callback, and then resolve the promise that was saved in the setOnUnload function 
+          // send the interactive state to any parent interactive that has provided an onUnload
+          // callback, and then resolve the promise that was saved in the setOnUnload function
           // with undefined so the parent interactive doesn't have its state overwritten.
           onUnloadCallback(newInteractiveState);
           resolveOnUnload.current(undefined);
@@ -192,7 +193,7 @@ export const IframeRuntime: React.FC<IProps> =
                           : {width: "100%", height: iframeHeight, border: "none"};
   return (
     <>
-      <iframe ref={iframeRef} src={url} style={iframeStyle} />
+      <iframe ref={iframeRef} src={url} style={iframeStyle} scrolling={scrolling} />
       { internalHint &&
         <div className={css.hint}>{renderHTML(internalHint)}</div> }
     </>

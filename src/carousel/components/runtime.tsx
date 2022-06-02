@@ -119,6 +119,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                   logRequestData={logRequestData}
                   setInteractiveState={handleNewInteractiveState.bind(null, interactive.id)}
                   onUnloadCallback={handleNewInteractiveState.bind(null, interactive.id)}
+                  scrolling="no"
                 />
             </div>
           );
