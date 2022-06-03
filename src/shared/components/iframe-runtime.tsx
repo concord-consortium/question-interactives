@@ -26,7 +26,7 @@ interface IProps {
   addLocalLinkedDataListener?: (request: IAddLinkedInteractiveStateListenerRequest, phone: IframePhone) => void;
   scale?: number;
   onUnloadCallback?: (state: any) => void;
-  scrolling?: string;
+  scrolling?: "auto" | "yes" | "no";
 }
 
 export const IframeRuntime: React.FC<IProps> =
