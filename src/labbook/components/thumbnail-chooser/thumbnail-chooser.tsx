@@ -14,7 +14,7 @@ interface basicButtonProps {
 
 const PrevButton:React.FC<basicButtonProps> = (props: basicButtonProps) => {
   const {onClick, enabled} = props;
-  const backClasses = classNames(css["button-back"], {[css.disabled]: !enabled});
+  const backClasses = classNames(css["arrow-button"], {[css.disabled]: !enabled});
   return(
     <button className={backClasses} onClick={onClick} disabled={!enabled}>
       <div className={css["button-icon-container"]}>
@@ -26,7 +26,7 @@ const PrevButton:React.FC<basicButtonProps> = (props: basicButtonProps) => {
 
 const NextButton:React.FC<basicButtonProps> = (props: basicButtonProps) => {
   const {onClick, enabled} = props;
-  const backClasses = classNames(css["button-back"], {[css.disabled]: !enabled});
+  const backClasses = classNames(css["arrow-button"], {[css.disabled]: !enabled});
   return(
     <button className={backClasses} onClick={onClick} disabled={!enabled}>
       <div className={css["button-icon-container"]}>

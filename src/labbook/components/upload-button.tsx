@@ -11,7 +11,7 @@ export interface IUploadButtonProps {
 
 export const UploadButton: React.FC<IUploadButtonProps> = (props) => {
   const {children, onClick, disabled} = props;
-  const classes = classNames(css["button-back"], {[css.disabled]: disabled});
+  const classes = classNames(css["upload-button"], {[css.disabled]: disabled});
   return (
     <div className={classes} onClick={onClick}>
       {children}

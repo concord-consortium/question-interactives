@@ -3,8 +3,9 @@
 .thumbnail-chooser {
   background-color: white;
   display: flex;
-  justify-content: center;
+  justify-content: space-around;
   align-items: center;
+  width: 100%;
 
   .thumbnail-chooser-title {
     font-size: 16px;
@@ -16,14 +17,14 @@
   .thumbnail-chooser-list {
     height: 110px;
     display: flex;
-    justify-content: center;
     align-items: center;
+    overflow: scroll;
   }
 
-  .button-back {
-    width: 44px;
-    height: 44px;
-    margin: 10px;
+  .arrow-button {
+    display: flex;
+    justify-content: center;
+    width: 10%;
     border-radius: 4px;
     background-color: var(--white);
     border: none;
@@ -48,7 +49,6 @@
   .button-icon-container {
     width: 24px;
     height: 24px;
-    margin: 10px 10px 14px;
     object-fit: contain;
   }
 
