@@ -192,7 +192,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
     }
   }, [setInteractiveState]);
 
-  const [, drop] = useDrop({
+  const [{ draggingItem, isOver }, drop] = useDrop({
     accept: [DraggableItemWrapperType, DropZoneWrapperType],
     drop(wrapper: IDraggableItemWrapper | IDropZoneWrapper, monitor) {
       const didDrop = monitor.didDrop();
@@ -225,6 +225,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
       }
     },
     collect: monitor => ({
+      draggingItem: monitor.getItem(),
       isOver: !!monitor.isOver(),
     }),
   });
@@ -275,7 +276,11 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
               top: Math.min(canvasHeight - margin, top)
             };
           }
-          return <DraggableItemWrapper key={item.id} item={item} position={position} draggable={!readOnly} />;
+          // When an item is being dragged, temporarily disable all other draggables until it is dropped. This 
+          // ensures the item registers as dropped in a drop zone even if it is dropped on top of another 
+          // draggable that is already in the drop zone.
+          const tempDisable = isOver && draggingItem.item.id !== item.id;
+          return <DraggableItemWrapper key={item.id} item={item} position={position} draggable={!readOnly && !tempDisable} />;
         })
       }
     </div>

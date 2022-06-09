@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import deepmerge from "deepmerge";
 import Shutterbug from "shutterbug";
 import hash from "object-hash";
@@ -47,6 +47,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const readOnly = !!(report || (authoredState.required && interactiveState?.submitted));
 
   const [disableUI, setDisableUI] = useState(false);
+  const [containerWidth, setContainerWidth] = useState(514);
+  const [canvasWidth, setCanvasWidth] = useState(465);
   const ensureSelected = (prev: Partial<IInteractiveState>) => {
     const result = { ...prev };
     if (!result.entries?.length){
@@ -61,6 +63,18 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const {maxItems, showItems} = authoredState;
   const {entries, selectedId} = ensureSelected(interactiveState as IInteractiveState) as IInteractiveState;
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // checking if app container is smaller than full-width; if so, we need to scale down app
+  useEffect(
+    () => {
+      if (containerRef.current && containerRef.current.clientWidth < 514) {
+        setContainerWidth(containerRef.current.clientWidth);
+        setCanvasWidth(containerRef.current.clientWidth - 42);
+      }
+    },
+    []
+  );
 
   const setEntries = (newEntries: Array<ILabbookEntry>) => {
     setInteractiveState?.(prevState => ({
@@ -212,8 +226,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     { authoredState.prompt &&
       <div>{renderHTML(authoredState.prompt)}</div>
     }
-    <div className={css["app"]}>
-      <div className={css["container"]}>
+    <div className={css["app"]} ref={containerRef}>
+      <div className={css["container"]} style={{width: containerWidth}}>
         <ThumbnailChooser {...thumbnailChooserProps} />
         <div className={css["draw-tool-wrapper"]}>
           <ThumbnailTitle className={css["draw-tool-title"]} title={title} />
@@ -223,7 +237,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             interactiveState={{...selectedItem?.data, answerType: "interactive_state"}}
             setInteractiveState={setDrawingStateFn}
             buttons={drawingToolButtons}
-            width={465}
+            width={canvasWidth}
             height={495}
             readOnly={readOnly}
           />

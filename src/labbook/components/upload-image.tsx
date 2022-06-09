@@ -63,16 +63,18 @@ export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveSta
     }
   };
 
-  const classes = classNames(css["button-back"], {[css.disabled]: uploadInProgress||disabled});
+  const classes = classNames(css["upload-button"], {[css.disabled]: uploadInProgress||disabled});
 
   return (
     <>
       <StyledFileInput buttonClass={classes} onChange={handleFileUpload}>
         <UploadIcon />
-        { uploadInProgress || disabled
-          ? "Please Wait"
-          : "Upload Image"
-        }
+        <div className={css["button-text"]}>
+          { uploadInProgress || disabled
+            ? "Please Wait"
+            : "Upload Image"
+          }
+        </div>
       </StyledFileInput>
     </>
   );

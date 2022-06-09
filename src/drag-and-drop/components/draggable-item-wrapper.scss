@@ -2,9 +2,12 @@
 
 .draggableItemWrapper {
   position: absolute;
+  pointer-events: none;
 
   &.draggable {
     cursor: move;
+    pointer-events: auto;
+
     &:hover {
       $border-width: 4px;
       border: $border-width solid #ffdd00;
