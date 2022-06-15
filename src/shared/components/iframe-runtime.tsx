@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { renderHTML } from "../../shared/utilities/render-html";
 import { IframePhone } from "../types";
 import iframePhone from "iframe-phone";
-import { closeModal, getClient, IAddLinkedInteractiveStateListenerRequest, IAttachmentUrlRequest, IAttachmentUrlResponse, ICloseModal, IGetInteractiveState, IHintRequest, IInitInteractive, IShowModal, log, setOnUnload, showModal } from "@concord-consortium/lara-interactive-api";
+import { closeModal, flushStateUpdates, getClient, IAddLinkedInteractiveStateListenerRequest, IAttachmentUrlRequest, IAttachmentUrlResponse, ICloseModal, IGetInteractiveState, IHintRequest, IInitInteractive, IShowModal, log, setOnUnload, showModal } from "@concord-consortium/lara-interactive-api";
 import { getLibraryInteractive } from "../utilities/library-interactives";
 import css from "./iframe-runtime.scss";
 
@@ -27,12 +27,13 @@ interface IProps {
   scale?: number;
   onUnloadCallback?: (state: any) => void;
   scrolling?: "auto" | "yes" | "no";
+  flushOnSave?: boolean;
 }
 
 export const IframeRuntime: React.FC<IProps> =
   ({ authoredState, id, iframeStyling, interactiveState, logRequestData, report,
       url, setHint, setInteractiveState, addLocalLinkedDataListener, initMessage,
-      scale, onUnloadCallback, scrolling }) => {
+      scale, onUnloadCallback, scrolling, flushOnSave }) => {
     const [ iframeHeight, setIframeHeight ] = useState(300);
     const [ internalHint, setInternalHint ] = useState("");
     const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -70,6 +71,10 @@ export const IframeRuntime: React.FC<IProps> =
       });
       phone.addListener("interactiveState", (newInteractiveState: any) => {
         setInteractiveStateRef.current?.(newInteractiveState);
+        if (flushOnSave) {
+          // don't wait the default 2000ms timeout before saving
+          flushStateUpdates();
+        }
         if (onUnloadCallback && resolveOnUnload.current) {
           // send the interactive state to any parent interactive that has provided an onUnload
           // callback, and then resolve the promise that was saved in the setOnUnload function
@@ -173,7 +178,7 @@ export const IframeRuntime: React.FC<IProps> =
         phoneRef.current.disconnect();
       }
     };
-  },[addLocalLinkedDataListener, authoredState, logRequestData, report, setHint, url, initMessage, onUnloadCallback]);
+  },[addLocalLinkedDataListener, authoredState, logRequestData, report, setHint, url, initMessage, onUnloadCallback, flushOnSave]);
 
   let scaledIframeStyle = undefined;
   if (scale && report) {

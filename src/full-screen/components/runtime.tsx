@@ -100,6 +100,7 @@ export const Runtime: React.FC = () => {
                        setHint={setHint}
                        initMessage={initMessage}
                        report={initMessage?.mode === "report"}
+                       flushOnSave={true}
         />
         {screenfull &&
           <FullScreenButton isFullScreen={screenfull.isFullscreen} handleToggleFullScreen={toggleFullScreen} />}
