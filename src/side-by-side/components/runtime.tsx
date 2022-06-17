@@ -54,7 +54,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const handleNewInteractiveState = (interactiveStateSide: InteractiveStateSide, newInteractiveState: any) => {
     setInteractiveState?.((prevState: IInteractiveState) => {
-      if (newInteractiveState.dataset && dataListeners.length > 0) {
+      if (newInteractiveState?.dataset && dataListeners.length > 0) {
         updateDataListeners(newInteractiveState);
       }
       return {
