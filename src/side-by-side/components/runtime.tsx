@@ -52,6 +52,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   type InteractiveStateSide = "leftInteractiveState" | "rightInteractiveState";
 
+  // TODO: Type newInteractiveState and whatever calls handleNewInteractiveState better.
+  // It is possible that newInteractiveState could be a string which might cause an error
+  // since it would not be undefined but would not have a dataset property.
   const handleNewInteractiveState = (interactiveStateSide: InteractiveStateSide, newInteractiveState: any) => {
     setInteractiveState?.((prevState: IInteractiveState) => {
       if (newInteractiveState?.dataset && dataListeners.length > 0) {
