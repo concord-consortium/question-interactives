@@ -93,7 +93,7 @@
     "babel-core": "^6.26.3",
     "babel-jest": "^26.6.3",
     "babel-loader": "^8.2.3",
-    "canvas": "2.6.1",
+    "canvas": "2.9.1",
     "css-loader": "^4.3.0",
     "cypress": "^9.5.1",
     "enzyme": "^3.11.0",
@@ -126,8 +126,8 @@
     "webpack-dev-server": "^4.7.4"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "^3.53.1",
-    "@aws-sdk/signature-v4-crt": "^3.53.0",
+    "@aws-sdk/client-s3": "^3.113.0",
+    "@aws-sdk/signature-v4-crt": "^3.110.0",
     "@concord-consortium/lara-interactive-api": "^1.6.1",
     "@concord-consortium/slate-editor": "^0.7.3",
     "@concord-consortium/text-decorator": "^1.0.2",
