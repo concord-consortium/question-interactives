@@ -1,18 +1,23 @@
+
 import React from "react";
+import classNames from "classnames";
 import { renderHTML } from "../../shared/utilities/render-html";
-import css from "./feedback.scss";
 import { Score } from "./score";
+
+import css from "./feedback.scss";
 
 interface IProps {
   score: number;
   feedback: string;
   maxScore: number;
+  outdated: boolean;
 }
 
-export const Feedback: React.FC<IProps> = ({ score, maxScore, feedback }) => {
+export const Feedback: React.FC<IProps> = ({ score, maxScore, feedback, outdated }) => {
   return (
-    <div className={css.scoreBotFeedback} data-cy="score-bot-feedback">
+    <div className={classNames(css.scoreBotFeedback, { [css.outdated]: outdated })} data-cy="score-bot-feedback">
       <div className={css.header}>Feedback</div>
+      { outdated && <div className={css.outdatedMsg}>Please submit your question again to get updated feedback.</div> }
       <div className={css.score}><Score score={score} maxScore={maxScore} /></div>
       <div className={css.feedback}>
         {renderHTML(feedback)}

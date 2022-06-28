@@ -3,6 +3,16 @@
   border: 1px solid #ededed;
   border-radius: 0 0 13px 13px;
 
+  &.outdated {
+    .score, .feedback {
+      opacity: 0.35;
+    }
+  }
+
+  .outdatedMsg {
+    padding: 5px 10px;
+  }
+
   .header {
     background-color: #ededed;
     color: #525252;

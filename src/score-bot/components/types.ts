@@ -11,9 +11,14 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   scoreMapping?: string[];
 }
 
+export interface IAttempt {
+  score: number;
+  answerText: string
+}
+
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
   answerText?: string;
-  submitted?: boolean;
-  attempts?: number;
   score?: number;
+  submitted?: boolean;
+  attempts?: IAttempt[];
 }

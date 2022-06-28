@@ -13,6 +13,14 @@ import cssHelpers from "../../shared/styles/helpers.scss";
 
 export const isAnswered = (interactiveState?: IInteractiveState | null) => !!interactiveState?.answerText;
 
+const shouldSubmitCurrentAnswer = (interactiveState?: IInteractiveState | null) => {
+  if (!interactiveState?.attempts || interactiveState.attempts.length === 0) {
+    return true;
+  }
+  const lastAttempt = interactiveState.attempts[interactiveState.attempts.length - 1];
+  return lastAttempt.answerText !== interactiveState.answerText;
+};
+
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
 
 const validateScoreMapping = (scoreMapping: string[]) => {
@@ -27,7 +35,7 @@ const validateScoreMapping = (scoreMapping: string[]) => {
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const [requestInProgress, setRequestInProgress] = useState(false);
-  const readOnly = report;
+  const readOnly = report || requestInProgress;
   const placeholderText = "Please type your answer here.";
   const answerText = !interactiveState?.answerText ? authoredState.defaultAnswer : interactiveState.answerText;
   const scoreMapping = validateScoreMapping(authoredState.scoreMapping || []);
@@ -46,7 +54,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     setInteractiveState?.(prevState => ({
       ...prevState,
       answerType: "interactive_state",
-      answerText: value
+      answerText: value,
+      score: undefined,
+      submitted: false
     }));
   };
 
@@ -60,32 +70,38 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     setInteractiveState?.(prevState => ({
       ...prevState,
       answerType: "interactive_state",
-      submitted: false
+      submitted: false // lock AP page
     }));
     log("scorebot feedback requested", { item_id: authoredState.scoreBotItemId, answer_text: interactiveState.answerText });
 
     try {
       const score = await getScoreBOTFeedback(authoredState.scoreBotItemId, interactiveState.answerText);
+      const attempt = { score, answerText: interactiveState.answerText };
       setInteractiveState?.(prevState => ({
         ...prevState,
         answerType: "interactive_state",
         score,
-        attempts: prevState?.attempts ? prevState.attempts + 1 : 1
+        attempts: prevState?.attempts ? [ ...prevState.attempts, attempt ] : [ attempt ],
+        submitted: true
       }));
       log("scorebot feedback received", { item_id: authoredState.scoreBotItemId, answer_text: interactiveState?.answerText, score });
     } catch (error) {
-      console.error("ScoreBOT feedback has failed", error);
-    } finally {
-      setRequestInProgress(false);
+      console.error("ScoreBOT request has failed", error);
+      window.alert("ScoreBOT request has failed. Please try to submit your question gain.");
+
       setInteractiveState?.(prevState => ({
         ...prevState,
         answerType: "interactive_state",
-        submitted: true // unlock AP page
+        submitted: true // unlock AP page even in case of ScoreBOT failure
       }));
+    } finally {
+      setRequestInProgress(false);
     }
   };
 
-  const submitDisabled = !isAnswered(interactiveState) || requestInProgress;
+  const lastAttempt = interactiveState?.attempts ? interactiveState.attempts[interactiveState.attempts.length - 1] : null;
+  const feedbackOutdated = lastAttempt?.answerText !== interactiveState?.answerText;
+  const submitDisabled = !isAnswered(interactiveState) || !shouldSubmitCurrentAnswer(interactiveState) || readOnly;
 
   return (
     <fieldset className={css.scoreBot}>
@@ -110,7 +126,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         Submit
       </button>
       {
-        interactiveState?.score != null && <Feedback score={interactiveState.score} feedback={scoreMapping[interactiveState.score]} maxScore={scoreMapping.length - 1} />
+        lastAttempt !== null && !requestInProgress &&
+        <Feedback score={lastAttempt.score} feedback={scoreMapping[lastAttempt.score]} maxScore={scoreMapping.length - 1} outdated={feedbackOutdated} />
       }
     </fieldset>
   );
