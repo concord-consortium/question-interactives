@@ -24,12 +24,15 @@ const shouldSubmitCurrentAnswer = (interactiveState?: IInteractiveState | null) 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
 
 const validateScoreMapping = (scoreMapping: string[]) => {
-  if (scoreMapping[0] && scoreMapping[1] && scoreMapping[2] && scoreMapping[3] && scoreMapping[4] && !scoreMapping[5] && !scoreMapping[6]) {
-    return scoreMapping.slice(0, 5);
-  }
-  if (scoreMapping[0] && scoreMapping[1] && scoreMapping[2] && scoreMapping[3] && scoreMapping[4] && scoreMapping[5] && scoreMapping[6]) {
+  if ([0, 1, 2, 3, 4, 5, 6].every(idx => scoreMapping[idx])) {
+    // All 7 elements of score mapping are defined (from 0 to 6).
     return scoreMapping;
   }
+  if ([0, 1, 2, 3, 4].every(idx => scoreMapping[idx]) && [5, 6].every(idx => !scoreMapping[idx])) {
+    // 0-4 elements of score mapping are defined, and 5-6 elements are undefined / empty.
+    return scoreMapping.slice(0, 5);
+  }
+  // Do not allow any other combinations, as it's not supported by the ScoreBOT scale and ML model.
   return null;
 };
 
