@@ -8,10 +8,10 @@ const authoredState = {
   questionType: "iframe_interactive" as const,
   prompt: "Test prompt",
   hint: "hint",
-  scoreBotItemId: "WaterVernalRationale",
   required: true,
   defaultAnswer: "",
-  scoreMapping: []
+  scoreBotItemId: "foo",
+  scoreMapping: ["0", "1", "2", "3", "4"]
 };
 
 const authoredRichState = {
@@ -49,7 +49,7 @@ describe("Runtime", () => {
     render(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} />);
     fireEvent.change(screen.getByTestId("response-textarea"), { target: { value: "new answer" } });
     const newState = setState.mock.calls[0][0](interactiveState);
-    expect(newState).toEqual({answerType: "interactive_state", answerText: "new answer"});
+    expect(newState).toEqual({answerType: "interactive_state", answerText: "new answer", score: undefined, submitted: false});
   });
 
   describe("report mode", () => {

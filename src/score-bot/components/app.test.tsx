@@ -26,8 +26,8 @@ const authoredState = {
   hint: "hint",
   required: true,
   defaultAnswer: "",
-  scoreBotItemId: "",
-  scoreMapping: []
+  scoreBotItemId: "foo",
+  scoreMapping: ["0", "1", "2", "3", "4"]
 } as IAuthoredState;
 
 const interactiveState = {

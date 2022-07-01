@@ -23,7 +23,9 @@ const authoredState = {
   prompt: "Test prompt",
   hint: "hint",
   required: true,
-  defaultAnswer: ""
+  defaultAnswer: "",
+  scoreBotItemId: "foo",
+  scoreMapping: ["0", "1", "2", "3", "4"]
 } as IAuthoredState;
 
 const interactiveState = {
