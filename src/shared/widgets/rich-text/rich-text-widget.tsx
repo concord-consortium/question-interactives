@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { WidgetProps } from "react-jsonschema-form";
 import { getContentHeight, htmlToSlate, SlateEditor, slateToHtml, SlateToolbar } from "@concord-consortium/slate-editor";
 import { useRefState } from "../../hooks/use-ref-state";
-import "@concord-consortium/slate-editor/build/index.css";
+import "@concord-consortium/slate-editor/dist/index.css";
 import css from "./rich-text-widget.scss";
 
 const kThemeColor = "#34a5be";
