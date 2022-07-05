@@ -68,9 +68,6 @@ export const RichTextWidget = (props: WidgetProps) => {
           buttonColors: { fill: "#666666", background: "#FFFFFF" },
           selectedColors: { fill: "#FFFFFF", background: "#666666" },
           themeColor: kThemeColor }}
-        order={["bold", "italic", "underlined", "deleted", "superscript", "subscript", "color",
-                "image", "link",
-                "heading1", "heading2", "heading3", "block-quote", "ordered-list", "bulleted-list"]}
         padding={2}
         editor={editorRef.current}
         changeCount={changeCount}
