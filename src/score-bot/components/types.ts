@@ -18,7 +18,6 @@ export interface IAttempt {
 
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
   answerText?: string;
-  score?: number;
   submitted?: boolean;
   attempts?: IAttempt[];
 }
