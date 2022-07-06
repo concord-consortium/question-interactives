@@ -46,6 +46,9 @@ $dialogHeight: 340px;
       max-width: $dialogWidth;
       background-color: white;
       z-index: 2;
+      .ccrte-full-row {
+        width: $dialogWidth - 40px;
+      }
     }
   }
 
