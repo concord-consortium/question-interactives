@@ -31,6 +31,8 @@ module.exports = (env, argv) => {
       'full-screen': './src/full-screen/index.tsx',
       'labbook': './src/labbook/index.tsx',
       'side-by-side': './src/side-by-side/index.tsx',
+      'score-bot': './src/score-bot/index.tsx',
+      'score-bot/report-item': './src/score-bot/report-item-index.tsx',
       'wrapper': './src/shared/wrapper.tsx'
     },
     mode: 'development',
@@ -208,6 +210,16 @@ module.exports = (env, argv) => {
       new HtmlWebpackPlugin({
         chunks: ['side-by-side'],
         filename: 'side-by-side/index.html',
+        template: 'src/shared/index.html'
+      }),
+      new HtmlWebpackPlugin({
+        chunks: ['score-bot'],
+        filename: 'score-bot/index.html',
+        template: 'src/shared/index.html'
+      }),
+      new HtmlWebpackPlugin({
+        chunks: ['score-bot/report-item'],
+        filename: 'score-bot/report-item/index.html',
         template: 'src/shared/index.html'
       }),
       // Wrapper page, useful for testing and Cypress.

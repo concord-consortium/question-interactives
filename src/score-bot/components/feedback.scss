@@ -1,0 +1,34 @@
+.scoreBotFeedback {
+  margin-top: 12px;
+  border: 1px solid #ededed;
+  border-radius: 0 0 13px 13px;
+
+  &.outdated {
+    .score, .feedback {
+      opacity: 0.35;
+    }
+  }
+
+  .outdatedMsg {
+    padding: 5px 10px;
+  }
+
+  .header {
+    background-color: #ededed;
+    color: #525252;
+    font-size: 16px;
+    font-weight: lighter;
+    padding: 5px 10px;
+    width: 100%;
+  }
+
+  .score {
+    padding: 10px 10px 5px 10px;
+  }
+
+  .feedback {
+    display: block;
+    width: 100%;
+    padding: 5px 10px;
+  }
+}
