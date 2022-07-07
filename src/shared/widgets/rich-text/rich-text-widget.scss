@@ -1,3 +1,6 @@
+$dialogWidth: 380px;
+$dialogHeight: 340px;
+
 .customRichTextWidget {
 
   :global .ccrte-modal-dialog {
@@ -34,6 +37,17 @@
             margin-top: 0px;
           }
         }
+      }
+    }
+    .ccrte-dialog {
+      left: calc(50% - #{$dialogWidth} / 2);
+      top: calc(40% - #{$dialogHeight} / 2);
+      width: 100%;
+      max-width: $dialogWidth;
+      background-color: white;
+      z-index: 2;
+      .ccrte-full-row {
+        width: $dialogWidth - 40px;
       }
     }
   }
