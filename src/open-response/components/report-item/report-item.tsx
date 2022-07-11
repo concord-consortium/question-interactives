@@ -1,11 +1,8 @@
 import * as React from "react";
-import { useEffect } from "react";
 import * as semver from "semver";
-import { IReportItemInitInteractive,
-         addGetReportItemAnswerListener,
-         sendReportItemAnswer,
-         getClient, 
-         IReportItemAnswerItem } from "@concord-consortium/lara-interactive-api";
+import {
+  IReportItemInitInteractive, sendReportItemAnswer, IReportItemAnswerItem, useReportItem
+  } from "@concord-consortium/lara-interactive-api";
 import { IAuthoredState, IInteractiveState } from "../types";
 
 interface Props {
@@ -13,9 +10,11 @@ interface Props {
 }
 
 export const ReportItemComponent: React.FC<Props> = (props) => {
-
-  useEffect(() => {
-    addGetReportItemAnswerListener<IInteractiveState, IAuthoredState>((request) => {
+  useReportItem<IInteractiveState, IAuthoredState>({
+    metadata: {
+      compactAnswerReportItemsAvailable: false
+    },
+    handler: (request) => {
       const {interactiveState, platformUserId, version} = request;
 
       if (!version) {
@@ -38,10 +37,8 @@ export const ReportItemComponent: React.FC<Props> = (props) => {
           version
         );
       }
-    });
-
-    getClient().post("reportItemClientReady");
+    }
   });
 
-  return (null);
+  return null;
 };

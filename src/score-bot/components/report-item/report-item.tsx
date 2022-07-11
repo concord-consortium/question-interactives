@@ -1,9 +1,8 @@
 import * as React from "react";
-import { useEffect } from "react";
 import * as semver from "semver";
-import { IReportItemInitInteractive, addGetReportItemAnswerListener, sendReportItemAnswer,
-  IReportItemAnswerItem,
-  notifyReportItemClientReady} from "@concord-consortium/lara-interactive-api";
+import {
+  IReportItemInitInteractive, sendReportItemAnswer, IReportItemAnswerItem, useReportItem
+} from "@concord-consortium/lara-interactive-api";
 import { IAuthoredState, IInteractiveState } from "../types";
 import { renderStyledComponentToString } from "../../../shared/utilities/render-styled-component-to-string";
 import { FeedbackReport } from "./feedback-report";
@@ -14,10 +13,12 @@ interface Props {
 }
 
 export const ReportItemComponent: React.FC<Props> = (props) => {
-
-  useEffect(() => {
-    addGetReportItemAnswerListener<IInteractiveState, IAuthoredState>((request) => {
-      const {interactiveState, authoredState, platformUserId, version, itemsType} = request;
+  useReportItem<IInteractiveState, IAuthoredState>({
+    metadata: {
+      compactAnswerReportItemsAvailable: true
+    },
+    handler: request => {
+      const { interactiveState, authoredState, platformUserId, version, itemsType } = request;
 
       if (!version) {
         // for hosts sending older, unversioned requests
@@ -59,10 +60,8 @@ export const ReportItemComponent: React.FC<Props> = (props) => {
           version
         );
       }
-    });
+    }
+  });
 
-    notifyReportItemClientReady({ compactAnswerReportItemsAvailable: true });
-  }, []);
-
-  return (null);
+  return null;
 };
