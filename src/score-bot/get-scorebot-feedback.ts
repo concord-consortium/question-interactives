@@ -1,13 +1,7 @@
-// Note that for local development, you need to have CORS proxy server running at http://localhost:8010.
-// To install and run it:
-// ```
-// npm install -g local-cors-proxy
-// lcp --proxyUrl https://api.concord.org/question-rater-staging
-// ```
 const apiEndpoint = {
   production: "https://api.concord.org/question-rater",
   staging: "https://api.concord.org/question-rater-staging",
-  local: "http://localhost:8010/proxy"
+  local: "https://api.concord.org/question-rater-staging",
 };
 
 const throwError = (msg: string) => {
