@@ -1,18 +1,17 @@
 import React from "react";
 import { act, render } from "@testing-library/react";
-import { useInitMessage } from "@concord-consortium/lara-interactive-api";
+import { useInitMessage, useReportItem } from "@concord-consortium/lara-interactive-api";
 import { AppComponent } from "./app";
 import { IAuthoredState, IInteractiveState } from "../types";
 
-jest.mock("./report-item", () => ({
-  ReportItemComponent: () => {
-    return <div>MockReportItemComponent</div>;
-  }
+jest.mock("@concord-consortium/lara-interactive-api", () => ({
+  useReportItem: jest.fn(),
 }));
 
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
   useInitMessage: jest.fn(),
   useAutoSetHeight: jest.fn(),
+  useReportItem: jest.fn()
 }));
 
 const useInitMessageMock = useInitMessage as jest.Mock;
@@ -54,7 +53,13 @@ describe("Open response question report item", () => {
     });
   });
 
-  it("returns the report item component if initMessage is set and mode is reportItem", async () => {
+  it("calls useReportItem", () => {
+    const { container } = render(<AppComponent />);
+    expect(container).toBeDefined();
+    expect(useReportItem).toHaveBeenCalled();
+  });
+
+  it("doesn't render anything if initMessage is set and mode is reportItem", async () => {
     useInitMessageMock.mockReturnValue({
       version: 1,
       mode: "reportItem",
@@ -65,7 +70,7 @@ describe("Open response question report item", () => {
     const { container } = render(<AppComponent />);
     expect(container).toBeDefined();
     await act(async () => {
-      expect(container.innerHTML).toEqual(expect.stringContaining("MockReportItemComponent"));
+      expect(container.innerHTML).toEqual("");
     });
   });
 });
