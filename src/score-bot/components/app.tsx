@@ -79,10 +79,12 @@ const baseAuthoringProps = {
   uiSchema: {
     "ui:order": [
       "prompt",
-      "required",
       "*"
     ],
     version: {
+      "ui:widget": "hidden"
+    },
+    required: {
       "ui:widget": "hidden"
     },
     questionType: {
