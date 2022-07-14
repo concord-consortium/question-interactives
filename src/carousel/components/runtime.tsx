@@ -69,7 +69,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         ...prevState,
         answerType: "interactive_state",
         subinteractiveStates: updatedStates,
-        answerText: getAnswerText(newInteractiveState.answerText)
+        answerText: getAnswerText(newInteractiveState?.answerText)
       };
     });
   };
