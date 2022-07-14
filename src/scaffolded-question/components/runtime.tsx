@@ -62,7 +62,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         ...prevState,
         answerType: "interactive_state",
         subinteractiveStates: updatedStates,
-        answerText: getAnswerText(currentLevel, newInteractiveState.answerText)
+        answerText: getAnswerText(currentLevel, newInteractiveState?.answerText)
       };
     });
   };
@@ -105,9 +105,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         setInteractiveState={readOnly ? undefined : handleNewInteractiveState.bind(null, currentInteractive.id)}
         report={readOnly}
         logRequestData={logRequestData}
-        // Since child interactives still have a functioning onUnload handler after a scaffolded question is 
-        // submitted and locked, onUnloadCallback should still be set to make sure the scaffolded question doesn't 
-        // get its interactiveState overwritten. So we use the report boolean to determine if onUnloadCallback 
+        // Since child interactives still have a functioning onUnload handler after a scaffolded question is
+        // submitted and locked, onUnloadCallback should still be set to make sure the scaffolded question doesn't
+        // get its interactiveState overwritten. So we use the report boolean to determine if onUnloadCallback
         // should be set instead of the readOnly boolean.
         onUnloadCallback={report ? undefined : handleNewInteractiveState.bind(null, currentInteractive.id)}
       />
