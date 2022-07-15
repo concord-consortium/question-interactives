@@ -21,7 +21,7 @@ const interactiveState = {
   answerType: "interactive_state",
   answerText: "Test answer",
   attempts: [
-    { score: 3, answerText: "bar" }
+    { score: 3, answerText: "Test answer" }
   ]
 } as IInteractiveState;
 
@@ -74,6 +74,31 @@ describe("reportItemHandler", () => {
 
       expect(scoreItem.score).toEqual(3);
       expect(scoreItem.maxScore).toEqual(4);
+    });
+  });
+
+  describe("when feedback is outdated", () => {
+    it("returns an empty list of report items (to clear previous score)", () => {
+      const interactiveStateWithOutdatedFeedback = { ...interactiveState};
+      interactiveStateWithOutdatedFeedback.answerText = "Updated answer text";
+
+      reportItemHandler({
+        version: "2.1.0",
+        platformUserId: "user1",
+        authoredState,
+        interactiveState: interactiveStateWithOutdatedFeedback,
+        itemsType: "compactAnswer",
+        requestId: 1
+      });
+
+      expect(sendReportItemAnswer).toHaveBeenCalledTimes(1);
+      const response: IReportItemAnswer = (sendReportItemAnswer as jest.Mock).mock.calls[0][0];
+
+      expect(response.items.length).toEqual(0);
+
+      expect(response.items.find(i => i.type === "score")).toBeUndefined();
+      expect(response.items.find(i => i.type === "answerText")).toBeUndefined();
+      expect(response.items.find(i => i.type === "html")).toBeUndefined();
     });
   });
 });
