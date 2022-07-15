@@ -18,8 +18,6 @@ export const reportItemHandler: IGetReportItemAnswerHandler<IInteractiveState, I
     const items: IReportItemAnswerItem[] = [];
 
     if (itemsType === "fullAnswer") {
-      // This item intentionally doesn't include answer text. Answer text is obtained by portal report itself
-      // and preloaded while it's waiting for report items response.
       items.push({ type: "answerText" });
 
       const score = getLastScore(interactiveState);
