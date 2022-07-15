@@ -1,6 +1,7 @@
 import * as React from "react";
-import { useInitMessage, useAutoSetHeight, IReportItemInitInteractive } from "@concord-consortium/lara-interactive-api";
-import { ReportItemComponent } from "./report-item";
+import { useInitMessage, useAutoSetHeight, IReportItemInitInteractive, useReportItem } from "@concord-consortium/lara-interactive-api";
+import { reportItemHandler } from "./report-item";
+import { IAuthoredState, IInteractiveState } from "../types";
 
 interface Props {}
 
@@ -8,6 +9,13 @@ export const AppComponent: React.FC<Props> = (props) => {
   const initMessage = useInitMessage<IReportItemInitInteractive<Record<string, unknown>, Record<string, unknown>>, Record<string, unknown>>();
 
   useAutoSetHeight();
+
+  useReportItem<IInteractiveState, IAuthoredState>({
+    metadata: {
+      compactAnswerReportItemsAvailable: true
+    },
+    handler: reportItemHandler
+  });
 
   if (!initMessage) {
     return (
@@ -33,5 +41,7 @@ export const AppComponent: React.FC<Props> = (props) => {
     );
   }
 
-  return <ReportItemComponent initMessage={initMessage} />;
+  // Report item app can provide UI in the prompt area too, but Open Response never does it. It only responds
+  // to getReportItemAnswer post message from the host window (portal report).
+  return null;
 };

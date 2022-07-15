@@ -1,11 +1,9 @@
-import React from "react";
-import { render } from "@testing-library/react";
-import { ReportItemComponent } from "./report-item";
-import { IReportItemInitInteractive, useReportItem } from "@concord-consortium/lara-interactive-api";
+import { reportItemHandler } from "./report-item";
 import { IAuthoredState, IInteractiveState } from "../types";
+import { IReportItemAnswer, sendReportItemAnswer } from "@concord-consortium/lara-interactive-api";
 
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
-  useReportItem: jest.fn(),
+  sendReportItemAnswer: jest.fn()
 }));
 
 const authoredState = {
@@ -23,21 +21,46 @@ const interactiveState = {
   audioFile: "audio123.mp3"
 } as IInteractiveState;
 
-const initMessage = {
-  version: 1,
-  mode: "reportItem",
-  authoredState,
-  interactiveState,
-  hostFeatures: {},
-  interactiveItemId: "123",
-  view: "singleAnswer",
-  users: {2: { hasAnswer: true }},
-} as IReportItemInitInteractive;
+describe("reportItemHandler", () => {
+  beforeEach(() => {
+    jest.clearAllMocks();
+  });
 
-describe("Open response question report item", () => {
-  it("calls useReportItem", () => {
-    const { container } = render(<ReportItemComponent initMessage={initMessage} />);
-    expect(container).toBeDefined();
-    expect(useReportItem).toHaveBeenCalled();
+  describe("when itemsType=fullAnswer", () => {
+    it("returns answerText and attachment items", () => {
+      reportItemHandler({
+        version: "2.1.0",
+        platformUserId: "user1",
+        authoredState,
+        interactiveState,
+        itemsType: "fullAnswer",
+        requestId: 1
+      });
+
+      expect(sendReportItemAnswer).toHaveBeenCalledTimes(1);
+      const response: IReportItemAnswer = (sendReportItemAnswer as jest.Mock).mock.calls[0][0];
+
+      expect(response.items.length).toEqual(2);
+      expect(response.items.find(i => i.type === "answerText")).toBeDefined();
+      expect(response.items.find(i => i.type === "attachment")).toBeDefined();
+    });
+  });
+
+  describe("when itemsType=compactAnswer", () => {
+    it("doesn't return any items", () => {
+      reportItemHandler({
+        version: "2.1.0",
+        platformUserId: "user1",
+        authoredState,
+        interactiveState,
+        itemsType: "compactAnswer",
+        requestId: 1
+      });
+
+      expect(sendReportItemAnswer).toHaveBeenCalledTimes(1);
+      const response: IReportItemAnswer = (sendReportItemAnswer as jest.Mock).mock.calls[0][0];
+
+      expect(response.items.length).toEqual(0);
+    });
   });
 });
