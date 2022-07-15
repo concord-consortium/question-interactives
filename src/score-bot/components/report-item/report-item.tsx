@@ -32,10 +32,15 @@ export const reportItemHandler: IGetReportItemAnswerHandler<IInteractiveState, I
     }
 
     if (itemsType === "compactAnswer") {
-      const score = getLastScore(interactiveState);
-      const maxScore = getMaxScore(authoredState);
-      if (score !== null && maxScore !== null) {
-        items.push({ type: "score", score, maxScore });
+      // Do not send any score if feedback is outdated, as Portal Dashboard won't even mark
+      // the question as answered in this case.
+      const isOutdated = isFeedbackOutdated(interactiveState);
+      if (!isOutdated) {
+        const score = getLastScore(interactiveState);
+        const maxScore = getMaxScore(authoredState);
+        if (score !== null && maxScore !== null) {
+          items.push({ type: "score", score, maxScore });
+        }
       }
     }
 
