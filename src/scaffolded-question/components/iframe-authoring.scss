@@ -4,6 +4,7 @@
     border: 1px solid #eee;
     border-radius: 5px;
     overflow: hidden;
+    width: 440px;
 
     &.open {
       overflow: auto;
@@ -20,5 +21,9 @@
 
   h4 {
     margin-left: 10px;
+  }
+
+  .navButtonField {
+    padding: 5px 10px 0;
   }
 }
