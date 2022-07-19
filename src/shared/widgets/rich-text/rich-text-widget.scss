@@ -49,6 +49,12 @@ $dialogHeight: 340px;
       .ccrte-full-row {
         width: $dialogWidth - 40px;
       }
+      .ccrte-form-field {
+        margin: 0;
+      }
+      .ccrte-inline.label {
+        padding: 0;
+      }
     }
   }
 
