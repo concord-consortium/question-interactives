@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { IAuthoredState, IChoice, IInteractiveState } from "./types";
+import { getAnswerText } from "./utils";
 import CheckIcon from "../../shared/icons/correct.svg";
 import CrossIcon from "../../shared/icons/incorrect.svg";
 import { renderHTML } from "../../shared/utilities/render-html";
@@ -60,16 +61,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
   });
 
-  const getAnswerText = (choiceIds: string[]) => {
-    return choiceIds.map(choiceId => {
-      const choice = authoredState.choices.find(c => c.id === choiceId);
-      if (!choice) {
-        return "";
-      }
-      return choice.correct ? `(correct) ${choice.content}` : choice.content;
-    }).join(", ");
-  };
-
   const handleRadioCheckChange = (choiceId: string, event: React.ChangeEvent<HTMLInputElement>) => {
     const checked = event.target.checked;
     let newChoices: string[];
@@ -91,7 +82,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       ...prevState,
       answerType: "multiple_choice_answer",
       selectedChoiceIds: newChoices,
-      answerText: getAnswerText(newChoices)
+      answerText: getAnswerText(newChoices, authoredState)
     }));
     setShowAnswerFeedback(false);
   };
@@ -102,7 +93,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       ...prevState,
       answerType: "multiple_choice_answer",
       selectedChoiceIds: newChoice,
-      answerText: getAnswerText(newChoice)
+      answerText: getAnswerText(newChoice, authoredState)
     }));
     setShowAnswerFeedback(false);
   };
