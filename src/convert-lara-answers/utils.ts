@@ -10,7 +10,8 @@ const conversionFunc: Record<AnswerType, any> = {
   interactive_state: convertInteractiveState,
   open_response: convertOpenResponse,
   multiple_choice: convertMultipleChoice,
-  image_question: convertImageQuestion
+  image_question: convertImageQuestion,
+  labbook: () => null
 };
 
 export const convertAnswer = (questionType: AnswerType, options: IConvertOptions) => conversionFunc[questionType](options);
@@ -30,6 +31,9 @@ export const getAnswerType = (answerFirestoreData: any): AnswerType | null => {
   }
   if (answerFirestoreData.id.startsWith("interactive_run_state")) {
     return "interactive_state";
+  }
+  if (answerFirestoreData.id.startsWith("labbook")) {
+    return "labbook";
   }
   return null;
 };

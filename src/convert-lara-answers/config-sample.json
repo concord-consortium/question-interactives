@@ -2,5 +2,7 @@
   "credentials": "./credentials-report-service-dev-4bf32ef65d46.json",
   "oldSourceKey": "authoring.staging.concord.org",
   "newSourceKey": "activity-player.concord.org",
-  "resourceLinkId": "[temporary - new resourceLinkId (aka Offering ID) of converted answers]"
+  "batchedWrites": true,
+  "maxDocCount": "[temporary - don't use during the final transition]",
+  "resourceLinkId": "[temporary - new resourceLinkId (aka Offering ID) of converted answers, TODO: remove it]"
 }

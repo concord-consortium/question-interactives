@@ -1,8 +1,10 @@
 import { Firestore } from "@google-cloud/firestore";
+import { BigBatch } from "@qualdesk/firestore-big-batch";
+import { createTraverser } from '@firecode/admin';
 import * as fs from "fs";
 import { convertAnswer, getAnswerType, utcString } from "./utils";
-import { credentials, oldSourceKey, newSourceKey, resourceLinkId } from "./config.json";
 import { ILARAAnonymousAnswerReportHash, ILARAAnswerReportHash } from "./types";
+import { credentials, oldSourceKey, newSourceKey, resourceLinkId, batchedWrites, maxDocCount } from "./config.json";
 
 process.env.GOOGLE_APPLICATION_CREDENTIALS = credentials;
 if (!fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS)) {
@@ -12,14 +14,24 @@ if (!fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS)) {
 
 const logFile = `./log/info-${utcString()}.json`;
 const errorFile = `./log/error-${utcString()}.json`;
-const maxErrorLen = 1000; // characters
+
+const logLastLine = "]\n";
 
 const writeToFile = (file: string, content: string) => {
+  if (content === logLastLine) {
+    content = "\n" + content;
+  } else {
+    content = ",\n" + content;
+  }
   fs.appendFileSync(file, content);
 };
 
 const getErrorHandler = (id: string) => (error: Error) => {
-  writeToFile(errorFile, `{"sourceId": "${id}", "error": "${error.toString().substring(0, maxErrorLen)}", "stack": "${error.stack?.substring(0, maxErrorLen)}"},\n`);
+  writeToFile(errorFile, JSON.stringify({
+    sourceId: id,
+    error: error.toString(),
+    stack: error.stack?.replace("\n", " [NL]")
+  }));
 };
 
 const log = (message: string) => {
@@ -41,79 +53,178 @@ const getAllQuestions = (activityResource: any) => {
 
 // Create a new client
 const executeScript = async () => {
-  writeToFile(logFile, "[\n");
-  writeToFile(errorFile, "[\n");
+  // {} is added so the log file is always correct correct
+  fs.appendFileSync(logFile, `[\n{"logType": "info", "date": "${utcString()}"}`);
+  fs.appendFileSync(errorFile, `[\n{"logType": "error", "date": "${utcString()}"}`);
+
+  console.log("Answer conversion started");
+  process.stdout.write("Progress: ");
+
+  const startTime = performance.now();
+  let copiedAnswersCount = 0;
+  let processedActivitiesCount = 0;
+  let processedQuestionsCount = 0;
+  let maxAnswersPerQuestion = 0;
 
   const firestore = new Firestore();
 
-  const activitiesRef = firestore.collection(`sources/${oldSourceKey}/resources`);
-  const activityQuery = activitiesRef
-    // TODO: .where("migration_status", "==", "complete") - confirm with Ethan when the main conversion is ready!
-    .where ("migration_test", "==", "true");
-
-  const activitiesSnapshot = await activityQuery.get();
-  if (activitiesSnapshot.empty) {
-    console.log('No matching activities.');
-    return;
-  }
-
   const answersRef = firestore.collection(`sources/${oldSourceKey}/answers`);
 
-  await Promise.all(activitiesSnapshot.docs.map(async (activityDoc) => {
-    const activityErrorHandler = getErrorHandler(activityDoc.id);
+  const activitiesToMigrate = firestore
+    .collection(`sources/${oldSourceKey}/resources`)
+    // TODO: .where("migration_status", "==", "complete") - confirm with Ethan when the main conversion is ready!
+    // migration_test can be manually set in Firestore UI to limit conversion just to one activity.
+    // .where ("migration_test", "==", "true")
+    .orderBy("created", "desc");
 
-    try {
-      const activity = activityDoc.data();
-      // TODO: not necessary in the final conversion, as resource_url and resource_link_id won't change.
-      const newResourceUrl = activity.resource_url;
+  const activitiesTraverser = createTraverser(activitiesToMigrate, {
+    batchSize: 50,
+    // This means we are prepared to hold batchSize * maxConcurrentBatchCount documents in memory.
+    // We sacrifice some memory to traverse faster.
+    maxConcurrentBatchCount: 1,
+    // TODO: remove limit in the final script.
+    maxDocCount
+  });
 
-      const questions = getAllQuestions(activity);
+  await activitiesTraverser.traverse(async (activityBatchDocs) => {
+    await Promise.all(activityBatchDocs.map(async (activityDoc) => {
+      const activityErrorHandler = getErrorHandler(activityDoc.id);
+      try {
+        const activity = activityDoc.data();
+        // TODO: not necessary in the final conversion, as resource_url and resource_link_id won't change.
+        const newResourceUrl = activity.resource_url;
 
-      await Promise.all(questions.map(async (question: any) => {
-        // TODO: update legacy_id to legacy_id + legacy_type when this data is available in Firestore
-        const answersQuery = answersRef.where("question_id", "==", question.legacy_id);
-        const answersSnapshot = await answersQuery.get();
+        const questions = getAllQuestions(activity);
 
-        await Promise.all(answersSnapshot.docs.map(async (answerDoc) => {
-          const answerErrorHandler = getErrorHandler(answerDoc.id);
-          try {
-            const answer = answerDoc.data() as ILARAAnswerReportHash | ILARAAnonymousAnswerReportHash;
-            const answerType = getAnswerType(answer);
-            if (!answerType) {
-              throw new Error(`unknown answer type: ${answer.id}`);
-            }
+        let activityAnswersCount = 0;
 
-            const convertedAnswer = convertAnswer(answerType, {
-              oldAnswer: answer,
-              newQuestion: question,
-              oldSourceKey,
-              newSourceKey,
-              // TODO: not necessary in the final conversion
-              additionalMetadata: {
-                resource_link_id: resourceLinkId,
-                resource_url: newResourceUrl
+        await Promise.all(questions.map(async (question: any) => {
+          let safeQuestion = question;
+
+          // TODO: remove in the final version of the script. This is only necessary in the early tests when questions
+          // are not converted yet.
+          if (question.type === "multiple_choice" && !question.authored_state) {
+            // We're processing old MC question. It's impossible to convert its answer without authored
+            // state. Other question types can work without access to authored state.
+            safeQuestion = {
+              ...question,
+              authored_state: {
+                choices: [
+                  {
+                    id: 1,
+                    content: "a",
+                    correct: true
+                  },
+                  {
+                    id: 2,
+                    content: "b"
+                  },
+                ]
               }
-            });
-
-            await firestore
-              .collection(`sources/${newSourceKey}/answers`)
-              .doc(convertedAnswer.id)
-              .set(convertedAnswer);
-
-            log(`{"from": "${answer.id}", "to": "${convertedAnswer.id}"},\n`);
-
-          } catch (error) {
-            answerErrorHandler(error);
+            };
           }
-        }));
-      }));
-    } catch (error) {
-      activityErrorHandler(error);
-    }
-  }));
 
-  writeToFile(logFile, "]\n");
-  writeToFile(errorFile, "]\n");
+          let sourceQuestionId;
+          if (question.legacy_id) {
+            // TODO: update legacy_id to legacy_id + legacy_type when this data is available in Firestore
+            sourceQuestionId = question.legacy_id;
+          } else {
+            // This is case of the managed interactives. They are not converted. We just need to move answers
+            // from one collection to another.
+            sourceQuestionId = question.id;
+          }
+
+          const questionAnswers = answersRef.where("question_id", "==", sourceQuestionId);
+
+          const answersTraverser = createTraverser(questionAnswers, {
+            // 500 is the max batched write size, but we use BigBatch helper so any value can work here.
+            batchSize: 10000,
+            // This means we are prepared to hold batchSize * maxConcurrentBatchCount documents in memory.
+            // We sacrifice some memory to traverse faster.
+            maxConcurrentBatchCount: 5,
+          });
+
+          const { docCount: answerDocCount } = await answersTraverser.traverse(async (answerBatchDocs) => {
+
+            const answersUpdateBatch = batchedWrites ? new BigBatch({ firestore }) : null;
+
+            await Promise.all(answerBatchDocs.map(async (answerDoc) => {
+              const answerErrorHandler = getErrorHandler(answerDoc.id);
+              try {
+                const answer = answerDoc.data() as ILARAAnswerReportHash | ILARAAnonymousAnswerReportHash;
+                const answerType = getAnswerType(answer);
+                if (!answerType) {
+                  throw new Error(`unknown answer type: ${answer.id}`);
+                }
+                if (answerType === "labbook") {
+                  // Do nothing, labbooks don't require conversions. Activities will be marked as defunct.
+                  return;
+                }
+
+                const convertedAnswer = convertAnswer(answerType, {
+                  oldAnswer: answer,
+                  newQuestion: safeQuestion,
+                  oldSourceKey,
+                  newSourceKey,
+                  // TODO: not necessary in the final conversion
+                  additionalMetadata: {
+                    resource_link_id: resourceLinkId,
+                    resource_url: newResourceUrl
+                  }
+                });
+
+                const answerRef = firestore.collection(`sources/${newSourceKey}/answers`).doc(convertedAnswer.id);
+
+                if (answersUpdateBatch) {
+                  answersUpdateBatch.set(answerRef, convertedAnswer);
+                } else {
+                  await answerRef.set(convertedAnswer);
+                }
+
+                copiedAnswersCount += 1;
+              } catch (error) {
+                answerErrorHandler(error);
+              }
+            }));
+
+            if (answersUpdateBatch) {
+              await answersUpdateBatch.commit();
+            }
+          });
+
+          maxAnswersPerQuestion = Math.max(maxAnswersPerQuestion, answerDocCount);
+          activityAnswersCount += answerDocCount;
+          processedQuestionsCount += 1;
+        }));
+
+        process.stdout.write(".");
+        processedActivitiesCount += 1;
+
+        log(JSON.stringify({
+          activityId: activity.id,
+          questions: questions.length,
+          answers: activityAnswersCount
+        }));
+
+      } catch (error) {
+        activityErrorHandler(error);
+      }
+    }));
+  });
+
+  log(logLastLine);
+  writeToFile(errorFile, logLastLine);
+
+  const durationInS = (performance.now() - startTime) / 1000;
+  const activitySpeed = processedActivitiesCount / durationInS;
+  const questionSpeed = processedQuestionsCount / durationInS;
+  const answerSpeed = copiedAnswersCount / durationInS;
+
+  console.log(`\nElapsed time: ${durationInS.toFixed(2)} seconds`);
+  console.log(`Processed ${processedActivitiesCount} activities, ${activitySpeed.toFixed(2)} activities per second`);
+  console.log(`Processed ${processedQuestionsCount} questions, ${questionSpeed.toFixed(2)} questions per second`);
+  console.log(`Copied ${copiedAnswersCount} answers, ${answerSpeed.toFixed(2)} answers per second`);
+  console.log(`Max number of answers per question: ${maxAnswersPerQuestion}`);
 };
 
 executeScript();

@@ -8,7 +8,7 @@
 
 import { Timestamp } from "@google-cloud/firestore";
 
-export type AnswerType = "interactive_state" | "open_response" | "multiple_choice" |  "image_question";
+export type AnswerType = "interactive_state" | "open_response" | "multiple_choice" |  "image_question" | "labbook";
 
 export interface IManagedInteractiveQuestion {
   id: string;
