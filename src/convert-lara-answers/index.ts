@@ -30,7 +30,7 @@ const getErrorHandler = (id: string) => (error: Error) => {
   writeToFile(errorFile, JSON.stringify({
     sourceId: id,
     error: error.toString(),
-    stack: error.stack?.replace("\n", " [NL]")
+    stack: error.stack
   }));
 };
 
@@ -38,16 +38,21 @@ const log = (message: string) => {
   writeToFile(logFile, message);
 };
 
-const getAllQuestions = (activityResource: any) => {
+const getAllQuestions = (activityOrSequence: any) => {
   const result: any = [];
 
-  activityResource.children.forEach((section: any) => {
-    section.children.forEach((page: any) => {
-      page.children.forEach((question: any) => {
-        result.push(question);
+  const activities = activityOrSequence.type === "sequence" ? activityOrSequence.children : [ activityOrSequence ];
+
+  activities.forEach((activity: any) => {
+    activity.children.forEach((section: any) => {
+      section.children.forEach((page: any) => {
+        page.children.forEach((question: any) => {
+          result.push(question);
+        });
       });
     });
   });
+
   return result;
 };
 
@@ -78,23 +83,24 @@ const executeScript = async () => {
     .orderBy("created", "desc");
 
   const activitiesTraverser = createTraverser(activitiesToMigrate, {
-    batchSize: 50,
+    batchSize: 5,
     // This means we are prepared to hold batchSize * maxConcurrentBatchCount documents in memory.
     // We sacrifice some memory to traverse faster.
-    maxConcurrentBatchCount: 1,
+    maxConcurrentBatchCount: 2,
     // TODO: remove limit in the final script.
     maxDocCount
   });
 
   await activitiesTraverser.traverse(async (activityBatchDocs) => {
-    await Promise.all(activityBatchDocs.map(async (activityDoc) => {
-      const activityErrorHandler = getErrorHandler(activityDoc.id);
+    await Promise.all(activityBatchDocs.map(async (activityOrSequenceDoc) => {
+      const activityErrorHandler = getErrorHandler(activityOrSequenceDoc.id);
       try {
-        const activity = activityDoc.data();
-        // TODO: not necessary in the final conversion, as resource_url and resource_link_id won't change.
-        const newResourceUrl = activity.resource_url;
+        const activityOrSequence = activityOrSequenceDoc.data();
 
-        const questions = getAllQuestions(activity);
+        // TODO: not necessary in the final conversion, as resource_url and resource_link_id won't change.
+        const newResourceUrl = activityOrSequence.resource_url;
+
+        const questions = getAllQuestions(activityOrSequence);
 
         let activityAnswersCount = 0;
 
@@ -138,10 +144,11 @@ const executeScript = async () => {
 
           const answersTraverser = createTraverser(questionAnswers, {
             // 500 is the max batched write size, but we use BigBatch helper so any value can work here.
-            batchSize: 10000,
+            batchSize: 500,
             // This means we are prepared to hold batchSize * maxConcurrentBatchCount documents in memory.
             // We sacrifice some memory to traverse faster.
             maxConcurrentBatchCount: 5,
+            sleepTimeBetweenBatches: 0
           });
 
           const { docCount: answerDocCount } = await answersTraverser.traverse(async (answerBatchDocs) => {
@@ -201,7 +208,8 @@ const executeScript = async () => {
         processedActivitiesCount += 1;
 
         log(JSON.stringify({
-          activityId: activity.id,
+          activityId: activityOrSequence.id,
+          created: activityOrSequence.created,
           questions: questions.length,
           answers: activityAnswersCount
         }));
