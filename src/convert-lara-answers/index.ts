@@ -76,11 +76,11 @@ const executeScript = async () => {
   const answersRef = firestore.collection(`sources/${oldSourceKey}/answers`);
 
   const activitiesToMigrate = firestore
-    .collection(`sources/${oldSourceKey}/resources`)
+    .collection(`sources/${oldSourceKey}/resources`);
     // TODO: .where("migration_status", "==", "complete") - confirm with Ethan when the main conversion is ready!
     // migration_test can be manually set in Firestore UI to limit conversion just to one activity.
     // .where ("migration_test", "==", "true")
-    .orderBy("created", "desc");
+    // .orderBy("created", "desc");
 
   const activitiesTraverser = createTraverser(activitiesToMigrate, {
     batchSize: 5,

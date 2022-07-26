@@ -26,10 +26,10 @@
     ]
   },
   "scripts": {
-    "build": "tsc index.ts",
+    "build": "tsc",
     "start": "ts-node index.ts",
     "test": "jest",
-    "start:prod": "npm run build && node index.js"
+    "start:prod": "npm run build && node dist/convert-lara-answers/index.js"
   },
   "author": "Piotr Janik",
   "license": "MIT",
