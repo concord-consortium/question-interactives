@@ -4,7 +4,7 @@ import { createTraverser } from '@firecode/admin';
 import * as fs from "fs";
 import { convertAnswer, getAnswerType, utcString } from "./utils";
 import { ILARAAnonymousAnswerReportHash, ILARAAnswerReportHash } from "./types";
-import { credentials, oldSourceKey, newSourceKey, resourceLinkId, batchedWrites, maxDocCount } from "./config.json";
+import { credentials, oldSourceKey, newSourceKey, resourceLinkId, batchedWrites, maxDocCount, startDate, endDate } from "./config.json";
 
 process.env.GOOGLE_APPLICATION_CREDENTIALS = credentials;
 if (!fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS)) {
@@ -75,14 +75,15 @@ const executeScript = async () => {
 
   const answersRef = firestore.collection(`sources/${oldSourceKey}/answers`);
 
-  const activitiesToMigrate = firestore
-    .collection(`sources/${oldSourceKey}/resources`);
+  const resourcesToMigrate = firestore
+    .collection(`sources/${oldSourceKey}/resources`)
     // TODO: .where("migration_status", "==", "complete") - confirm with Ethan when the main conversion is ready!
     // migration_test can be manually set in Firestore UI to limit conversion just to one activity.
     // .where ("migration_test", "==", "true")
-    // .orderBy("created", "desc");
+    .where("created", ">=", startDate)
+    .where("created", "<=", endDate);
 
-  const activitiesTraverser = createTraverser(activitiesToMigrate, {
+  const resourcesTraverser = createTraverser(resourcesToMigrate, {
     batchSize: 5,
     // This means we are prepared to hold batchSize * maxConcurrentBatchCount documents in memory.
     // We sacrifice some memory to traverse faster.
@@ -91,11 +92,11 @@ const executeScript = async () => {
     maxDocCount
   });
 
-  await activitiesTraverser.traverse(async (activityBatchDocs) => {
-    await Promise.all(activityBatchDocs.map(async (activityOrSequenceDoc) => {
-      const activityErrorHandler = getErrorHandler(activityOrSequenceDoc.id);
+  await resourcesTraverser.traverse(async (resourceBatchDocs) => {
+    await Promise.all(resourceBatchDocs.map(async (resourceDoc) => {
+      const activityErrorHandler = getErrorHandler(resourceDoc.id);
       try {
-        const activityOrSequence = activityOrSequenceDoc.data();
+        const activityOrSequence = resourceDoc.data();
 
         // TODO: not necessary in the final conversion, as resource_url and resource_link_id won't change.
         const newResourceUrl = activityOrSequence.resource_url;
@@ -140,7 +141,8 @@ const executeScript = async () => {
             sourceQuestionId = question.id;
           }
 
-          const questionAnswers = answersRef.where("question_id", "==", sourceQuestionId);
+          const questionAnswers = answersRef
+          .where("question_id", "==", sourceQuestionId);
 
           const answersTraverser = createTraverser(questionAnswers, {
             // 500 is the max batched write size, but we use BigBatch helper so any value can work here.
