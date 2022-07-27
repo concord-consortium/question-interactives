@@ -4,7 +4,7 @@ import { createTraverser } from '@firecode/admin';
 import * as fs from "fs";
 import { convertAnswer, getAnswerType, utcString } from "./utils";
 import { ILARAAnonymousAnswerReportHash, ILARAAnswerReportHash } from "./types";
-import { credentials, oldSourceKey, newSourceKey, resourceLinkId, batchedWrites, maxDocCount, startDate, endDate } from "./config.json";
+import { credentials, oldSourceKey, newSourceKey, resourceLinkId, batchedWrites, maxDocCount, startDate, endDate, convertLoggedInUserAnswers } from "./config.json";
 
 process.env.GOOGLE_APPLICATION_CREDENTIALS = credentials;
 if (!fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS)) {
@@ -141,8 +141,19 @@ const executeScript = async () => {
             sourceQuestionId = question.id;
           }
 
-          const questionAnswers = answersRef
-          .where("question_id", "==", sourceQuestionId);
+          let questionAnswers = answersRef
+            .where("question_id", "==", sourceQuestionId);
+
+          if (convertLoggedInUserAnswers) {
+            // Look only for answers of logged in users.
+            questionAnswers = questionAnswers
+              .orderBy("platform_id") // Firestore requires orderBy while using != condition.
+              .where("platform_id", "!=", null);
+          } else {
+            // Look only for answers of anonymous users.
+            questionAnswers = questionAnswers
+              .where("platform_id", "==", null);
+          }
 
           const answersTraverser = createTraverser(questionAnswers, {
             // 500 is the max batched write size, but we use BigBatch helper so any value can work here.
