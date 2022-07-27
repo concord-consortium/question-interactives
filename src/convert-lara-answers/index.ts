@@ -38,10 +38,10 @@ const log = (message: string) => {
   writeToFile(logFile, message);
 };
 
-const getAllQuestions = (activityOrSequence: any) => {
+const getAllQuestions = (resource: any) => {
   const result: any = [];
 
-  const activities = activityOrSequence.type === "sequence" ? activityOrSequence.children : [ activityOrSequence ];
+  const activities = resource.type === "sequence" ? resource.children : [ resource ];
 
   activities.forEach((activity: any) => {
     activity.children.forEach((section: any) => {
@@ -96,12 +96,12 @@ const executeScript = async () => {
     await Promise.all(resourceBatchDocs.map(async (resourceDoc) => {
       const activityErrorHandler = getErrorHandler(resourceDoc.id);
       try {
-        const activityOrSequence = resourceDoc.data();
+        const resource = resourceDoc.data();
 
         // TODO: not necessary in the final conversion, as resource_url and resource_link_id won't change.
-        const newResourceUrl = activityOrSequence.resource_url;
+        const newResourceUrl = resource.url;
 
-        const questions = getAllQuestions(activityOrSequence);
+        const questions = getAllQuestions(resource);
 
         let activityAnswersCount = 0;
 
@@ -210,8 +210,8 @@ const executeScript = async () => {
         processedActivitiesCount += 1;
 
         log(JSON.stringify({
-          activityId: activityOrSequence.id,
-          created: activityOrSequence.created,
+          activityId: resource.id,
+          created: resource.created,
           questions: questions.length,
           answers: activityAnswersCount
         }));
