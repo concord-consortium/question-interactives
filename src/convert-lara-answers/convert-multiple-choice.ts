@@ -19,6 +19,7 @@ export const convertMultipleChoice = (options: IConvertMultipleChoiceOptions) =>
   const authoredState = typeof newQuestion.authored_state === "string" ? JSON.parse(newQuestion.authored_state) : newQuestion.authored_state;
   // Note that this assumes 1:1 mapping between old LARA MC choice ID and new MC Managed Interactive choice ID.
   // See: https://concord-consortium.slack.com/archives/C0M5CM1RA/p1658496476752829
+  // TODO: .toString doesn't work with Ethan's script.
   const choiceIds = oldAnswer.answer?.choice_ids.map(choice => choice.toString()) || [];
   const answerText = getAnswerText(choiceIds, authoredState);
 

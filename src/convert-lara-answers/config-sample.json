@@ -5,6 +5,5 @@
   "batchedWrites": true,
   "startDate": "2020-01-01 12:00:00 UTC",
   "endDate": "2020-01-10 12:00:00 UTC",
-  "maxDocCount": "[temporary - TODO: don't use during the final conversion]",
-  "resourceLinkId": "[temporary - new resourceLinkId (aka Offering ID) of converted answers, TODO: remove it]"
+  "maxDocCount": "[temporary - TODO: don't use during the final conversion]"
 }

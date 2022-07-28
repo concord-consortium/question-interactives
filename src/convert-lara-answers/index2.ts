@@ -74,7 +74,7 @@ const generateQuestionMap = async () => {
 
   const resourcesToMigrate = firestore
   .collection(`sources/${oldSourceKey}/resources`)
-  // TODO: .where("migration_status", "==", "complete") - confirm with Ethan when the main conversion is ready!
+  .where("migration_status", "==", "migrated")
   // migration_test can be manually set in Firestore UI to limit conversion just to one activity.
   // .where ("migration_test", "==", "true")
   .where("created", ">=", startDate)
@@ -124,7 +124,6 @@ const generateQuestionMap = async () => {
 
           let sourceQuestionId;
           if (question.legacy_id) {
-            // TODO: update legacy_id to legacy_id + legacy_type when this data is available in Firestore
             sourceQuestionId = question.legacy_id;
           } else {
             // This is case of the managed interactives. They are not converted. We just need to move answers
@@ -219,11 +218,7 @@ const executeScript = async () => {
           newQuestion: question,
           oldSourceKey,
           newSourceKey,
-          // TODO: not necessary in the final conversion
-          additionalMetadata: {
-            resource_link_id: resourceLinkId,
-            resource_url: question.resource_url
-          }
+          additionalMetadata: {}
         });
 
         const answerRef = firestore.collection(`sources/${newSourceKey}/answers`).doc(convertedAnswer.id);
