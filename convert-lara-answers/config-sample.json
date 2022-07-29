@@ -4,7 +4,7 @@
     "maxConcurrentBatchCount": 1
   },
   "answersTraverser": {
-    "batchSize": 2000,
+    "batchSize": 1000,
     "maxConcurrentBatchCount": 1
   },
   "credentials": "./credentials-report-service-dev-4bf32ef65d46.json",

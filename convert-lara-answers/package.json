@@ -29,8 +29,7 @@
   "scripts": {
     "build": "rm -rf ./dist && tsc",
     "test": "jest",
-    "start": "ts-node src/convert-answers.ts",
-    "start:prod": "node dist/convert-lara-answers/src/convert-answers.js"
+    "start": "npm run build && node --max-old-space-size=8000 dist/convert-lara-answers/src/convert-answers.js"
   },
   "author": "Piotr Janik",
   "license": "MIT",
