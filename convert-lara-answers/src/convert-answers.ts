@@ -1,10 +1,10 @@
 import * as fs from "fs";
-import { Firestore, QueryDocumentSnapshot } from "@google-cloud/firestore";
-import { BigBatch } from "@qualdesk/firestore-big-batch";
+import { DocumentSnapshot, Firestore, QueryDocumentSnapshot } from "@google-cloud/firestore";
 import { createTraverser } from '@firecode/admin';
 import { convertAnswer, getAnswerType } from "./utils";
 import { ILARAAnonymousAnswerReportHash, ILARAAnswerReportHash } from "./types";
 import { finishLogging, initLogging, logError, logFailedResource, logFailedAnswer, logInfo, logProgress } from "./log-utils";
+import { BigBatch } from "./big-batch";
 
 const configPath: string = process.argv[2] || "";
 if (!fs.existsSync(configPath)) {
@@ -19,7 +19,7 @@ if (!fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS as string)) {
   process.exit(1);
 }
 
-const MAX_ATTEMPTS = 5; // to process resource or answers batch
+const MAX_ATTEMPTS = 10; // to process resource or answers batch
 const ATTEMPT_DELAY = 1000;
 
 const getAllQuestions = (resource: any) => {
@@ -85,7 +85,7 @@ const executeScript = async () => {
 
   const answersRef = firestore.collection(`sources/${config.oldSourceKey}/answers`);
 
-  const processResource = async (resourceDoc: QueryDocumentSnapshot) => {
+  const processResource = async (resourceDoc: QueryDocumentSnapshot | DocumentSnapshot) => {
     const execProcessResource = async (processResourceAttempt = 0) => {
       try {
         const resource = resourceDoc.data();
@@ -123,7 +123,8 @@ const executeScript = async () => {
           const convertAnswersBatch = async (answerBatchDocs: QueryDocumentSnapshot[]) => {
             const execConvertAnswersBatch = async (convertAnswersBatchAttempt = 1) => {
               try {
-                const answersUpdateBatch = new BigBatch({ firestore });
+                const maxOperations = convertAnswersBatchAttempt === 1 ? 500 : Math.ceil(500 / Math.pow(5, convertAnswersBatchAttempt));
+                const answersUpdateBatch = new BigBatch({ firestore, maxOperations });
 
                 answerBatchDocs.forEach(answerDoc => {
                   const answer = answerDoc.data() as ILARAAnswerReportHash | ILARAAnonymousAnswerReportHash;
@@ -173,9 +174,10 @@ const executeScript = async () => {
 
                 await answersUpdateBatch.commit();
                 copiedAnswers += answerBatchDocs.length;
+
               } catch (error: any) {
                 if (convertAnswersBatchAttempt < MAX_ATTEMPTS) {
-                  logProgress("r");
+                  logProgress("b" + convertAnswersBatchAttempt);
                   await sleep(convertAnswersBatchAttempt * ATTEMPT_DELAY);
                   await execConvertAnswersBatch(convertAnswersBatchAttempt + 1);
                 } else {
@@ -189,7 +191,7 @@ const executeScript = async () => {
 
           if (copiedAnswers < questionAnswersCount) {
             failedAnswersCount += questionAnswersCount - copiedAnswers;
-            throw new Error(`not all answers have been copied successfully, resource: ${resource.id}, all answers: ${questionAnswersCount}, copied answers: ${copiedAnswers}`);
+            throw new Error(`not all answers have been copied successfully, resource: ${resource?.id}, question: ${question.id}, question answers: ${questionAnswersCount}, copied answers: ${copiedAnswers}`);
           }
 
           maxAnswersPerQuestion = Math.max(maxAnswersPerQuestion, questionAnswersCount);
@@ -200,8 +202,8 @@ const executeScript = async () => {
 
         logProgress(".");
         logInfo({
-          resourceId: resource.id,
-          created: resource.created,
+          resourceId: resource?.id,
+          created: resource?.created,
           questions: questions.length,
           answers: resourceAnswersCount
         });
@@ -214,6 +216,7 @@ const executeScript = async () => {
 
       } catch (error: any) {
         if (processResourceAttempt < MAX_ATTEMPTS) {
+          logProgress("r" + processResourceAttempt);
           await sleep(processResourceAttempt * ATTEMPT_DELAY);
           await execProcessResource(processResourceAttempt + 1);
         } else {
@@ -230,27 +233,33 @@ const executeScript = async () => {
     await execProcessResource();
   };
 
-  let resourcesToMigrate: any = firestore.collection(`sources/${config.oldSourceKey}/resources`);
-  if (!config.testRun) {
-    resourcesToMigrate = resourcesToMigrate.where("migration_status", "==", "migrated");
-  }
-  if (config.startDate) {
-    resourcesToMigrate = resourcesToMigrate.where("created", ">=", config.startDate);
-  }
-  if (config.endDate) {
-    resourcesToMigrate = resourcesToMigrate.where("created", "<=", config.endDate);
-  }
+  if (config.resourceId) {
+    const singleActivity = await firestore.collection(`sources/${config.oldSourceKey}/resources`).doc(config.resourceId).get();
+    await processResource(singleActivity);
+  } else {
+    let resourcesToMigrate: any = firestore.collection(`sources/${config.oldSourceKey}/resources`);
+    if (!config.testRun) {
+      resourcesToMigrate = resourcesToMigrate.where("migration_status", "==", "migrated");
+    }
+    if (config.startDate) {
+      resourcesToMigrate = resourcesToMigrate.where("created", ">=", config.startDate);
+    }
+    if (config.endDate) {
+      resourcesToMigrate = resourcesToMigrate.where("created", "<=", config.endDate);
+    }
+    resourcesToMigrate = resourcesToMigrate.orderBy("created", "desc");
 
-  const resourcesTraverser = createTraverser(resourcesToMigrate, config.resourcesTraverser);
+    const resourcesTraverser = createTraverser(resourcesToMigrate, config.resourcesTraverser);
 
-  await resourcesTraverser.traverse(async (resourceBatchDocs) => {
-    // Parallel variant:
-    await Promise.all(resourceBatchDocs.map(processResource));
-    // Synchronous variant. This + large maxConcurrentBatchCount seems to be less efficient.
-    // for (const resourceDoc of resourceBatchDocs) {
-    //   await processResource(resourceDoc);
-    // }
-  });
+    await resourcesTraverser.traverse(async (resourceBatchDocs) => {
+      // Parallel variant:
+      await Promise.all(resourceBatchDocs.map(processResource));
+      // Synchronous variant. This + large maxConcurrentBatchCount seems to be less efficient.
+      // for (const resourceDoc of resourceBatchDocs) {
+      //   await processResource(resourceDoc);
+      // }
+    });
+  }
 
   logPerformance();
   finishLogging();

@@ -36,7 +36,6 @@
   "dependencies": {
     "@firecode/admin": "0.12.1",
     "@google-cloud/firestore": "^5.0.2",
-    "@qualdesk/firestore-big-batch": "^0.0.2",
     "deep-equal": "^2.0.5"
   },
   "devDependencies": {
