@@ -138,6 +138,16 @@ const executeScript = async () => {
                       return;
                     }
 
+                    if (config.testRun && question.type === "multiple_choice" && !question.authored_state) {
+                      // We're processing old MC question in test run. It's impossible to convert its answer without
+                      // authored state. Other question types can work without access to authored state.
+                      question.authored_state = {
+                        choices: [
+                          { id: "1", content: "a", correct: true }, { id: "2", content: "b" }
+                        ]
+                      };
+                    }
+
                     const convertedAnswer = convertAnswer(answerType, {
                       oldAnswer: answer,
                       newQuestion: question,
@@ -153,13 +163,11 @@ const executeScript = async () => {
                     // We can't do much here, probably answer doc was malformed.
                     malformedAnswers += 1;
 
-                    if (!config.testRun) {
-                      // if this was enabled in test run, it'd log all the MC answers
-                      logFailedAnswer({
-                        answer: answerDoc.id,
-                        errorMessage: error.message
-                      });
-                    }
+                    // if this was enabled in test run, it'd log all the MC answers
+                    logFailedAnswer({
+                      answer: answerDoc.id,
+                      errorMessage: error.message
+                    });
                   }
                 });
 
