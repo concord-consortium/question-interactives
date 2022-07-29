@@ -66,7 +66,7 @@ const executeScript = async () => {
   console.log("Answer conversion started");
   process.stdout.write("Progress: ");
 
-  const startTime = performance.now();
+  const startTime = Date.now();
   let copiedAnswersCount = 0;
   let processedActivitiesCount = 0;
   let processedQuestionsCount = 0;
@@ -191,7 +191,7 @@ const executeScript = async () => {
                 }
 
                 copiedAnswersCount += 1;
-              } catch (error) {
+              } catch (error: any) {
                 answerErrorHandler(error);
               }
             }));
@@ -216,13 +216,13 @@ const executeScript = async () => {
           answers: activityAnswersCount
         }));
 
-      } catch (error) {
+      } catch (error: any) {
         activityErrorHandler(error);
       }
     }));
   });
 
-  const durationInS = (performance.now() - startTime) / 1000;
+  const durationInS = (Date.now() - startTime) / 1000;
   const activitySpeed = processedActivitiesCount / durationInS;
   const questionSpeed = processedQuestionsCount / durationInS;
   const answerSpeed = copiedAnswersCount / durationInS;

@@ -10,7 +10,8 @@
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
     "testPathIgnorePatterns": [
       "/node_modules/",
-      "/cypress/"
+      "/cypress/",
+      "/dist/"
     ],
     "coveragePathIgnorePatterns": [
       "/node_modules/",
@@ -26,10 +27,10 @@
     ]
   },
   "scripts": {
-    "build": "tsc",
-    "start": "ts-node src/convert-answers.ts",
+    "build": "rm -rf ./dist && tsc",
     "test": "jest",
-    "start:prod": "npm run build && node dist/convert-lara-answers/index.js"
+    "start": "ts-node src/convert-answers.ts",
+    "start:prod": "node dist/convert-lara-answers/src/convert-answers.js"
   },
   "author": "Piotr Janik",
   "license": "MIT",
