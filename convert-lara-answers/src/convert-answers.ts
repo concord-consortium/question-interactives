@@ -152,7 +152,7 @@ const executeScript = async () => {
                 malformedAnswers += 1;
                 logError(`answer conversion failed, answer: ${answer.id}`, error);
                 logFailed({
-                  answer: resourceDoc.id,
+                  answer: answerDoc.id,
                   errorMessage: error.message
                 });
               }
@@ -190,8 +190,8 @@ const executeScript = async () => {
       });
       processedResourcesCount += 1;
 
-      if (processedResourcesCount % 500 === 0) {
-        // 13k resources total, so it'll be logged 26 times.
+      if (processedResourcesCount % 250 === 0) {
+        // 13k resources total, so it'll be logged ~50 times.
         logPerformance();
       }
 
@@ -214,9 +214,10 @@ const executeScript = async () => {
 
   const resourcesToMigrate = firestore
     .collection(`sources/${config.oldSourceKey}/resources`)
-    .where("migration_status", "==", "migrated")
-    .where("created", ">=", config.startDate)
-    .where("created", "<=", config.endDate);
+    // .where("migration_status", "==", "migrated")
+    // .where("created", ">=", config.startDate)
+    // .where("created", "<=", config.endDate);
+    ;
 
   const resourcesTraverser = createTraverser(resourcesToMigrate, config.resourcesTraverser);
 
