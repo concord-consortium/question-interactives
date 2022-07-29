@@ -1,4 +1,4 @@
-import { IInteractiveState as IOpenResponseInteractiveState } from "../../../open-response/components/types";
+import { IInteractiveState as IOpenResponseInteractiveState } from "../../../src/open-response/components/types";
 import { convertAnswer } from "./convert-answer";
 import { ILARAAnonymousAnswerReportHash, ILARAAnswerReportHash, ILARAOpenResponseAnswerReportHash, IManagedInteractiveQuestion } from "../types";
 import { getReportState } from "../utils";

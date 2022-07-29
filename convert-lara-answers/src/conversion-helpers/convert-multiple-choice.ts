@@ -1,8 +1,8 @@
-import { IInteractiveState as IMultipleChoiceInteractiveState } from "../../../multiple-choice/components/types";
+import { IInteractiveState as IMultipleChoiceInteractiveState } from "../../../src/multiple-choice/components/types";
 import { convertAnswer } from "./convert-answer";
 import { ILARAAnonymousAnswerReportHash, ILARAAnswerReportHash, ILARAMultipleChoiceAnswerReportHash, IManagedInteractiveQuestion } from "../types";
 import { getReportState } from "../utils";
-import { getAnswerText } from "../../../multiple-choice/components/utils";
+import { getAnswerText } from "../../../src/multiple-choice/components/utils";
 
 export interface IConvertMultipleChoiceOptions {
   newQuestion: IManagedInteractiveQuestion;
