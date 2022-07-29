@@ -55,8 +55,8 @@ export const convertAnswer = (options: IConvertOptions): ConvertedAnswer => {
     // Question ID needs to be updated from the old type to a new one.
     question_id: newQuestion.id,
 
-    convertedFrom: `${oldSourceKey}/answers/${oldAnswer.id}`,
-    convertedAt: Timestamp.now(),
+    converted_from: `${oldSourceKey}/answers/${oldAnswer.id}`,
+    converted_at: Timestamp.now(),
 
     source_key: newSourceKey,
     tool_id: newSourceKey,

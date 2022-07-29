@@ -104,8 +104,8 @@ describe("convert multiple choice answer", () => {
       source_key: 'activity-player.concord.org',
       answer_text: '(correct) A',
       report_state: '{"mode":"report","authoredState":"{\\"choices\\":[{\\"id\\":\\"50036\\",\\"correct\\":true,\\"content\\":\\"A\\"},{\\"id\\":\\"1504\\",\\"correct\\":false,\\"content\\":\\"B\\"}]}","interactiveState":"{\\"answerType\\":\\"multiple_choice_answer\\",\\"selectedChoiceIds\\":[\\"50036\\"],\\"answerText\\":\\"(correct) A\\",\\"submitted\\":false}","interactive":{"id":"managed_interactive_448816","name":""},"version":1}',
-      convertedFrom: 'authoring.concord.org/answers/multiple_choice_answer_198622',
-      convertedAt: 'Wed, 20 Jul 2022 12:12:12 UTC'
+      converted_from: 'authoring.concord.org/answers/multiple_choice_answer_198622',
+      converted_at: 'Wed, 20 Jul 2022 12:12:12 UTC'
     });
 
     const reportState = JSON.parse(result.report_state);
@@ -144,8 +144,8 @@ describe("convert multiple choice answer", () => {
       question_type: 'multiple_choice',
       answer_text: 'B',
       report_state: '{"mode":"report","authoredState":"{\\"choices\\":[{\\"id\\":\\"50036\\",\\"correct\\":true,\\"content\\":\\"A\\"},{\\"id\\":\\"1504\\",\\"correct\\":false,\\"content\\":\\"B\\"}]}","interactiveState":"{\\"answerType\\":\\"multiple_choice_answer\\",\\"selectedChoiceIds\\":[\\"1504\\"],\\"answerText\\":\\"B\\",\\"submitted\\":false}","interactive":{"id":"managed_interactive_448816","name":""},"version":1}',
-      convertedFrom: 'authoring.concord.org/answers/multiple_choice_answer_100707',
-      convertedAt: 'Wed, 20 Jul 2022 12:12:12 UTC'
+      converted_from: 'authoring.concord.org/answers/multiple_choice_answer_100707',
+      converted_at: 'Wed, 20 Jul 2022 12:12:12 UTC'
     });
 
     const reportState = JSON.parse(result.report_state);

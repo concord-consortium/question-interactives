@@ -18,8 +18,8 @@ export interface IManagedInteractiveQuestion {
 
 export interface IConvertedAnswerMetadata {
   version: 1;
-  convertedFrom: string;
-  convertedAt: Timestamp;
+  converted_from: string;
+  converted_at: Timestamp;
 }
 
 export interface ILoggedInUserConvertedAnswer extends IConvertedAnswerMetadata, LTIRuntimeAnswerMetadata {}

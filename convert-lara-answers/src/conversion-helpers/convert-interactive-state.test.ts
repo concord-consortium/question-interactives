@@ -94,8 +94,8 @@ describe("convert interactive state", () => {
       resource_url: 'https://authoring.staging.concord.org/activities/21639',
       source_key: 'activity-player.concord.org',
       answer_text: null,
-      convertedFrom: 'authoring.concord.org/answers/interactive_run_state_78721',
-      convertedAt: 'Wed, 20 Jul 2022 12:12:12 UTC'
+      converted_from: 'authoring.concord.org/answers/interactive_run_state_78721',
+      converted_at: 'Wed, 20 Jul 2022 12:12:12 UTC'
     });
 
     const reportState = JSON.parse(result.report_state);
@@ -136,8 +136,8 @@ describe("convert interactive state", () => {
       // See: https://concord-consortium.slack.com/archives/C0M5CM1RA/p1658831435454769
       tool_user_id: 'anonymous',
       type: 'interactive_state',
-      convertedFrom: 'authoring.concord.org/answers/interactive_run_state_62278',
-      convertedAt: 'Wed, 20 Jul 2022 12:12:12 UTC'
+      converted_from: 'authoring.concord.org/answers/interactive_run_state_62278',
+      converted_at: 'Wed, 20 Jul 2022 12:12:12 UTC'
     });
 
     const reportState = JSON.parse(result.report_state);
