@@ -2,7 +2,6 @@
   "credentials": "./credentials-report-service-dev-4bf32ef65d46.json",
   "oldSourceKey": "authoring.staging.concord.org",
   "newSourceKey": "activity-player.concord.org",
-  "batchedWrites": true,
   "startDate": "2020-01-01 12:00:00 UTC",
   "endDate": "2020-01-10 12:00:00 UTC",
   "maxDocCount": "[temporary - TODO: don't use during the final conversion]"

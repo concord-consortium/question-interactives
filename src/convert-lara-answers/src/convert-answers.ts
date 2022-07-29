@@ -1,10 +1,11 @@
-import { Firestore } from "@google-cloud/firestore";
+import * as fs from "fs";
+import { Firestore, QueryDocumentSnapshot } from "@google-cloud/firestore";
 import { BigBatch } from "@qualdesk/firestore-big-batch";
 import { createTraverser } from '@firecode/admin';
-import * as fs from "fs";
-import { convertAnswer, getAnswerType, utcString } from "./utils";
+import { convertAnswer, getAnswerType } from "./utils";
 import { ILARAAnonymousAnswerReportHash, ILARAAnswerReportHash } from "./types";
-import { credentials, oldSourceKey, newSourceKey, batchedWrites, maxDocCount, startDate, endDate, convertLoggedInUserAnswers } from "../config.json";
+import { credentials, oldSourceKey, newSourceKey, maxDocCount, startDate, endDate, convertLoggedInUserAnswers } from "../config.json";
+import { finishLogging, initLogging, logError, logFailed, logInfo, logProgress } from "./log-utils";
 
 process.env.GOOGLE_APPLICATION_CREDENTIALS = credentials;
 if (!fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS)) {
@@ -12,32 +13,8 @@ if (!fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS)) {
   process.exit(1);
 }
 
-const date = new Date().toISOString();
-const logFile = `./log/info-${date}.json`;
-const errorFile = `./log/error-${date}.json`;
-
-const logLastLine = "]\n";
-
-const writeToFile = (file: string, content: string) => {
-  if (content === logLastLine) {
-    content = "\n" + content;
-  } else {
-    content = ",\n" + content;
-  }
-  fs.appendFileSync(file, content);
-};
-
-const getErrorHandler = (id: string) => (error: Error) => {
-  writeToFile(errorFile, JSON.stringify({
-    sourceId: id,
-    error: error.toString(),
-    stack: error.stack
-  }));
-};
-
-const log = (message: string) => {
-  writeToFile(logFile, message);
-};
+const MAX_ATTEMPTS = 5; // to process resource or answers batch
+const ATTEMPT_DELAY = 200; // 200ms, 400ms, 600ms, 800ms, MAX_ATTEMPTS * ATTEMPT_DELAY ms
 
 const getAllQuestions = (resource: any) => {
   const result: any = [];
@@ -57,120 +34,106 @@ const getAllQuestions = (resource: any) => {
   return result;
 };
 
+const sleep = (ms: number) => {
+  return new Promise((resolve) => {
+    setTimeout(resolve, ms);
+  });
+};
+
+const firestore = new Firestore();
+
 // Create a new client
 const executeScript = async () => {
-  // {} is added so the log file is always correct correct
-  fs.appendFileSync(logFile, `[\n{"logType": "info", "date": "${utcString()}"}`);
-  fs.appendFileSync(errorFile, `[\n{"logType": "error", "date": "${utcString()}"}`);
+  initLogging("answers-conversion");
 
-  console.log("Answer conversion started");
-  process.stdout.write("Progress: ");
+  logProgress("Answer conversion started\n");
+  logProgress("Progress: ");
 
   const startTime = Date.now();
-  let copiedAnswersCount = 0;
-  let processedActivitiesCount = 0;
+  let processedResourcesCount = 0;
   let processedQuestionsCount = 0;
   let maxAnswersPerQuestion = 0;
+  let copiedAnswersCount = 0;
+  let failedAnswersCount = 0;
+  let malformedAnswers = 0;
+  let failedResourcesCount = 0;
 
-  const firestore = new Firestore();
+  const logPerformance = () => {
+    const durationInS = (Date.now() - startTime) / 1000;
+    const resourceSpeed = processedResourcesCount / durationInS;
+    const questionSpeed = processedQuestionsCount / durationInS;
+    const answerSpeed = copiedAnswersCount / durationInS;
+    const usedMemory = process.memoryUsage().heapUsed / 1024 / 1024;
+
+    logProgress(`\nElapsed time: ${durationInS.toFixed(2)}\n`);
+    logProgress(`Memory used: ${usedMemory.toFixed(2)} MB\n`);
+    logProgress(`Successfully processed ${processedResourcesCount} resources, ${resourceSpeed.toFixed(2)} resources per second\n`);
+    logProgress(`${failedResourcesCount} resources processing failed and will require reprocessing\n`);
+    logProgress(`Processed ${processedQuestionsCount} questions, ${questionSpeed.toFixed(2)} questions per second\n`);
+
+    logProgress(`Copied ${copiedAnswersCount} answers, ${answerSpeed.toFixed(2)} answers per second\n`);
+    logProgress(`${failedAnswersCount} answers processing failed\n`);
+    logProgress(`${malformedAnswers} answers were malformed and ignored\n`);
+    logProgress(`Max answers per question: ${maxAnswersPerQuestion}\n`);
+  };
 
   const answersRef = firestore.collection(`sources/${oldSourceKey}/answers`);
 
-  const resourcesToMigrate = firestore
-    .collection(`sources/${oldSourceKey}/resources`)
-    .where("migration_status", "==", "migrated")
-    // migration_test can be manually set in Firestore UI to limit conversion just to one activity.
-    // .where ("migration_test", "==", "true")
-    .where("created", ">=", startDate)
-    .where("created", "<=", endDate);
+  const processResource = async (resourceDoc: QueryDocumentSnapshot, processResourceAttempt = 0) => {
+    try {
+      const resource = resourceDoc.data();
+      const questions = getAllQuestions(resource);
+      let resourceAnswersCount = 0;
 
-  const resourcesTraverser = createTraverser(resourcesToMigrate, {
-    batchSize: 1000,
-    // This means we are prepared to hold batchSize * maxConcurrentBatchCount documents in memory.
-    // We sacrifice some memory to traverse faster.
-    maxConcurrentBatchCount: 3,
-    // TODO: remove limit in the final script.
-    maxDocCount
-  });
+      await Promise.all(questions.map(async (question: any) => {
+        let sourceQuestionId;
+        if (question.legacy_id) {
+          sourceQuestionId = question.legacy_id;
+        } else {
+          // This is case of the managed interactives. They are not converted. We just need to move answers
+          // from one collection to another.
+          sourceQuestionId = question.id;
+        }
 
-  await resourcesTraverser.traverse(async (resourceBatchDocs) => {
-    await Promise.all(resourceBatchDocs.map(async (resourceDoc) => {
-      const activityErrorHandler = getErrorHandler(resourceDoc.id);
-      try {
-        const resource = resourceDoc.data();
-        const questions = getAllQuestions(resource);
-        let activityAnswersCount = 0;
+        let questionAnswers = answersRef
+          .where("question_id", "==", sourceQuestionId);
 
-        await Promise.all(questions.map(async (question: any) => {
-          // TODO: remove in the final version of the script. This is only necessary in the early tests when questions
-          // are not converted yet.
-          // if (question.type === "multiple_choice" && !question.authored_state) {
-          //   // We're processing old MC question. It's impossible to convert its answer without authored
-          //   // state. Other question types can work without access to authored state.
-          //   question = {
-          //     ...question,
-          //     authored_state: {
-          //       choices: [
-          //         {
-          //           id: 1,
-          //           content: "a",
-          //           correct: true
-          //         },
-          //         {
-          //           id: 2,
-          //           content: "b"
-          //         },
-          //       ]
-          //     }
-          //   };
-          // }
+        if (convertLoggedInUserAnswers) {
+          // Look only for answers of logged in users.
+          questionAnswers = questionAnswers
+            .orderBy("platform_id") // Firestore requires orderBy while using != condition.
+            .where("platform_id", "!=", null);
+        } else {
+          // Look only for answers of anonymous users.
+          questionAnswers = questionAnswers
+            .where("platform_id", "==", null);
+        }
 
-          let sourceQuestionId;
-          if (question.legacy_id) {
-            sourceQuestionId = question.legacy_id;
-          } else {
-            // This is case of the managed interactives. They are not converted. We just need to move answers
-            // from one collection to another.
-            sourceQuestionId = question.id;
-          }
+        const answersTraverser = createTraverser(questionAnswers, {
+          // 500 is the max batched write size, but we use BigBatch helper so any value can work here.
+          batchSize: 500,
+          // This means we are prepared to hold batchSize * maxConcurrentBatchCount documents in memory.
+          // We sacrifice some memory to traverse faster.
+          maxConcurrentBatchCount: 5,
+          sleepTimeBetweenBatches: 0
+        });
 
-          let questionAnswers = answersRef
-            .where("question_id", "==", sourceQuestionId);
+        let copiedAnswers = 0;
 
-          if (convertLoggedInUserAnswers) {
-            // Look only for answers of logged in users.
-            questionAnswers = questionAnswers
-              .orderBy("platform_id") // Firestore requires orderBy while using != condition.
-              .where("platform_id", "!=", null);
-          } else {
-            // Look only for answers of anonymous users.
-            questionAnswers = questionAnswers
-              .where("platform_id", "==", null);
-          }
+        const convertAnswersBatch = async (answerBatchDocs: QueryDocumentSnapshot[], convertAnswersBatchAttempt = 0) => {
+          try {
+            const answersUpdateBatch = new BigBatch({ firestore });
 
-          const answersTraverser = createTraverser(questionAnswers, {
-            // 500 is the max batched write size, but we use BigBatch helper so any value can work here.
-            batchSize: 500,
-            // This means we are prepared to hold batchSize * maxConcurrentBatchCount documents in memory.
-            // We sacrifice some memory to traverse faster.
-            maxConcurrentBatchCount: 5,
-            sleepTimeBetweenBatches: 0
-          });
+            answerBatchDocs.forEach(answerDoc => {
+              const answer = answerDoc.data() as ILARAAnswerReportHash | ILARAAnonymousAnswerReportHash;
 
-          const { docCount: answerDocCount } = await answersTraverser.traverse(async (answerBatchDocs) => {
-
-            const answersUpdateBatch = batchedWrites ? new BigBatch({ firestore }) : null;
-
-            await Promise.all(answerBatchDocs.map(async (answerDoc) => {
-              const answerErrorHandler = getErrorHandler(answerDoc.id);
               try {
-                const answer = answerDoc.data() as ILARAAnswerReportHash | ILARAAnonymousAnswerReportHash;
                 const answerType = getAnswerType(answer);
                 if (!answerType) {
                   throw new Error(`unknown answer type: ${answer.id}`);
                 }
                 if (answerType === "labbook") {
-                  // Do nothing, labbooks don't require conversions. Activities will be marked as defunct.
+                  // Do nothing, labbooks don't require conversions. Resources will be marked as defunct.
                   return;
                 }
 
@@ -184,66 +147,98 @@ const executeScript = async () => {
 
                 const answerRef = firestore.collection(`sources/${newSourceKey}/answers`).doc(convertedAnswer.id);
 
-                if (answersUpdateBatch) {
-                  answersUpdateBatch.set(answerRef, convertedAnswer);
-                } else {
-                  await answerRef.set(convertedAnswer);
-                }
-
-                copiedAnswersCount += 1;
+                answersUpdateBatch.set(answerRef, convertedAnswer);
               } catch (error: any) {
-                answerErrorHandler(error);
+                // We can't do much here, probably answer doc was malformed.
+                malformedAnswers += 1;
+                logError(`answer conversion failed, answer: ${answer.id}`, error);
+                logFailed({
+                  answer: resourceDoc.id,
+                  errorMessage: error.message
+                });
               }
-            }));
+            });
 
-            if (answersUpdateBatch) {
-              await answersUpdateBatch.commit();
+            await answersUpdateBatch.commit();
+            copiedAnswers += answerBatchDocs.length;
+          } catch (error: any) {
+            logError(`convertAnswersBatch attempt failed: ${question.id}, attempt: ${convertAnswersBatchAttempt}`, error);
+            if (convertAnswersBatchAttempt < MAX_ATTEMPTS) {
+              await sleep((convertAnswersBatchAttempt + 1) * ATTEMPT_DELAY);
+              await convertAnswersBatch(answerBatchDocs, convertAnswersBatchAttempt + 1);
             }
-          });
+          }
+        };
+        const { docCount: questionAnswersCount } = await answersTraverser.traverse(convertAnswersBatch);
 
-          maxAnswersPerQuestion = Math.max(maxAnswersPerQuestion, answerDocCount);
-          activityAnswersCount += answerDocCount;
-          processedQuestionsCount += 1;
-        }));
+        if (copiedAnswers < questionAnswersCount) {
+          failedAnswersCount += questionAnswersCount - copiedAnswers;
+          throw new Error("not all answers have been copied successfully (convertAnswersBatch failed multiple times)");
+        }
 
-        process.stdout.write(".");
-        processedActivitiesCount += 1;
+        maxAnswersPerQuestion = Math.max(maxAnswersPerQuestion, questionAnswersCount);
+        copiedAnswersCount += questionAnswersCount;
+        resourceAnswersCount += questionAnswersCount;
+        processedQuestionsCount += 1;
+      }));
 
-        log(JSON.stringify({
-          activityId: resource.id,
-          created: resource.created,
-          questions: questions.length,
-          answers: activityAnswersCount
-        }));
+      logProgress(".");
+      logInfo({
+        resourceId: resource.id,
+        created: resource.created,
+        questions: questions.length,
+        answers: resourceAnswersCount
+      });
+      processedResourcesCount += 1;
 
-      } catch (error: any) {
-        activityErrorHandler(error);
+      if (processedResourcesCount % 500 === 0) {
+        // 13k resources total, so it'll be logged 26 times.
+        logPerformance();
       }
-    }));
-  });
 
-  const durationInS = (Date.now() - startTime) / 1000;
-  const activitySpeed = processedActivitiesCount / durationInS;
-  const questionSpeed = processedQuestionsCount / durationInS;
-  const answerSpeed = copiedAnswersCount / durationInS;
-
-  const stats = {
-    "elapsedTime": durationInS.toFixed(2),
-    "processedActivities": processedActivitiesCount,
-    "activitiesPerSecond": activitySpeed.toFixed(2),
-    "processedQuestions": processedQuestionsCount,
-    "questionsPerSecond": questionSpeed.toFixed(2),
-    "copiedAnswers": copiedAnswersCount,
-    "answersPerSecond": answerSpeed.toFixed(2),
-    "maxAnswersPerQuestion": maxAnswersPerQuestion
+    } catch (error: any) {
+      logError(`processResource attempt failed, resource: ${resourceDoc.id}, attempt: ${processResourceAttempt}`, error);
+      if (processResourceAttempt < MAX_ATTEMPTS) {
+        await sleep((processResourceAttempt + 1) * ATTEMPT_DELAY);
+        await processResource(resourceDoc, processResourceAttempt + 1);
+      } else {
+        logError(`resource failed: ${resourceDoc.id}`, error);
+        logFailed({
+          resource: resourceDoc.id,
+          errorMessage: error.message
+        });
+        logProgress("x");
+        failedResourcesCount += 1;
+      }
+    }
   };
 
-  console.log(`\n${JSON.stringify(stats, null, 2)}`);
+  const resourcesToMigrate = firestore
+    .collection(`sources/${oldSourceKey}/resources`)
+    .where("migration_status", "==", "migrated")
+    .where("created", ">=", startDate)
+    .where("created", "<=", endDate);
 
-  log(JSON.stringify(stats, null, 2));
+  const resourcesTraverser = createTraverser(resourcesToMigrate, {
+    batchSize: 100,
+    // This means we are prepared to hold batchSize * maxConcurrentBatchCount documents in memory.
+    // We sacrifice some memory to traverse faster.
+    maxConcurrentBatchCount: 10,
+    maxDocCount
+  });
 
-  log(logLastLine);
-  writeToFile(errorFile, logLastLine);
+  await resourcesTraverser.traverse(async (resourceBatchDocs) => {
+    // Parallel variant:
+    // await Promise.all(resourceBatchDocs.map(processResource));
+    // However, processing resources synchronously within one batch might be safer. We might add parallel processing
+    // by updating config of resourcesTraverser.
+    for (const resourceDoc of resourceBatchDocs) {
+      await processResource(resourceDoc);
+    }
+  });
+
+  logPerformance();
+  finishLogging();
 };
 
 executeScript();

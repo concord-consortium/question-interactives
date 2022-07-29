@@ -65,6 +65,3 @@ export const refIdToAnswersQuestionId = (refId: string) => {
 };
 
 export const isAnswerAnonymous = (laraAnswer: any) => !laraAnswer.platform_id || !laraAnswer.remote_endpoint;
-
-// Based on ActivityPlayer embeddable-utils.ts.
-export const utcString = () => (new Date()).toUTCString().replace("GMT", "UTC");
