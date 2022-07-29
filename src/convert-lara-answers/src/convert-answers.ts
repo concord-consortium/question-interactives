@@ -4,7 +4,7 @@ import { createTraverser } from '@firecode/admin';
 import * as fs from "fs";
 import { convertAnswer, getAnswerType, utcString } from "./utils";
 import { ILARAAnonymousAnswerReportHash, ILARAAnswerReportHash } from "./types";
-import { credentials, oldSourceKey, newSourceKey, batchedWrites, maxDocCount, startDate, endDate, convertLoggedInUserAnswers } from "./config.json";
+import { credentials, oldSourceKey, newSourceKey, batchedWrites, maxDocCount, startDate, endDate, convertLoggedInUserAnswers } from "../config.json";
 
 process.env.GOOGLE_APPLICATION_CREDENTIALS = credentials;
 if (!fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS)) {
@@ -12,8 +12,9 @@ if (!fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS)) {
   process.exit(1);
 }
 
-const logFile = `./log/info-${utcString()}.json`;
-const errorFile = `./log/error-${utcString()}.json`;
+const date = new Date().toISOString();
+const logFile = `./log/info-${date}.json`;
+const errorFile = `./log/error-${date}.json`;
 
 const logLastLine = "]\n";
 

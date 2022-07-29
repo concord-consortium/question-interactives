@@ -1,5 +1,5 @@
 import { convertMultipleChoice } from "./convert-multiple-choice";
-import { ILARAAnonymousAnswerReportHash, ILARAAnswerReportHash, ILARAMultipleChoiceAnswerReportHash } from "./types";
+import { ILARAAnonymousAnswerReportHash, ILARAAnswerReportHash, ILARAMultipleChoiceAnswerReportHash } from "../types";
 
 jest.mock("@google-cloud/firestore", () => ({
   ...jest.requireActual("@google-cloud/firestore"),

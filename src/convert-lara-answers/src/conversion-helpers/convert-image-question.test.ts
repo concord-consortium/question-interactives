@@ -1,5 +1,5 @@
 import { convertImageQuestion } from "./convert-image-question";
-import { ILARAAnonymousAnswerReportHash, ILARAAnswerReportHash, ILARAImageQuestionAnswerReportHash } from "./types";
+import { ILARAAnonymousAnswerReportHash, ILARAAnswerReportHash, ILARAImageQuestionAnswerReportHash } from "../types";
 
 jest.mock("@google-cloud/firestore", () => ({
   ...jest.requireActual("@google-cloud/firestore"),

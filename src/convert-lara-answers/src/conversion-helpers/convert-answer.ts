@@ -1,6 +1,6 @@
 import { Timestamp } from "@google-cloud/firestore";
-import { ConvertedAnswer, IManagedInteractiveQuestion, ILARAAnswerReportHash, ILARAAnonymousAnswerReportHash } from "./types";
-import { isAnswerAnonymous } from "./utils";
+import { ConvertedAnswer, IManagedInteractiveQuestion, ILARAAnswerReportHash, ILARAAnonymousAnswerReportHash } from "../types";
+import { isAnswerAnonymous } from "../utils";
 
 export interface IConvertOptions {
   oldAnswer: ILARAAnswerReportHash | ILARAAnonymousAnswerReportHash;

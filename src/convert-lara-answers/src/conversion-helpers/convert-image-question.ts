@@ -1,7 +1,7 @@
-import { IInteractiveState as IImageQuestionInteractiveState } from "../image-question/components/types";
+import { IInteractiveState as IImageQuestionInteractiveState } from "../../../image-question/components/types";
 import { convertAnswer } from "./convert-answer";
-import { ILARAAnonymousAnswerReportHash, ILARAAnswerReportHash, ILARAImageQuestionAnswerReportHash, IManagedInteractiveQuestion } from "./types";
-import { getReportState } from "./utils";
+import { ILARAAnonymousAnswerReportHash, ILARAAnswerReportHash, ILARAImageQuestionAnswerReportHash, IManagedInteractiveQuestion } from "../types";
+import { getReportState } from "../utils";
 
 export interface IConvertImageQuestionOptions {
   newQuestion: IManagedInteractiveQuestion;

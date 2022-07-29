@@ -1,7 +1,7 @@
-import { convertImageQuestion, IConvertImageQuestionOptions } from "./convert-image-question";
-import { convertInteractiveState, IConvertIntStateOptions } from "./convert-interactive-state";
-import { convertMultipleChoice, IConvertMultipleChoiceOptions } from "./convert-multiple-choice";
-import { convertOpenResponse, IConvertOpenResponseOptions } from "./convert-open-response";
+import { convertImageQuestion, IConvertImageQuestionOptions } from "./conversion-helpers/convert-image-question";
+import { convertInteractiveState, IConvertIntStateOptions } from "./conversion-helpers/convert-interactive-state";
+import { convertMultipleChoice, IConvertMultipleChoiceOptions } from "./conversion-helpers/convert-multiple-choice";
+import { convertOpenResponse, IConvertOpenResponseOptions } from "./conversion-helpers/convert-open-response";
 import { IReportState, AnswerType } from "./types";
 
 type IConvertOptions = IConvertOpenResponseOptions | IConvertMultipleChoiceOptions | IConvertImageQuestionOptions | IConvertIntStateOptions;

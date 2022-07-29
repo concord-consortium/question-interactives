@@ -1,5 +1,5 @@
 import { convertInteractiveState } from "./convert-interactive-state";
-import { ILARAAnonymousAnswerReportHash, ILARAAnswerReportHash, ILARAInteractiveRunStateReportHash } from "./types";
+import { ILARAAnonymousAnswerReportHash, ILARAAnswerReportHash, ILARAInteractiveRunStateReportHash } from "../types";
 
 jest.mock("@google-cloud/firestore", () => ({
   ...jest.requireActual("@google-cloud/firestore"),

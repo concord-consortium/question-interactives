@@ -1,5 +1,5 @@
 import { convertOpenResponse } from "./convert-open-response";
-import { ILARAAnonymousAnswerReportHash, ILARAAnswerReportHash, ILARAOpenResponseAnswerReportHash } from "./types";
+import { ILARAAnonymousAnswerReportHash, ILARAAnswerReportHash, ILARAOpenResponseAnswerReportHash } from "../types";
 
 jest.mock("@google-cloud/firestore", () => ({
   ...jest.requireActual("@google-cloud/firestore"),

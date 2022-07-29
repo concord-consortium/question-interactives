@@ -1,5 +1,5 @@
 import { convertAnswer } from "./convert-answer";
-import { ILARAAnonymousAnswerReportHash, ILARAAnswerReportHash, IManagedInteractiveQuestion } from "./types";
+import { ILARAAnonymousAnswerReportHash, ILARAAnswerReportHash, IManagedInteractiveQuestion } from "../types";
 
 export interface IConvertIntStateOptions {
   newQuestion: IManagedInteractiveQuestion;
