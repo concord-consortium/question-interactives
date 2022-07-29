@@ -13,6 +13,7 @@
     },
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
     "testPathIgnorePatterns": [
+      "/convert-lara-answers/",
       "/node_modules/",
       "/cypress/"
     ],
