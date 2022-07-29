@@ -12,9 +12,8 @@ if (!fs.existsSync(configPath)) {
   process.exit(1);
 }
 const config = JSON.parse(fs.readFileSync(configPath).toString());
-const { credentials, oldSourceKey, newSourceKey, maxDocCount, startDate, endDate, convertLoggedInUserAnswers } = config;
 
-process.env.GOOGLE_APPLICATION_CREDENTIALS = credentials;
+process.env.GOOGLE_APPLICATION_CREDENTIALS = config.credentials;
 if (!fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS as string)) {
   console.error("Missing or incorrect credentials - please create and download a credentials json file here: https://console.cloud.google.com/apis/credentials?project=report-service-pro&organizationId=264971417743");
   process.exit(1);
@@ -84,7 +83,7 @@ const executeScript = async () => {
     logProgress(`Max answers per question: ${maxAnswersPerQuestion}\n`);
   };
 
-  const answersRef = firestore.collection(`sources/${oldSourceKey}/answers`);
+  const answersRef = firestore.collection(`sources/${config.oldSourceKey}/answers`);
 
   const processResource = async (resourceDoc: QueryDocumentSnapshot, processResourceAttempt = 0) => {
     try {
@@ -105,7 +104,7 @@ const executeScript = async () => {
         let questionAnswers = answersRef
           .where("question_id", "==", sourceQuestionId);
 
-        if (convertLoggedInUserAnswers) {
+        if (config.convertLoggedInUserAnswers) {
           // Look only for answers of logged in users.
           questionAnswers = questionAnswers
             .orderBy("platform_id") // Firestore requires orderBy while using != condition.
@@ -116,14 +115,7 @@ const executeScript = async () => {
             .where("platform_id", "==", null);
         }
 
-        const answersTraverser = createTraverser(questionAnswers, {
-          // 500 is the max batched write size, but we use BigBatch helper so any value can work here.
-          batchSize: 500,
-          // This means we are prepared to hold batchSize * maxConcurrentBatchCount documents in memory.
-          // We sacrifice some memory to traverse faster.
-          maxConcurrentBatchCount: 5,
-          sleepTimeBetweenBatches: 0
-        });
+        const answersTraverser = createTraverser(questionAnswers, config.answersTraverser);
 
         let copiedAnswers = 0;
 
@@ -147,12 +139,12 @@ const executeScript = async () => {
                 const convertedAnswer = convertAnswer(answerType, {
                   oldAnswer: answer,
                   newQuestion: question,
-                  oldSourceKey,
-                  newSourceKey,
+                  oldSourceKey: config.oldSourceKey,
+                  newSourceKey: config.newSourceKey,
                   additionalMetadata: {}
                 });
 
-                const answerRef = firestore.collection(`sources/${newSourceKey}/answers`).doc(convertedAnswer.id);
+                const answerRef = firestore.collection(`sources/${config.newSourceKey}/answers`).doc(convertedAnswer.id);
 
                 answersUpdateBatch.set(answerRef, convertedAnswer);
               } catch (error: any) {
@@ -221,18 +213,12 @@ const executeScript = async () => {
   };
 
   const resourcesToMigrate = firestore
-    .collection(`sources/${oldSourceKey}/resources`)
+    .collection(`sources/${config.oldSourceKey}/resources`)
     .where("migration_status", "==", "migrated")
-    .where("created", ">=", startDate)
-    .where("created", "<=", endDate);
+    .where("created", ">=", config.startDate)
+    .where("created", "<=", config.endDate);
 
-  const resourcesTraverser = createTraverser(resourcesToMigrate, {
-    batchSize: 100,
-    // This means we are prepared to hold batchSize * maxConcurrentBatchCount documents in memory.
-    // We sacrifice some memory to traverse faster.
-    maxConcurrentBatchCount: 10,
-    maxDocCount
-  });
+  const resourcesTraverser = createTraverser(resourcesToMigrate, config.resourcesTraverser);
 
   await resourcesTraverser.traverse(async (resourceBatchDocs) => {
     // Parallel variant:
