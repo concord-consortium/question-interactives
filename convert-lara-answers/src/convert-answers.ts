@@ -226,9 +226,12 @@ const executeScript = async () => {
   if (!config.testRun) {
     resourcesToMigrate = resourcesToMigrate.where("migration_status", "==", "migrated");
   }
-  resourcesToMigrate = resourcesToMigrate
-    .where("created", ">=", config.startDate)
-    .where("created", "<=", config.endDate);
+  if (config.startDate) {
+    resourcesToMigrate = resourcesToMigrate.where("created", ">=", config.startDate);
+  }
+  if (config.endDate) {
+    resourcesToMigrate = resourcesToMigrate.where("created", "<=", config.endDate);
+  }
 
   const resourcesTraverser = createTraverser(resourcesToMigrate, config.resourcesTraverser);
 

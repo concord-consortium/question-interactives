@@ -1,80 +1,79 @@
 import * as fs from "fs";
 
-const firstJSONLine = "[";
-const lastJSONLine = "]\n";
+class FileLogger {
+  fd: number;
+  jsonWritten = false;
 
-let progressFile = ""; // plain text
-let errorFile = ""; // plain text
+  constructor(path: string) {
+    this.fd = fs.openSync(path, "a");
+  }
 
-let infoFile = ""; // JSON
-let isInfoFirstLine = true;
+  write(content: string) {
+    fs.appendFileSync(this.fd, content);
+  }
 
-let failedResourcesFile = ""; // JSON
-let isFailedResourcesFirstLine = true;
+  writeJSON(json: object) {
+    const content = JSON.stringify(json);
 
-let failedAnswersFile = ""; // JSON
-let isFailedAnswersFirstLine = true;
+    if (!this.jsonWritten) {
+      this.write("[\n");
+      this.write(content);
+      this.jsonWritten = true;
+    } else {
+      this.write(",\n" + content);
+    }
+  }
+
+  close() {
+    if (this.jsonWritten) {
+      this.write("\n]\n");
+    }
+    fs.closeSync(this.fd);
+  }
+}
+
+let progressLogger: FileLogger;
+let errorLogger: FileLogger;
+let infoLogger: FileLogger;
+let failedResourcesLogger: FileLogger;
+let failedAnswersLogger: FileLogger;
 
 export const initLogging = (name: string) => {
   const date = new Date().toISOString();
 
-  progressFile = `./log/progress-${name}-${date}.txt`;
-  errorFile = `./log/error-${name}-${date}.txt`;
-
-  infoFile = `./log/info-${name}-${date}.json`;
-  failedResourcesFile = `./log/failedResources-${name}-${date}.json`;
-  failedAnswersFile = `./log/failedAnswers-${name}-${date}.json`;
-
-  // {} is added so the log file is always correct correct
-  fs.appendFileSync(infoFile, firstJSONLine);
-  fs.appendFileSync(failedResourcesFile, firstJSONLine);
-  fs.appendFileSync(failedAnswersFile, firstJSONLine);
+  progressLogger = new FileLogger(`./log/progress-${name}-${date}.txt`);
+  errorLogger = new FileLogger(`./log/error-${name}-${date}.txt`);
+  infoLogger = new FileLogger(`./log/info-${name}-${date}.json`);
+  failedResourcesLogger = new FileLogger(`./log/failedResources-${name}-${date}.json`);
+  failedAnswersLogger = new FileLogger(`./log/failedAnswers-${name}-${date}.json`);
 };
 
 export const finishLogging = () => {
   // Close JSON log files.
-  writeToJSONFile(infoFile, lastJSONLine);
-  writeToJSONFile(failedResourcesFile, lastJSONLine);
-  writeToJSONFile(failedAnswersFile, lastJSONLine);
-};
-
-const writeToJSONFile = (file: string, content: string) => {
-  const firstLine = (file === infoFile && isInfoFirstLine)
-    || (file === failedResourcesFile && isFailedResourcesFirstLine)
-    || (file === failedAnswersFile && isFailedAnswersFirstLine);
-
-  if (firstLine || content === lastJSONLine) {
-    content = "\n" + content;
-    if (file === infoFile) {
-      isInfoFirstLine = false;
-    } else if (file === failedResourcesFile) {
-      isFailedResourcesFirstLine = false;
-    } else if (file === failedAnswersFile) {
-      isFailedAnswersFirstLine = false;
-    }
-  } else {
-    content = ",\n" + content;
-  }
-  fs.appendFileSync(file, content);
+  progressLogger.close();
+  errorLogger.close();
+  infoLogger.close();
+  failedResourcesLogger.close();
+  failedAnswersLogger.close();
 };
 
 export const logProgress = (message: string) => {
-  fs.appendFileSync(progressFile, message);
+  progressLogger.write(message);
   process.stdout.write(message);
 };
 
 export const logError = (message: string, error: Error) => {
-  fs.appendFileSync(errorFile, `\n${message}\n${error.message}\n${error.stack}\n`);
+  errorLogger.write(`\n${message}\n${error.message}\n${error.stack}\n`);
 };
 
 export const logInfo = (json: object) => {
-  writeToJSONFile(infoFile, JSON.stringify(json));
+  infoLogger.writeJSON(json);
 };
 
 export const logFailedResource = (json: object) => {
-  writeToJSONFile(failedResourcesFile, JSON.stringify(json));
+  failedResourcesLogger.writeJSON(json);
 };
 
 export const logFailedAnswer = (json: object) => {
-  writeToJSONFile(failedAnswersFile, JSON.stringify(json));
+  failedAnswersLogger.writeJSON(json);
 };
