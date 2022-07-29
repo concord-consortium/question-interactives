@@ -4,11 +4,18 @@ import { BigBatch } from "@qualdesk/firestore-big-batch";
 import { createTraverser } from '@firecode/admin';
 import { convertAnswer, getAnswerType } from "./utils";
 import { ILARAAnonymousAnswerReportHash, ILARAAnswerReportHash } from "./types";
-import { credentials, oldSourceKey, newSourceKey, maxDocCount, startDate, endDate, convertLoggedInUserAnswers } from "../config.json";
 import { finishLogging, initLogging, logError, logFailed, logInfo, logProgress } from "./log-utils";
 
+const configPath: string = process.argv[2] || "";
+if (!fs.existsSync(configPath)) {
+  console.error("Missing config file. Run this script with a path to config.json");
+  process.exit(1);
+}
+const config = JSON.parse(fs.readFileSync(configPath).toString());
+const { credentials, oldSourceKey, newSourceKey, maxDocCount, startDate, endDate, convertLoggedInUserAnswers } = config;
+
 process.env.GOOGLE_APPLICATION_CREDENTIALS = credentials;
-if (!fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS)) {
+if (!fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS as string)) {
   console.error("Missing or incorrect credentials - please create and download a credentials json file here: https://console.cloud.google.com/apis/credentials?project=report-service-pro&organizationId=264971417743");
   process.exit(1);
 }
@@ -44,7 +51,7 @@ const firestore = new Firestore();
 
 // Create a new client
 const executeScript = async () => {
-  initLogging("answers-conversion");
+  initLogging(`answers-conversion-${configPath}`);
 
   logProgress("Answer conversion started\n");
   logProgress("Progress: ");
