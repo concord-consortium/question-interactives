@@ -1,18 +1,17 @@
 {
   "resourcesTraverser": {
-    "batchSize": 100,
-    "maxConcurrentBatchCount": 10,
-    "maxDocCount": 10e20
+    "batchSize": 20,
+    "maxConcurrentBatchCount": 1
   },
   "answersTraverser": {
-    "batchSize": 500,
-    "maxConcurrentBatchCount": 5,
-    "maxDocCount": 10e20
+    "batchSize": 2000,
+    "maxConcurrentBatchCount": 1
   },
   "credentials": "./credentials-report-service-dev-4bf32ef65d46.json",
   "oldSourceKey": "authoring.staging.concord.org",
   "newSourceKey": "activity-player.concord.org",
   "startDate": "2020-01-01 12:00:00 UTC",
   "endDate": "2020-01-10 12:00:00 UTC",
-  "convertLoggedInUserAnswers": true
+  "convertLoggedInUserAnswers": true,
+  "testRun": false
 }

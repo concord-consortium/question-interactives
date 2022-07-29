@@ -9,8 +9,11 @@ let errorFile = ""; // plain text
 let infoFile = ""; // JSON
 let isInfoFirstLine = true;
 
-let failedFile = ""; // JSON
-let isFailedFirstLine = true;
+let failedResourcesFile = ""; // JSON
+let isFailedResourcesFirstLine = true;
+
+let failedAnswersFile = ""; // JSON
+let isFailedAnswersFirstLine = true;
 
 export const initLogging = (name: string) => {
   const date = new Date().toISOString();
@@ -19,27 +22,35 @@ export const initLogging = (name: string) => {
   errorFile = `./log/error-${name}-${date}.txt`;
 
   infoFile = `./log/info-${name}-${date}.json`;
-  failedFile = `./log/failed-${name}-${date}.json`;
+  failedResourcesFile = `./log/failedResources-${name}-${date}.json`;
+  failedAnswersFile = `./log/failedAnswers-${name}-${date}.json`;
 
   // {} is added so the log file is always correct correct
   fs.appendFileSync(infoFile, firstJSONLine);
-  fs.appendFileSync(failedFile, firstJSONLine);
+  fs.appendFileSync(failedResourcesFile, firstJSONLine);
+  fs.appendFileSync(failedAnswersFile, firstJSONLine);
 };
 
 export const finishLogging = () => {
   // Close JSON log files.
   writeToJSONFile(infoFile, lastJSONLine);
-  writeToJSONFile(failedFile, lastJSONLine);
+  writeToJSONFile(failedResourcesFile, lastJSONLine);
+  writeToJSONFile(failedAnswersFile, lastJSONLine);
 };
 
 const writeToJSONFile = (file: string, content: string) => {
-  const firstLine = (file === infoFile && isInfoFirstLine) || (file === failedFile && isFailedFirstLine);
+  const firstLine = (file === infoFile && isInfoFirstLine)
+    || (file === failedResourcesFile && isFailedResourcesFirstLine)
+    || (file === failedAnswersFile && isFailedAnswersFirstLine);
+
   if (firstLine || content === lastJSONLine) {
     content = "\n" + content;
     if (file === infoFile) {
       isInfoFirstLine = false;
-    } else if (file === failedFile) {
-      isFailedFirstLine = false;
+    } else if (file === failedResourcesFile) {
+      isFailedResourcesFirstLine = false;
+    } else if (file === failedAnswersFile) {
+      isFailedAnswersFirstLine = false;
     }
   } else {
     content = ",\n" + content;
@@ -60,6 +71,10 @@ export const logInfo = (json: object) => {
   writeToJSONFile(infoFile, JSON.stringify(json));
 };
 
-export const logFailed = (json: object) => {
-  writeToJSONFile(failedFile, JSON.stringify(json));
+export const logFailedResource = (json: object) => {
+  writeToJSONFile(failedResourcesFile, JSON.stringify(json));
+};
+
+export const logFailedAnswer = (json: object) => {
+  writeToJSONFile(failedAnswersFile, JSON.stringify(json));
 };
