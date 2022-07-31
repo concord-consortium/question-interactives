@@ -126,7 +126,7 @@ const executeScript = async () => {
           const convertAnswersBatch = async (answerBatchDocs: QueryDocumentSnapshot[]) => {
             const execConvertAnswersBatch = async (convertAnswersBatchAttempt = 1) => {
               try {
-                const maxOperations = convertAnswersBatchAttempt === 1 ? 500 : Math.ceil(500 / Math.pow(5, convertAnswersBatchAttempt));
+                const maxOperations = convertAnswersBatchAttempt === 1 ? Math.ceil(500 / processResourceAttempt) : Math.ceil(500 / Math.pow(5, convertAnswersBatchAttempt));
                 const answersUpdateBatch = new BigBatch({ firestore, maxOperations });
 
                 answerBatchDocs.forEach(answerDoc => {
