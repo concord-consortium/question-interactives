@@ -19,7 +19,8 @@ if (!fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS as string)) {
   process.exit(1);
 }
 
-const MAX_ATTEMPTS = 10; // to process resource or answers batch
+const MAX_RESOURCE_ATTEMPTS = 3;
+const MAX_ANSWERS_BATCH_ATTEMPTS = 10;
 const ATTEMPT_DELAY = 1000;
 
 const getAllQuestions = (resource: any) => {
@@ -179,7 +180,7 @@ const executeScript = async () => {
                   logPerformance();
                 }
               } catch (error: any) {
-                if (convertAnswersBatchAttempt < MAX_ATTEMPTS) {
+                if (convertAnswersBatchAttempt < MAX_ANSWERS_BATCH_ATTEMPTS) {
                   logProgress("b" + convertAnswersBatchAttempt);
                   await sleep(convertAnswersBatchAttempt * ATTEMPT_DELAY);
                   await execConvertAnswersBatch(convertAnswersBatchAttempt + 1);
@@ -212,7 +213,7 @@ const executeScript = async () => {
         });
         processedResourcesCount += 1;
       } catch (error: any) {
-        if (processResourceAttempt < MAX_ATTEMPTS) {
+        if (processResourceAttempt < MAX_RESOURCE_ATTEMPTS) {
           logProgress("r" + processResourceAttempt);
           await sleep(processResourceAttempt * ATTEMPT_DELAY);
           await execProcessResource(processResourceAttempt + 1);
@@ -244,9 +245,7 @@ const executeScript = async () => {
     if (config.endDate) {
       resourcesToMigrate = resourcesToMigrate.where("created", "<=", config.endDate);
     }
-    if (config.endDate || config.startDate) {
-      resourcesToMigrate = resourcesToMigrate.orderBy("created", "desc");
-    }
+    resourcesToMigrate = resourcesToMigrate.orderBy("created", "desc");
 
     const resourcesTraverser = createTraverser(resourcesToMigrate, config.resourcesTraverser);
 
