@@ -231,9 +231,11 @@ const executeScript = async () => {
     await execProcessResource();
   };
 
-  if (config.resourceId) {
-    const singleActivity = await firestore.collection(`sources/${config.oldSourceKey}/resources`).doc(config.resourceId).get();
-    await processResource(singleActivity);
+  if (config.resourceIds) {
+    for (const resourceId of config.resourceIds) {
+      const singleResource = await firestore.collection(`sources/${config.oldSourceKey}/resources`).doc(resourceId).get();
+      await processResource(singleResource);
+    }
   } else {
     let resourcesToMigrate: any = firestore.collection(`sources/${config.oldSourceKey}/resources`);
     if (!config.testRun) {
