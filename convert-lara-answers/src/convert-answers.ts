@@ -244,7 +244,9 @@ const executeScript = async () => {
     if (config.endDate) {
       resourcesToMigrate = resourcesToMigrate.where("created", "<=", config.endDate);
     }
-    resourcesToMigrate = resourcesToMigrate.orderBy("created", "desc");
+    if (config.endDate || config.startDate) {
+      resourcesToMigrate = resourcesToMigrate.orderBy("created", "desc");
+    }
 
     const resourcesTraverser = createTraverser(resourcesToMigrate, config.resourcesTraverser);
 
