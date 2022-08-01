@@ -95,7 +95,10 @@ describe("convert interactive state", () => {
       source_key: 'activity-player.concord.org',
       answer_text: null,
       converted_from: 'authoring.concord.org/answers/interactive_run_state_78721',
-      converted_at: 'Wed, 20 Jul 2022 12:12:12 UTC'
+      converted_at: 'Wed, 20 Jul 2022 12:12:12 UTC',
+      legacy_id: "interactive_run_state_78721",
+      legacy_question_id: "mw_interactive_212649",
+      legacy_question_type: "iframe_interactive",
     });
 
     const reportState = JSON.parse(result.report_state);
@@ -137,7 +140,10 @@ describe("convert interactive state", () => {
       tool_user_id: 'anonymous',
       type: 'interactive_state',
       converted_from: 'authoring.concord.org/answers/interactive_run_state_62278',
-      converted_at: 'Wed, 20 Jul 2022 12:12:12 UTC'
+      converted_at: 'Wed, 20 Jul 2022 12:12:12 UTC',
+      legacy_id: "interactive_run_state_62278",
+      legacy_question_id: "mw_interactive_210348",
+      legacy_question_type: "iframe_interactive",
     });
 
     const reportState = JSON.parse(result.report_state);

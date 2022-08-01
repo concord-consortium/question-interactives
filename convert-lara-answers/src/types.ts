@@ -20,6 +20,9 @@ export interface IConvertedAnswerMetadata {
   version: 1;
   converted_from: string;
   converted_at: Timestamp;
+  legacy_id: string;
+  legacy_question_id: string;
+  legacy_question_type: string;
 }
 
 export interface ILoggedInUserConvertedAnswer extends IConvertedAnswerMetadata, LTIRuntimeAnswerMetadata {}

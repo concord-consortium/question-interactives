@@ -55,6 +55,10 @@ export const convertAnswer = (options: IConvertOptions): ConvertedAnswer => {
     // Question ID needs to be updated from the old type to a new one.
     question_id: newQuestion.id,
 
+    legacy_id: oldAnswer.id,
+    legacy_question_id: oldAnswer.question_id,
+    legacy_question_type: oldAnswer.question_type,
+
     converted_from: `${oldSourceKey}/answers/${oldAnswer.id}`,
     converted_at: Timestamp.now(),
 
