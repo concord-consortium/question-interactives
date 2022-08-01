@@ -34,6 +34,9 @@ const deleteUndefinedValues = (object: any, level = 0) => {
   });
 };
 
+// Use deterministic ID, so each time the conversion script is ran, we update previously converted answer document.
+export const getConvertedAnswerId = (oldSourceKey: string, oldId: string) => `converted-${oldSourceKey}-answers-${oldId}`;
+
 // Logic based on ActivityPlayer embeddable-utils.ts and firebase-db.ts code.
 export const convertAnswer = (options: IConvertOptions): ConvertedAnswer => {
   const { newQuestion, oldAnswer, oldSourceKey, newSourceKey, typeSpecificProps, additionalMetadata } = options;
@@ -51,7 +54,7 @@ export const convertAnswer = (options: IConvertOptions): ConvertedAnswer => {
 
     version: 1,
     // Use deterministic ID, so each time the conversion script is ran, we update previously converted answer document.
-    id: `converted-${oldSourceKey}-answers-${oldAnswer.id}`,
+    id: getConvertedAnswerId(oldSourceKey, oldAnswer.id),
     // Question ID needs to be updated from the old type to a new one.
     question_id: newQuestion.id,
 

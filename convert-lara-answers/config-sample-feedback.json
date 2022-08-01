@@ -1,0 +1,10 @@
+{
+  "feedbacksTraverser": {
+    "batchSize": 500,
+    "maxConcurrentBatchCount": 1
+  },
+  "perfLogInterval": 300,
+  "credentials": "./credentials-report-service-pro-c3b9591ef03e.json",
+  "oldSourceKey": "authoring.concord.org",
+  "newSourceKey": "activity-player.concord.org"
+}

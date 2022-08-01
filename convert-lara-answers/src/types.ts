@@ -8,6 +8,16 @@
 
 import { Timestamp } from "@google-cloud/firestore";
 
+export interface IFeedbackReportHash {
+  answerId: string;
+  questionId: string;
+}
+
+export interface IConvertedFeedbackReportHash extends IFeedbackReportHash {
+  legacyAnswerId: string;
+  legacyQuestionId: string;
+}
+
 export type AnswerType = "interactive_state" | "open_response" | "multiple_choice" |  "image_question" | "labbook";
 
 export interface IManagedInteractiveQuestion {
@@ -39,7 +49,7 @@ export interface ILARAAnswerReportHash {
   question_type: string;
   submitted: boolean | null;
   // Defined in LARA repository: run_sender.rb#add_meta_data:
-  version: string;
+  version: string | number;
   created: string;
   source_key: string;
   tool_id: string;
@@ -62,7 +72,7 @@ export interface ILARAAnonymousAnswerReportHash {
   question_type: string;
   submitted: boolean | null;
   // Defined in LARA repository: run_sender.rb#add_meta_data:
-  version: string;
+  version: string | number;
   created: string;
   source_key: string;
   tool_id: string;
