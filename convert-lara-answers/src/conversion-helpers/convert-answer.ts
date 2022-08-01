@@ -63,7 +63,7 @@ export const convertAnswer = (options: IConvertOptions): ConvertedAnswer => {
     converted_at: Timestamp.now(),
 
     source_key: newSourceKey,
-    tool_id: newSourceKey,
+    tool_id: newSourceKey + "/", // to mimic AP answers that usually end with trailing slash.
   };
 
   if (isAnswerAnonymous(oldAnswer) && (answer as any).tool_user_id !== "anonymous") {
