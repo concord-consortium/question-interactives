@@ -82,7 +82,7 @@ describe("convert interactive state", () => {
       type: 'interactive_state',
       resource_link_id: '2462',
       remote_endpoint: 'https://learn.staging.concord.org/dataservice/external_activity_data/933e2f3f-13b2-4119-b3b9-97485aaa8c58',
-      tool_id: 'activity-player.concord.org',
+      tool_id: 'activity-player.concord.org/',
       class_info_url: 'https://learn.staging.concord.org/api/v1/classes/32',
       run_key: '19bfcb93-ccbf-4f53-84a7-296294821954',
       question_id: 'managed_interactive_448816',
@@ -95,7 +95,10 @@ describe("convert interactive state", () => {
       source_key: 'activity-player.concord.org',
       answer_text: null,
       converted_from: 'authoring.concord.org/answers/interactive_run_state_78721',
-      converted_at: 'Wed, 20 Jul 2022 12:12:12 UTC'
+      converted_at: 'Wed, 20 Jul 2022 12:12:12 UTC',
+      legacy_id: "interactive_run_state_78721",
+      legacy_question_id: "mw_interactive_212649",
+      legacy_question_type: "iframe_interactive",
     });
 
     const reportState = JSON.parse(result.report_state);
@@ -120,7 +123,7 @@ describe("convert interactive state", () => {
       report_state: '{"version":1,"mode":"report","authoredState":null,"interactiveState":"{\\"version\\":1,\\"exercises\\":{\\"summary\\":{\\"current\\":\\"# Get summary statistics for the \\\\\\"reusable_trays\\\\\\" data set \\\\nsummary(reusable_trays)\\\\n\\",\\"submitted\\":\\"\\"}},\\"lara_options\\":{\\"reporting_url\\":\\"https://concord.shinyapps.io/reus_summary/\\"}}"}',
       platform_id: null,
       source_key: 'activity-player.concord.org',
-      tool_id: 'activity-player.concord.org',
+      tool_id: 'activity-player.concord.org/',
       answer_text: null,
       run_key: '6613df87-efa7-4286-9c88-7ba738c2d9e7',
       platform_user_id: '6613df87-efa7-4286-9c88-7ba738c2d9e7',
@@ -137,7 +140,10 @@ describe("convert interactive state", () => {
       tool_user_id: 'anonymous',
       type: 'interactive_state',
       converted_from: 'authoring.concord.org/answers/interactive_run_state_62278',
-      converted_at: 'Wed, 20 Jul 2022 12:12:12 UTC'
+      converted_at: 'Wed, 20 Jul 2022 12:12:12 UTC',
+      legacy_id: "interactive_run_state_62278",
+      legacy_question_id: "mw_interactive_210348",
+      legacy_question_type: "iframe_interactive",
     });
 
     const reportState = JSON.parse(result.report_state);

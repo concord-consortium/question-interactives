@@ -95,13 +95,16 @@ describe("convert image question answer", () => {
       remote_endpoint: 'https://learn.staging.concord.org/dataservice/external_activity_data/933e2f3f-13b2-4119-b3b9-97485aaa8c58',
       tool_user_id: '1406',
       source_key: 'activity-player.concord.org',
-      tool_id: 'activity-player.concord.org',
+      tool_id: 'activity-player.concord.org/',
       created: '2022-07-25 13:29:48 UTC',
       answer_text: 'Snapshot!',
       report_state: '{"mode":"report","authoredState":"{\\"authoredProp\\":\\"value\\"}","interactiveState":"{\\"answerType\\":\\"image_question_answer\\",\\"answerImageUrl\\":\\"https://ccshutterbug.s3.amazonaws.com/1658755775407-207126.png\\",\\"answerText\\":\\"Snapshot!\\",\\"submitted\\":false}","interactive":{"id":"managed_interactive_448816","name":""},"version":1}',
       legacy_answer_image_url: 'https://ccshutterbug.s3.amazonaws.com/1658755775407-207126.png',
       converted_from: 'authoring.concord.org/answers/image_question_answer_69831',
-      converted_at: 'Wed, 20 Jul 2022 12:12:12 UTC'
+      converted_at: 'Wed, 20 Jul 2022 12:12:12 UTC',
+      legacy_id: "image_question_answer_69831",
+      legacy_question_id: "image_question_212395",
+      legacy_question_type: "image_question",
     });
 
     const reportState = JSON.parse(result.report_state);
@@ -123,7 +126,7 @@ describe("convert image question answer", () => {
       platform_user_id: 'b6a0b038-ae07-444f-8be9-efc7eaa985aa',
       run_key: 'b6a0b038-ae07-444f-8be9-efc7eaa985aa',
       resource_link_id: null,
-      tool_id: 'activity-player.concord.org',
+      tool_id: 'activity-player.concord.org/',
       context_id: null,
       tool_user_id: 'anonymous',
       id: 'converted-authoring.concord.org-answers-image_question_answer_2370',
@@ -145,7 +148,10 @@ describe("convert image question answer", () => {
       report_state: '{"mode":"report","authoredState":"{\\"authoredProp\\":\\"value\\"}","interactiveState":"{\\"answerType\\":\\"image_question_answer\\",\\"answerImageUrl\\":\\"https://ccshutterbugtest.s3.amazonaws.com/16c85da7dbf.png\\",\\"answerText\\":\\"\\",\\"submitted\\":false}","interactive":{"id":"managed_interactive_448816","name":""},"version":1}',
       legacy_answer_image_url: 'https://ccshutterbugtest.s3.amazonaws.com/16c85da7dbf.png',
       converted_from: 'authoring.concord.org/answers/image_question_answer_2370',
-      converted_at: 'Wed, 20 Jul 2022 12:12:12 UTC'
+      converted_at: 'Wed, 20 Jul 2022 12:12:12 UTC',
+      legacy_id: "image_question_answer_2370",
+      legacy_question_id: "image_question_61",
+      legacy_question_type: "image_question",
     });
 
     const reportState = JSON.parse(result.report_state);

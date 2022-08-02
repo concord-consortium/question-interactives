@@ -19,7 +19,8 @@ if (!fs.existsSync(process.env.GOOGLE_APPLICATION_CREDENTIALS as string)) {
   process.exit(1);
 }
 
-const MAX_ATTEMPTS = 10; // to process resource or answers batch
+const MAX_RESOURCE_ATTEMPTS = 3;
+const MAX_ANSWERS_BATCH_ATTEMPTS = 10;
 const ATTEMPT_DELAY = 1000;
 
 const getAllQuestions = (resource: any) => {
@@ -63,15 +64,17 @@ const executeScript = async () => {
   let failedAnswersCount = 0;
   let malformedAnswers = 0;
   let failedResourcesCount = 0;
+  let lastPerfLogTimestamp = 0;
 
   const logPerformance = () => {
-    const durationInS = (Date.now() - startTime) / 1000;
+    lastPerfLogTimestamp = Date.now();
+    const durationInS = (lastPerfLogTimestamp - startTime) / 1000;
     const resourceSpeed = processedResourcesCount / durationInS;
     const questionSpeed = processedQuestionsCount / durationInS;
     const answerSpeed = copiedAnswersCount / durationInS;
     const usedMemory = process.memoryUsage().heapUsed / 1024 / 1024;
 
-    logProgress(`\nElapsed time: ${durationInS.toFixed(2)}\n`);
+    logProgress(`\nElapsed time: ${durationInS.toFixed(0)} seconds\n`);
     logProgress(`Memory used: ${usedMemory.toFixed(2)} MB\n`);
     logProgress(`Successfully processed ${processedResourcesCount} resources, ${resourceSpeed.toFixed(2)} resources per second\n`);
     logProgress(`${failedResourcesCount} resources processing failed and will require reprocessing\n`);
@@ -86,9 +89,10 @@ const executeScript = async () => {
   const answersRef = firestore.collection(`sources/${config.oldSourceKey}/answers`);
 
   const processResource = async (resourceDoc: QueryDocumentSnapshot | DocumentSnapshot) => {
-    const execProcessResource = async (processResourceAttempt = 0) => {
+    const execProcessResource = async (processResourceAttempt = 1) => {
       try {
         const resource = resourceDoc.data();
+
         const questions = getAllQuestions(resource);
         let resourceAnswersCount = 0;
 
@@ -123,7 +127,7 @@ const executeScript = async () => {
           const convertAnswersBatch = async (answerBatchDocs: QueryDocumentSnapshot[]) => {
             const execConvertAnswersBatch = async (convertAnswersBatchAttempt = 1) => {
               try {
-                const maxOperations = convertAnswersBatchAttempt === 1 ? 500 : Math.ceil(500 / Math.pow(5, convertAnswersBatchAttempt));
+                const maxOperations = convertAnswersBatchAttempt === 1 ? Math.ceil(500 / processResourceAttempt) : Math.ceil(500 / Math.pow(5, convertAnswersBatchAttempt));
                 const answersUpdateBatch = new BigBatch({ firestore, maxOperations });
 
                 answerBatchDocs.forEach(answerDoc => {
@@ -163,8 +167,6 @@ const executeScript = async () => {
                   } catch (error: any) {
                     // We can't do much here, probably answer doc was malformed.
                     malformedAnswers += 1;
-
-                    // if this was enabled in test run, it'd log all the MC answers
                     logFailedAnswer({
                       answer: answerDoc.id,
                       errorMessage: error.message
@@ -174,9 +176,11 @@ const executeScript = async () => {
 
                 await answersUpdateBatch.commit();
                 copiedAnswers += answerBatchDocs.length;
-
+                if ((Date.now() - lastPerfLogTimestamp) / 1000 > config.perfLogInterval) {
+                  logPerformance();
+                }
               } catch (error: any) {
-                if (convertAnswersBatchAttempt < MAX_ATTEMPTS) {
+                if (convertAnswersBatchAttempt < MAX_ANSWERS_BATCH_ATTEMPTS) {
                   logProgress("b" + convertAnswersBatchAttempt);
                   await sleep(convertAnswersBatchAttempt * ATTEMPT_DELAY);
                   await execConvertAnswersBatch(convertAnswersBatchAttempt + 1);
@@ -208,14 +212,8 @@ const executeScript = async () => {
           answers: resourceAnswersCount
         });
         processedResourcesCount += 1;
-
-        if (processedResourcesCount % 250 === 0) {
-          // 13k resources total, so it'll be logged ~50 times.
-          logPerformance();
-        }
-
       } catch (error: any) {
-        if (processResourceAttempt < MAX_ATTEMPTS) {
+        if (processResourceAttempt < MAX_RESOURCE_ATTEMPTS) {
           logProgress("r" + processResourceAttempt);
           await sleep(processResourceAttempt * ATTEMPT_DELAY);
           await execProcessResource(processResourceAttempt + 1);
@@ -233,9 +231,11 @@ const executeScript = async () => {
     await execProcessResource();
   };
 
-  if (config.resourceId) {
-    const singleActivity = await firestore.collection(`sources/${config.oldSourceKey}/resources`).doc(config.resourceId).get();
-    await processResource(singleActivity);
+  if (config.resourceIds) {
+    for (const resourceId of config.resourceIds) {
+      const singleResource = await firestore.collection(`sources/${config.oldSourceKey}/resources`).doc(resourceId).get();
+      await processResource(singleResource);
+    }
   } else {
     let resourcesToMigrate: any = firestore.collection(`sources/${config.oldSourceKey}/resources`);
     if (!config.testRun) {

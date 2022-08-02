@@ -7,6 +7,7 @@
     "batchSize": 1000,
     "maxConcurrentBatchCount": 1
   },
+  "perfLogInterval": 300,
   "credentials": "./credentials-report-service-dev-4bf32ef65d46.json",
   "oldSourceKey": "authoring.staging.concord.org",
   "newSourceKey": "activity-player.concord.org",

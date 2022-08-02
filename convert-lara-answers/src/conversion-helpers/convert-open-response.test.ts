@@ -90,8 +90,11 @@ describe("convert open response answer", () => {
       run_key: '8ded3c35-08ca-4cfb-895f-b244f79449ac',
       remote_endpoint: 'https://learn.staging.concord.org/dataservice/external_activity_data/574fcb82-05bd-4634-8ef3-0a28b59ef47d',
       source_key: 'activity-player.concord.org',
-      tool_id: 'activity-player.concord.org',
-      tool_user_id: '1406'
+      tool_id: 'activity-player.concord.org/',
+      tool_user_id: '1406',
+      legacy_id: "open_response_answer_374971",
+      legacy_question_id: "open_response_448816",
+      legacy_question_type: "open_response",
     });
 
     const reportState = JSON.parse(result.report_state);
@@ -130,8 +133,11 @@ describe("convert open response answer", () => {
       run_key: '19c19f94-d19f-4cfa-a06a-76ef0b057355',
       remote_endpoint: null,
       source_key: 'activity-player.concord.org',
-      tool_id: 'activity-player.concord.org',
-      tool_user_id: 'anonymous'
+      tool_id: 'activity-player.concord.org/',
+      tool_user_id: 'anonymous',
+      legacy_id: "open_response_answer_374973",
+      legacy_question_id: "open_response_448816",
+      legacy_question_type: "open_response",
     });
 
     const reportState = JSON.parse(result.report_state);

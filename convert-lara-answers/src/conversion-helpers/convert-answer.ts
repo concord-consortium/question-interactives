@@ -34,6 +34,9 @@ const deleteUndefinedValues = (object: any, level = 0) => {
   });
 };
 
+// Use deterministic ID, so each time the conversion script is ran, we update previously converted answer document.
+export const getConvertedAnswerId = (oldSourceKey: string, oldId: string) => `converted-${oldSourceKey}-answers-${oldId}`;
+
 // Logic based on ActivityPlayer embeddable-utils.ts and firebase-db.ts code.
 export const convertAnswer = (options: IConvertOptions): ConvertedAnswer => {
   const { newQuestion, oldAnswer, oldSourceKey, newSourceKey, typeSpecificProps, additionalMetadata } = options;
@@ -51,15 +54,19 @@ export const convertAnswer = (options: IConvertOptions): ConvertedAnswer => {
 
     version: 1,
     // Use deterministic ID, so each time the conversion script is ran, we update previously converted answer document.
-    id: `converted-${oldSourceKey}-answers-${oldAnswer.id}`,
+    id: getConvertedAnswerId(oldSourceKey, oldAnswer.id),
     // Question ID needs to be updated from the old type to a new one.
     question_id: newQuestion.id,
+
+    legacy_id: oldAnswer.id,
+    legacy_question_id: oldAnswer.question_id,
+    legacy_question_type: oldAnswer.question_type,
 
     converted_from: `${oldSourceKey}/answers/${oldAnswer.id}`,
     converted_at: Timestamp.now(),
 
     source_key: newSourceKey,
-    tool_id: newSourceKey,
+    tool_id: newSourceKey + "/", // to mimic AP answers that usually end with trailing slash.
   };
 
   if (isAnswerAnonymous(oldAnswer) && (answer as any).tool_user_id !== "anonymous") {
