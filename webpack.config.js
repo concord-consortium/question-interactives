@@ -1,17 +1,26 @@
 'use strict';
 
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const GenerateJsonFromJsPlugin = require('generate-json-from-js-webpack-plugin');
-const ESLintPlugin = require("eslint-webpack-plugin");
+const ESLintPlugin = require('eslint-webpack-plugin');
 
-const path = require("path");
+const path = require('path');
+const os = require('os');
 
 module.exports = (env, argv) => {
   const devMode = argv.mode !== 'production';
 
   return {
     context: __dirname, // to automatically find tsconfig.json
+    devServer: {
+      static: 'dist',
+      hot: true,
+      https: {
+        key: path.resolve(os.homedir(), '.localhost-ssl/localhost.key'),
+        cert: path.resolve(os.homedir(), '.localhost-ssl/localhost.pem'),
+      },
+    },
     devtool: devMode ? 'eval-cheap-module-source-map' : 'source-map',
     entry: {
       'carousel': './src/carousel/index.tsx',
@@ -124,7 +133,7 @@ module.exports = (env, argv) => {
     },
     plugins: [
       new MiniCssExtractPlugin({
-        filename: devMode ? "[name]/assets/index.css" : "[name]/assets/index.[hash].css"
+        filename: devMode ? '[name]/assets/index.css' : '[name]/assets/index.[hash].css'
       }),
       // HtmlWebpackPlugin and CopyWebpackPlugin will need to be configured in a similar way for all future question types.
       new HtmlWebpackPlugin({
@@ -234,7 +243,7 @@ module.exports = (env, argv) => {
         filename: 'version.json'
       }),
       new ESLintPlugin({
-        extensions: ["ts","tsx"]
+        extensions: ['ts','tsx']
       })
     ]
   };
