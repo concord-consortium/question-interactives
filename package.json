@@ -35,9 +35,9 @@
     ]
   },
   "scripts": {
-    "start": "webpack-dev-server --hot",
-    "start:secure": "webpack-dev-server --https --hot --cert ~/.localhost-ssl/localhost.pem --key ~/.localhost-ssl/localhost.key",
-    "start:secure:no-certs": "webpack-dev-server --https --hot",
+    "start": "webpack serve --no-https",
+    "start:secure": "webpack serve",
+    "start:secure:no-certs": "webpack serve --no-https-request-cert",
     "build": "npm-run-all lint:build clean build:webpack",
     "build:webpack": "webpack --mode production --devtool source-map",
     "clean": "rimraf dist",

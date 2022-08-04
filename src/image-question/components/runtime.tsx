@@ -114,8 +114,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         </DecorateChildren>
       }
       { inlineImage && <div><img src={inlineImage} className={css.inlineImg} alt="user work"/></div> }
-      { authoredState.answerPrompt && <div>{renderHTML(authoredState.answerPrompt)}</div> }
-      <div className={css.studentAnswerText}>{interactiveState?.answerText}</div>
+      { authoredState.answerPrompt && <>
+        <div>{renderHTML(authoredState.answerPrompt)}</div> 
+        <div className={css.studentAnswerText}>{interactiveState?.answerText}</div>
+      </> }
       {
         !readOnly &&
         <div>
@@ -159,14 +161,16 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       </div>
       <div className={css.dialogRightPanel}>
         { authoredState.prompt && <div>{renderHTML(authoredState.prompt)}</div> }
-        <hr />
-        { authoredState.answerPrompt && <div className={css.answerPrompt}>{renderHTML(authoredState.answerPrompt)}</div> }
-        <textarea
-          value={interactiveState?.answerText || ""}
-          onChange={handleTextChange}
-          rows={8}
-          placeholder={authoredState.defaultAnswer || kGlobalDefaultAnswer}
-        />
+        { authoredState.answerPrompt && <>
+          <hr />
+          <div className={css.answerPrompt}>{renderHTML(authoredState.answerPrompt)}</div>
+          <textarea
+            value={interactiveState?.answerText || ""}
+            onChange={handleTextChange}
+            rows={8}
+            placeholder={authoredState.defaultAnswer || kGlobalDefaultAnswer}
+          />
+        </> } 
       </div>
       <div className={css.closeDialogSection}>
         { savingAnnotatedImage ?

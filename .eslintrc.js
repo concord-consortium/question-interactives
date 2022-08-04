@@ -41,5 +41,24 @@ module.exports = {
     "no-unused-vars": "off",  // superceded by @typescript-eslint/no-unused-vars
     "react/prop-types": "off",
     semi: ["error", "always"]
-  }
+  },
+  overrides: [
+    { // eslint configs
+      files: [".eslintrc*.js"],
+      env: {
+        node: true
+      }
+    },
+    { // webpack configs
+      files: ["**/webpack.config.js"],
+      env: {
+        node: true
+      },
+      rules: {
+        "@typescript-eslint/no-require-imports": "off",
+        "@typescript-eslint/no-var-requires": "off",
+        "quotes": ["error", "single", { allowTemplateLiterals: true, avoidEscape: true }],
+      }
+    }
+  ]
 };
