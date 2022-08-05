@@ -25,6 +25,12 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const decorateOptions = useGlossaryDecoration();
 
+  const maxScore = getMaxScore(authoredState);
+  const lastScore = getLastScore(interactiveState);
+  const lastFeedback = getLastFeedback(authoredState, interactiveState);
+  const feedbackOutdated = isFeedbackOutdated(interactiveState);
+  const submitDisabled = !isAnswered(interactiveState) || !feedbackOutdated || readOnly;
+
   if (!authoredState.scoreBotItemId) {
     return <div>Missing ScoreBOT Item ID</div>;
   }
@@ -59,14 +65,21 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
     try {
       const score = await getScoreBOTFeedback(authoredState.scoreBotItemId, interactiveState.answerText);
-      const attempt = { score, answerText: interactiveState.answerText };
+      // It seems that ScoreBOT API might not work correctly and ignore ItemID. If it was working correctly,
+      // it should return scores within [0, 6] range for explanation item and scores within [0, 4] for rationale items.
+      // In practice, it seems to always return score in [0, 6] range. See: https://www.pivotaltracker.com/story/show/182902508
+      // This is not a pretty workaround that replicates what probably happened in the old LARA implementation.
+      // Score value will be truncated to whatever maxScore is defined by the authored state (number of score mappings).
+      const truncatedScore = Math.min(maxScore || 6, score);
+
+      const attempt = { score: truncatedScore, answerText: interactiveState.answerText };
       setInteractiveState?.(prevState => ({
         ...prevState,
         answerType: "interactive_state",
         attempts: prevState?.attempts ? [ ...prevState.attempts, attempt ] : [ attempt ],
         submitted: true
       }));
-      log("scorebot feedback received", { item_id: authoredState.scoreBotItemId, answer_text: interactiveState?.answerText, score });
+      log("scorebot feedback received", { item_id: authoredState.scoreBotItemId, answer_text: interactiveState?.answerText, score: truncatedScore });
     } catch (error) {
       console.error("ScoreBOT request has failed", error);
       window.alert("ScoreBOT request has failed. Please try to submit your question gain.");
@@ -80,12 +93,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       setRequestInProgress(false);
     }
   };
-
-  const maxScore = getMaxScore(authoredState);
-  const lastScore = getLastScore(interactiveState);
-  const lastFeedback = getLastFeedback(authoredState, interactiveState);
-  const feedbackOutdated = isFeedbackOutdated(interactiveState);
-  const submitDisabled = !isAnswered(interactiveState) || !feedbackOutdated || readOnly;
 
   return (
     <fieldset className={css.scoreBot}>
