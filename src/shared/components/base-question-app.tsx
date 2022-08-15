@@ -43,7 +43,7 @@ interface IProps<IAuthoredState, IInteractiveState> {
   disableAutoHeight?: boolean;
   disableSubmitBtnRendering?: boolean;
   // Note that isAnswered is required when `disableSubmitBtnRendering` is false.
-  isAnswered?: (state: IInteractiveState | null) => boolean;
+  isAnswered?: (state: IInteractiveState | null, authoredState?: IAuthoredState) => boolean;
   linkedInteractiveProps?: ILinkedInteractiveProp[];
   migrateAuthoredState?: (oldAuthoredState: any) => IAuthoredState;
 }
@@ -105,7 +105,7 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
         {
           !disableSubmitBtnRendering &&
           <div>
-            <SubmitButton isAnswered={!!isAnswered?.(interactiveState)} />
+            <SubmitButton isAnswered={!!isAnswered?.(interactiveState, authoredState)} />
             <LockedInfo />
           </div>
         }
