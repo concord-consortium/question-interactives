@@ -1,7 +1,7 @@
 import React from "react";
 import { act, render } from "@testing-library/react";
 import { useAuthoredState, useInitMessage, useInteractiveState } from "@concord-consortium/lara-interactive-api";
-import { App } from "./app";
+import { App, isAnswered } from "./app";
 import { IAuthoredState, IInteractiveState } from "./types";
 
 jest.unmock("react-jsonschema-form");
@@ -53,6 +53,33 @@ describe("Image question", () => {
     await act(async () => {
       const promptEditor = await container.querySelector("#root_prompt");
       expect(promptEditor?.className.includes("slate-editor")).toBe(true);
+    });
+  });
+
+  describe("isAnswered", () => {
+    const authoredStateWithAnswerPrompt: IAuthoredState = {...authoredState, answerPrompt: "This is the answer prompt"};
+    const interactiveStateWithAnswerText: IInteractiveState = {...interactiveState, answerText: "This is the answer text"};
+    const authoredStateWithoutAnswerPrompt: IAuthoredState = {...authoredState, answerPrompt: ""};
+    const interactiveStateWithoutAnswerText: IInteractiveState = {...interactiveState, answerText: ""};
+
+    it("returns false when interactive state is null no matter the answer prompt value", () => {
+      expect(isAnswered(null)).toBe(false);
+      expect(isAnswered(null, authoredStateWithAnswerPrompt)).toBe(false);
+      expect(isAnswered(null, authoredStateWithoutAnswerPrompt)).toBe(false);
+    });
+
+    it("returns false for questions with answerPrompts without answerText", () => {
+      expect(isAnswered(interactiveStateWithoutAnswerText, authoredStateWithAnswerPrompt)).toBe(false);
+    });
+
+    it("returns true for questions with answerPrompts and answerText", () => {
+      expect(isAnswered(interactiveStateWithAnswerText, authoredStateWithAnswerPrompt)).toBe(true);
+    });
+
+    it("returns true for questions with interactive state without answerPrompts no matter the answerText value", () => {
+      expect(isAnswered(interactiveStateWithAnswerText)).toBe(true);
+      expect(isAnswered(interactiveStateWithAnswerText, authoredStateWithoutAnswerPrompt)).toBe(true);
+      expect(isAnswered(interactiveStateWithoutAnswerText, authoredStateWithoutAnswerPrompt)).toBe(true);
     });
   });
 });
