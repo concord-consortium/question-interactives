@@ -50,10 +50,12 @@ const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
 });
 
 export const isAnswered = (interactiveState: IInteractiveState | null, authoredState?: IAuthoredState) => {
+  // image questions with state without answer prompts are always answered
+  // otherwise if they have answer prompts they are answered when there is answer text present
+  const hasInteractiveState = !!interactiveState;
   const hasAnswerPrompt = !!authoredState?.answerPrompt;
   const hasAnswerText = !!interactiveState?.answerText;
-  // image questions without answer prompts are always answered otherwise they are answered when there is answer text present
-  return !hasAnswerPrompt || hasAnswerText;
+  return hasInteractiveState && (!hasAnswerPrompt || hasAnswerText);
 };
 
 export const App = () => (

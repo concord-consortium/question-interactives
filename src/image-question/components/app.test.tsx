@@ -62,6 +62,12 @@ describe("Image question", () => {
     const authoredStateWithoutAnswerPrompt: IAuthoredState = {...authoredState, answerPrompt: ""};
     const interactiveStateWithoutAnswerText: IInteractiveState = {...interactiveState, answerText: ""};
 
+    it("returns false when interactive state is null no matter the answer prompt value", () => {
+      expect(isAnswered(null)).toBe(false);
+      expect(isAnswered(null, authoredStateWithAnswerPrompt)).toBe(false);
+      expect(isAnswered(null, authoredStateWithoutAnswerPrompt)).toBe(false);
+    });
+
     it("returns false for questions with answerPrompts without answerText", () => {
       expect(isAnswered(interactiveStateWithoutAnswerText, authoredStateWithAnswerPrompt)).toBe(false);
     });
@@ -70,7 +76,8 @@ describe("Image question", () => {
       expect(isAnswered(interactiveStateWithAnswerText, authoredStateWithAnswerPrompt)).toBe(true);
     });
 
-    it("returns true for questions without answerPrompts no matter the answerText value", () => {
+    it("returns true for questions with interactive state without answerPrompts no matter the answerText value", () => {
+      expect(isAnswered(interactiveStateWithAnswerText)).toBe(true);
       expect(isAnswered(interactiveStateWithAnswerText, authoredStateWithoutAnswerPrompt)).toBe(true);
       expect(isAnswered(interactiveStateWithoutAnswerText, authoredStateWithoutAnswerPrompt)).toBe(true);
     });
