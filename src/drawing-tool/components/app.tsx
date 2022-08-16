@@ -20,7 +20,7 @@ export const stampCollectionDefinition = {
       ],
       enumNames: [
         "Molecules (predefined)",
-        "NGSA Objects (predefined)",
+        "Objects (predefined)",
         "Custom"
       ],
       default: "molecules"
