@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef } from "react";
 import DrawingToolLib from "drawing-tool";
-import { getAnswerType, IGenericAuthoredState, IGenericInteractiveState } from "./types";
+import { getAnswerType, IGenericAuthoredState, IGenericInteractiveState, StampCollection } from "./types";
 import predefinedStampCollections from "./stamp-collections";
 import 'drawing-tool/dist/drawing-tool.css';
 import { shouldUseLARAImgProxy } from "../../shared/hooks/use-cors-image-error-check";
@@ -40,6 +40,19 @@ const drawingToolContainerId = "drawing-tool-container";
 // This relies on DrawingTool internals obviously. Let's keep it at least in a single place. If it ever changes,
 // it'll be easier to update selectors and find usages.
 export const drawingToolCanvasSelector = `#${drawingToolContainerId} canvas.lower-canvas`;
+
+const getCollectionName = (collection: StampCollection) => {
+  let name: string;
+  if (collection.name) {
+    name = collection.name;
+  } else if (collection.collection === "ngsaObjects") {
+    // remove "ngsa" from name of predefined collection
+    name = "Objects";
+  } else {
+    name = collection.collection.charAt(0).toUpperCase() + collection.collection.slice(1);
+  }
+  return name;
+};
 
 export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, readOnly, buttons, width, height, onDrawingChanged }) => {
   const drawingToolRef = useRef<any>();
@@ -90,7 +103,7 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
     if (!drawingToolRef.current) {
       const stampCollections: StampCollections = {};
       authoredState.stampCollections?.forEach(collection => {
-        const baseName = collection.name || collection.collection.charAt(0).toUpperCase() + collection.collection.slice(1);
+        const baseName = getCollectionName(collection);
         let name = baseName;
         let i = 0;
         while (stampCollections[name]) {
