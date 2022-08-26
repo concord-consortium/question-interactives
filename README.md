@@ -104,9 +104,14 @@ To deploy a production release:
     2. Copy the title from CHANGES.md
     3. Copy the content from CHANGES.md
     4. Hit "Publish Release" button
-7. Update the production library interactives by individually opening each one and updating the baseUrl with this new version **<-- this step actually releases the new code to the interactives in production**. If the release features involve adding one or more new question types in the library interactives, we will need to add them in the library interactives page in LARA production
-8. Test a few sample question interactives by creating a test activity in Production that uses the updated or added interactives
-9. Clean up your working directory by deleting `CHANGES.md`
+7. In order to keep the fullscreen interactive used within CFM also get the most recent release, we also need to update the production branch of question interactives. To do this, run the following commands:
+  - `git checkout production`
+  - `git reset --hard v[new-version-string]>`
+  - `git push --force origin production`
+   Verify the build and tests in Github Actions at https://github.com/concord-consortium/question-interactives/actions
+8. Update the production library interactives by individually opening each one and updating the baseUrl with this new version **<-- this step actually releases the new code to the interactives in production**. If the release features involve adding one or more new question types in the library interactives, we will need to add them in the library interactives page in LARA production
+9. Test a few sample question interactives by creating a test activity in Production that uses the updated or added interactives
+10. Clean up your working directory by deleting `CHANGES.md`
 
 ### Testing
 
