@@ -198,7 +198,13 @@ export const IframeRuntime: React.FC<IProps> =
                           : {width: "100%", height: iframeHeight, border: "none"};
   return (
     <>
-      <iframe ref={iframeRef} src={url} style={iframeStyle} scrolling={scrolling} />
+      <iframe
+        ref={iframeRef}
+        src={url}
+        style={iframeStyle}
+        scrolling={scrolling}
+        allow="geolocation; microphone; camera; bluetooth; clipboard-read; clipboard-write"
+      />
       { internalHint &&
         <div className={css.hint}>{renderHTML(internalHint)}</div> }
     </>
