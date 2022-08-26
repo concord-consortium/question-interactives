@@ -108,13 +108,12 @@ To deploy a production release:
   - `git checkout production`
   - `git reset --hard v[new-version-string]>`
   - `git push --force origin production`
-   Verify the build and tests in Github Actions at https://github.com/concord-consortium/question-interactives/actions
-8. Update the production library interactives by individually opening each one and updating the baseUrl with this new version **<-- this step actually releases the new code to the interactives in production**. If the release features involve adding one or more new question types in the library interactives, we will need to add them in the library interactives page in LARA production
-9. Test a few sample question interactives by creating a test activity in Production that uses the updated or added interactives
-10. Clean up your working directory by deleting `CHANGES.md`
+8. Verify the build and tests in Github Actions at https://github.com/concord-consortium/question-interactives/actions		
+9. Update the production library interactives by individually opening each one and updating the baseUrl with this new version **<-- this step actually releases the new code to the interactives in production**. If the release features involve adding one or more new question types in the library interactives, we will need to add them in the library interactives page in LARA production
+10. Test a few sample question interactives by creating a test activity in Production that uses the updated or added interactives
+11. Clean up your working directory by deleting `CHANGES.md`
 
 ### Testing
-
 Run `npm test` to run jest tests. Run `npm run test:full` to run jest and Cypress tests.
 
 ##### Cypress Run Options
