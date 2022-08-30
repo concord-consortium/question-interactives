@@ -21,7 +21,7 @@ export const reportItemHandler: IGetReportItemAnswerHandler<IInteractiveState, I
       items.push({type: "answerText"});
     }
 
-    sendReportItemAnswer({version, platformUserId, items});
+    sendReportItemAnswer({version, platformUserId, items, itemsType});
   } else {
     // tslint:disable-next-line:no-console
     console.error(
