@@ -1,4 +1,4 @@
-import { phonePost, phoneListen, getAndClearLastPhoneMessage } from "../support";
+import { phonePost, phoneListen, getAndClearLastPhoneMessage } from "../support/e2e";
 
 context("Test open response interactive", () => {
   let i = 0;

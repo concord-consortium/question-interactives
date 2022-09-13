@@ -1,4 +1,4 @@
-import { phonePost } from "../support";
+import { phonePost } from "../support/e2e";
 
 const authoredStateWithoutStamps = {
   version: 1,

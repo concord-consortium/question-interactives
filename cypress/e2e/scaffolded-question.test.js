@@ -1,4 +1,4 @@
-import { phonePost, phoneListen, getAndClearLastPhoneMessage, getAndClearAllPhoneMessage } from "../support";
+import { phonePost, phoneListen, getAndClearLastPhoneMessage, getAndClearAllPhoneMessage } from "../support/e2e";
 
 context("Test scaffolded question interactive", () => {
   let i = 0;

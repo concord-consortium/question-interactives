@@ -1,4 +1,4 @@
-import { phonePost, phoneListen, getAndClearLastPhoneMessage } from "../support";
+import { phonePost, phoneListen, getAndClearLastPhoneMessage } from "../support/e2e";
 
 const authoredStateSample = {
   version: 1,
