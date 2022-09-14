@@ -1,4 +1,4 @@
-import {phonePost, phoneListen, getAndClearAllPhoneMessage, getAndClearLastPhoneMessage} from "../support";
+import {phonePost, phoneListen, getAndClearAllPhoneMessage, getAndClearLastPhoneMessage} from "../support/e2e";
 
 context("Test graph interactive", () => {
   beforeEach(() => {

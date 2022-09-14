@@ -1,4 +1,4 @@
-import { phonePost, phoneListen, getAndClearLastPhoneMessage } from "../support";
+import { phonePost, phoneListen, getAndClearLastPhoneMessage } from "../support/e2e";
 
 context("Test multiple-choice interactive", () => {
   let i = 0;
