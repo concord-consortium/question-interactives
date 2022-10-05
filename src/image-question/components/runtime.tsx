@@ -44,7 +44,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const openDrawingToolDialog = () => {
     // notCloseable: true disabled click-to-close backdrop and X icon in the corner.
     // Dialog can be closed only via closeModal API.
-    showModal({ type: "dialog", url: window.location.href + "?" + drawingToolDialogUrlParam, notCloseable: true });
+    const newSearchParams = new URLSearchParams(window.location.search);
+    newSearchParams.set(drawingToolDialogUrlParam, "true");
+    const url = location.href.replace(location.search, "?" + newSearchParams.toString());
+    showModal({ type: "dialog", url, notCloseable: true });
   };
 
   const handleDrawingToolSetIntState = (updateFunc: UpdateFunc<IInteractiveState>) => {
@@ -115,7 +118,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       }
       { inlineImage && <div><img src={inlineImage} className={css.inlineImg} alt="user work"/></div> }
       { authoredState.answerPrompt && <>
-        <div>{renderHTML(authoredState.answerPrompt)}</div> 
+        <div>{renderHTML(authoredState.answerPrompt)}</div>
         <div className={css.studentAnswerText}>{interactiveState?.answerText}</div>
       </> }
       {
@@ -170,7 +173,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             rows={8}
             placeholder={authoredState.defaultAnswer || kGlobalDefaultAnswer}
           />
-        </> } 
+        </> }
       </div>
       <div className={css.closeDialogSection}>
         { savingAnnotatedImage ?
