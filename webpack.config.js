@@ -44,7 +44,8 @@ module.exports = (env, argv) => {
       'score-bot/report-item': './src/score-bot/report-item-index.tsx',
       'wrapper': './src/shared/wrapper.tsx',
       'bar-graph': './src/bar-graph/index.tsx',
-      'bar-graph/report-item': './src/bar-graph/report-item-index.tsx'
+      'bar-graph/report-item': './src/bar-graph/report-item-index.tsx',
+      'bar-graph/demo': './src/bar-graph/demo.tsx'
     },
     mode: 'development',
     output: {
@@ -241,6 +242,11 @@ module.exports = (env, argv) => {
       new HtmlWebpackPlugin({
         chunks: ['bar-graph/report-item'],
         filename: 'bar-graph/report-item/index.html',
+        template: 'src/shared/index.html'
+      }),
+      new HtmlWebpackPlugin({
+        chunks: ['bar-graph/demo'],
+        filename: 'bar-graph/demo.html',
         template: 'src/shared/index.html'
       }),
       // Wrapper page, useful for testing and Cypress.
