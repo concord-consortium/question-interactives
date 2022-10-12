@@ -42,7 +42,9 @@ module.exports = (env, argv) => {
       'side-by-side': './src/side-by-side/index.tsx',
       'score-bot': './src/score-bot/index.tsx',
       'score-bot/report-item': './src/score-bot/report-item-index.tsx',
-      'wrapper': './src/shared/wrapper.tsx'
+      'wrapper': './src/shared/wrapper.tsx',
+      'bar-graph': './src/bar-graph/index.tsx',
+      'bar-graph/report-item': './src/bar-graph/report-item-index.tsx'
     },
     mode: 'development',
     output: {
@@ -229,6 +231,16 @@ module.exports = (env, argv) => {
       new HtmlWebpackPlugin({
         chunks: ['score-bot/report-item'],
         filename: 'score-bot/report-item/index.html',
+        template: 'src/shared/index.html'
+      }),
+      new HtmlWebpackPlugin({
+        chunks: ['bar-graph'],
+        filename: 'bar-graph/index.html',
+        template: 'src/shared/index.html'
+      }),
+      new HtmlWebpackPlugin({
+        chunks: ['bar-graph/report-item'],
+        filename: 'bar-graph/report-item/index.html',
         template: 'src/shared/index.html'
       }),
       // Wrapper page, useful for testing and Cypress.
