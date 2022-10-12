@@ -2,7 +2,8 @@ import React from "react";
 import { act, render } from "@testing-library/react";
 import { useInitMessage, useReportItem } from "@concord-consortium/lara-interactive-api";
 import { AppComponent } from "./app";
-import { IAuthoredState, IInteractiveState } from "../types";
+import { IInteractiveState } from "../types";
+import { DemoAuthoredState } from "../../demo";
 
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
   useReportItem: jest.fn(),
@@ -15,11 +16,6 @@ jest.mock("@concord-consortium/lara-interactive-api", () => ({
 }));
 
 const useInitMessageMock = useInitMessage as jest.Mock;
-
-const authoredState: IAuthoredState = {
-  version: 1,
-  questionType: "iframe_interactive",
-};
 
 const interactiveState: IInteractiveState = {
   answerType: "interactive_state",
@@ -38,7 +34,7 @@ describe("Bar graph question report item", () => {
     useInitMessageMock.mockReturnValue({
       version: 1,
       mode: "authoring",
-      authoredState
+      DemoAuthoredState
     });
 
     const { container } = render(<AppComponent />);
@@ -58,7 +54,7 @@ describe("Bar graph question report item", () => {
     useInitMessageMock.mockReturnValue({
       version: 1,
       mode: "reportItem",
-      authoredState,
+      DemoAuthoredState,
       interactiveState
     });
 
