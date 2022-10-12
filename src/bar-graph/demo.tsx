@@ -3,12 +3,9 @@ import ReactDOM from "react-dom";
 import { DemoComponent } from "../shared/components/demo";
 import { App } from "./components/app";
 import { IAuthoredState, IInteractiveState } from "./components/types";
+import { DemoAuthoredState } from "./demo-authored-state";
 
 const DemoContainer = () => {
-  const authoredState: IAuthoredState = {
-    version: 1,
-    questionType: "iframe_interactive"
-  };
   const interactiveState: IInteractiveState = {
     answerType: "interactive_state"
   };
@@ -17,7 +14,7 @@ const DemoContainer = () => {
     <DemoComponent<IAuthoredState, IInteractiveState>
       title="Bar Graph Demo"
       App={<App />}
-      authoredState={authoredState}
+      authoredState={DemoAuthoredState}
       interactiveState={interactiveState}
     />
   );
