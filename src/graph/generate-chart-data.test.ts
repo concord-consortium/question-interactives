@@ -23,7 +23,7 @@ const dataset2: IDataset = {
   version: 1,
   properties: ["x", "y2"],
   xAxisProp: "x",
-  rows: [ [7, null], [8, 2000] ]
+  rows: [ [7, 0], [8, 2000] ]
 };
 
 const datasetWithoutXProp: IDataset = {
@@ -64,7 +64,7 @@ describe("generateChartData", () => {
     expect(result[1].labels).toEqual([7, 8]);
     expect(result[1].datasets[0]).toMatchObject({
       label: "y2",
-      data: [null, 2000],
+      data: [0, 2000],
       backgroundColor: expect.any(String),
       borderColor: expect.any(String),
       borderWidth: expect.any(Number)
@@ -123,7 +123,7 @@ describe("generateChartData", () => {
     });
     expect(result[0].datasets[1]).toMatchObject({
       label: "y #2",
-      data: [null, 200, 100, 300],
+      data: [0, 200, 100, 300],
       backgroundColor: expect.any(String),
       borderColor: expect.any(String),
       borderWidth: expect.any(Number)
@@ -142,7 +142,7 @@ describe("generateChartData", () => {
     });
     expect(result[0].datasets[1]).toMatchObject({
       label: "y - Data Source 2",
-      data: [null, 200, 100, 300],
+      data: [0, 200, 100, 300],
       backgroundColor: expect.any(String),
       borderColor: expect.any(String),
       borderWidth: expect.any(Number)

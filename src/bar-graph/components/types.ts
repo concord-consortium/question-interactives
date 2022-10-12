@@ -28,3 +28,36 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
   submitted?: boolean;
 }
+
+export const DefaultAuthoredState: IAuthoredState = {
+  version: 1,
+  questionType: "iframe_interactive",
+  title: "",
+  xAxisLabel: "",
+  yAxisLabel: "",
+  yAxisOrientation: "horizontal",
+  maxYValue: 100,
+  yAxisCountBy: 5,
+  showValuesAboveBars: true,
+  numberOfDecimalPlaces: 0,
+  bars: []
+};
+
+export const DemoAuthoredState: IAuthoredState = {
+  version: 1,
+  questionType: "iframe_interactive",
+  title: "Estimate Amount of Spring Sunlight",
+  xAxisLabel: "Seasons",
+  yAxisLabel: "Days of Sunlight",
+  yAxisOrientation: "horizontal",
+  maxYValue: 100,
+  yAxisCountBy: 10,
+  showValuesAboveBars: true,
+  numberOfDecimalPlaces: 0,
+  bars: [
+    { label: "Winter", value: 25, lockValue: true, color: "#EA6D2F" },
+    { label: "Spring", value: 0, lockValue: false, color: "#FFC320" },
+    { label: "Summer", value: 75, lockValue: true, color: "#2DA343" },
+    { label: "Fall", value: 50, lockValue: true, color: "#6FC6DA" }
+  ]
+};

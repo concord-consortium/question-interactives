@@ -3,8 +3,7 @@ import { render } from "@testing-library/react";
 import { useAuthoredState, useInitMessage, useInteractiveState
         } from "@concord-consortium/lara-interactive-api";
 import { App } from "./app";
-import { IInteractiveState } from "./types";
-import { DemoAuthoredState } from "../demo-authored-state";
+import { IInteractiveState, DemoAuthoredState } from "./types";
 
 jest.unmock("react-jsonschema-form");
 

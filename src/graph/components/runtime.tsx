@@ -5,16 +5,26 @@ import {
 } from "@concord-consortium/lara-interactive-api";
 import { useLinkedInteractiveId } from "../../shared/hooks/use-linked-interactive-id";
 import { Bar } from "react-chartjs-2";
-import { ChartOptions, LinearScale } from "chart.js";
+import { BarElement, CategoryScale, Chart, ChartOptions, Legend, LinearScale, Title, Tooltip } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import { generateChartData, emptyChartData, CustomChartData } from "../generate-chart-data";
+
 import css from "./runtime.scss";
+
+Chart.register(
+  CategoryScale,
+  LinearScale,
+  BarElement,
+  Title,
+  Tooltip,
+  Legend
+);
 
 export interface IProps {
   authoredState: IAuthoredState;
 }
 
-const getGraphOptions = (authoredState: IAuthoredState, chartData?: CustomChartData): ChartOptions => {
+const getGraphOptions = (authoredState: IAuthoredState, chartData?: CustomChartData): ChartOptions<"bar"> => {
   let yAxisLabel;
   if (authoredState.useYAxisLabelFromData && chartData && chartData.datasets.length > 0) {
     yAxisLabel = chartData.datasets[0].label;
@@ -22,42 +32,46 @@ const getGraphOptions = (authoredState: IAuthoredState, chartData?: CustomChartD
     yAxisLabel = authoredState.yAxisLabel;
   }
 
-  const yAxis: LinearScale = {
-    scaleLabel: {
-      display: !!yAxisLabel,
-      labelString: yAxisLabel,
-    },
-    ticks: {
-      beginAtZero: true,
-      maxTicksLimit: 5
-    }
-  };
+  const yAxisOptions: any = {};
   if (authoredState.autoscaleYAxis === false) {
     const maxY = typeof authoredState.yAxisMax === "number" ? authoredState.yAxisMax : 100;
-    // eslint-disable-next-line  @typescript-eslint/no-non-null-assertion
-    yAxis.ticks!.max = maxY;
+    yAxisOptions.max = maxY;
   }
   const displayLegend = chartData ? authoredState.displayLegend : false;
 
   return {
-    legend: {
-      display: displayLegend, // top legend with datasets and their colors
-      align: "start",
-      fullWidth: false // this will put each legend in its own line (name of the property doesn't suggest that)
+    plugins: {
+      legend: {
+        display: displayLegend, // top legend with datasets and their colors
+        align: "start",
+        fullSize: false // this will put each legend in its own line (name of the property doesn't suggest that)
+      }
     },
     maintainAspectRatio: false,
     responsive: true,
     scales: {
-      yAxes: [yAxis],
-      xAxes: [{
-        scaleLabel: {
+      y: {
+        type: "linear",
+        title: {
+          display: !!yAxisLabel,
+          text: yAxisLabel,
+        },
+        beginAtZero: true,
+        ticks: {
+          maxTicksLimit: 5,
+        },
+        ...yAxisOptions
+      },
+      x: {
+        type: "linear",
+        title: {
           display: !!authoredState.xAxisLabel,
-          labelString: authoredState.xAxisLabel || "",
+          text: authoredState.xAxisLabel || "",
         },
         ticks: {
           display: authoredState.displayXAxisLabels // this will show/hide labels only
         }
-      }]
+      }
     }
   };
 };

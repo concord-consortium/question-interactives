@@ -1,16 +1,16 @@
-import { ChartData, ChartDataSets } from "chart.js";
+import { ChartData, ChartDataset } from "chart.js";
 import { IDataset } from "@concord-consortium/lara-interactive-api";
 import { IAuthoredState } from "./components/types";
 
 // Make Chart.js types a bit more specific (remove ? from properties definitions), so it's easier to work with them.
 type Label = number | string;
-type DataPoint = number | null;
+type DataPoint = number; // | null;
 
-interface CustomChartDataSet extends ChartDataSets {
+type CustomChartDataSet = ChartDataset<"bar"> & {
   data: DataPoint[];
 }
 
-export interface CustomChartData extends ChartData {
+export interface CustomChartData extends ChartData<"bar"> {
   labels: Label[];
   datasets: Array<CustomChartDataSet>
 }
@@ -65,7 +65,7 @@ export const generateChartData = (datasets: Array<IDataset | null | undefined>, 
         // If x property isn't defined, use row index, but starting from 1.
         return rowIdx + 1;
       }
-      const val = row[xPropIdx];
+      const val = row[xPropIdx] || 0;
       return val !== null ? val : "";
     });
 
@@ -73,7 +73,7 @@ export const generateChartData = (datasets: Array<IDataset | null | undefined>, 
       if (propIdx === xPropIdx) {
         return;
       }
-      const data = dataset.rows.map(row => row[propIdx]).map(v => typeof v !== "number" ? null : v);
+      const data = dataset.rows.map(row => row[propIdx]).map(v => typeof v !== "number" ? 0 : v);
 
       if (!chartDataForProp[prop]) {
         // Generate a new chart data with one chart dataset.
@@ -136,7 +136,7 @@ const mergeIntoChartData = ({ data, labels, datasetIdx, targetChartData }: IMerg
       newData[existingDataIdx] = data[newDataIdx];
       mergedIdx[newDataIdx] = true;
     } else {
-      newData[existingDataIdx] = null;
+      newData[existingDataIdx] = 0;
     }
   });
   // Then, add new labels from the new dataset.
