@@ -142,7 +142,7 @@
     "deep-equal": "^2.0.5",
     "deepmerge": "^4.2.2",
     "dompurify": "^2.3.6",
-    "drawing-tool": "^2.1.2",
+    "drawing-tool": "^2.2.0-pre.1",
     "eslint-webpack-plugin": "^3.1.1",
     "firebase": "^9.6.8",
     "html-react-parser": "^0.13.0",
@@ -171,7 +171,6 @@
     "slate-react": "^0.22.10",
     "striptags": "^3.2.0",
     "styled-components": "^5.3.5",
-    "ts-debounce": "^3.0.0",
     "uuid": "^8.3.0",
     "video.js": "^7.17.0"
   }
