@@ -9,7 +9,6 @@ import {
 
 export interface IAuthoredState extends IAuthoringInteractiveMetadata{
   // IAuthoringLabbookMetadata adds:
-  answerType: "labbook_interactive";
   answerPrompt?: string;
   version: number;
   maxItems: number;
