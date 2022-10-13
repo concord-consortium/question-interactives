@@ -1,4 +1,6 @@
-import React, { useCallback, useEffect, useRef } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
+import classNames from "classnames";
 import DrawingToolLib from "drawing-tool";
 import { getAnswerType, IGenericAuthoredState, IGenericInteractiveState, StampCollection } from "./types";
 import predefinedStampCollections from "./stamp-collections";
@@ -21,6 +23,8 @@ export interface IProps {
   buttons?: string[];
   width?: number;
   height?: number;
+  canvasScale?: number;
+  hideReadOnlyOverlay?: boolean;
   onDrawingChanged?: () => void;
 }
 
@@ -34,12 +38,12 @@ interface DrawingToolOpts {
   stamps?: StampCollections;
   buttons?: string[];
   onDrawingChanged?: () => void;
+  canvasScale?: number;
 }
 
-const drawingToolContainerId = "drawing-tool-container";
 // This relies on DrawingTool internals obviously. Let's keep it at least in a single place. If it ever changes,
 // it'll be easier to update selectors and find usages.
-export const drawingToolCanvasSelector = `#${drawingToolContainerId} canvas.lower-canvas`;
+export const drawingToolCanvasSelector = `canvas.lower-canvas`;
 
 const getCollectionName = (collection: StampCollection) => {
   let name: string;
@@ -54,9 +58,10 @@ const getCollectionName = (collection: StampCollection) => {
   return name;
 };
 
-export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, readOnly, buttons, width, height, onDrawingChanged }) => {
+export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, readOnly, buttons, width, height, canvasScale, hideReadOnlyOverlay, onDrawingChanged }) => {
   const drawingToolRef = useRef<any>();
   const containerRef = useRef<HTMLDivElement>(null);
+  const [ containerId ] = useState<string>(uuidv4());
 
   // need a wrapper as `useRef` expects (state) => void
   const handleSetInteractiveState = (newState: Partial<IGenericInteractiveState>) => {
@@ -96,8 +101,10 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
     drawingToolRef.current.pauseHistory();
     drawingToolRef.current.setBackgroundImage(imageOpts, bgFit, () => {
       drawingToolRef.current.unpauseHistory();
+      if (readOnly) return;
+      setInteractiveStateRef.current({ drawingState: drawingToolRef.current.save() });
     });
-  }, [authoredState.backgroundImageUrl, authoredState.backgroundSource, authoredState.imageFit, authoredState.imagePosition]);
+  }, [authoredState.backgroundImageUrl, authoredState.backgroundSource, authoredState.imageFit, authoredState.imagePosition, readOnly]);
 
   useEffect(() => {
     if (!drawingToolRef.current) {
@@ -129,6 +136,7 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
         // Drawing Tool width and height describe canvas dimensions. They do NOT include toolbar dimensions.
         width: width || Math.min(kDrawingToolPreferredWidth, availableWidth - kToolbarWidth),
         height: height || kDrawingToolHeight,
+        canvasScale,
         buttons,
         onDrawingChanged
       };
@@ -137,7 +145,7 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
         drawingToolOpts.stamps = stampCollections;
       }
 
-      drawingToolRef.current = new DrawingToolLib("#drawing-tool-container", drawingToolOpts);
+      drawingToolRef.current = new DrawingToolLib(`#${containerId}`, drawingToolOpts);
       if (initialInteractiveStateRef.current) {
         drawingToolRef.current.load(initialInteractiveStateRef.current.drawingState, () => {
           // Load finished callback. Set manually background that is stored outside in the interactive or authored state.
@@ -150,37 +158,24 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
         setInteractiveStateRef.current({ drawingState: drawingToolRef.current.save() });
       });
     }
-  }, [authoredState, readOnly, setBackground, buttons, width, height, onDrawingChanged]);
+  }, [authoredState, readOnly, setBackground, buttons, width, height, onDrawingChanged, containerId, canvasScale]);
 
   useEffect(() => {
     setBackground(interactiveState?.userBackgroundImageUrl);
   }, [interactiveState?.userBackgroundImageUrl, setBackground]);
 
-  const interceptMouseEvent = (e: React.MouseEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
-  const interceptTouchEvent = (e: React.TouchEvent<HTMLDivElement>) => {
-    e.preventDefault();
-    e.stopPropagation();
-  };
+  // When Drawing Tool is in read-only mode, support dynamic updated of interactive state.
+  // It's used by Labbook Thumbnails that watch the main canvas and update themselves when there's any change there.
+  useEffect(() => {
+    if (readOnly && interactiveState?.drawingState) {
+      drawingToolRef.current.load(interactiveState?.drawingState);
+    }
+  }, [interactiveState, readOnly]);
 
   return (
     <div ref={containerRef} className={css.drawingtoolWrapper}>
-      { readOnly &&
-          <div
-            className={css.clickShield}
-            onMouseDownCapture={interceptMouseEvent}
-            onMouseMoveCapture={interceptMouseEvent}
-            onMouseUpCapture={interceptMouseEvent}
-            onClickCapture={interceptMouseEvent}
-            onTouchStartCapture={interceptTouchEvent}
-            onTouchMoveCapture={interceptTouchEvent}
-            onTouchEndCapture={interceptTouchEvent}
-            onTouchCancelCapture={interceptTouchEvent}
-          />
-      }
-      <div id={drawingToolContainerId} className={css.runtime} />
+      { readOnly && !hideReadOnlyOverlay && <div className={css.clickShield} /> }
+      <div id={containerId} className={classNames(css.runtime, {[css.readOnly]: readOnly })} />
     </div>
   );
 };
