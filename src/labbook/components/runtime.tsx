@@ -1,13 +1,9 @@
 import React, { useState, useRef, useEffect } from "react";
 import deepmerge from "deepmerge";
-import Shutterbug from "shutterbug";
 import hash from "object-hash";
-import { debounce } from "ts-debounce";
 import { v4 as uuidv4 } from "uuid";
-
 import { IInteractiveState as IDrawingToolInteractiveState} from "../../drawing-tool/components/types";
-import { DrawingTool, drawingToolCanvasSelector  } from "../../drawing-tool/components/drawing-tool";
-
+import { DrawingTool } from "../../drawing-tool/components/drawing-tool";
 // import { PreviewPanel } from "./preview-panel"; // For mockup / Zeplin matching.
 import { Log } from "../labbook-logging";
 import { ThumbnailChooser, IThumbnailChooserProps } from "./thumbnail-chooser/thumbnail-chooser";
@@ -127,12 +123,32 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     setEntries(newEntries);
   };
 
-  const toThumbnailProps = (entry:ILabbookEntry , index:number) => {
+  const anyObjectInDrawingState = (drawingState?: string) => {
+    try {
+      return drawingState ? JSON.parse(drawingState)?.canvas.objects?.length > 0 : false;
+    } catch (e) {
+      return false;
+    }
+  };
+
+  const toThumbnailProps = (entry: ILabbookEntry, index: number) => {
+    const entryNotBlank = entry.data?.userBackgroundImageUrl || anyObjectInDrawingState(entry.data?.drawingState);
     const thumbProps: IThumbnailProps = {
-      data: {entry},
+      data: { entry },
       id: entry.id,
       label: numberToAlpha(index),
-      thumbContent: entry.imageUrl ? <img src={entry.imageUrl} />: "[blank]",
+      thumbContent: entryNotBlank ? (
+        <div className={css.labbookThumbnail}>
+          <DrawingTool
+            buttons={[]} // Hide Drawing Tool UI
+            authoredState={authoredState}
+            interactiveState={entry.data}
+            readOnly={true}
+            hideReadOnlyOverlay={true}
+            canvasScale={78 / canvasWidth} // 78 is based on the labbookThumbnail width (see runtime.scss)
+          />
+        </div>
+      ) : "[blank]",
       empty: false
     };
     return thumbProps;
@@ -156,15 +172,15 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const updateEntryId = (id: string, fields: Partial<ILabbookEntry>) => {
     setInteractiveState?.((prevState: IInteractiveState) => {
-      const pEntries = prevState?.entries||entries;
+      const pEntries = prevState?.entries || entries;
       const item = pEntries?.find(i => i.id === id);
-      if(item) {
+      if (item) {
         const updatedEntry: ILabbookEntry = deepmerge(item, fields) as ILabbookEntry;
-        const newEntries = pEntries.map(i=> i.id === selectedId ? updatedEntry : i);
+        const newEntries = pEntries.map(i => i.id === selectedId ? updatedEntry : i);
         return {
-        ...prevState,
-        answerType: "interactive_state",
-        entries: newEntries
+          ...prevState,
+          answerType: "interactive_state",
+          entries: newEntries
         };
       }
       return prevState;
@@ -172,35 +188,17 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const updateSelectedEntryState = (fields: Partial<ILabbookEntry>) => {
-    if(selectedId) {
+    if (selectedId) {
       updateEntryId(selectedId, fields);
     }
   };
 
-  const _saveSelectedPreview = (itemId: string) => {
-    Shutterbug.snapshot({
-      selector: drawingToolCanvasSelector,
-      done: (snapshotUrl: string) => {
-        updateEntryId(itemId, {imageUrl: snapshotUrl});
-      },
-      fail: (jqXHR: any, textStatus: any, errorThrown: any) => {
-        window.alert("Image saving has failed. Please try to close the dialog again. If it continues to fail, try to reload the whole page.");
-        console.error("Snapshot has failed", textStatus, errorThrown);
-      }
-    });
-  };
-
-  const saveSelectedPreview = debounce(_saveSelectedPreview, 500);
-
-  const setDrawingStateFn = (func:(prevState:IDrawingToolInteractiveState|null) => IDrawingToolInteractiveState) => {
-    const drawingState = func(selectedItem?.data||null);
-    if(drawingState) {
+  const setDrawingStateFn = (func: (prevState: IDrawingToolInteractiveState | null) => IDrawingToolInteractiveState) => {
+    const drawingState = func(selectedItem?.data || null);
+    if (drawingState) {
       const drawingHash = hash(drawingState);
-      if(selectedItem?.dataHash !== drawingHash) {
-        updateSelectedEntryState({data: drawingState});
-        if(selectedItem?.id) {
-          saveSelectedPreview(selectedItem.id);
-        }
+      if (selectedItem?.dataHash !== drawingHash) {
+        updateSelectedEntryState({ data: drawingState });
       }
     }
   };
