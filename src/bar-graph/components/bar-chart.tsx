@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -13,10 +13,11 @@ import {
 import { Bar } from 'react-chartjs-2';
 
 import { IRuntimeQuestionComponentProps } from "../../shared/components/base-question-app";
-import { IAuthoredState, IInteractiveState } from "./types";
+import { DefaultAuthoredState, IAuthoredState, IInteractiveState } from "./types";
+import ChartInfoPlugin, { IChartInfo, IRenderedBar } from "../plugins/chart-info";
+import { Slider, SliderIconHalfHeight } from "./slider";
 
 import css from "./bar-chart.scss";
-import BarValuesPlugin from "../plugins/bar-values";
 
 ChartJS.register(
   CategoryScale,
@@ -25,19 +26,10 @@ ChartJS.register(
   Title,
   Tooltip,
   Legend,
-  BarValuesPlugin
+  ChartInfoPlugin
 );
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
-
-interface IRenderedBar {
-  index: number;
-  value: number;
-  width: number;
-  top: number;
-  left: number;
-  color: string;
-}
 
 const defaultBarColor = "#0592AF";
 const fontFamily = "'Lato', sans-serif";
@@ -55,28 +47,12 @@ const color = "#3f3f3f";
 export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const [options, setOptions] = useState<ChartOptions<"bar">|null>(null);
   const [data, setData] = useState<ChartData<"bar">|null>(null);
-  const [renderedBars, setRenderedBars] = useState<IRenderedBar[]>([]);
+  const [chartInfo, setChartInfo] = useState<IChartInfo|undefined>(undefined);
+  const chartRef = useRef<ChartJS<"bar">|null>(null);
 
-  // pulls layout info from the bar elements in Chart.js
-  const handleUpdateRenderedBars = (barElements: BarElement[]) => {
-    const newValues: IRenderedBar[] = [];
-    barElements.forEach((barElement: any) => { // note: the any is due some of the values on the object being internal or not types
-      const newValue: IRenderedBar = {
-        index: barElement.$context.dataIndex,
-        value: barElement.$context.raw,
-        width: barElement.width,
-        top: barElement.base - barElement.height,
-        left: barElement.x - (barElement.width / 2),
-        color: barElement.options.backgroundColor
-      };
-      // this may have been called before the drawing is complete (like the initial resize event)
-      // so check to make sure we have valid values
-      if (!isNaN(newValue.width) || !isNaN(newValue.top) || !isNaN(newValue.left)) {
-        newValues.push(newValue);
-      }
-    });
-    setRenderedBars(newValues);
-  };
+  const max = authoredState.maxYValue || DefaultAuthoredState.maxYValue;
+
+  const normalizeValue = useCallback((value: number) => parseFloat(value.toFixed(authoredState.numberOfDecimalPlaces || 0)), [authoredState]);
 
   useEffect(() => {
     setOptions({
@@ -106,7 +82,7 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
             stepSize: authoredState.yAxisCountBy
           },
           beginAtZero: true,
-          max: authoredState.maxYValue,
+          max,
         }
       },
       plugins: {
@@ -122,8 +98,8 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
         tooltip: {
           enabled: false
         },
-        barValues: {
-          callback: handleUpdateRenderedBars
+        chartInfo: {
+          callback: setChartInfo
         }
       } as any // to allow custom plugin options for barValue
     });
@@ -131,41 +107,69 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
       labels: authoredState.bars.map(bar => bar.label),
       datasets: [
         {
-          data: authoredState.bars.map(bar => bar.value || 0),
+          data: authoredState.bars.map(bar => normalizeValue(bar.value || 0)),
           backgroundColor: authoredState.bars.map(bar => bar.color || defaultBarColor)
         }
       ],
     });
-  }, [authoredState]);
+  }, [authoredState, max, normalizeValue]);
+
+  const handleSliderChange = (renderedBar: IRenderedBar, newValue: number, changeOptions?: {delta: boolean}) => {
+    setData(prev => {
+      if (prev) {
+        const {index} = renderedBar;
+        const oldValue = normalizeValue(prev.datasets[0].data[index]);
+        const setValue = changeOptions?.delta ? Math.max(0, Math.min(max, oldValue + newValue)) : newValue;
+        prev.datasets[0].data[index] = normalizeValue(setValue);
+        setTimeout(() => chartRef.current?.update("none"), 0); // "none" to disable animations
+      }
+      return prev;
+    });
+  };
 
   if (!options || !data) {
     return null;
   }
 
-  if (!!authoredState.yAxisLabel && authoredState.yAxisOrientation === "horizontal") {
-    return (
-      <div className={css.barChart}>
-        <div className={css.horizontalLabel}>{authoredState.yAxisLabel}</div>
-        <div className={css.chartContainer}>
-          <Bar options={options} data={data} />
-          {authoredState.showValuesAboveBars && <div className={css.barValues}>
-            {renderedBars.map(renderedBar => {
-              const style: React.CSSProperties = {
-                ...renderedBar,
-                top: renderedBar.top - 30,
-                fontFamily: fontFamily,
-                fontSize: 20,
-                fontWeight: "bold"
-              };
-              return <div key={renderedBar.index} style={style}>{renderedBar.value}</div>;
-            })}
-          </div>}
-        </div>
-      </div>
-    );
-  }
+  const hasHorizontalLabel = !!authoredState.yAxisLabel && authoredState.yAxisOrientation === "horizontal";
 
   return (
-    <Bar options={options} data={data} />
+    <div className={css.barChart}>
+      {hasHorizontalLabel && <div className={css.horizontalLabel}>{authoredState.yAxisLabel}</div>}
+      <div className={css.chartContainer}>
+        <Bar options={options} data={data} ref={chartRef} />
+
+        {chartInfo && <div className={css.barValues}>
+          {authoredState.showValuesAboveBars && chartInfo.bars.map(renderedBar => {
+            const { index } = renderedBar;
+            const top = renderedBar.top - 30 - (!report && !authoredState.bars[index].lockValue ? (0.75 * SliderIconHalfHeight) : 0);
+            const style: React.CSSProperties = {
+              ...renderedBar,
+              top,
+              fontFamily: fontFamily,
+              fontSize: 20,
+              fontWeight: "bold"
+            };
+            return <div key={index} style={style} tabIndex={1 + (2 * index)}>{renderedBar.value}</div>;
+          })}
+          {!report && chartInfo.bars.map(renderedBar => {
+            const { index } = renderedBar;
+            if (authoredState.bars[index].lockValue) {
+              return null;
+            }
+            return (
+              <Slider
+                key={index}
+                renderedBar={renderedBar}
+                top={chartInfo.top}
+                bottom={chartInfo.bottom}
+                max={max}
+                handleSliderChange={handleSliderChange}
+              />
+            );
+          })}
+        </div>}
+      </div>
+    </div>
   );
 };
