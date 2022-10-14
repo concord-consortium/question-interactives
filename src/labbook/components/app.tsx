@@ -6,6 +6,7 @@ import { IAuthoredState, IInteractiveState } from "./types";
 import { FormValidation } from "react-jsonschema-form";
 import { baseAuthoringProps as drawingToolBaseAuthoringProps } from "../../drawing-tool/components/app";
 import deepmerge from "deepmerge";
+
 const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
   schema: {
     properties: {
@@ -32,9 +33,6 @@ const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
   } as JSONSchema6,
 
   uiSchema: {
-    "ui:order": [
-      "maxItems", "showItems", "questionType"
-    ],
     maxItems: {
       "ui:widget": "updown"
     },
@@ -54,6 +52,24 @@ const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
     // TODO: Some actual validation would be good.
     return errors;
   }
+});
+
+// This list combines all the fields from drawing-tool app and custom ones specified by Labbook.
+baseAuthoringProps.uiSchema["ui:order"] = [
+  "prompt", "required", "predictionFeedback", "hint", "backgroundSource", "showUploadImageButton", "snapshotTarget",
+  "backgroundImageUrl", "imageFit", "imagePosition",  "stampCollections", "maxItems", "showItems", "version", "questionType"
+];
+
+// Show "Show Upload Image button" checkbox only when user doesn't select "Upload" as background source.
+// In such case, this button must be shown.
+(baseAuthoringProps as any).schema.dependencies.backgroundSource.oneOf.filter((item: any) =>
+  item.properties.backgroundSource.enum[0] !== "upload"
+).forEach((item: any) => {
+  item.properties.showUploadImageButton = {
+    type: "boolean",
+    title: "Show Upload Image button",
+    default: true
+  };
 });
 
 // TODO: Figure out a better heuristic
