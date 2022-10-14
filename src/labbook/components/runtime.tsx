@@ -57,7 +57,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     return result;
   };
 
-  const {maxItems, showItems} = authoredState;
+  const {maxItems, showItems, showUploadImageButton, backgroundSource } = authoredState;
   const {entries, selectedId} = ensureSelected(interactiveState as IInteractiveState) as IInteractiveState;
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -243,23 +243,27 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         <div className={css["under-sketch"]}>
           {!readOnly &&
           <div className={css["buttons"]}>
-            <UploadImage
-              authoredState={authoredState}
-              setInteractiveState={setDrawingStateFn}
-              disabled={disableUI}
-              onUploadStart={onUploadStart}
-              onUploadComplete={onUploadEnd}
-            />
-
-            <TakeSnapshot
-              authoredState={authoredState}
-              interactiveState={{...selectedItem?.data, answerType: "interactive_state"}}
-              setInteractiveState={setDrawingStateFn}
-              disabled={disableUI}
-              onUploadStart={onUploadStart}
-              onUploadComplete={onUploadEnd}
-            />
-
+            {
+              (backgroundSource === "upload" || showUploadImageButton) &&
+              <UploadImage
+                authoredState={authoredState}
+                setInteractiveState={setDrawingStateFn}
+                disabled={disableUI}
+                onUploadStart={onUploadStart}
+                onUploadComplete={onUploadEnd}
+              />
+            }
+            {
+              backgroundSource === "snapshot" &&
+              <TakeSnapshot
+                authoredState={authoredState}
+                interactiveState={{...selectedItem?.data, answerType: "interactive_state"}}
+                setInteractiveState={setDrawingStateFn}
+                disabled={disableUI}
+                onUploadStart={onUploadStart}
+                onUploadComplete={onUploadEnd}
+              />
+            }
           </div>}
           <CommentField
             title={title}

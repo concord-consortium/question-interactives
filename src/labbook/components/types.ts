@@ -1,18 +1,17 @@
 import {
-  IInteractiveState as IDrawingToolInteractiveState
+  IInteractiveState as IDrawingToolInteractiveState,
+  IAuthoredState as IDrawingToolAuthoredState
 } from "../../drawing-tool/components/types";
-
 import {
-  IAuthoringInteractiveMetadata,
   IRuntimeInteractiveMetadata
 } from "@concord-consortium/lara-interactive-api";
 
-export interface IAuthoredState extends IAuthoringInteractiveMetadata{
+export interface IAuthoredState extends IDrawingToolAuthoredState {
   // IAuthoringLabbookMetadata adds:
   answerPrompt?: string;
-  version: number;
   maxItems: number;
   showItems: number;
+  showUploadImageButton: boolean;
 }
 
 export interface ILabbookEntry {
