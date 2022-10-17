@@ -1,33 +1,68 @@
 .barChart {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   width: 100%;
   align-items: center;
-  gap: 10px;
+  color: #3f3f3f;
 
-  .horizontalLabel {
-    font-size: 20px;
-    font-weight: bold;
-    color: #3f3f3f;
-    text-align: center;
-  }
-
-  .chartContainer {
-    flex-grow: 1;
-    position: relative;
+  .chart {
+    display: flex;
+    flex-direction: row;
     width: 100%;
+    align-items: center;
+    gap: 10px;
 
-    .barValues {
-      position: absolute;
-      top: 0;
-      right: 0;
-      bottom: 0;
-      left: 0;
+    .yAxisLabel {
+      font-size: 20px;
+      font-weight: bold;
+      min-width: 0;
+    }
+    .horizontalLabel {
+      text-align: center;
+    }
+    .verticalLabel {
+      transform: rotate(-90deg);
+      white-space: nowrap;
+      vertical-align: middle;
+    }
 
-      div {
-        position: absolute;
+    .chartAndXAxisLabel {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      align-items: center;
+
+      .title {
+        font-size: 24px;
+        font-weight: bold;
+        margin-bottom: 24px;
         text-align: center;
+      }
+
+      .chartContainer {
+        flex-grow: 1;
+        position: relative;
+        width: 100%;
+
+        .barValues {
+          position: absolute;
+          top: 0;
+          right: 0;
+          bottom: 0;
+          left: 0;
+
+          div {
+            position: absolute;
+            text-align: center;
+          }
+        }
+      }
+
+      .xAxisLabel {
+        font-size: 20px;
+        font-weight: bold;
       }
     }
   }
+
 }

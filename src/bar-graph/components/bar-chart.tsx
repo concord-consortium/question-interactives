@@ -18,6 +18,7 @@ import ChartInfoPlugin, { IChartInfo, IRenderedBar } from "../plugins/chart-info
 import { Slider, SliderIconHalfHeight } from "./slider";
 
 import css from "./bar-chart.scss";
+import classnames from "classnames";
 
 ChartJS.register(
   CategoryScale,
@@ -30,6 +31,11 @@ ChartJS.register(
 );
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
+
+const titleTabIndex = 2;
+const yAxisTabIndex = titleTabIndex + 1;
+const xAxisTabIndex = yAxisTabIndex + 1;
+export const StartChartTabIndex = xAxisTabIndex + 1;
 
 const defaultBarColor = "#0592AF";
 const fontFamily = "'Lato', sans-serif";
@@ -60,10 +66,7 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
       scales: {
         x: {
           title: {
-            display: !!authoredState.xAxisLabel,
-            text: authoredState.xAxisLabel,
-            font: font(20, {bold: true}),
-            color
+            display: false,
           },
           ticks: {
             font: font(20),
@@ -73,10 +76,7 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
         y: {
           type: "linear",
           title: {
-            display: !!authoredState.yAxisLabel && authoredState.yAxisOrientation === "vertical",
-            text: authoredState.yAxisLabel,
-            font: font(20, {bold: true}),
-            color
+            display: false,
           },
           ticks: {
             stepSize: authoredState.yAxisCountBy
@@ -90,10 +90,7 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
           display: false
         },
         title: {
-          display: true,
-          text: authoredState.title,
-          font: font(24, {bold: true}),
-          color
+          display: false
         },
         tooltip: {
           enabled: false
@@ -132,43 +129,50 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
   }
 
   const hasHorizontalLabel = !!authoredState.yAxisLabel && authoredState.yAxisOrientation === "horizontal";
-
   return (
     <div className={css.barChart}>
-      {hasHorizontalLabel && <div className={css.horizontalLabel}>{authoredState.yAxisLabel}</div>}
-      <div className={css.chartContainer}>
-        <Bar options={options} data={data} ref={chartRef} />
+      <div className={css.chart}>
+        <div className={classnames(css.yAxisLabel, {[css.horizontalLabel]: hasHorizontalLabel, [css.verticalLabel]: !hasHorizontalLabel})} tabIndex={yAxisTabIndex}>{authoredState.yAxisLabel}</div>
+        <div className={css.chartAndXAxisLabel}>
+          {authoredState.title && <div className={css.title} tabIndex={titleTabIndex}>{authoredState.title}</div>}
+          <div className={css.chartContainer}>
+            <Bar options={options} data={data} ref={chartRef} />
 
-        {chartInfo && <div className={css.barValues}>
-          {authoredState.showValuesAboveBars && chartInfo.bars.map(renderedBar => {
-            const { index } = renderedBar;
-            const top = renderedBar.top - 30 - (!report && !authoredState.bars[index].lockValue ? (0.75 * SliderIconHalfHeight) : 0);
-            const style: React.CSSProperties = {
-              ...renderedBar,
-              top,
-              fontFamily: fontFamily,
-              fontSize: 20,
-              fontWeight: "bold"
-            };
-            return <div key={index} style={style} tabIndex={1 + (2 * index)}>{renderedBar.value}</div>;
-          })}
-          {!report && chartInfo.bars.map(renderedBar => {
-            const { index } = renderedBar;
-            if (authoredState.bars[index].lockValue) {
-              return null;
-            }
-            return (
-              <Slider
-                key={index}
-                renderedBar={renderedBar}
-                top={chartInfo.top}
-                bottom={chartInfo.bottom}
-                max={max}
-                handleSliderChange={handleSliderChange}
-              />
-            );
-          })}
-        </div>}
+            {chartInfo && <div className={css.barValues}>
+              {authoredState.showValuesAboveBars && chartInfo.bars.map(renderedBar => {
+                const { index } = renderedBar;
+                const bar = authoredState.bars[index];
+                const top = renderedBar.top - 30 - (!report && !authoredState.bars[index].lockValue ? (0.75 * SliderIconHalfHeight) : 0);
+                const style: React.CSSProperties = {
+                  ...renderedBar,
+                  top,
+                  fontFamily: fontFamily,
+                  fontSize: 20,
+                  fontWeight: "bold"
+                };
+                const title = `${bar.label}: ${renderedBar.value} ${authoredState.yAxisLabel}`;
+                return <div key={index} style={style} tabIndex={StartChartTabIndex + (2 * index)} title={title}>{renderedBar.value}</div>;
+              })}
+              {!report && chartInfo.bars.map(renderedBar => {
+                const { index } = renderedBar;
+                if (authoredState.bars[index].lockValue) {
+                  return null;
+                }
+                return (
+                  <Slider
+                    key={index}
+                    renderedBar={renderedBar}
+                    top={chartInfo.top}
+                    bottom={chartInfo.bottom}
+                    max={max}
+                    handleSliderChange={handleSliderChange}
+                  />
+                );
+              })}
+            </div>}
+          </div>
+          {authoredState.xAxisLabel && <div className={css.xAxisLabel} tabIndex={xAxisTabIndex}>{authoredState.xAxisLabel}</div>}
+        </div>
       </div>
     </div>
   );

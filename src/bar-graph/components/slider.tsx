@@ -1,5 +1,6 @@
 import React, { useCallback } from "react";
 import { IRenderedBar } from "../plugins/chart-info";
+import { StartChartTabIndex } from "./bar-chart";
 
 import css from "./slider.scss";
 
@@ -19,7 +20,7 @@ export const Slider = ({renderedBar, top, bottom, max, handleSliderChange}: IPro
     width: SliderIconHalfWidth * 2,
     height: SliderIconHalfHeight * 2,
   };
-  const tabIndex = 2 + (2* index);
+  const tabIndex = StartChartTabIndex + 1 + (2* index);
 
   const handleMouseDown = useCallback((e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
