@@ -15,7 +15,7 @@ import classnames from "classnames";
 import { log as logToLara } from "@concord-consortium/lara-interactive-api";
 
 import { IRuntimeQuestionComponentProps } from "../../shared/components/base-question-app";
-import { DefaultAuthoredState, IAuthoredState, IInteractiveState } from "./types";
+import { DefaultAuthoredState, IAuthoredState, IBarValue, IInteractiveState } from "./types";
 import ChartInfoPlugin, { IChartInfo, IRenderedBar } from "../plugins/chart-info";
 import { Slider, SliderChangeCallback, SliderChangeCallbackOptions, SliderIconHalfHeight } from "./slider";
 import { useContextInitMessage } from "../../shared/hooks/use-context-init-message";
@@ -57,7 +57,7 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
   const [data, setData] = useState<ChartData<"bar">|null>(null);
   const [chartInfo, setChartInfo] = useState<IChartInfo|undefined>(undefined);
   const chartRef = useRef<ChartJS<"bar">|null>(null);
-
+  const readOnly = report || (authoredState.required && interactiveState?.submitted);
   const max = authoredState.maxYValue || DefaultAuthoredState.maxYValue;
 
   const normalizeValue = useCallback((value: number) => parseFloat(value.toFixed(authoredState.numberOfDecimalPlaces || 0)), [authoredState]);
@@ -116,25 +116,32 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
         }
       } as any // to allow custom plugin options for barValue
     });
+
+    const barValues = interactiveState?.barValues ?? [];
+    const newData = authoredState.bars.map((bar, index) => {
+      const savedValue = barValues?.find(b => b.index === index);
+      return normalizeValue((savedValue?.hasValue ? savedValue.value : bar.value) || 0);
+    });
+
     setData({
       labels: authoredState.bars.map(bar => bar.label),
       datasets: [
         {
-          data: authoredState.bars.map(bar => normalizeValue(bar.value || 0)),
+          data: newData,
           backgroundColor: authoredState.bars.map(bar => bar.color || defaultBarColor)
         }
       ],
     });
-  }, [authoredState, max, normalizeValue]);
+  }, [authoredState, interactiveState, max, normalizeValue]);
 
   const handleSliderChange: SliderChangeCallback = useCallback((renderedBar: IRenderedBar, newValue: number, {via, key, delta, skipLog}: SliderChangeCallbackOptions) => {
-    setData(prev => {
-      if (prev) {
+    setData(prevData => {
+      if (prevData) {
         const {index} = renderedBar;
         const bar = authoredState.bars[index];
-        const oldValue = normalizeValue(prev.datasets[0].data[index]);
+        const oldValue = normalizeValue(prevData.datasets[0].data[index]);
         const setValue = normalizeValue(delta ? Math.max(0, Math.min(max, oldValue + newValue)) : newValue);
-        prev.datasets[0].data[index] = setValue;
+        prevData.datasets[0].data[index] = setValue;
         if (!skipLog) {
           const change: any = {bar: bar.label, value: setValue, via};
           if (key) {
@@ -142,11 +149,22 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
           }
           log("bar change", change);
         }
+        setInteractiveState?.((prevInteractiveState: IInteractiveState) => {
+          const newBarValue: IBarValue = { index, hasValue: true, value: setValue};
+          let barValues: IBarValue[] = prevInteractiveState?.barValues ?? [];
+          const valueIndex = barValues.findIndex(b => b.index === index);
+          if (valueIndex === -1) {
+            barValues = [...barValues, newBarValue];
+          } else {
+            barValues = barValues.map(b => b.index === index ? newBarValue : b);
+          }
+          return {...prevInteractiveState, barValues};
+        });
         setTimeout(() => chartRef.current?.update("none"), 0); // "none" to disable animations
       }
-      return prev;
+      return prevData;
     });
-  }, [authoredState, log, max, normalizeValue]);
+  }, [authoredState, log, max, normalizeValue, setInteractiveState]);
 
   if (!options || !data) {
     return null;
@@ -178,7 +196,7 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
                 const title = `${bar.label}: ${value} ${authoredState.yAxisLabel}`;
                 return <div key={index} style={style} tabIndex={StartChartTabIndex + (2 * index)} title={title}>{value}</div>;
               })}
-              {!report && chartInfo.bars.map(renderedBar => {
+              {!readOnly && chartInfo.bars.map(renderedBar => {
                 const { index } = renderedBar;
                 if (authoredState.bars[index].lockValue) {
                   return null;
