@@ -26,8 +26,14 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   bars: IBar[]
 }
 
+export interface IBarValue {
+  index: number;
+  hasValue: boolean;
+  value: number;
+}
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
   submitted?: boolean;
+  barValues?: IBarValue[];
 }
 
 export const DefaultAuthoredState: Omit<Required<IAuthoredState>, "questionSubType"|"required"|"prompt"> = {

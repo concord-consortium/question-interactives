@@ -109,7 +109,7 @@ describe("Graph runtime", () => {
   });
 
   it("logs a init message at startup", () => {
-    const wrapper = mount(
+    mount(
       <InitMessageContext.Provider value={initMessage as any}>
         <Runtime authoredState={DemoAuthoredState} />
       </InitMessageContext.Provider>
