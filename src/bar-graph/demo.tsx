@@ -2,8 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { DemoComponent } from "../shared/components/demo";
 import { App } from "./components/app";
-import { IAuthoredState, IInteractiveState } from "./components/types";
-import { DemoAuthoredState } from "./demo-authored-state";
+import { IAuthoredState, IInteractiveState, DemoAuthoredState } from "./components/types";
 
 const DemoContainer = () => {
   const interactiveState: IInteractiveState = {

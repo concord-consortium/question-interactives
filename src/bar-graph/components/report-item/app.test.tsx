@@ -2,8 +2,7 @@ import React from "react";
 import { act, render } from "@testing-library/react";
 import { useInitMessage, useReportItem } from "@concord-consortium/lara-interactive-api";
 import { AppComponent } from "./app";
-import { IInteractiveState } from "../types";
-import { DemoAuthoredState } from "../../demo-authored-state";
+import { IInteractiveState, DemoAuthoredState } from "../types";
 
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
   useReportItem: jest.fn(),
