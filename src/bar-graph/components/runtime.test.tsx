@@ -15,6 +15,7 @@ describe("Graph runtime", () => {
     delete props.options.plugins.chartInfo.callback;
     expect(props).toEqual({
       "options": {
+        "animation": false,
         "responsive": true,
         "scales": {
           "x": {

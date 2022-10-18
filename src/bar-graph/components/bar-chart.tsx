@@ -62,6 +62,7 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
 
   useEffect(() => {
     setOptions({
+      animation: false,
       responsive: true,
       scales: {
         x: {
@@ -150,8 +151,9 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
                   fontSize: 20,
                   fontWeight: "bold"
                 };
-                const title = `${bar.label}: ${renderedBar.value} ${authoredState.yAxisLabel}`;
-                return <div key={index} style={style} tabIndex={StartChartTabIndex + (2 * index)} title={title}>{renderedBar.value}</div>;
+                const value = authoredState.numberOfDecimalPlaces ? renderedBar.value.toFixed(authoredState.numberOfDecimalPlaces) : renderedBar.value;
+                const title = `${bar.label}: ${value} ${authoredState.yAxisLabel}`;
+                return <div key={index} style={style} tabIndex={StartChartTabIndex + (2 * index)} title={title}>{value}</div>;
               })}
               {!report && chartInfo.bars.map(renderedBar => {
                 const { index } = renderedBar;
