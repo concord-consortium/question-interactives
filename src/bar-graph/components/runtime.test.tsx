@@ -3,10 +3,33 @@ import { mount } from "enzyme";
 import { Runtime } from "./runtime";
 import { Bar } from "react-chartjs-2";
 import { DemoAuthoredState } from "./types";
+import { InitMessageContext } from "../../shared/hooks/use-context-init-message";
+import { useInitMessage, log } from "@concord-consortium/lara-interactive-api";
+
+const useInitMessageMock = useInitMessage as jest.Mock;
+const logMock = log as jest.Mock;
+
+jest.mock("@concord-consortium/lara-interactive-api", () => ({
+  useInitMessage: jest.fn(),
+  log: jest.fn()
+}));
+
+const initMessage = {
+  mode: "runtime" as const,
+};
+useInitMessageMock.mockReturnValue(initMessage);
 
 describe("Graph runtime", () => {
+  beforeEach(() => {
+    useInitMessageMock.mockClear();
+  });
+
   it("renders a graph with the correct props", () => {
-    const wrapper = mount(<Runtime authoredState={DemoAuthoredState} />);
+    const wrapper = mount(
+      <InitMessageContext.Provider value={initMessage as any}>
+        <Runtime authoredState={DemoAuthoredState} />
+      </InitMessageContext.Provider>
+    );
     expect(wrapper.find(Bar).length).toEqual(1);
 
     // NOTE: chart.js has an extensive test suite so the only thing we need
@@ -83,5 +106,14 @@ describe("Graph runtime", () => {
         ]
       }
     });
+  });
+
+  it("logs a init message at startup", () => {
+    const wrapper = mount(
+      <InitMessageContext.Provider value={initMessage as any}>
+        <Runtime authoredState={DemoAuthoredState} />
+      </InitMessageContext.Provider>
+    );
+    expect(logMock).toHaveBeenCalledWith("init bar chart", {barChart: DemoAuthoredState});
   });
 });

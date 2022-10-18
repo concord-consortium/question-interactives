@@ -19,7 +19,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         authoredState={authoredState}
         interactiveState={interactiveState}
         setInteractiveState={setInteractiveState}
-        report={report} />
+        report={report}
+      />
     </div>
   );
 };

@@ -11,14 +11,16 @@ import {
   ChartData
 } from 'chart.js';
 import { Bar } from 'react-chartjs-2';
+import classnames from "classnames";
+import { log as logToLara } from "@concord-consortium/lara-interactive-api";
 
 import { IRuntimeQuestionComponentProps } from "../../shared/components/base-question-app";
 import { DefaultAuthoredState, IAuthoredState, IInteractiveState } from "./types";
 import ChartInfoPlugin, { IChartInfo, IRenderedBar } from "../plugins/chart-info";
-import { Slider, SliderIconHalfHeight } from "./slider";
+import { Slider, SliderChangeCallback, SliderChangeCallbackOptions, SliderIconHalfHeight } from "./slider";
+import { useContextInitMessage } from "../../shared/hooks/use-context-init-message";
 
 import css from "./bar-chart.scss";
-import classnames from "classnames";
 
 ChartJS.register(
   CategoryScale,
@@ -59,6 +61,19 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
   const max = authoredState.maxYValue || DefaultAuthoredState.maxYValue;
 
   const normalizeValue = useCallback((value: number) => parseFloat(value.toFixed(authoredState.numberOfDecimalPlaces || 0)), [authoredState]);
+
+  const initMessage = useContextInitMessage();
+  const log = useCallback((action: string, logData?: object | undefined) => {
+    if (initMessage?.mode === "runtime") {
+      logToLara(action, logData);
+    }
+  }, [initMessage]);
+
+  useEffect(() => {
+    if (authoredState) {
+      log("init bar chart", {barChart: authoredState});
+    }
+  }, [log, authoredState]);
 
   useEffect(() => {
     setOptions({
@@ -112,18 +127,26 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
     });
   }, [authoredState, max, normalizeValue]);
 
-  const handleSliderChange = (renderedBar: IRenderedBar, newValue: number, changeOptions?: {delta: boolean}) => {
+  const handleSliderChange: SliderChangeCallback = useCallback((renderedBar: IRenderedBar, newValue: number, {via, key, delta, skipLog}: SliderChangeCallbackOptions) => {
     setData(prev => {
       if (prev) {
         const {index} = renderedBar;
+        const bar = authoredState.bars[index];
         const oldValue = normalizeValue(prev.datasets[0].data[index]);
-        const setValue = changeOptions?.delta ? Math.max(0, Math.min(max, oldValue + newValue)) : newValue;
-        prev.datasets[0].data[index] = normalizeValue(setValue);
+        const setValue = normalizeValue(delta ? Math.max(0, Math.min(max, oldValue + newValue)) : newValue);
+        prev.datasets[0].data[index] = setValue;
+        if (!skipLog) {
+          const change: any = {bar: bar.label, value: setValue, via};
+          if (key) {
+            change.key = key;
+          }
+          log("bar change", change);
+        }
         setTimeout(() => chartRef.current?.update("none"), 0); // "none" to disable animations
       }
       return prev;
     });
-  };
+  }, [authoredState, log, max, normalizeValue]);
 
   if (!options || !data) {
     return null;
