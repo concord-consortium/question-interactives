@@ -14,6 +14,7 @@ export interface IBar {
 
 export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   version: number;
+  hint?: string;
   title?: string;
   xAxisLabel?: string;
   yAxisLabel?: string;
@@ -32,6 +33,7 @@ export interface IInteractiveState extends IRuntimeInteractiveMetadata {
 export const DefaultAuthoredState: Omit<Required<IAuthoredState>, "questionSubType"|"required"|"prompt"> = {
   version: 1,
   questionType: "iframe_interactive",
+  hint: "",
   title: "",
   xAxisLabel: "",
   yAxisLabel: "",
@@ -46,6 +48,8 @@ export const DefaultAuthoredState: Omit<Required<IAuthoredState>, "questionSubTy
 export const DemoAuthoredState: IAuthoredState = {
   version: 1,
   questionType: "iframe_interactive",
+  prompt: "<p>Can you <strong>estimate</strong> the amount of Spring and Summer sunlight?</p>",
+  hint: "The amount Spring and Summer sunlight will be larger than Winter and Fall",
   title: "Estimate Amount of Spring and Summer Sunlight",
   xAxisLabel: "Seasons",
   yAxisLabel: "Days of Sunlight",
