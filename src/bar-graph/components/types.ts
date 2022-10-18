@@ -29,7 +29,7 @@ export interface IInteractiveState extends IRuntimeInteractiveMetadata {
   submitted?: boolean;
 }
 
-export const DefaultAuthoredState: IAuthoredState = {
+export const DefaultAuthoredState: Omit<Required<IAuthoredState>, "questionSubType"|"required"|"prompt"> = {
   version: 1,
   questionType: "iframe_interactive",
   title: "",
@@ -46,7 +46,7 @@ export const DefaultAuthoredState: IAuthoredState = {
 export const DemoAuthoredState: IAuthoredState = {
   version: 1,
   questionType: "iframe_interactive",
-  title: "Estimate Amount of Spring Sunlight",
+  title: "Estimate Amount of Spring and Summer Sunlight",
   xAxisLabel: "Seasons",
   yAxisLabel: "Days of Sunlight",
   yAxisOrientation: "horizontal",
@@ -57,7 +57,7 @@ export const DemoAuthoredState: IAuthoredState = {
   bars: [
     { label: "Winter", value: 25, lockValue: true, color: "#EA6D2F" },
     { label: "Spring", value: 0, lockValue: false, color: "#FFC320" },
-    { label: "Summer", value: 75, lockValue: true, color: "#2DA343" },
+    { label: "Summer", value: 75, lockValue: false, color: "#2DA343" },
     { label: "Fall", value: 50, lockValue: true, color: "#6FC6DA" }
   ]
 };

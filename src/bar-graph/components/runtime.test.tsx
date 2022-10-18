@@ -12,7 +12,7 @@ describe("Graph runtime", () => {
     // NOTE: chart.js has an extensive test suite so the only thing we need
     // to test is if our mapping of the authored state to the props is working
     const props = wrapper.find(Bar).props() as any;
-    delete props.options.plugins.barValues.callback;
+    delete props.options.plugins.chartInfo.callback;
     expect(props).toEqual({
       "options": {
         "responsive": true,
@@ -31,7 +31,8 @@ describe("Graph runtime", () => {
             "ticks": {
               "font": {
                 "size": 20,
-                "family": "'Lato', sans-serif"
+                "family": "'Lato', sans-serif",
+                "weight": undefined,
               },
               "color": "#3f3f3f"
             }
@@ -61,7 +62,7 @@ describe("Graph runtime", () => {
           },
           "title": {
             "display": true,
-            "text": "Estimate Amount of Spring Sunlight",
+            "text": "Estimate Amount of Spring and Summer Sunlight",
             "font": {
               "size": 24,
               "family": "'Lato', sans-serif",
@@ -72,7 +73,7 @@ describe("Graph runtime", () => {
           "tooltip": {
             "enabled": false
           },
-          "barValues": {
+          "chartInfo": {
             // "callback": <-- deleted since this is a function variable
           }
         }
