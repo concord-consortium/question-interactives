@@ -1,15 +1,18 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useRef } from "react";
 import { IRenderedBar } from "../plugins/chart-info";
 import { StartChartTabIndex } from "./bar-chart";
 
 import css from "./slider.scss";
+
+export type SliderChangeCallbackOptions = {via: "keyboard"|"mouse", key?: string, delta?: boolean, skipLog?: boolean}
+export type SliderChangeCallback = (renderedBar: IRenderedBar, newValue: number, options: SliderChangeCallbackOptions) => void;
 
 interface IProps {
   renderedBar: IRenderedBar;
   top: number;
   bottom: number;
   max: number;
-  handleSliderChange: (renderedBar: IRenderedBar, newValue: number, options?: {delta: boolean}) => void;
+  handleSliderChange: SliderChangeCallback;
 }
 
 export const Slider = ({renderedBar, top, bottom, max, handleSliderChange}: IProps) => {
@@ -21,20 +24,28 @@ export const Slider = ({renderedBar, top, bottom, max, handleSliderChange}: IPro
     height: SliderIconHalfHeight * 2,
   };
   const tabIndex = StartChartTabIndex + 1 + (2* index);
+  const ref = useRef<HTMLDivElement|null>(null);
 
   const handleMouseDown = useCallback((e: React.MouseEvent<HTMLElement>) => {
     e.preventDefault();
 
+    let logValue: number|undefined = undefined;
     const startY = renderedBar.top;
     const startClientY = e.clientY;
+
+    ref.current?.focus();
 
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const delta = moveEvent.clientY - startClientY;
       const newY = Math.max(top, Math.min(startY + delta, bottom));
       const newValue = max - (max * ((newY - top) / (bottom - top)));
-      handleSliderChange(renderedBar, newValue);
+      handleSliderChange(renderedBar, newValue, {via: "mouse", skipLog: true});
+      logValue = newValue;
     };
     const handleMouseUp = () => {
+      if (logValue !== undefined) {
+        handleSliderChange(renderedBar, logValue, {via: "mouse"});
+      }
       window.removeEventListener("mousemove", handleMouseMove);
       window.removeEventListener("mouseup", handleMouseUp);
     };
@@ -44,30 +55,32 @@ export const Slider = ({renderedBar, top, bottom, max, handleSliderChange}: IPro
   }, [renderedBar, top, bottom, max, handleSliderChange]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    const options: SliderChangeCallbackOptions = {via: "keyboard", key: e.key};
     switch (e.key) {
       case "ArrowUp":
-        handleSliderChange(renderedBar, 1, {delta: true});
+        handleSliderChange(renderedBar, 1, {...options, delta: true});
         break;
       case "ArrowDown":
-        handleSliderChange(renderedBar, -1, {delta: true});
+        handleSliderChange(renderedBar, -1, {...options, delta: true});
         break;
       case "Home":
-        handleSliderChange(renderedBar, 0);
+        handleSliderChange(renderedBar, 0, options);
         break;
       case "End":
-        handleSliderChange(renderedBar, max);
+        handleSliderChange(renderedBar, max, options);
         break;
       case "PageUp":
-        handleSliderChange(renderedBar, 10, {delta: true});
+        handleSliderChange(renderedBar, 10, {...options, delta: true});
         break;
       case "PageDown":
-        handleSliderChange(renderedBar, -10, {delta: true});
+        handleSliderChange(renderedBar, -10, {...options, delta: true});
         break;
     }
   }, [max, renderedBar, handleSliderChange]);
 
   return (
     <div
+      ref={ref}
       className={css.slider}
       style={style}
       tabIndex={tabIndex}
