@@ -19,14 +19,7 @@ describe("Graph runtime", () => {
         "scales": {
           "x": {
             "title": {
-              "display": true,
-              "text": "Seasons",
-              "font": {
-                "size": 20,
-                "family": "'Lato', sans-serif",
-                "weight": "bold"
-              },
-              "color": "#3f3f3f"
+              "display": false,
             },
             "ticks": {
               "font": {
@@ -41,13 +34,6 @@ describe("Graph runtime", () => {
             "type": "linear",
             "title": {
               "display": false,
-              "text": "Days of Sunlight",
-              "font": {
-                "size": 20,
-                "family": "'Lato', sans-serif",
-                "weight": "bold"
-              },
-              "color": "#3f3f3f"
             },
             "ticks": {
               "stepSize": 10
@@ -61,14 +47,7 @@ describe("Graph runtime", () => {
             "display": false
           },
           "title": {
-            "display": true,
-            "text": "Estimate Amount of Spring and Summer Sunlight",
-            "font": {
-              "size": 24,
-              "family": "'Lato', sans-serif",
-              "weight": "bold"
-            },
-            "color": "#3f3f3f"
+            "display": false,
           },
           "tooltip": {
             "enabled": false
