@@ -44,10 +44,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const openDrawingToolDialog = () => {
     // notCloseable: true disabled click-to-close backdrop and X icon in the corner.
     // Dialog can be closed only via closeModal API.
-    const newSearchParams = new URLSearchParams(window.location.search);
-    newSearchParams.set(drawingToolDialogUrlParam, "true");
-    const url = location.href.replace(location.search, "?" + newSearchParams.toString());
-    showModal({ type: "dialog", url, notCloseable: true });
+    const url = new URL(window.location.href);
+    url.searchParams.append(drawingToolDialogUrlParam, "true");
+    showModal({ type: "dialog", url: url.toString(), notCloseable: true });
   };
 
   const handleDrawingToolSetIntState = (updateFunc: UpdateFunc<IInteractiveState>) => {
