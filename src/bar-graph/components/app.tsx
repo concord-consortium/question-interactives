@@ -56,12 +56,14 @@ const baseAuthoringProps = {
       maxYValue: {
         title: "Y-axis Max Value",
         type: "number",
-        default: 100
+        default: 100,
+        minimum: 1
       },
       yAxisCountBy: {
         title: "Y-axis Tick Spacing (this may be ignored if no space is available)",
         type: "number",
-        default: 10
+        default: 10,
+        minimum: 1
       },
       showValuesAboveBars: {
         type: "boolean",
@@ -71,7 +73,8 @@ const baseAuthoringProps = {
       numberOfDecimalPlaces: {
         title: "Number of Decimal Places (Bar Values)",
         type: "number",
-        default: 0
+        default: 0,
+        minimum: 0
       },
       bars: {
         type: "array",
@@ -86,6 +89,7 @@ const baseAuthoringProps = {
             value: {
               title: "Pre-defined bar value",
               type: "number",
+              minimum: 0
             },
             lockValue: {
               type: "boolean",
@@ -121,6 +125,15 @@ const baseAuthoringProps = {
     hint: {
       "ui:widget": "richtext"
     },
+    maxYValue: {
+      "ui:widget": "numberInput"
+    },
+    yAxisCountBy: {
+      "ui:widget": "numberInput"
+    },
+    numberOfDecimalPlaces: {
+      "ui:widget": "numberInput"
+    },
     bars: {
       items: {
         "ui:order": [
@@ -129,6 +142,9 @@ const baseAuthoringProps = {
           "lockValue",
           "color"
         ],
+        value: {
+          "ui:widget": "numberInput"
+        },
         color: {
           "ui:widget": "color"
         }
