@@ -94,7 +94,13 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
       );
 
     case "authoring":
-      return App;
+      // bootstrap is added for the icon font used in the authoring controls
+      return (
+        <>
+          <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet"></link>
+          {App}
+        </>
+      );
 
     case "runtime":
       return App;
