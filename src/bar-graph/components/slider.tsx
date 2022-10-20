@@ -33,8 +33,6 @@ export const Slider = ({renderedBar, top, bottom, max, handleSliderChange}: IPro
     const startY = renderedBar.top;
     const startClientY = e.clientY;
 
-    ref.current?.focus();
-
     const handleMouseMove = (moveEvent: MouseEvent) => {
       const delta = moveEvent.clientY - startClientY;
       const newY = Math.max(top, Math.min(startY + delta, bottom));
@@ -55,6 +53,8 @@ export const Slider = ({renderedBar, top, bottom, max, handleSliderChange}: IPro
   }, [renderedBar, top, bottom, max, handleSliderChange]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
+    e.preventDefault();
+
     const options: SliderChangeCallbackOptions = {via: "keyboard", key: e.key};
     switch (e.key) {
       case "ArrowUp":
