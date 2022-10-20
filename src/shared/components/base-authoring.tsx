@@ -8,6 +8,7 @@ import { ILinkedInteractiveProp, useLinkedInteractivesAuthoring } from "../hooks
 import "../../shared/styles/boostrap-3.3.7.css"; // necessary to style react-jsonschema-form
 import { getFirebaseJwt } from "@concord-consortium/lara-interactive-api";
 import { TokenServiceClient } from "@concord-consortium/token-service";
+import { NumberInputWidget } from "../widgets/number-input/number-index";
 
 import css from "../../shared/styles/authoring.scss";
 
@@ -32,7 +33,8 @@ export interface IFormContext<IAuthoredState> {
 // custom widgets
 const widgets = {
   richtext: RichTextWidget,
-  imageUpload: ImageUploadWidget
+  imageUpload: ImageUploadWidget,
+  numberInput: NumberInputWidget
 };
 
 export const getTokenServiceEnv = (claims: any) => {
