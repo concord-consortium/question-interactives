@@ -53,7 +53,7 @@ export const Slider = ({renderedBar, top, bottom, max, handleSliderChange}: IPro
   }, [renderedBar, top, bottom, max, handleSliderChange]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
-    e.preventDefault();
+    let captureKey = true;
 
     const options: SliderChangeCallbackOptions = {via: "keyboard", key: e.key};
     switch (e.key) {
@@ -75,6 +75,13 @@ export const Slider = ({renderedBar, top, bottom, max, handleSliderChange}: IPro
       case "PageDown":
         handleSliderChange(renderedBar, -10, {...options, delta: true});
         break;
+      default:
+        captureKey = false;
+        break;
+    }
+
+    if (captureKey) {
+      e.preventDefault();
     }
   }, [max, renderedBar, handleSliderChange]);
 
