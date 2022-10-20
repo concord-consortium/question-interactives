@@ -16,13 +16,11 @@ const iframe = new URLSearchParams(window.location.search).get("iframe");
 const rootDemo = !iframe;
 
 export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<IAuthoredState, IInteractiveState>) => {
-  const { App, interactiveState, title } = props;
+  const { App, title } = props;
   const [authoredState, setAuthoredState] = useState<IAuthoredState>(props.authoredState);
+  const [interactiveState, setInteractiveState] = useState<IInteractiveState>(props.interactiveState);
   const [childIFrames, setChildIFrames] = useState<MessageEventSource[]>([]);
   const timeoutRef = useRef<number|undefined>();
-
-  // this is just dropped on the floor as we don't need to save in the demo
-  const setInteractiveState = () => undefined;
 
   // send the new authored state to the root demo and have it re-render the runtime container
   const handleSetAuthoredState = (newAuthoredState: IAuthoredState) => {
