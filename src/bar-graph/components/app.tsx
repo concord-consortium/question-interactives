@@ -153,7 +153,10 @@ const baseAuthoringProps = {
   }
 };
 
-const isAnswered = (interactiveState: IInteractiveState | null) => false; // TODO
+const isAnswered = (interactiveState: IInteractiveState | null) => {
+  // return true if at least one bar has a value
+  return !!interactiveState?.barValues?.find(b => b.hasValue);
+};
 
 export const App = () => (
   <BaseQuestionApp<IAuthoredState, IInteractiveState>
