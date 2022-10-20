@@ -2,6 +2,7 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { DemoComponent } from "../shared/components/demo";
 import { App } from "./components/app";
+import { getReportItemHtml } from "./components/report-item/get-report-item-html";
 import { IAuthoredState, IInteractiveState, DemoAuthoredState } from "./components/types";
 
 const DemoContainer = () => {
@@ -15,6 +16,7 @@ const DemoContainer = () => {
       App={<App />}
       authoredState={DemoAuthoredState}
       interactiveState={interactiveState}
+      getReportItemHtml={getReportItemHtml}
     />
   );
 };

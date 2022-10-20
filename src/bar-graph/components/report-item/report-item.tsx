@@ -1,9 +1,10 @@
 import * as semver from "semver";
 import { sendReportItemAnswer, IReportItemAnswerItem, IGetReportItemAnswerHandler } from "@concord-consortium/lara-interactive-api";
 import { IAuthoredState, IInteractiveState } from "../types";
+import { getReportItemHtml } from "./get-report-item-html";
 
 export const reportItemHandler: IGetReportItemAnswerHandler<IInteractiveState, IAuthoredState> = request => {
-  const {platformUserId, version, itemsType} = request;
+  const {platformUserId, interactiveState, authoredState, version, itemsType} = request;
 
   if (!version) {
     // for hosts sending older, unversioned requests
@@ -11,9 +12,15 @@ export const reportItemHandler: IGetReportItemAnswerHandler<IInteractiveState, I
     console.error("Open Response Report Item Interactive: Missing version in getReportItemAnswer request.");
   }
   else if (semver.satisfies(version, "2.x")) {
-    const items: IReportItemAnswerItem[] = [];
-
-    // TODO: add items to report
+    const items: IReportItemAnswerItem[] = [
+      {
+        type: "links"
+      },
+      {
+        type: "html",
+        html: getReportItemHtml({interactiveState, authoredState})
+      }
+    ];
 
     sendReportItemAnswer({version, platformUserId, items, itemsType});
   } else {
