@@ -56,3 +56,14 @@
     }
   }
 }
+
+.reportItem {
+  border-top: 1px solid #777;
+  margin-top: 10px;
+  padding-top: 10px;
+
+  iframe {
+    border: none;
+    width: 100%;
+  }
+}

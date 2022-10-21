@@ -39,7 +39,7 @@ const yAxisTabIndex = titleTabIndex + 1;
 const xAxisTabIndex = yAxisTabIndex + 1;
 export const StartChartTabIndex = xAxisTabIndex + 1;
 
-const defaultBarColor = "#0592AF";
+export const DefaultBarColor = "#0592AF";
 const fontFamily = "'Lato', sans-serif";
 
 const font = (size: number, options?: {bold?: boolean}) => {
@@ -128,7 +128,7 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
       datasets: [
         {
           data: newData,
-          backgroundColor: authoredState.bars.map(bar => bar.color || defaultBarColor)
+          backgroundColor: authoredState.bars.map(bar => bar.color || DefaultBarColor)
         }
       ],
     });
