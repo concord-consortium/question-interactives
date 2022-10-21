@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { WidgetProps } from "react-jsonschema-form";
 
 export const NumberInputWidget = (props: WidgetProps) => {
-  const [value, setValue] = useState<number|string>(props.schema.default === undefined ? "" : props.schema.default as number);
+  const [value, setValue] = useState<number|string>(props.value);
   const noNegativeNumbers = props.schema.minimum !== undefined && props.schema.minimum >= 0;
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
