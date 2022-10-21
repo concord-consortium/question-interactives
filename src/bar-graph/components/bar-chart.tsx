@@ -174,13 +174,18 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
   return (
     <div className={css.barChart}>
       <div className={css.chart}>
-        <div className={classnames(css.yAxisLabel, {[css.horizontalLabel]: hasHorizontalLabel, [css.verticalLabel]: !hasHorizontalLabel})} tabIndex={yAxisTabIndex}>{authoredState.yAxisLabel}</div>
+        <div
+          className={classnames(css.yAxisLabel, {[css.horizontalLabel]: hasHorizontalLabel, [css.verticalLabel]: !hasHorizontalLabel})}
+          tabIndex={yAxisTabIndex}
+          data-cy="yAxisLabel">
+          {authoredState.yAxisLabel}
+        </div>
         <div className={css.chartAndXAxisLabel}>
-          {authoredState.title && <div className={css.title} tabIndex={titleTabIndex}>{authoredState.title}</div>}
+          {authoredState.title && <div className={css.title} tabIndex={titleTabIndex} data-cy="title">{authoredState.title}</div>}
           <div className={css.chartContainer}>
             <Bar options={options} data={data} ref={chartRef} />
 
-            {chartInfo && <div className={css.barValues}>
+            {chartInfo && <div className={css.barValues} data-cy="barValues">
               {authoredState.showValuesAboveBars && chartInfo.bars.map(renderedBar => {
                 const { index } = renderedBar;
                 const bar = authoredState.bars[index];
@@ -194,7 +199,7 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
                 };
                 const value = authoredState.numberOfDecimalPlaces ? renderedBar.value.toFixed(authoredState.numberOfDecimalPlaces) : renderedBar.value;
                 const title = `${bar.label}: ${value} ${authoredState.yAxisLabel}`;
-                return <div key={index} style={style} tabIndex={StartChartTabIndex + (2 * index)} title={title}>{value}</div>;
+                return <div key={index} style={style} tabIndex={StartChartTabIndex + (2 * index)} title={title} data-cy={`barValue${index}`}>{value}</div>;
               })}
               {!readOnly && chartInfo.bars.map(renderedBar => {
                 const { index } = renderedBar;
@@ -214,7 +219,7 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
               })}
             </div>}
           </div>
-          {authoredState.xAxisLabel && <div className={css.xAxisLabel} tabIndex={xAxisTabIndex}>{authoredState.xAxisLabel}</div>}
+          {authoredState.xAxisLabel && <div className={css.xAxisLabel} tabIndex={xAxisTabIndex} data-cy="xAxisLabel">{authoredState.xAxisLabel}</div>}
         </div>
       </div>
     </div>

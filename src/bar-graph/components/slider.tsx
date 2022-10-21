@@ -97,6 +97,7 @@ export const Slider = ({renderedBar, top, bottom, max, handleSliderChange}: IPro
       aria-valuemin={0}
       aria-valuemax={max}
       aria-valuenow={renderedBar.value}
+      data-cy={`slider${renderedBar.index}`}
     >
       <SliderIcon />
     </div>
