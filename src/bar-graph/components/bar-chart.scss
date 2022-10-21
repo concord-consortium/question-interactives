@@ -29,7 +29,8 @@
     .chartAndXAxisLabel {
       display: flex;
       flex-direction: column;
-      width: 100%;
+      flex: auto;
+      min-width: 0;
       align-items: center;
 
       .title {

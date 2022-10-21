@@ -1,15 +1,25 @@
+:global(html), :global(body) {
+  height: 100%;
+}
 :global(#app) {
   margin: 0;
   padding: 0;
-  height: 100vh;
-}
-
-.demo {
-  position: relative;
-  width: 100%;
   height: 100%;
   display: flex;
   flex-direction: column;
+  align-items: stretch;
+}
+
+// remove the hint as it is confusing in the interactive preview
+[class*="hint"] {
+  display: none;
+}
+
+.demo {
+  display: flex;
+  flex-direction: column;
+  flex: auto;
+  min-height: 0;
 
   .header {
     padding: 10px;
@@ -19,21 +29,21 @@
     h1 {
       margin: 0;
       padding: 0;
-      font-weight: normal;
+      font-weight: bold;
       font-size: 20px;
     }
   }
 
   .split {
-    flex-grow: 1;
-    width: 100%;
     display: flex;
+    flex: auto;
+    min-height: 0;
     gap: 10px;
 
     > div {
-      flex-grow: 1;
-      width: 100%;
-      height: 100%;
+      display: flex;
+      flex: auto;
+      min-height: 0;
 
       iframe {
         margin: 0;
