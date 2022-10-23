@@ -1,9 +1,14 @@
-import React, { useState } from "react";
+import React, { useCallback, useState } from "react";
 import { WidgetProps } from "react-jsonschema-form";
 
 export const NumberInputWidget = (props: WidgetProps) => {
   const [value, setValue] = useState<number|string>(props.value);
   const noNegativeNumbers = props.schema.minimum !== undefined && props.schema.minimum >= 0;
+
+  const onChange = useCallback((newValue: any) => {
+    setValue(newValue);
+    props.onChange(newValue);
+  }, [props]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     // don't allow negative numbers if minimum is 0
@@ -20,9 +25,15 @@ export const NumberInputWidget = (props: WidgetProps) => {
         return;
       }
     }
-    setValue(e.target.value);
-    props.onChange(e.target.value);
+    onChange(e.target.value);
   };
+
+  const handleBlur = useCallback(() => {
+    if (String(value).trim().length === 0) {
+      const defaultValue = props.schema.default === undefined ? "0" : props.schema.default as string;
+      onChange(defaultValue);
+    }
+  }, [value, props, onChange]);
 
   return (
     <input
@@ -34,6 +45,7 @@ export const NumberInputWidget = (props: WidgetProps) => {
       value={value}
       onKeyDown={handleKeyDown}
       onChange={handleChange}
+      onBlurCapture={handleBlur}
     />
   );
 };
