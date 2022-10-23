@@ -56,6 +56,7 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
   const [options, setOptions] = useState<ChartOptions<"bar">|null>(null);
   const [data, setData] = useState<ChartData<"bar">|null>(null);
   const [chartInfo, setChartInfo] = useState<IChartInfo|undefined>(undefined);
+  const [loggedInit, setLoggedInit] = useState(false);
   const chartRef = useRef<ChartJS<"bar">|null>(null);
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
   const max = authoredState.maxYValue || DefaultAuthoredState.maxYValue;
@@ -70,10 +71,11 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
   }, [initMessage]);
 
   useEffect(() => {
-    if (authoredState) {
+    if (authoredState && !loggedInit) {
       log("init bar chart", {barChart: authoredState});
+      setLoggedInit(true);
     }
-  }, [log, authoredState]);
+  }, [log, authoredState, loggedInit]);
 
   useEffect(() => {
     setOptions({
@@ -149,18 +151,20 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
           }
           log("bar change", change);
         }
-        setInteractiveState?.((prevInteractiveState: IInteractiveState) => {
-          const newBarValue: IBarValue = { index, hasValue: true, value: setValue};
-          let barValues: IBarValue[] = prevInteractiveState?.barValues ?? [];
-          const valueIndex = barValues.findIndex(b => b.index === index);
-          if (valueIndex === -1) {
-            barValues = [...barValues, newBarValue];
-          } else {
-            barValues = barValues.map(b => b.index === index ? newBarValue : b);
-          }
-          return {...prevInteractiveState, barValues};
-        });
-        setTimeout(() => chartRef.current?.update("none"), 0); // "none" to disable animations
+        setTimeout(() => {
+          setInteractiveState?.((prevInteractiveState: IInteractiveState) => {
+            const newBarValue: IBarValue = { index, hasValue: true, value: setValue};
+            let barValues: IBarValue[] = prevInteractiveState?.barValues ?? [];
+            const valueIndex = barValues.findIndex(b => b.index === index);
+            if (valueIndex === -1) {
+              barValues = [...barValues, newBarValue];
+            } else {
+              barValues = barValues.map(b => b.index === index ? newBarValue : b);
+            }
+            return {...prevInteractiveState, barValues};
+          });
+          chartRef.current?.update("none"); // "none" to disable animations
+        }, 0);
       }
       return prevData;
     });
