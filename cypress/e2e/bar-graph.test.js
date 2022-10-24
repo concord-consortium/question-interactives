@@ -93,10 +93,10 @@ context("Test bar graph interactive", () => {
           dragDropMouseAndCheckValue(index, 110, "100");
           dragDropMouseAndCheckValue(index, 120, "99");
           dragDropMouseAndCheckValue(index, 150, "91");
-          dragDropMouseAndCheckValue(index, 200, "77");
-          dragDropMouseAndCheckValue(index, 300, "49");
-          dragDropMouseAndCheckValue(index, 400, "21");
-          dragDropMouseAndCheckValue(index, 470, "1");
+          dragDropMouseAndCheckValue(index, 200, "76");
+          dragDropMouseAndCheckValue(index, 300, "47");
+          dragDropMouseAndCheckValue(index, 400, "18");
+          dragDropMouseAndCheckValue(index, 460, "1");
           dragDropMouseAndCheckValue(index, 480, "0");
           dragDropMouseAndCheckValue(index, 600, "0");
         }
