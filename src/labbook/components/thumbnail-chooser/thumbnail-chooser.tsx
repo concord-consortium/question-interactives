@@ -16,7 +16,7 @@ const PrevButton:React.FC<basicButtonProps> = (props: basicButtonProps) => {
   const {onClick, enabled} = props;
   const backClasses = classNames(css["arrow-button"], {[css.disabled]: !enabled});
   return(
-    <button className={backClasses} onClick={onClick} disabled={!enabled}>
+    <button className={backClasses} onClick={onClick} data-testid="previous-arrow" disabled={!enabled}>
       <div className={css["button-icon-container"]}>
         <PrevButtonIcon/>
       </div>
@@ -28,7 +28,7 @@ const NextButton:React.FC<basicButtonProps> = (props: basicButtonProps) => {
   const {onClick, enabled} = props;
   const backClasses = classNames(css["arrow-button"], {[css.disabled]: !enabled});
   return(
-    <button className={backClasses} onClick={onClick} disabled={!enabled}>
+    <button className={backClasses} onClick={onClick} data-testid="next-arrow" disabled={!enabled}>
       <div className={css["button-icon-container"]}>
         <NextButtonIcon/>
       </div>

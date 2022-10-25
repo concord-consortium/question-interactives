@@ -227,7 +227,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     <div className={css["app"]} ref={containerRef}>
       <div className={css["container"]} style={{width: containerWidth}}>
         <ThumbnailChooser {...thumbnailChooserProps} />
-        <div className={css["draw-tool-wrapper"]}>
+        <div className={css["draw-tool-wrapper"]} data-testid="draw-tool">
           <ThumbnailTitle className={css["draw-tool-title"]} title={title} />
           <DrawingTool
             key={selectedId}
