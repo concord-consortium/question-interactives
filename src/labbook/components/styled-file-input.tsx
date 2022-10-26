@@ -29,7 +29,7 @@ export const StyledFileInput: React.FC<IStyledFileInputProps> = (props) => {
       <label
         htmlFor="file-upload"
         className={classes}
-        data-test="upload-btn">
+        data-testid="upload-btn">
           {children}
       </label>
       <input className={css.hidden} id="file-upload" type="file" onChange={handleChange}/>
