@@ -82,11 +82,15 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
       return;
     }
     let backgroundImgSrc: string | undefined;
-    if (authoredState.backgroundSource === "url") {
+
+    if (userBackgroundImageUrl || authoredState.backgroundSource === "upload" || authoredState.backgroundSource === "snapshot") {
+      // userBackgroundImageUrl is used even when authoredState.backgroundSource === "url". The authored background
+      // will be replaced by the user provided one. There is no UI that allows for that in the Drawing Tool or Image Question,
+      // but it's possible in the Labbook that uses this component. See: https://www.pivotaltracker.com/story/show/183592738/comments/233945746
+      backgroundImgSrc = userBackgroundImageUrl;
+    } else  if (authoredState.backgroundSource === "url") {
       backgroundImgSrc = shouldUseLARAImgProxy(authoredState.backgroundImageUrl) ?
         LARA_IMAGE_PROXY + authoredState.backgroundImageUrl : authoredState.backgroundImageUrl;
-    } else if (authoredState.backgroundSource === "upload" || authoredState.backgroundSource === "snapshot") {
-      backgroundImgSrc = userBackgroundImageUrl;
     }
 
     const bgPosition = authoredState.imagePosition || "center";
