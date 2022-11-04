@@ -6,6 +6,7 @@ jest.mock("drawing-tool", () => class DrawingToolLib {
   on = jest.fn();
   pauseHistory = jest.fn();
   unpauseHistory = jest.fn();
+  save = jest.fn();
   setBackgroundImage = setBackgroundImageMock;
 });
 
