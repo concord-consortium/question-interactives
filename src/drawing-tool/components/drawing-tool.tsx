@@ -103,9 +103,14 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
       imageOpts.position = "center"; // anything else is an invalid combo
     }
     drawingToolRef.current.pauseHistory();
+    const oldDtState = drawingToolRef.current.save();
     drawingToolRef.current.setBackgroundImage(imageOpts, bgFit, () => {
       drawingToolRef.current.unpauseHistory();
-      if (readOnly) return;
+      const newDtState = drawingToolRef.current.save();
+      if (readOnly || oldDtState === newDtState) {
+        // Do not call setInteractiveStateRef if state hasn't changed.
+        return;
+      }
       setInteractiveStateRef.current({ drawingState: drawingToolRef.current.save() });
     });
   }, [authoredState.backgroundImageUrl, authoredState.backgroundSource, authoredState.imageFit, authoredState.imagePosition, readOnly]);
