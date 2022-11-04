@@ -60,7 +60,7 @@ context("Test Lab book interactive", () => {
           mode: "runtime",
           authoredState: UploadImageAuthoredState
         });
-  
+
         le.getThumbnailWrapper().should("have.length", 4);
         le.getThumbnailButton(1).should("be.enabled");
         le.getThumbnailTitle(1).should("have.text", "A");
@@ -68,17 +68,17 @@ context("Test Lab book interactive", () => {
         le.getThumbnailClose(1).should("be.enabled");
         le.getDrawToolThumbnailTitle().should("have.text", "A");
         le.getCommentsFieldThumbnailTitle().should("have.text", "A");
-  
+
         le.getThumbnailButton(2).should("have.text", "New");
         le.getThumbnailTitle(2).should("have.text", "");
         le.getThumbnailPlusButton(2).should("exist");
         le.getThumbnailClose(2).should("not.exist");
-  
+
         le.getThumbnailButton(3).should("have.text", "New");
         le.getThumbnailTitle(3).should("have.text", "");
         le.getThumbnailPlusButton(3).should("exist");
         le.getThumbnailClose(3).should("not.exist");
-  
+
         le.getThumbnailButton(4).should("have.text", "New");
         le.getThumbnailTitle(4).should("have.text", "");
         le.getThumbnailPlusButton(4).should("exist");
@@ -145,7 +145,7 @@ context("Test Lab book interactive", () => {
         le.getPreviousArrow().should("be.disabled");
         le.getNextArrow().should("be.enabled");
         le.getNextArrow().click();
-  
+
         le.getThumbnailTitle(1).should("have.text", "B");
         le.getThumbnailTitle(2).should("have.text", "C");
         le.getThumbnailTitle(3).should("have.text", "D");
@@ -222,7 +222,7 @@ context("Test Lab book interactive", () => {
         le.getUploadButton().should("have.text", "Upload Image");
         le.getUploadButton().selectFile('cypress/fixtures/image-upload.png', {force: true});
         le.getUploadButton().should("have.text", "Please Wait");
-        cy.wait(500);
+        cy.wait(4000);
         le.getThumbnail(1).find(".dt-canvas-container").should("exist");
         le.getUploadButton().should("have.text", "Upload Image");
       })
