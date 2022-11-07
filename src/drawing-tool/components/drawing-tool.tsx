@@ -176,7 +176,8 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
   // When Drawing Tool is in read-only mode, support dynamic updated of interactive state.
   // It's used by Labbook Thumbnails that watch the main canvas and update themselves when there's any change there.
   useEffect(() => {
-    if (readOnly && interactiveState?.drawingState) {
+    const currentDtState = drawingToolRef.current.save();
+    if (readOnly && interactiveState?.drawingState && interactiveState.drawingState !== currentDtState) {
       drawingToolRef.current.load(interactiveState?.drawingState);
     }
   }, [interactiveState, readOnly]);
