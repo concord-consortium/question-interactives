@@ -72,8 +72,9 @@ baseAuthoringProps.uiSchema["ui:order"] = [
   };
 });
 
-// TODO: Figure out a better heuristic
-const isAnswered = (interactiveState: IInteractiveState | null) => true;
+// Initial interactiveState is undefined. If user removes all the thumbnails, it'll be defined, but the entries
+// array will be empty. Both states are considered not to be answered.
+const isAnswered = (interactiveState: IInteractiveState | null) => !!interactiveState?.entries && interactiveState?.entries?.length > 0;
 
 export const App = () => (
   <BaseQuestionApp<IAuthoredState, IInteractiveState>
