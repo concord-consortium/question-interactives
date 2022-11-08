@@ -29,8 +29,7 @@ const numberToAlpha = (value:number) => (value + 10).toString(26).toUpperCase();
 
 const generateItem = () => {
   const id = uuidv4();
-  const item:ILabbookEntry = {
-    data: {answerType: "interactive_state"},
+  const item: ILabbookEntry = {
     comment: "",
     id
   };
@@ -234,7 +233,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           <DrawingTool
             key={selectedId}
             authoredState={authoredState}
-            interactiveState={{...selectedItem?.data, answerType: "interactive_state"}}
+            interactiveState={selectedItem?.data}
             setInteractiveState={setDrawingStateFn}
             buttons={drawingToolButtons}
             width={canvasWidth}

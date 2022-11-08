@@ -31,6 +31,13 @@ const authoredState = {
 const interactiveState = {
   answerType: "image_question_answer" as const,
   answerText: "Test answer",
+  drawingState: "Drawing Tool state"
+} as IInteractiveState;
+
+const interactiveStateWithUserBg = {
+  answerType: "image_question_answer" as const,
+  answerText: "Test answer",
+  userBackgroundImageUrl: "https://user-uploaded-img.com"
 } as IInteractiveState;
 
 describe("Image question", () => {
@@ -59,6 +66,7 @@ describe("Image question", () => {
   describe("isAnswered", () => {
     const authoredStateWithAnswerPrompt: IAuthoredState = {...authoredState, answerPrompt: "This is the answer prompt"};
     const interactiveStateWithAnswerText: IInteractiveState = {...interactiveState, answerText: "This is the answer text"};
+    const interactiveStateWithUserBgAndAnswerText: IInteractiveState = {...interactiveStateWithUserBg, answerText: "This is the answer text"};
     const authoredStateWithoutAnswerPrompt: IAuthoredState = {...authoredState, answerPrompt: ""};
     const interactiveStateWithoutAnswerText: IInteractiveState = {...interactiveState, answerText: ""};
 
@@ -76,10 +84,16 @@ describe("Image question", () => {
       expect(isAnswered(interactiveStateWithAnswerText, authoredStateWithAnswerPrompt)).toBe(true);
     });
 
-    it("returns true for questions with interactive state without answerPrompts no matter the answerText value", () => {
+    it("returns true for questions with drawing tool state without answerPrompts no matter the answerText value", () => {
       expect(isAnswered(interactiveStateWithAnswerText)).toBe(true);
       expect(isAnswered(interactiveStateWithAnswerText, authoredStateWithoutAnswerPrompt)).toBe(true);
       expect(isAnswered(interactiveStateWithoutAnswerText, authoredStateWithoutAnswerPrompt)).toBe(true);
+    });
+
+    it("returns true for questions with drawing tool state without answerPrompts no matter the answerText value", () => {
+      expect(isAnswered(interactiveStateWithUserBgAndAnswerText)).toBe(true);
+      expect(isAnswered(interactiveStateWithUserBgAndAnswerText, authoredStateWithoutAnswerPrompt)).toBe(true);
+      expect(isAnswered(interactiveStateWithUserBgAndAnswerText, authoredStateWithoutAnswerPrompt)).toBe(true);
     });
   });
 });

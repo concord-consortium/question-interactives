@@ -280,7 +280,7 @@ export const baseAuthoringProps = {
   }
 };
 
-const isAnswered = (interactiveState: IInteractiveState | null) => !!interactiveState?.drawingState;
+const isAnswered = (interactiveState: IInteractiveState | null) => !!interactiveState?.drawingState || !!interactiveState?.userBackgroundImageUrl;
 
 export const App = () => (
   <BaseQuestionApp<IAuthoredState, IInteractiveState>

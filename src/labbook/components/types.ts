@@ -17,7 +17,7 @@ export interface IAuthoredState extends IDrawingToolAuthoredState {
 export interface ILabbookEntry {
   comment: string;
   imageUrl?: string|null;
-  data: IDrawingToolInteractiveState;
+  data?: IDrawingToolInteractiveState;
   dataHash?: string|null;
   id: string;
 }
