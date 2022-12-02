@@ -102,9 +102,8 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
     if (bgFit === "resizeCanvasToBackground") {
       imageOpts.position = "center"; // anything else is an invalid combo
     }
-    drawingToolRef.current.pauseHistory();
     drawingToolRef.current.setBackgroundImage(imageOpts, bgFit, () => {
-      drawingToolRef.current.unpauseHistory();
+      drawingToolRef.current.resetHistory();
     });
   }, [authoredState.backgroundImageUrl, authoredState.backgroundSource, authoredState.imageFit, authoredState.imagePosition]);
 
