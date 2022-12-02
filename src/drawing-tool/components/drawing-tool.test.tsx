@@ -4,8 +4,7 @@ import { DrawingTool, LARA_IMAGE_PROXY } from "./drawing-tool";
 
 jest.mock("drawing-tool", () => class DrawingToolLib {
   on = jest.fn();
-  pauseHistory = jest.fn();
-  unpauseHistory = jest.fn();
+  resetHistory = jest.fn();
   save = jest.fn();
   setBackgroundImage = setBackgroundImageMock;
 });
