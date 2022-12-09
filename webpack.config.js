@@ -45,7 +45,8 @@ module.exports = (env, argv) => {
       'wrapper': './src/shared/wrapper.tsx',
       'bar-graph': './src/bar-graph/index.tsx',
       'bar-graph/report-item': './src/bar-graph/report-item-index.tsx',
-      'bar-graph/demo': './src/bar-graph/demo.tsx'
+      'bar-graph/demo': './src/bar-graph/demo.tsx',
+      'tecrock-table': './src/tecrock-table/index.tsx',
     },
     mode: 'development',
     output: {
@@ -247,6 +248,11 @@ module.exports = (env, argv) => {
       new HtmlWebpackPlugin({
         chunks: ['bar-graph/demo'],
         filename: 'bar-graph/demo.html',
+        template: 'src/shared/index.html'
+      }),
+      new HtmlWebpackPlugin({
+        chunks: ['tecrock-table'],
+        filename: 'tecrock-table/index.html',
         template: 'src/shared/index.html'
       }),
       // Wrapper page, useful for testing and Cypress.

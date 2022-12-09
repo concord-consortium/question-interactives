@@ -1,0 +1,18 @@
+@import "../../shared/styles/helpers";
+
+.tecRockTable {
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    table-layout: fixed;
+
+    th:first-child {
+      width: 400px;
+    }
+
+    td {
+      border: 1px solid rgba(0,0,0,0.1);
+      padding: 3px;
+    }
+  }
+}
