@@ -1,6 +1,20 @@
 @import "../../shared/styles/helpers";
 
 .tecRockTable {
+  legend.prompt {     // clear bootstrap stuff
+    display: unset;
+    width: unset;
+    margin-bottom: unset;
+    font-size: unset;
+    border: unset;
+    padding-bottom: 5px;
+
+    img {
+      height: auto;
+      max-width: 100%;
+    }
+  }
+
   table {
     border-collapse: collapse;
     width: 100%;

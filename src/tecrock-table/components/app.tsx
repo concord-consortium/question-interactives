@@ -12,6 +12,10 @@ const baseAuthoringProps = {
         type: "number",
         default: 1
       },
+      prompt: {
+        title: "Prompt",
+        type: "string"
+      },
       dataSourceInteractive: {
         title: "Data Source Interactive (Tectonic Explorer)",
         type: "string",

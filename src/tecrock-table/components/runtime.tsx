@@ -4,6 +4,9 @@ import {
   addLinkedInteractiveStateListener, IInteractiveStateWithDataset, removeLinkedInteractiveStateListener, IDataset
 } from "@concord-consortium/lara-interactive-api";
 import { useLinkedInteractiveId } from "../../shared/hooks/use-linked-interactive-id";
+import { DecorateChildren } from "@concord-consortium/text-decorator";
+import { renderHTML } from "../../shared/utilities/render-html";
+import { useGlossaryDecoration } from "../../shared/hooks/use-glossary-decoration";
 
 import css from "./runtime.scss";
 
@@ -39,8 +42,17 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
     };
   }, [dataSourceInteractive]);
 
+  const decorateOptions = useGlossaryDecoration();
   return (
     <div className={css.tecRockTable}>
+      {
+        authoredState.prompt &&
+        <DecorateChildren decorateOptions={decorateOptions}>
+          <legend className={css.prompt} data-testid="legend">
+            {renderHTML(authoredState.prompt)}
+          </legend>
+        </DecorateChildren>
+      }
       <table>
         <tbody>
           <tr><th>Rock</th><th>Temperature</th><th>Pressure</th></tr>
