@@ -2,7 +2,6 @@
 
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
-const GenerateJsonFromJsPlugin = require('generate-json-from-js-webpack-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
 
 const path = require('path');
@@ -23,9 +22,8 @@ module.exports = (env, argv) => {
     },
     devtool: devMode ? 'eval-cheap-module-source-map' : 'source-map',
     entry: {
-      'open-response': './packages/open-response/index.tsx',
-      'open-response/report-item': './packages/open-response/report-item-index.tsx',
-      'wrapper': './packages/helpers/wrapper.tsx',
+      'open-response': './src/index.tsx',
+      'open-response/report-item': './src/report-item-index.tsx'
     },
     mode: 'development',
     output: {
@@ -103,11 +101,11 @@ module.exports = (env, argv) => {
       ]
     },
     resolve: {
-      alias: {
-        // prevent duplicate react versions when npm linking lara-interactive-api
-        // cf. https://github.com/facebook/react/issues/13991#issuecomment-435587809
-        react: path.resolve(__dirname, './node_modules/react'),
-      },
+      // alias: {
+      //   // prevent duplicate react versions when npm linking lara-interactive-api
+      //   // cf. https://github.com/facebook/react/issues/13991#issuecomment-435587809
+      //   react: path.resolve(__dirname, './node_modules/react'),
+      // },
       extensions: [ '.ts', '.tsx', '.js' ]
     },
     stats: {
@@ -122,23 +120,12 @@ module.exports = (env, argv) => {
       new HtmlWebpackPlugin({
         chunks: ['open-response'],
         filename: 'open-response/index.html',
-        template: 'packages/helpers/index.html'
+        template: '../../packages/helpers/src/index.html'
       }),
       new HtmlWebpackPlugin({
         chunks: ['open-response/report-item'],
         filename: 'open-response/report-item/index.html',
-        template: 'packages/helpers/index.html'
-      }),
-      // Wrapper page, useful for testing and Cypress.
-      new HtmlWebpackPlugin({
-        chunks: ['wrapper'],
-        filename: 'wrapper.html',
-        template: 'packages/helpers/wrapper.html'
-      }),
-      // generate version.json
-      new GenerateJsonFromJsPlugin({
-        path: './generate-version-json.js',
-        filename: 'version.json'
+        template: '../../packages/helpers/src/index.html'
       }),
       new ESLintPlugin({
         extensions: ['ts','tsx']
