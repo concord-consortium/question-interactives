@@ -72,6 +72,7 @@ describe("useLinkedInteractives", () => {
     await act(async () => {
       const { result, waitForNextUpdate } = renderHook(HookWrapper);
       await waitForNextUpdate();
+      await waitForNextUpdate();
       expect(result.current).toEqual({
         properties: {
           linkedInteractive1: {

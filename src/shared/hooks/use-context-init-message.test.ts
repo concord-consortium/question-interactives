@@ -7,6 +7,6 @@ describe("useContextInitMessage", () => {
       useContextInitMessage();
     };
     const { result } = renderHook(HookWrapper);
-    expect(result.error.message).toBe("useContextInitMessage must be used within a <InitMessageContext.Provider>");
+    expect(result.error?.message).toBe("useContextInitMessage must be used within a <InitMessageContext.Provider>");
   });
 });
