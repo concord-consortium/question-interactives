@@ -54,8 +54,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
         </DecorateChildren>
       }
       <table>
-        <tbody>
+        <thead>
           <tr><th>Rock</th><th>Temperature</th><th>Pressure</th></tr>
+        </thead>
+        <tbody>
           {
             dataset?.rows.map(row => (
               <tr key={row[0]}>
