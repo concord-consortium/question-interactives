@@ -1,8 +1,8 @@
 import React, { useEffect, useRef } from "react";
 import ReactDOM from "react-dom";
 import iframePhone from "iframe-phone";
-import { IframePhone } from "./types";
-import { getURLParam } from "./utilities/get-url-param";
+import { IframePhone } from "@concord-consortium/question-interactives-helpers/src/types";
+import { getURLParam } from "@concord-consortium/question-interactives-helpers/src/utilities/get-url-param";
 
 // Note that this app/component is mostly used by Cypress tests. It can also be used to tests / develop things manually,
 // for example using browser console.

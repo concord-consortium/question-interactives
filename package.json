@@ -24,9 +24,9 @@
     "lint:build": "lerna run lint:build",
     "lint:fix": "lerna run lint:fix",
     "test": "lerna run test",
-    "test:cypress": "cypress run",
-    "test:cypress:open": "cypress open",
-    "test:full": "npm-run-all lint test"
+    "test:cypress": "lerna run test:cypress",
+    "test:cypress:open": "lerna run test:cypress:open",
+    "test:full": "npm-run-all lint test test:cypress"
   },
   "devDependencies": {
     "lerna": "^6.1.0",

@@ -1,7 +1,7 @@
 {
-  "name": "open-response",
-  "version": "1.11.0",
-  "description": "Open Response interactive",
+  "name": "wrapper-page",
+  "version": "0.0.1",
+  "description": "wrapper page used by Cypress",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/concord-consortium/question-interactives.git"
@@ -12,37 +12,9 @@
     "url": "https://github.com/concord-consortium/question-interactives/issues"
   },
   "homepage": "https://github.com/concord-consortium/question-interactives#readme",
-  "jest": {
-    "testURL": "https://question-interactives.unexisting.url.com",
-    "setupFilesAfterEnv": [
-      "<rootDir>src/setupTests.ts"
-    ],
-    "transform": {
-      "^.+\\.tsx?$": "ts-jest"
-    },
-    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
-    "testPathIgnorePatterns": [
-      "/node_modules/",
-      "/cypress/"
-    ],
-    "coveragePathIgnorePatterns": [
-      "/node_modules/"
-    ],
-    "moduleNameMapper": {
-      "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>__mocks__/fileMock.js",
-      "\\.(css|less|sass|scss)$": "identity-obj-proxy"
-    },
-    "moduleFileExtensions": [
-      "ts", "tsx", "js", "jsx", "json", "node"
-    ]
-  },
   "scripts": {
-    "start": "webpack serve --no-https",
-    "start:secure": "webpack serve",
-    "start:secure:no-certs": "webpack serve --no-https-request-cert",
     "build": "npm-run-all lint:build build:webpack",
     "build:webpack": "webpack --mode production --devtool source-map",
-    "build:watch": "webpack --mode production --devtool source-map --watch",
     "lint": "eslint \"./src/**/*.{js,jsx,ts,tsx}\"",
     "lint:build": "eslint -c \".eslintrc.build.js\" \"./src/**/*.{js,jsx,ts,tsx}\"",
     "lint:fix": "eslint --fix \"./src/**/*.{js,jsx,ts,tsx}\"",
