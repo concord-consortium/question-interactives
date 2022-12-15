@@ -1,18 +1,18 @@
 'use strict';
 
-const MiniCssExtractPlugin = require('mini-css-extract-plugin');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const GenerateJsonFromJsPlugin = require('generate-json-from-js-webpack-plugin');
-const ESLintPlugin = require('eslint-webpack-plugin');
-
 const path = require('path');
 const os = require('os');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const GenerateJsonFromJsPlugin = require('generate-json-from-js-webpack-plugin');
+const ESLintPlugin = require('eslint-webpack-plugin');
+const { merge } = require('webpack-merge');
 
-module.exports = (env, argv) => {
+module.exports = (env, argv, interactiveDirName, customizations) => {
   const devMode = argv.mode !== 'production';
+  const interactiveName = path.basename(interactiveDirName); // e.g. "open-response"
 
-  return {
-    context: __dirname, // to automatically find tsconfig.json
+  const common = {
+    context: interactiveDirName, // to automatically find tsconfig.json
     devServer: {
       static: 'dist',
       hot: true,
@@ -22,13 +22,10 @@ module.exports = (env, argv) => {
       },
     },
     devtool: devMode ? 'eval-cheap-module-source-map' : 'source-map',
-    entry: {
-      'open-response': './packages/open-response/index.tsx',
-      'open-response/report-item': './packages/open-response/report-item-index.tsx',
-      'wrapper': './packages/helpers/wrapper.tsx',
-    },
     mode: 'development',
     output: {
+       // set the path to be ./dist in the top-level monorepo directory
+      path: `${__dirname}/dist`,
       filename: '[name]/assets/index.[contenthash].js'
     },
     performance: { hints: false },
@@ -103,11 +100,11 @@ module.exports = (env, argv) => {
       ]
     },
     resolve: {
-      alias: {
-        // prevent duplicate react versions when npm linking lara-interactive-api
-        // cf. https://github.com/facebook/react/issues/13991#issuecomment-435587809
-        react: path.resolve(__dirname, './node_modules/react'),
-      },
+      // alias: {
+      //   // prevent duplicate react versions when npm linking lara-interactive-api
+      //   // cf. https://github.com/facebook/react/issues/13991#issuecomment-435587809
+      //   react: path.resolve(__dirname, './node_modules/react'),
+      // },
       extensions: [ '.ts', '.tsx', '.js' ]
     },
     stats: {
@@ -118,31 +115,23 @@ module.exports = (env, argv) => {
       new MiniCssExtractPlugin({
         filename: devMode ? '[name]/assets/index.css' : '[name]/assets/index.[hash].css'
       }),
-      // HtmlWebpackPlugin and CopyWebpackPlugin will need to be configured in a similar way for all future question types.
-      new HtmlWebpackPlugin({
-        chunks: ['open-response'],
-        filename: 'open-response/index.html',
-        template: 'packages/helpers/index.html'
-      }),
-      new HtmlWebpackPlugin({
-        chunks: ['open-response/report-item'],
-        filename: 'open-response/report-item/index.html',
-        template: 'packages/helpers/index.html'
-      }),
       // Wrapper page, useful for testing and Cypress.
-      new HtmlWebpackPlugin({
-        chunks: ['wrapper'],
-        filename: 'wrapper.html',
-        template: 'packages/helpers/wrapper.html'
-      }),
+      // new HtmlWebpackPlugin({
+      //   chunks: ['wrapper'],
+      //   filename: 'wrapper.html',
+      //   template: 'packages/helpers/wrapper.html'
+      // }),
       // generate version.json
       new GenerateJsonFromJsPlugin({
-        path: './generate-version-json.js',
-        filename: 'version.json'
+        path: `${__dirname}/shared/generate-version-json.js`,
+        filename: `${interactiveName}/version.json`,
+        data: { interactiveDirName }
       }),
       new ESLintPlugin({
         extensions: ['ts','tsx']
       })
     ]
   };
+
+  return merge(common, customizations);
 };

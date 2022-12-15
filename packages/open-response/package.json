@@ -1,63 +1,7 @@
 {
   "name": "open-response",
-  "version": "1.10.3",
+  "version": "1.11.0",
   "description": "Open Response interactive",
-  "main": "index.js",
-  "jest": {
-    "testURL": "https://question-interactives.unexisting.url.com",
-    "setupFilesAfterEnv": [
-      "<rootDir>src/setupTests.ts"
-    ],
-    "transform": {
-      "^.+\\.tsx?$": "ts-jest"
-    },
-    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
-    "testPathIgnorePatterns": [
-      "/convert-lara-answers/",
-      "/node_modules/",
-      "/cypress/"
-    ],
-    "coveragePathIgnorePatterns": [
-      "/node_modules/",
-      "src/utilities/test-utils.ts"
-    ],
-    "moduleNameMapper": {
-      "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>__mocks__/fileMock.js",
-      "\\.(css|less|sass|scss)$": "identity-obj-proxy"
-    },
-    "moduleFileExtensions": [
-      "ts",
-      "tsx",
-      "js",
-      "jsx",
-      "json",
-      "node"
-    ]
-  },
-  "scripts": {
-    "start": "webpack serve --no-https",
-    "start:secure": "webpack serve",
-    "start:secure:no-certs": "webpack serve --no-https-request-cert",
-    "build": "npm-run-all lint:build clean build:webpack",
-    "build:webpack": "webpack --mode production --devtool source-map",
-    "clean": "rimraf dist",
-    "lara-api:install": "npm install",
-    "lara-api:link": "npm link @concord-consortium/lara-interactive-api",
-    "lara-api:unlink:only": "npm unlink --no-save @concord-consortium/lara-interactive-api",
-    "lara-api:unlink": "npm-run-all lara-api:unlink:only lara-api:install",
-    "lint": "eslint \"./src/**/*.{js,jsx,ts,tsx}\"",
-    "lint:build": "eslint -c \".eslintrc.build.js\" \"./src/**/*.{js,jsx,ts,tsx}\"",
-    "lint:fix": "eslint --fix \"./src/**/*.{js,jsx,ts,tsx}\"",
-    "test": "jest",
-    "test:all": "npm-run-all build test start",
-    "test:coverage": "jest --coverage",
-    "test:debug": "node --nolazy --inspect-brk ./node_modules/.bin/jest --runInBand --no-cache",
-    "test:watch": "jest --watch",
-    "test:coverage:watch": "jest --coverage --watchAll",
-    "test:cypress": "cypress run",
-    "test:cypress:open": "cypress open",
-    "test:full": "npm-run-all test test:cypress"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/concord-consortium/question-interactives.git"
@@ -68,6 +12,46 @@
     "url": "https://github.com/concord-consortium/question-interactives/issues"
   },
   "homepage": "https://github.com/concord-consortium/question-interactives#readme",
+  "jest": {
+    "testURL": "https://question-interactives.unexisting.url.com",
+    "setupFilesAfterEnv": [
+      "<rootDir>src/setupTests.ts"
+    ],
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "/cypress/"
+    ],
+    "coveragePathIgnorePatterns": [
+      "/node_modules/"
+    ],
+    "moduleNameMapper": {
+      "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>__mocks__/fileMock.js",
+      "\\.(css|less|sass|scss)$": "identity-obj-proxy"
+    },
+    "moduleFileExtensions": [
+      "ts", "tsx", "js", "jsx", "json", "node"
+    ]
+  },
+  "scripts": {
+    "start": "webpack serve --no-https",
+    "start:secure": "webpack serve",
+    "start:secure:no-certs": "webpack serve --no-https-request-cert",
+    "build": "npm-run-all lint:build build:webpack",
+    "build:webpack": "webpack --mode production --devtool source-map",
+    "lint": "eslint \"./src/**/*.{js,jsx,ts,tsx}\"",
+    "lint:build": "eslint -c \".eslintrc.build.js\" \"./src/**/*.{js,jsx,ts,tsx}\"",
+    "lint:fix": "eslint --fix \"./src/**/*.{js,jsx,ts,tsx}\"",
+    "test": "jest",
+    "test:all": "npm-run-all build test start",
+    "test:coverage": "jest --coverage",
+    "test:debug": "node --nolazy --inspect-brk ./node_modules/.bin/jest --runInBand --no-cache",
+    "test:watch": "jest --watch",
+    "test:coverage:watch": "jest --coverage --watchAll"
+  },
   "devDependencies": {
     "@cypress/webpack-preprocessor": "^5.15.7",
     "@svgr/webpack": "^6.5.1",
@@ -134,7 +118,7 @@
     "@concord-consortium/slate-editor": "^0.8.2",
     "@concord-consortium/text-decorator": "^1.0.2",
     "@concord-consortium/token-service": "^2.1.0",
-    "@concord-consortium/question-interactives-helpers/src": "*",
+    "@concord-consortium/question-interactives-helpers": "*",
     "acorn": "^8.8.1",
     "audio-recorder-polyfill": "^0.4.1",
     "chart.js": "^3.9.1",

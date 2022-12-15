@@ -2,6 +2,16 @@
   "name": "@concord-consortium/question-interactives-helpers",
   "version": "0.0.1",
   "description": "Concord Consortium question interactives helpers library",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/concord-consortium/question-interactives.git"
+  },
+  "author": "Concord Consortium",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/concord-consortium/question-interactives/issues"
+  },
+  "homepage": "https://github.com/concord-consortium/question-interactives#readme",
   "jest": {
     "testURL": "https://question-interactives.unexisting.url.com",
     "setupFilesAfterEnv": [
@@ -34,7 +44,6 @@
     ]
   },
   "scripts": {
-    "build": "npm-run-all lint:build",
     "lara-api:install": "npm install",
     "lara-api:link": "npm link @concord-consortium/lara-interactive-api",
     "lara-api:unlink:only": "npm unlink --no-save @concord-consortium/lara-interactive-api",
@@ -49,16 +58,6 @@
     "test:watch": "jest --watch",
     "test:coverage:watch": "jest --coverage --watchAll"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/concord-consortium/question-interactives.git"
-  },
-  "author": "Concord Consortium",
-  "license": "MIT",
-  "bugs": {
-    "url": "https://github.com/concord-consortium/question-interactives/issues"
-  },
-  "homepage": "https://github.com/concord-consortium/question-interactives#readme",
   "devDependencies": {
     "@cypress/webpack-preprocessor": "^5.15.7",
     "@svgr/webpack": "^6.5.1",
