@@ -10,6 +10,7 @@ const { merge } = require('webpack-merge');
 module.exports = (env, argv, interactiveDirName, customizations) => {
   const devMode = argv.mode !== 'production';
   const interactiveName = path.basename(interactiveDirName); // e.g. "open-response"
+  const rootDir = `${__dirname}/..`;
 
   const common = {
     context: interactiveDirName, // to automatically find tsconfig.json
@@ -25,7 +26,7 @@ module.exports = (env, argv, interactiveDirName, customizations) => {
     mode: 'development',
     output: {
        // set the path to be ./dist in the top-level monorepo directory
-      path: `${__dirname}/dist`,
+      path: `${rootDir}/dist`,
       filename: '[name]/assets/index.[contenthash].js'
     },
     performance: { hints: false },
@@ -123,7 +124,7 @@ module.exports = (env, argv, interactiveDirName, customizations) => {
       // }),
       // generate version.json
       new GenerateJsonFromJsPlugin({
-        path: `${__dirname}/shared/generate-version-json.js`,
+        path: `${rootDir}/shared/generate-version-json.js`,
         filename: `${interactiveName}/version.json`,
         data: { interactiveDirName }
       }),

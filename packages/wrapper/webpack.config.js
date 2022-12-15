@@ -3,7 +3,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 
-const webpackCommon = require('../../webpack-common.config.js');
+const webpackCommon = require('../../shared/webpack-common.config.js');
 
 module.exports = (env, argv) => {
   const interactiveName = path.basename(__dirname); // e.g. "open-response"
