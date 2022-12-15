@@ -63,7 +63,10 @@ const getGraphOptions = (authoredState: IAuthoredState, chartData?: CustomChartD
         ...yAxisOptions
       },
       x: {
-        type: "linear",
+        // The bar chart does not display at all if you specify the type here for the x axis.
+        // This was specified before we upgraded chart.js versions.  Leaving here commented out
+        // for posterity.
+        // type: "linear",
         title: {
           display: !!authoredState.xAxisLabel,
           text: authoredState.xAxisLabel || "",
