@@ -14,7 +14,7 @@ export default defineConfig({
     setupNodeEvents(on, config) {
       return require('./plugins/index.js')(on, config)
     },
-    baseUrl: 'http://localhost:8080',
+    baseUrl: 'http://127.0.0.1:8080',
     specPattern: 'e2e/**/*.{js,jsx,ts,tsx}',
     supportFile: 'support/e2e.js'
   },
