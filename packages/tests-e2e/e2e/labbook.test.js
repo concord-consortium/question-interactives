@@ -220,7 +220,7 @@ context("Test Lab book interactive", () => {
         });
         le.getThumbnail(1).should("have.text", "[blank]");
         le.getUploadButton().should("have.text", "Upload Image");
-        le.getUploadButton().selectFile('cypress/fixtures/image-upload.png', {force: true});
+        le.getUploadButton().selectFile('fixtures/image-upload.png', {force: true});
         le.getUploadButton().should("have.text", "Please Wait");
         cy.wait(4000);
         le.getThumbnail(1).find(".dt-canvas-container").should("exist");
