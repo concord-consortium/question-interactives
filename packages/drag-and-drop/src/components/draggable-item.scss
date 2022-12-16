@@ -1,0 +1,10 @@
+@import "@concord-consortium/question-interactives-helpers/src/styles/helpers";
+
+.draggableItem {
+  position: relative;
+  cursor: move;
+
+  img {
+    pointer-events: none;
+  }
+}
