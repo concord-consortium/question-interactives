@@ -1,0 +1,9 @@
+@import "@concord-consortium/question-interactives-helpers/src/styles/helpers";
+
+.correctAnswer {
+  color: $correctColor;
+}
+
+.incorrectAnswer {
+  color: $incorrectColor;
+}

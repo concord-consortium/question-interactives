@@ -1,0 +1,55 @@
+@import "../vars.scss";
+
+.thumbnail-chooser {
+  background-color: white;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  width: 100%;
+
+  .thumbnail-chooser-title {
+    font-size: 16px;
+    padding-top: 5px;
+    text-align: center;
+    margin: 10px;
+  }
+
+  .thumbnail-chooser-list {
+    height: 110px;
+    display: flex;
+    align-items: center;
+    overflow: scroll;
+  }
+
+  .arrow-button {
+    display: flex;
+    justify-content: center;
+    width: 10%;
+    border-radius: 4px;
+    background-color: var(--white);
+    border: none;
+    opacity: 1.0;
+    &:hover{
+      background-color: var(--cc-teal-light-5);
+    }
+    &:active {
+      background-color: var(--cc-teal-light-3);
+    }
+    &.disabled {
+      opacity: 0.35;
+      &:hover {
+        background-color: var(--white);
+      }
+      &:active {
+        background-color: var(--white);
+      }
+    }
+  }
+
+  .button-icon-container {
+    width: 24px;
+    height: 24px;
+    object-fit: contain;
+  }
+
+}

@@ -1,0 +1,31 @@
+
+.upload-button {
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  margin: 5px 10px;
+  padding: 1px 2px;
+  border-radius: 4px;
+  border: solid 1.5px var(--cc-charcoal-light-1);
+  background-color: var(--cc-teal-light-5);
+  font-family: Lato;
+  font-weight: normal;
+  color: var(--cc-charcoal);
+  &:hover {
+    background-color: var(--cc-teal-light-4);
+  }
+  &:active {
+    background-color: var(--cc-teal-light-3);
+  }
+  &.disabled {
+    opacity: 0.3;
+  }
+  svg {
+    width: 34px;
+  }
+  .button-text {
+    margin: 0px 5px;
+    font-size: 14px;
+  }
+}
+
