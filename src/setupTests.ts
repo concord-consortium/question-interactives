@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-var-requires */
 const enzyme = require("enzyme");
-const Adapter = require("enzyme-adapter-react-16");
+const Adapter = require("@wojtekmaj/enzyme-adapter-react-17");
 import "@testing-library/jest-dom";
 /* eslint-enable @typescript-eslint/no-var-requires */
 
