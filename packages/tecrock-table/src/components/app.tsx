@@ -1,6 +1,6 @@
 import React from "react";
 import { BaseApp } from "@concord-consortium/question-interactives-helpers/src/components/base-app";
-import { IAuthoredState } from "./types";
+import { IAuthoredState } from "../types";
 import { Runtime } from "./runtime";
 import { JSONSchema6 } from "json-schema";
 
