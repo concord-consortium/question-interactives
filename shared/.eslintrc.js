@@ -5,7 +5,7 @@ module.exports = {
     ecmaVersion: 2018,
     sourceType: "module",
   },
-  plugins: ["@typescript-eslint", "react", "react-hooks"],
+  plugins: ["@typescript-eslint", "react", "react-hooks", "import"],
   env: {
     browser: true,
     es6: true,
@@ -35,6 +35,7 @@ module.exports = {
     "@typescript-eslint/no-unused-vars": ["warn", { "args": "none", "ignoreRestSiblings": true }],
     curly: ["error", "multi-line", "consistent"],
     eqeqeq: ["error", "smart"],
+    "import/no-extraneous-dependencies": ["error"],
     "eslint-comments/no-unused-disable": "warn",
     "no-debugger": "off",
     "no-shadow": ["error", { "builtinGlobals": false, "hoist": "all", "allow": [] }],

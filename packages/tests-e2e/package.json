@@ -17,7 +17,7 @@
     "test:cypress:open": "cypress open"
   },
   "devDependencies": {
-    "cypress": "^10.7.0"
-  },
-  "dependencies": {}
+    "cypress": "^10.7.0",
+    "eslint-plugin-import": "^2.26.0"
+  }
 }
