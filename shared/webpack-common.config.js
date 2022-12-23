@@ -101,11 +101,11 @@ module.exports = (env, argv, interactiveDirName, customizations) => {
       ]
     },
     resolve: {
-      // alias: {
-      //   // prevent duplicate react versions when npm linking lara-interactive-api
-      //   // cf. https://github.com/facebook/react/issues/13991#issuecomment-435587809
-      //   react: path.resolve(__dirname, './node_modules/react'),
-      // },
+      alias: {
+        // prevent duplicate react versions when npm linking lara-interactive-api
+        // cf. https://github.com/facebook/react/issues/13991#issuecomment-435587809
+        react: path.resolve(__dirname, '../node_modules/react'),
+      },
       extensions: [ '.ts', '.tsx', '.js' ]
     },
     stats: {

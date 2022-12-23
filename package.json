@@ -26,7 +26,9 @@
     "test": "lerna run test",
     "test:cypress": "lerna run test:cypress",
     "test:cypress:open": "lerna run test:cypress:open",
-    "test:full": "npm-run-all lint test test:cypress"
+    "test:full": "npm-run-all lint test test:cypress",
+    "lara-api:link": "npm link @concord-consortium/lara-interactive-api --workspaces",
+    "lara-api:unlink": "npm unlink --no-save @concord-consortium/lara-interactive-api --workspaces && npm install"
   },
   "devDependencies": {
     "lerna": "^6.1.0",
