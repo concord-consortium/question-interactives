@@ -5,9 +5,9 @@ export interface IAuthoredState extends IAuthoringMetadataBase {
   dataSourceInteractive?: string;
 }
 
+// This should be kept in sync with the ITectonicExplorerInteractiveState in the tectonic-explorer repository.
 export interface ITectonicExplorerInteractiveState extends IRuntimeInteractiveMetadata {
   dataset: IDataset;
-  snapshotRequestTimestamp?: number;
   planetViewSnapshot?: string;
   crossSectionSnapshot?: string;
 }
