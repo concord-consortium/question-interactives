@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { IRuntimeQuestionComponentProps } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
 import { IAuthoredState, ITectonicExplorerInteractiveState } from "../types";
 import {
   addLinkedInteractiveStateListener, removeLinkedInteractiveStateListener, IDataset
@@ -10,11 +11,9 @@ import { useGlossaryDecoration } from "@concord-consortium/question-interactives
 
 import css from "./runtime.scss";
 
-export interface IProps {
-  authoredState: IAuthoredState;
-}
+interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, ITectonicExplorerInteractiveState> {}
 
-export const Runtime: React.FC<IProps> = ({ authoredState }) => {
+export const Runtime: React.FC<IProps> = ({ authoredState, setInteractiveState }) => {
   const [ dataset, setDataset ] = useState<IDataset | null | undefined>();
   const [ planetViewSnapshot, setPlanetViewSnapshot ] = useState<string | undefined>();
   const [ crossSectionSnapshot, setCrossSectionSnapshot ] = useState<string | undefined>();
@@ -39,13 +38,19 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
 
       setPlanetViewSnapshot(newLinkedIntState?.planetViewSnapshot);
       setCrossSectionSnapshot(newLinkedIntState?.crossSectionSnapshot);
+
+      if (newLinkedIntState) {
+        // Simply save linked state as our own interactive state. Currently, it's the only way to show anything in the report.
+        // Reports don't support linked interactive state observing (yet?).
+        setInteractiveState?.(prev => newLinkedIntState);
+      }
     };
     const options = { interactiveItemId: dataSourceInteractive };
     addLinkedInteractiveStateListener<any>(listener, options);
     return () => {
       removeLinkedInteractiveStateListener<any>(listener);
     };
-  }, [dataSourceInteractive]);
+  }, [dataSourceInteractive, setInteractiveState]);
 
   const decorateOptions = useGlossaryDecoration();
   return (

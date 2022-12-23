@@ -1,6 +1,6 @@
 import React from "react";
-import { BaseApp } from "@concord-consortium/question-interactives-helpers/src/components/base-app";
-import { IAuthoredState } from "../types";
+import { BaseQuestionApp } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
+import { IAuthoredState, ITectonicExplorerInteractiveState } from "../types";
 import { Runtime } from "./runtime";
 import { JSONSchema6 } from "json-schema";
 
@@ -33,10 +33,11 @@ const baseAuthoringProps = {
 };
 
 export const App = () => (
-  <BaseApp<IAuthoredState>
+  <BaseQuestionApp<IAuthoredState, ITectonicExplorerInteractiveState>
     Runtime={Runtime}
     baseAuthoringProps={baseAuthoringProps}
     disableAutoHeight={false}
+    disableSubmitBtnRendering={true}
     linkedInteractiveProps={[ { label: "dataSourceInteractive" } ]}
   />
 );
