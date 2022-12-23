@@ -105,7 +105,7 @@
     "webpack-dev-server": "^4.7.4"
   },
   "dependencies": {
-    "@concord-consortium/lara-interactive-api": "1.7.1",
+    "@concord-consortium/lara-interactive-api": "1.7.2",
     "@concord-consortium/question-interactives-helpers": "^1.11.0",
     "@concord-consortium/text-decorator": "^1.0.2",
     "audio-recorder-polyfill": "^0.4.1",
