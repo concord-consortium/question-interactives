@@ -102,6 +102,7 @@
     "@concord-consortium/lara-interactive-api": "1.7.2",
     "@concord-consortium/question-interactives-helpers": "^1.11.0",
     "@concord-consortium/text-decorator": "^1.0.2",
+    "classnames": "^2.3.1",
     "json-schema": "^0.4.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",

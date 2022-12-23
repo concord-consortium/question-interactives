@@ -1,9 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
+import classNames from "classnames";
 import { IRuntimeQuestionComponentProps } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
 import { IAuthoredState, ITectonicExplorerInteractiveState } from "../types";
-import {
-  addLinkedInteractiveStateListener, removeLinkedInteractiveStateListener, IDataset
-} from "@concord-consortium/lara-interactive-api";
+import { addLinkedInteractiveStateListener, removeLinkedInteractiveStateListener } from "@concord-consortium/lara-interactive-api";
 import { useLinkedInteractiveId } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
 import { DecorateChildren } from "@concord-consortium/text-decorator";
 import { renderHTML } from "@concord-consortium/question-interactives-helpers/src/utilities/render-html";
@@ -13,11 +12,9 @@ import css from "./runtime.scss";
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, ITectonicExplorerInteractiveState> {}
 
-export const Runtime: React.FC<IProps> = ({ authoredState, setInteractiveState }) => {
-  const [ dataset, setDataset ] = useState<IDataset | null | undefined>();
-  const [ planetViewSnapshot, setPlanetViewSnapshot ] = useState<string | undefined>();
-  const [ crossSectionSnapshot, setCrossSectionSnapshot ] = useState<string | undefined>();
+export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const dataSourceInteractive = useLinkedInteractiveId("dataSourceInteractive");
+  const { dataset, planetViewSnapshot, crossSectionSnapshot } = interactiveState || {};
 
   useEffect(() => {
     if (!dataSourceInteractive) {
@@ -25,25 +22,18 @@ export const Runtime: React.FC<IProps> = ({ authoredState, setInteractiveState }
     }
 
     const listener = (newLinkedIntState: ITectonicExplorerInteractiveState | undefined) => {
+      if (!newLinkedIntState) {
+        return;
+      }
       const newDataset = newLinkedIntState && newLinkedIntState.dataset;
       const isValidDatasetVersion = newDataset && newDataset.type === "dataset" && Number(newDataset.version) === 1;
-
-      // Accept null or undefined datasets too to clear them. If it's an object, make sure it follows specified format.
-      if (!newDataset || isValidDatasetVersion) {
-        setDataset(newDataset);
-      } else if (newDataset && !isValidDatasetVersion) {
+      if (newDataset && !isValidDatasetVersion) {
         console.warn(`Dataset version ${newDataset.version} is not supported`);
-        setDataset(undefined);
+        return;
       }
-
-      setPlanetViewSnapshot(newLinkedIntState?.planetViewSnapshot);
-      setCrossSectionSnapshot(newLinkedIntState?.crossSectionSnapshot);
-
-      if (newLinkedIntState) {
-        // Simply save linked state as our own interactive state. Currently, it's the only way to show anything in the report.
-        // Reports don't support linked interactive state observing (yet?).
-        setInteractiveState?.(prev => newLinkedIntState);
-      }
+      // Simply save linked state as our own interactive state. Currently, it's the only way to show anything in the report.
+      // Reports don't support linked interactive state observing (yet?).
+      setInteractiveState?.(prev => newLinkedIntState);
     };
     const options = { interactiveItemId: dataSourceInteractive };
     addLinkedInteractiveStateListener<any>(listener, options);
@@ -54,7 +44,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, setInteractiveState }
 
   const decorateOptions = useGlossaryDecoration();
   return (
-    <div className={css.tecRockTable}>
+    <div className={classNames(css.tecRockTable, { [css.report]: report })}>
       {
         authoredState.prompt &&
         <DecorateChildren decorateOptions={decorateOptions}>
