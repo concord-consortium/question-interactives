@@ -82,7 +82,7 @@ When updating a dependency that is shared by multiple interactives, e.g. Webpack
 
 ### Import checking
 
-Because of this hoisted dependency setup, it makes it possible to import dependencies in your code without declaring one in the subfolder's package.json file. That could happen if the top-level package.json some other subfolder package.json added this dependency. In those two cases the dependency is now in the top-level node_modules folder. To prevent this 'undeclared dependency' problem the eslint-plugin-import module is added. It is configured to force all imports in your code to be declared in the code's package.json.
+Because of this hoisted dependency setup, it makes it possible to import dependencies in your code without declaring one in the subfolder's package.json file. That could happen if the top-level package.json or some other subfolder package.json added this dependency. In those two cases the dependency is now in the top-level node_modules folder. To prevent this 'undeclared dependency' problem the eslint-plugin-import module is added. It is configured to force all imports in your code to be declared in the code's package.json.
 
 ### Adding a new interactive or shared package
 
