@@ -1,0 +1,16 @@
+@import "@concord-consortium/question-interactives-helpers/src/styles/helpers";
+
+.runtime {
+  button {
+    @include ap-button;
+    margin: 5px;
+    svg {
+      // icon
+      margin-left: 5px;
+    }
+  }
+
+  .buttons {
+    float: right;
+  }
+}

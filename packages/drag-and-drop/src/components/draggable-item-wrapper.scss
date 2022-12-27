@@ -1,0 +1,27 @@
+@import "@concord-consortium/question-interactives-helpers/src/styles/helpers";
+
+.draggableItemWrapper {
+  position: absolute;
+  pointer-events: none;
+
+  &.draggable {
+    cursor: move;
+    pointer-events: auto;
+
+    &:hover {
+      $border-width: 4px;
+      border: $border-width solid #ffdd00;
+      transform: translate(-$border-width, -$border-width);
+    }
+  }
+  img {
+    pointer-events: none;
+  }
+  .itemLabel {
+    position: absolute;
+    bottom: -25px;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+}

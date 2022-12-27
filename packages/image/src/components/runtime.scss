@@ -1,0 +1,49 @@
+@import "@concord-consortium/question-interactives-helpers/src/styles/helpers";
+.runtime{
+  height:100%;
+}
+.imageContainer{
+  width: 100%;
+  margin-bottom: 10px;
+  img{
+    max-width: 100%;
+    height: auto;
+  }
+  &.fitWidth{
+    img{
+      width: 100%;
+    }
+  }
+  &.originalDimensions{
+    img{
+      width: auto;
+    }
+  }
+}
+.caption{
+  font-size: 0.8em;
+  width: 100%;
+  line-height: 1.5em;
+}
+
+.credit{
+  font-size: 0.8em;
+  width: 100%;
+  line-height: 1.2em;
+}
+
+.creditLink{
+  font-size: 0.8em;
+  width: 100%;
+  line-height: 1.2em;
+}
+
+.viewHighRes{
+  position: absolute;
+  right: 30px;
+  width: 30px;
+  height: 30px;
+  margin-top:-30px;
+  font-size: 0.8em;
+  cursor: zoom-in;
+}

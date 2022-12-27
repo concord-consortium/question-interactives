@@ -1,0 +1,13 @@
+@import "@concord-consortium/question-interactives-helpers/src/styles/helpers";
+
+.draggingArea {
+  border: 1px solid gray;
+  position: relative;
+  background-repeat: no-repeat;
+  background-position: center;
+  user-select: none;
+
+  .prompt {
+    position: absolute;
+  }
+}

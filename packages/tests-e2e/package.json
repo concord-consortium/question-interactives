@@ -1,0 +1,23 @@
+{
+  "name": "tests-e2e",
+  "private": true,
+  "description": "Cypress E2E tests",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/concord-consortium/question-interactives.git"
+  },
+  "author": "Concord Consortium",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/concord-consortium/question-interactives/issues"
+  },
+  "homepage": "https://github.com/concord-consortium/question-interactives#readme",
+  "scripts": {
+    "test:cypress": "cypress run",
+    "test:cypress:open": "cypress open"
+  },
+  "devDependencies": {
+    "cypress": "^10.7.0",
+    "eslint-plugin-import": "^2.26.0"
+  }
+}

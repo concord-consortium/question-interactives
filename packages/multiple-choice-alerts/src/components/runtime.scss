@@ -1,0 +1,118 @@
+/*
+  This is a modified version of the standard multiple choice question which uses the LARA interactive
+  API showModal() function to show feedback via modal alert rather than inline feedback. At this point
+  its sole purpose is to allow manual testing of the modal alert functionality.
+ */
+
+@import "@concord-consortium/question-interactives-helpers/src/styles/helpers";
+
+legend.prompt {     // clear bootstrap stuff
+  display: unset;
+  width: unset;
+  margin-bottom: unset;
+  font-size: unset;
+  border: unset;
+  padding-bottom: 5px;
+
+  img {
+    height: auto;
+    max-width: 100%;
+  }
+}
+
+.choices {
+
+  input[type=radio], input[type=checkbox] {
+    transform: scale(1.5);
+    margin: 4px 10px 0 5px;
+  }
+
+  &.horizontal {
+    display: flex;
+    flex-wrap: wrap;
+
+    div {
+      display: flex;
+      margin-right: 25px;
+    }
+  }
+
+  &.likert {
+    display: grid;
+    grid-template-columns: repeat( auto-fit, minmax(0px, 1fr) );
+
+    div {
+      display: flex;
+      flex-direction: column-reverse;
+      align-items: center;
+
+      input[type=radio], input[type=checkbox] {
+        margin: 7px 0 4px;
+      }
+
+      label {
+        margin: 5px 0 0 0;
+      }
+    }
+  }
+
+  &.dropdown {
+    select {
+      margin: 5px;
+      padding: 2px;
+    }
+  }
+}
+
+label {
+  font-weight: normal;
+}
+
+.correctChoice {
+  color: $correctColor;
+}
+
+.incorrectChoice {
+  color: $incorrectColor;
+}
+
+.answerFeedback {
+  display: flex;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  margin-top: 9px;
+
+  .symbol {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 28px;
+    color: white;
+    border-radius: 3px 0 0 3px;
+
+    svg {
+      width: 35px;
+    }
+
+    &.incorrectSymbol {
+      background-color: #da0006;
+      svg {
+        fill: #fee5e5;
+      }
+    }
+
+    &.correctSymbol {
+      background-color: #19b533;
+      svg {
+        fill: #e9fced;
+      }
+    }
+  }
+
+  .feedback {
+    display: flex;
+    align-items: center;
+    padding: 2px 8px;
+  }
+}
