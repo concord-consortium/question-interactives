@@ -57,7 +57,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         <div className={css.table}>
           <table>
             <thead>
-              <tr><th>Rock</th><th>Temperature</th><th>Pressure</th></tr>
+              <tr><th>Rock</th><th>Temperature</th><th>Pressure</th><th>Notes</th></tr>
             </thead>
             <tbody>
               {
