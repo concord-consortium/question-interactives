@@ -42,4 +42,11 @@
       }
     }
   }
+
+  &.report {
+    overflow-x: auto;
+    .tableAndSnapshots {
+      min-width: 1040px;
+    }
+  }
 }
