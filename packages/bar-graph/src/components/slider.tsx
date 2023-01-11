@@ -26,30 +26,38 @@ export const Slider = ({renderedBar, top, bottom, max, handleSliderChange}: IPro
   const tabIndex = StartChartTabIndex + 1 + (2* index);
   const ref = useRef<HTMLDivElement|null>(null);
 
-  const handleMouseDown = useCallback((e: React.MouseEvent<HTMLElement>) => {
-    e.preventDefault();
+  const handleMouseDownOrTouchStart = useCallback((e: React.MouseEvent<HTMLElement>|React.TouchEvent<HTMLElement>) => {
+    const mouseE = e as React.MouseEvent<HTMLDivElement>;
+    const touchE = e as React.TouchEvent<HTMLDivElement>;
 
     let logValue: number|undefined = undefined;
     const startY = renderedBar.top;
-    const startClientY = e.clientY;
+    const startClientY = touchE.touches && touchE.touches[0] ? touchE.touches[0].clientY : mouseE.clientY;
 
-    const handleMouseMove = (moveEvent: MouseEvent) => {
-      const delta = moveEvent.clientY - startClientY;
+    const handleMouseOrTouchMove = (moveOrTouchEvent: MouseEvent|TouchEvent) => {
+      const mouseMoveE = moveOrTouchEvent as MouseEvent;
+      const touchMoveE = moveOrTouchEvent as TouchEvent;
+      const clientY = touchMoveE.touches && touchMoveE.touches[0] ? touchMoveE.touches[0].clientY : mouseMoveE.clientY;
+      const delta = clientY - startClientY;
       const newY = Math.max(top, Math.min(startY + delta, bottom));
       const newValue = max - (max * ((newY - top) / (bottom - top)));
       handleSliderChange(renderedBar, newValue, {via: "mouse", skipLog: true});
       logValue = newValue;
     };
-    const handleMouseUp = () => {
+    const handleMouseUpOrTouchEnd = () => {
       if (logValue !== undefined) {
         handleSliderChange(renderedBar, logValue, {via: "mouse"});
       }
-      window.removeEventListener("mousemove", handleMouseMove);
-      window.removeEventListener("mouseup", handleMouseUp);
+      window.removeEventListener("mousemove", handleMouseOrTouchMove);
+      window.removeEventListener("touchmove", handleMouseOrTouchMove);
+      window.removeEventListener("mouseup", handleMouseUpOrTouchEnd);
+      window.removeEventListener("touchend", handleMouseUpOrTouchEnd);
     };
 
-    window.addEventListener("mousemove", handleMouseMove);
-    window.addEventListener("mouseup", handleMouseUp);
+    window.addEventListener("mousemove", handleMouseOrTouchMove);
+    window.addEventListener("touchmove", handleMouseOrTouchMove);
+    window.addEventListener("mouseup", handleMouseUpOrTouchEnd);
+    window.addEventListener("touchend", handleMouseUpOrTouchEnd);
   }, [renderedBar, top, bottom, max, handleSliderChange]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -91,7 +99,8 @@ export const Slider = ({renderedBar, top, bottom, max, handleSliderChange}: IPro
       className={css.slider}
       style={style}
       tabIndex={tabIndex}
-      onMouseDown={handleMouseDown}
+      onMouseDown={handleMouseDownOrTouchStart}
+      onTouchStart={handleMouseDownOrTouchStart}
       onKeyDown={handleKeyDown}
       role="slider"
       aria-valuemin={0}
