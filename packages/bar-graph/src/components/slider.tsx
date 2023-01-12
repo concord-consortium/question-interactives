@@ -1,4 +1,4 @@
-import React, { useCallback, useRef } from "react";
+import React, { useCallback, useEffect, useRef } from "react";
 import { IRenderedBar } from "../plugins/chart-info";
 import { StartChartTabIndex } from "./bar-chart";
 
@@ -26,15 +26,21 @@ export const Slider = ({renderedBar, top, bottom, max, handleSliderChange}: IPro
   const tabIndex = StartChartTabIndex + 1 + (2* index);
   const ref = useRef<HTMLDivElement|null>(null);
 
-  const handleMouseDownOrTouchStart = useCallback((e: React.MouseEvent<HTMLElement>|React.TouchEvent<HTMLElement>) => {
-    const mouseE = e as React.MouseEvent<HTMLDivElement>;
-    const touchE = e as React.TouchEvent<HTMLDivElement>;
+  const handleMouseDownOrTouchStart = useCallback((e: MouseEvent|TouchEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    const mouseE = e as MouseEvent;
+    const touchE = e as TouchEvent;
 
     let logValue: number|undefined = undefined;
     const startY = renderedBar.top;
     const startClientY = touchE.touches && touchE.touches[0] ? touchE.touches[0].clientY : mouseE.clientY;
 
     const handleMouseOrTouchMove = (moveOrTouchEvent: MouseEvent|TouchEvent) => {
+      moveOrTouchEvent.preventDefault();
+      moveOrTouchEvent.stopPropagation();
+
       const mouseMoveE = moveOrTouchEvent as MouseEvent;
       const touchMoveE = moveOrTouchEvent as TouchEvent;
       const clientY = touchMoveE.touches && touchMoveE.touches[0] ? touchMoveE.touches[0].clientY : mouseMoveE.clientY;
@@ -44,20 +50,23 @@ export const Slider = ({renderedBar, top, bottom, max, handleSliderChange}: IPro
       handleSliderChange(renderedBar, newValue, {via: "mouse", skipLog: true});
       logValue = newValue;
     };
-    const handleMouseUpOrTouchEnd = () => {
+    const handleMouseUpOrTouchEnd = (upOrTouchEvent: MouseEvent|TouchEvent) => {
+      upOrTouchEvent.preventDefault();
+      upOrTouchEvent.stopPropagation();
+
       if (logValue !== undefined) {
         handleSliderChange(renderedBar, logValue, {via: "mouse"});
       }
       window.removeEventListener("mousemove", handleMouseOrTouchMove);
-      window.removeEventListener("touchmove", handleMouseOrTouchMove);
       window.removeEventListener("mouseup", handleMouseUpOrTouchEnd);
+      window.removeEventListener("touchmove", handleMouseOrTouchMove);
       window.removeEventListener("touchend", handleMouseUpOrTouchEnd);
     };
 
-    window.addEventListener("mousemove", handleMouseOrTouchMove);
-    window.addEventListener("touchmove", handleMouseOrTouchMove);
-    window.addEventListener("mouseup", handleMouseUpOrTouchEnd);
-    window.addEventListener("touchend", handleMouseUpOrTouchEnd);
+    window.addEventListener("mousemove", handleMouseOrTouchMove, {passive: false});
+    window.addEventListener("mouseup", handleMouseUpOrTouchEnd, {passive: false});
+    window.addEventListener("touchmove", handleMouseOrTouchMove, {passive: false});
+    window.addEventListener("touchend", handleMouseUpOrTouchEnd, {passive: false});
   }, [renderedBar, top, bottom, max, handleSliderChange]);
 
   const handleKeyDown = useCallback((e: React.KeyboardEvent) => {
@@ -93,14 +102,30 @@ export const Slider = ({renderedBar, top, bottom, max, handleSliderChange}: IPro
     }
   }, [max, renderedBar, handleSliderChange]);
 
+  // add the mouse/touch handlers manually so we can pass {passive: false} and cancel the initial
+  // touchstart so that the background doesn't scroll as the sliders are moved
+  useEffect(() => {
+    if (ref.current) {
+      ref.current.addEventListener("mousedown", handleMouseDownOrTouchStart, {passive: false});
+      ref.current.addEventListener("touchstart", handleMouseDownOrTouchStart, {passive: false});
+
+      // ensure that we remove the event listener from the same element
+      const savedRef = ref.current;
+      return () => {
+        if (savedRef) {
+          savedRef.removeEventListener("mousedown", handleMouseDownOrTouchStart);
+          savedRef.removeEventListener("touchstart", handleMouseDownOrTouchStart);
+        }
+      };
+    }
+  }, [handleMouseDownOrTouchStart]);
+
   return (
     <div
       ref={ref}
       className={css.slider}
       style={style}
       tabIndex={tabIndex}
-      onMouseDown={handleMouseDownOrTouchStart}
-      onTouchStart={handleMouseDownOrTouchStart}
       onKeyDown={handleKeyDown}
       role="slider"
       aria-valuemin={0}
