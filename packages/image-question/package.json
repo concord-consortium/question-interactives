@@ -1,6 +1,6 @@
 {
   "name": "image-question",
-  "version": "1.11.0",
+  "version": "1.10.5-pre.1",
   "description": "Image Question interactive",
   "repository": {
     "type": "git",
@@ -106,10 +106,10 @@
   },
   "dependencies": {
     "@concord-consortium/lara-interactive-api": "1.7.2",
-    "@concord-consortium/question-interactives-helpers": "^1.11.0",
+    "@concord-consortium/question-interactives-helpers": "^1.10.5-pre.1",
     "@concord-consortium/text-decorator": "^1.0.2",
     "deepmerge": "^4.2.2",
-    "drawing-tool": "^1.11.0",
+    "drawing-tool": "^1.10.5-pre.1",
     "json-schema": "^0.4.0",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",

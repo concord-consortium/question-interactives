@@ -1,6 +1,6 @@
 {
   "name": "full-screen",
-  "version": "1.11.0",
+  "version": "1.10.5-pre.1",
   "description": "Full-screen interactive",
   "repository": {
     "type": "git",
@@ -100,7 +100,7 @@
   },
   "dependencies": {
     "@concord-consortium/lara-interactive-api": "1.7.2",
-    "@concord-consortium/question-interactives-helpers": "^1.11.0",
+    "@concord-consortium/question-interactives-helpers": "^1.10.5-pre.1",
     "json-schema": "^0.4.0",
     "query-string": "^7.1.1",
     "react": "^17.0.2",
