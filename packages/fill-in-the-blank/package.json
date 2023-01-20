@@ -1,6 +1,6 @@
 {
   "name": "fill-in-the-blank",
-  "version": "1.10.5-pre.1",
+  "version": "1.10.5",
   "description": "Fill in the blank interactive",
   "repository": {
     "type": "git",
@@ -107,7 +107,7 @@
   },
   "dependencies": {
     "@concord-consortium/lara-interactive-api": "1.7.2",
-    "@concord-consortium/question-interactives-helpers": "^1.10.5-pre.1",
+    "@concord-consortium/question-interactives-helpers": "^1.10.5",
     "@concord-consortium/text-decorator": "^1.0.2",
     "json-schema": "^0.4.0",
     "react": "^17.0.2",
