@@ -13,7 +13,6 @@ const authoredState: IAuthoredState = {
   credit: "Copyright Concord Consortium",
   creditLink: "https://concord.org",
   creditLinkDisplayText: "Concord.org",
-  allowLightbox: true,
   scaling: "fitWidth"
 };
 const naturalWidthImageAuthoredState: IAuthoredState = {
@@ -25,7 +24,6 @@ const naturalWidthImageAuthoredState: IAuthoredState = {
   credit: "Copyright Concord Consortium",
   creditLink: "https://concord.org",
   creditLinkDisplayText: "Concord.org",
-  allowLightbox: true,
   scaling: "originalDimensions"
 };
 const onlyHighResUrlAuthoredState: IAuthoredState = {
@@ -37,7 +35,6 @@ const onlyHighResUrlAuthoredState: IAuthoredState = {
   credit: "Copyright Concord Consortium",
   creditLink: "https://concord.org",
   creditLinkDisplayText: "Concord.org",
-  allowLightbox: true,
   scaling: "fitWidth"
 };
 

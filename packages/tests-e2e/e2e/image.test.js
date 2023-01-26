@@ -10,7 +10,6 @@ const authoredStateSample = {
   credit: "Copyright Concord Consortium",
   creditLink: "https://concord.org",
   creditLinkDisplayText: "Concord.org",
-  allowLightbox: true,
   scaling: "fitWidth"
 };
 
@@ -95,8 +94,6 @@ context("Test Image interactive", () => {
       cy.getIframeBody().find("#root_credit").should("include.text", authoredStateSample.credit);
       cy.getIframeBody().find("#root_creditLink").should("have.value", authoredStateSample.creditLink);
       cy.getIframeBody().find("#root_creditLinkDisplayText").should("have.value", authoredStateSample.creditLinkDisplayText);
-      cy.getIframeBody().find("#root_allowLightbox").should("be.checked");
-
     });
   });
 
