@@ -3,7 +3,7 @@ import { JSONSchema6 } from "json-schema";
 import { BaseQuestionApp } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
 import { Runtime } from "./runtime";
 import { IAuthoredState, IInteractiveState } from "./types";
-import { baseAuthoringProps as drawingToolBaseAuthoringProps } from "drawing-tool/src/components/app";
+import { baseAuthoringProps as drawingToolBaseAuthoringProps } from "drawing-tool-interactive/src/components/app";
 import deepmerge from "deepmerge";
 
 const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {

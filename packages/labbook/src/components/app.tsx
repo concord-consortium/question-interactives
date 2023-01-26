@@ -4,7 +4,7 @@ import { BaseQuestionApp } from "@concord-consortium/question-interactives-helpe
 import { Runtime } from "./runtime";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { FormValidation } from "react-jsonschema-form";
-import { baseAuthoringProps as drawingToolBaseAuthoringProps } from "drawing-tool/src/components/app";
+import { baseAuthoringProps as drawingToolBaseAuthoringProps } from "drawing-tool-interactive/src/components/app";
 import deepmerge from "deepmerge";
 
 const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {

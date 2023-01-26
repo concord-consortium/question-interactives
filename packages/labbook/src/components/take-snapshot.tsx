@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import { UploadButton } from "./upload-button";
 import { getInteractiveSnapshot } from "@concord-consortium/lara-interactive-api";
-import { getAnswerType, IGenericAuthoredState, IGenericInteractiveState } from "drawing-tool/src/components/types";
+import { getAnswerType, IGenericAuthoredState, IGenericInteractiveState } from "drawing-tool-interactive/src/components/types";
 import { useLinkedInteractiveId } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
 import SnapShotIcon from "../assets/snapshot-image-icon.svg";
 import { Log } from "../labbook-logging";

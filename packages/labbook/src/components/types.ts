@@ -1,7 +1,7 @@
 import {
   IInteractiveState as IDrawingToolInteractiveState,
   IAuthoredState as IDrawingToolAuthoredState
-} from "drawing-tool/src/components/types";
+} from "drawing-tool-interactive/src/components/types";
 import {
   IRuntimeInteractiveMetadata
 } from "@concord-consortium/lara-interactive-api";

@@ -2,8 +2,8 @@ import React, { useState, useRef, useEffect } from "react";
 import deepmerge from "deepmerge";
 import hash from "object-hash";
 import { v4 as uuidv4 } from "uuid";
-import { IInteractiveState as IDrawingToolInteractiveState} from "drawing-tool/src/components/types";
-import { DrawingTool } from "drawing-tool/src/components/drawing-tool";
+import { IInteractiveState as IDrawingToolInteractiveState} from "drawing-tool-interactive/src/components/types";
+import { DrawingTool } from "drawing-tool-interactive/src/components/drawing-tool";
 // import { PreviewPanel } from "./preview-panel"; // For mockup / Zeplin matching.
 import { Log } from "../labbook-logging";
 import { ThumbnailChooser, IThumbnailChooserProps } from "./thumbnail-chooser/thumbnail-chooser";
