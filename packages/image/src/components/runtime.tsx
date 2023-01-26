@@ -5,8 +5,9 @@ import ReactDOMServer from "react-dom/server";
 import { log } from "@concord-consortium/lara-interactive-api";
 import { DecorateChildren } from "@concord-consortium/text-decorator";
 import { useGlossaryDecoration } from "@concord-consortium/question-interactives-helpers/src/hooks/use-glossary-decoration";
-import css from "./runtime.scss";
 import ZoomIcon from "@concord-consortium/question-interactives-helpers/src/icons/zoom-in.svg";
+
+import css from "./runtime.scss";
 
 interface IProps {
   authoredState: IAuthoredState;
@@ -87,13 +88,19 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
           onLoad={getOriginalImageSize}
         />
       </div>
-      {caption &&
-        <DecorateChildren decorateOptions={decorateOptions}>
-          <div className={css.caption}>{caption}</div>
-        </DecorateChildren> }
-      {credit && <div className={css.credit}>{credit}</div>}
-      {getCreditLink()}
-      <div className={`${css.viewHighRes} .glyphicon-zoom-in`} onClick={handleClick}><ZoomIcon /></div>
+      <div className={css.captionAndZoomIn}>
+        <div className={css.textContainer}>
+          {
+            caption &&
+            <DecorateChildren decorateOptions={decorateOptions}>
+              <div className={css.caption}>{caption}</div>
+            </DecorateChildren>
+          }
+          { credit && <div className={css.credit}>{credit}</div> }
+          { getCreditLink() }
+        </div>
+        <div className={`${css.viewHighRes} .glyphicon-zoom-in`} onClick={handleClick}><ZoomIcon /></div>
+      </div>
     </div>
   );
 };
