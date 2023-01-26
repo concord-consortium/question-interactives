@@ -11,7 +11,7 @@ import {
   getAnswerType,
   IGenericAuthoredState,
   IGenericInteractiveState
-} from "drawing-tool/src/components/types";
+} from "drawing-tool-interactive/src/components/types";
 
 export interface IUploadButtonProps {label?:string}
 

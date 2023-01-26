@@ -2,9 +2,9 @@ import React from "react";
 import { shallow } from "enzyme";
 import { Runtime } from "./runtime";
 import { getInteractiveSnapshot, closeModal } from "@concord-consortium/lara-interactive-api";
-import { TakeSnapshot } from "drawing-tool/src/components/take-snapshot";
-import { UploadBackground } from "drawing-tool/src/components/upload-background";
-import { DrawingTool } from "drawing-tool/src/components/drawing-tool";
+import { TakeSnapshot } from "drawing-tool-interactive/src/components/take-snapshot";
+import { UploadBackground } from "drawing-tool-interactive/src/components/upload-background";
+import { DrawingTool } from "drawing-tool-interactive/src/components/drawing-tool";
 import Shutterbug  from "shutterbug";
 
 jest.mock("@concord-consortium/lara-interactive-api", () => ({

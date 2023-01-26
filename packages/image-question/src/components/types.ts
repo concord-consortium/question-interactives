@@ -1,7 +1,7 @@
 import {
   IAuthoredState as IDrawingToolAuthoredState,
   IInteractiveState as IDrawingToolInteractiveState
-} from "drawing-tool/src/components/types";
+} from "drawing-tool-interactive/src/components/types";
 
 import {
   IAuthoringImageQuestionMetadata,
