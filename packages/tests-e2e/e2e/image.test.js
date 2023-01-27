@@ -83,7 +83,6 @@ context("Test Image interactive", () => {
       app.should("include.text", "Credit");
       app.should("include.text", "Credit Link");
       app.should("include.text", "Credit Link Display Text");
-      app.should("include.text", "Allow lightbox");
       app.should("include.text", "Choose a scaling style for the image");
       app.should("include.text", "Drop an image here, or click to select a file to upload. Only popular image formats are supported (e.g. png, jpeg, gif, svg, webp).");
 
