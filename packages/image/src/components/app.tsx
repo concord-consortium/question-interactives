@@ -42,10 +42,6 @@ const baseAuthoringProps = {
         title: "Credit Link Display Text",
         type: "string"
       },
-      allowLightbox: {
-        title: "Allow lightbox",
-        type: "boolean"
-      },
       scaling: {
         title: "Choose a scaling style for the image",
         type: "string",
@@ -98,9 +94,6 @@ const baseAuthoringProps = {
     },
     creditLinkDisplayText: {
       "ui:help": "Text to display for the link to attribution (leave blank to display the url)"
-    },
-    allowLightbox: {
-      "ui:help": "Allow image to be shown in lightbox"
     },
     scaling: {
       "ui:widget": "radio"
