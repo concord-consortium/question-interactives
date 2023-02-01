@@ -16,7 +16,7 @@
     "packages/*"
   ],
   "scripts": {
-    "start": "http-server dist -o",
+    "start": "http-server dist -o -c-1",
     "build": "lerna run build",
     "build:webpack": "lerna run build:webpack",
     "clean": "rimraf dist",
