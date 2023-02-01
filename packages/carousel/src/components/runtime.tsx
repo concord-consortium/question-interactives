@@ -5,6 +5,7 @@ import { renderHTML } from "@concord-consortium/question-interactives-helpers/sr
 import { Carousel } from "react-responsive-carousel";
 import { libraryInteractiveIdToUrl } from "@concord-consortium/question-interactives-helpers/src/utilities/library-interactives";
 import { cssUrlValue } from "@concord-consortium/question-interactives-helpers/src/utilities/css-url-value";
+import classNames from "classnames";
 
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
 import css from "./runtime.scss";
@@ -16,6 +17,7 @@ interface IProps {
 }
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState }) => {
+  const readOnly = authoredState.required && interactiveState?.submitted;
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const currentSlideRef = useRef(currentSlide);
@@ -107,7 +109,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                                                             subinteractive_id: interactive.id,
                                                           };
           return (
-            <div key={index} className={css.runtime}>
+            <div key={index} className={classNames(css.runtime, { [css.disabled]: readOnly })}>
               { authoredState.prompt &&
                 <div>{renderHTML(authoredState.prompt)}</div> }
                 <IframeRuntime

@@ -78,11 +78,14 @@ const baseAuthoringProps = {
   }
 };
 
+const isAnswered = (state: IInteractiveState) =>
+  state?.subinteractiveStates && Object.values(state.subinteractiveStates).filter(subState => subState !== null).length > 0;
+
 export const App = () => (
   <BaseQuestionApp<IAuthoredState, IInteractiveState>
     Runtime={Runtime}
     baseAuthoringProps={baseAuthoringProps}
-    disableSubmitBtnRendering={true}
+    isAnswered={isAnswered}
     migrateAuthoredState={migrateAuthoredState}
   />
 );
