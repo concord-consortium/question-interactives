@@ -47,7 +47,7 @@
     "start:secure:no-certs": "webpack serve --no-https-request-cert",
     "build": "npm-run-all lint:build build:webpack",
     "build:webpack": "webpack --mode production --devtool source-map",
-    "build:watch": "webpack --mode production --devtool source-map --watch",
+    "build:watch": "webpack --watch",
     "lint": "eslint \"./src/**/*.{js,jsx,ts,tsx}\"",
     "lint:build": "eslint -c \".eslintrc.build.js\" \"./src/**/*.{js,jsx,ts,tsx}\"",
     "lint:fix": "eslint --fix \"./src/**/*.{js,jsx,ts,tsx}\""
