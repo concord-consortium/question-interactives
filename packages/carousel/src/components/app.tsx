@@ -76,6 +76,15 @@ const baseAuthoringProps = {
 
   fields: {
     iframeAuthoring: IframeAuthoring
+  },
+
+  validate: (formData: IAuthoredState, errors: FormValidation) => {
+    formData.subinteractives?.forEach((subinteractive, index) => {
+      if (subinteractive.authoredState?.required) {
+        errors.required?.addError(`Subquestion ${index + 1} is marked as required. Please use the top-level "Required" checkbox only.`);
+      }
+    });
+    return errors;
   }
 };
 
