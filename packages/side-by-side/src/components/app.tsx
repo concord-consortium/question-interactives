@@ -37,7 +37,7 @@ const baseAuthoringProps = {
             type: "string"
           },
           authoredState: {
-            type: "string"
+            type: "object"
           },
           navImageUrl: {
             type: "string"
@@ -54,7 +54,7 @@ const baseAuthoringProps = {
             type: "string"
           },
           authoredState: {
-            type: "string"
+            type: "object"
           },
           navImageUrl: {
             type: "string"
