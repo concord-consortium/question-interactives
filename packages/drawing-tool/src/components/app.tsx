@@ -1,9 +1,9 @@
 import React from "react";
 import { Runtime } from "./runtime";
-import { JSONSchema6 } from "json-schema";
+import { RJSFSchema } from "@rjsf/utils";
 import { BaseQuestionApp } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
 import { IAuthoredState, IInteractiveState } from "./types";
-import { FormValidation } from "react-jsonschema-form";
+import { FormValidation } from "@rjsf/utils";
 
 // Note that TS interfaces should match JSON schema. Currently there"s no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
@@ -234,7 +234,7 @@ export const baseAuthoringProps = {
         ]
       },
     }
-  } as JSONSchema6,
+  } as RJSFSchema,
 
   uiSchema: {
     "ui:order": [
@@ -270,10 +270,10 @@ export const baseAuthoringProps = {
       try {
         const url = new URL(formData.backgroundImageUrl);
         if (!url.host.match(/concord\.org/) && !url.host.match(/token-service-files\.s3\.amazonaws\.com/)) {
-          errors.backgroundImageUrl.addError(`Please use only uploaded images or images hosted at *.concord.org.`);
+          errors.backgroundImageUrl?.addError(`Please use only uploaded images or images hosted at *.concord.org.`);
         }
       } catch (e) {
-        errors.backgroundImageUrl.addError(`Invalid background image URL.`);
+        errors.backgroundImageUrl?.addError(`Invalid background image URL.`);
       }
     }
     return errors;

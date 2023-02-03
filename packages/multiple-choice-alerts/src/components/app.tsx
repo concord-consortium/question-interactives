@@ -5,7 +5,7 @@
  */
 
 import React from "react";
-import { JSONSchema6 } from "json-schema";
+import { RJSFSchema } from "@rjsf/utils";
 import { BaseQuestionApp } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
 import { Runtime } from "./runtime";
 import { v4 as uuidv4 } from "uuid";
@@ -210,7 +210,7 @@ export const baseAuthoringProps = {
         ]
       }
     }
-  } as JSONSchema6,
+  } as RJSFSchema,
 
   uiSchema: {
     "ui:order": [

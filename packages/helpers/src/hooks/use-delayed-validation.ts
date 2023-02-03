@@ -1,5 +1,5 @@
 import { RefObject, useRef } from "react";
-import Form from "react-jsonschema-form";
+import Form from "@rjsf/core";
 
 interface IConfig {
   formRef: RefObject<Form<any>>;

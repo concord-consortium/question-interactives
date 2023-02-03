@@ -1,5 +1,5 @@
 import React, { useCallback, useState } from "react";
-import { WidgetProps } from "react-jsonschema-form";
+import { WidgetProps } from "@rjsf/utils";
 
 export const NumberInputWidget = (props: WidgetProps) => {
   const [value, setValue] = useState<number|string>(props.value);

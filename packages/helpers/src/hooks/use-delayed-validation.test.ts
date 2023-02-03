@@ -1,7 +1,7 @@
 import { useRef } from "react";
 import { renderHook, act } from "@testing-library/react-hooks";
 import { useDelayedValidation } from "./use-delayed-validation";
-import Form from "react-jsonschema-form";
+import Form from "@rjsf/core";
 
 describe("useDelayedValidation", () => {
   it("should call clearTimeout and setTimeout when trigger is called", () => {

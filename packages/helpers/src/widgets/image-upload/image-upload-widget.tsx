@@ -1,6 +1,6 @@
 import { TokenServiceClient } from "@concord-consortium/token-service";
 import React, { ChangeEvent, useCallback, useState } from "react";
-import { WidgetProps } from "react-jsonschema-form";
+import { WidgetProps } from "@rjsf/utils";
 import { IFormContext } from "../../components/base-authoring";
 import { useDropzone } from "react-dropzone";
 import { s3Upload, uniqueFilename } from "../../utilities/s3-upload";

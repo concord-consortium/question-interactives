@@ -1,10 +1,10 @@
 import React from "react";
-import { JSONSchema6 } from "json-schema";
 import { BaseQuestionApp } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
 import { Runtime } from "./runtime";
 import { IframeAuthoring } from "./iframe-authoring";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { migrateAuthoredState } from "./state-migrations";
+import { RJSFSchema } from "@rjsf/utils";
 
 const baseAuthoringProps = {
   schema: {
@@ -43,13 +43,13 @@ const baseAuthoringProps = {
               type: "string"
             },
             authoredState: {
-              type: "any"
+              type: "string"
             }
           }
         }
       }
     }
-  } as JSONSchema6,
+  } as RJSFSchema,
 
   uiSchema: {
     version: {

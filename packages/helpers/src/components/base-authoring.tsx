@@ -1,6 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
-import Form, { Field, FormValidation, IChangeEvent, UiSchema } from "react-jsonschema-form";
-import { JSONSchema6 } from "json-schema";
+import { Field, FormValidation, UiSchema } from "@rjsf/utils";
+import Form, { IChangeEvent } from "@rjsf/core";
+import validator from "@rjsf/validator-ajv8";
+import { RJSFSchema } from "@rjsf/utils";
 import { useDelayedValidation } from "../hooks/use-delayed-validation";
 import { RichTextWidget } from "../widgets/rich-text/rich-text-widget";
 import { ImageUploadWidget } from "../widgets/image-upload/image-upload-widget";
@@ -17,7 +19,7 @@ export interface IBaseAuthoringProps<IAuthoredState> {
   setAuthoredState: (state: IAuthoredState) => void;
   preprocessFormData?: (data: IAuthoredState) => IAuthoredState;
   // react-jsonschema-form properties:
-  schema: JSONSchema6;
+  schema: RJSFSchema;
   uiSchema?: UiSchema;
   // react-jsonschema-form additional fields.
   fields?: { [name: string]: Field };
@@ -78,13 +80,14 @@ export const BaseAuthoring = <IAuthoredState,>({ authoredState, setAuthoredState
     <div className={css.authoring}>
       <Form
         ref={formRef}
+        validator={validator}
         schema={schemaWithInteractives}
         uiSchema={uiSchema}
         widgets={widgets}
-        formData={authoredState || {}}
+        formData={authoredState}
         onChange={onChange}
         fields={fields}
-        validate={validate}
+        customValidate={validate}
         formContext={{
           // Pass authored state in context, so custom field can access the complete authored state.
           // It's useful quite often, e.g. when field rendering is based on previous form inputs.

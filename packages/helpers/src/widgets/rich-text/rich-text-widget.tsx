@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import { WidgetProps } from "react-jsonschema-form";
+import { WidgetProps } from "@rjsf/utils";
 import { getContentHeight, htmlToSlate, SlateEditor, slateToHtml, SlateToolbar } from "@concord-consortium/slate-editor";
 import { useRefState } from "../../hooks/use-ref-state";
 import "@concord-consortium/slate-editor/dist/index.css";

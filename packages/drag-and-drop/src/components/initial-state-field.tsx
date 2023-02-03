@@ -1,5 +1,5 @@
 import React from "react";
-import { FieldProps } from "react-jsonschema-form";
+import { FieldProps } from "@rjsf/utils";
 import css from "./initial-state-field.scss";
 import { IFormContext } from "@concord-consortium/question-interactives-helpers/src/components/base-authoring";
 import { IAuthoredState, IInitialState } from "./types";
