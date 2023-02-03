@@ -13,6 +13,11 @@
   .buttons {
     float: right;
   }
+
+  &.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+  }
 }
 
 .carousel { // how can these class-specific styles for react-responsive-carousel be applied?
