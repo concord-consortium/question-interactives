@@ -142,7 +142,9 @@ context("Test graph interactive", () => {
       cy.getIframeBody().find("#app").should("include.text", "Data Source Interactive 2");
       cy.getIframeBody().find("#app").should("include.text", "Data Source Interactive 3");
 
-      cy.getIframeBody().find("#root_graphsPerRow input[checked]").should("have.value", "2");
+      // New version of react-jsonschema-form doesn't set the value of the radio buttons to any descriptive value.
+      // We need to rely on index. That's why it's 1 (index) and not 2 (value).
+      cy.getIframeBody().find("#root_graphsPerRow input[checked]").should("have.value", "1");
       cy.getIframeBody().find("#root_dataSourceInteractive1").should("have.value", "testInt1");
       cy.getIframeBody().find("#root_dataSourceInteractive2").should("have.value", "testInt2");
     });
