@@ -1,8 +1,8 @@
 import React from "react";
 import { mount, shallow } from "enzyme";
 import { BaseAuthoring, getTokenServiceEnv } from "./base-authoring";
-import { JSONSchema6 } from "json-schema";
-import Form from "react-jsonschema-form";
+import { RJSFSchema } from "@rjsf/utils";
+import Form from "@rjsf/core";
 import { useLinkedInteractivesAuthoring } from "../hooks/use-linked-interactives-authoring";
 
 jest.mock("../hooks/use-linked-interactives-authoring", () => ({
@@ -28,7 +28,7 @@ const schema = {
       type: "string"
     }
   }
-} as JSONSchema6;
+} as RJSFSchema;
 
 const authoredState = {
   version: 1,
@@ -61,7 +61,7 @@ describe("BaseAuthoring", () => {
     expect(formEl.props().schema).toEqual(schema);
     expect(formEl.props().uiSchema).toEqual(uiSchema);
     expect(formEl.props().fields).toEqual(fields);
-    expect(formEl.props().validate).toEqual(validate);
+    expect(formEl.props().customValidate).toEqual(validate);
   });
 
   it("calls setAuthoredState on form change and uses preprocessFormData function", () => {

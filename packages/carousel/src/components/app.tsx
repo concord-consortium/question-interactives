@@ -1,10 +1,11 @@
 import React from "react";
-import { JSONSchema6 } from "json-schema";
+import { RJSFSchema, FormValidation } from "@rjsf/utils";
 import { BaseQuestionApp } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { Runtime } from "./runtime";
 import { IframeAuthoring } from "./iframe-authoring";
 import { migrateAuthoredState } from "./state-migrations";
+
 const baseAuthoringProps = {
   schema: {
     type: "object",
@@ -42,7 +43,7 @@ const baseAuthoringProps = {
               type: "string"
             },
             authoredState: {
-              type: "any"
+              type: "object"
             },
             navImageUrl: {
               type: "string"
@@ -51,7 +52,7 @@ const baseAuthoringProps = {
         }
       }
     }
-  } as JSONSchema6,
+  } as RJSFSchema,
 
   uiSchema: {
     version: {

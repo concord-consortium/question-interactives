@@ -1,5 +1,5 @@
 import React from "react";
-import { FormProps, IChangeEvent, ThemeProps } from "react-jsonschema-form";
+import { FormProps, IChangeEvent, ThemeProps } from "@rjsf/core";
 
 export default class Form<T> extends React.Component<FormProps<T>> {
   public triggerChange(newData: T) {

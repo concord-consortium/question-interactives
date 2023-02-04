@@ -1,5 +1,5 @@
 import React from "react";
-import { JSONSchema6 } from "json-schema";
+import { RJSFSchema } from "@rjsf/utils";
 import { BaseQuestionApp } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { Runtime } from "./runtime";
@@ -65,7 +65,7 @@ const baseAuthoringProps = {
         ]
       }
     }
-  } as JSONSchema6,
+  } as RJSFSchema,
 
   uiSchema: {
     "ui:order": [

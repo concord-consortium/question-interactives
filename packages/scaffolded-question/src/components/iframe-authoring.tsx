@@ -1,5 +1,5 @@
 import React, { ChangeEvent, useEffect, useRef, useState, useCallback } from "react";
-import { FieldProps } from "react-jsonschema-form";
+import { FieldProps } from "@rjsf/utils";
 import { IframePhone } from "@concord-consortium/question-interactives-helpers/src/types";
 import iframePhone from "iframe-phone";
 import deepEqual from "deep-equal";

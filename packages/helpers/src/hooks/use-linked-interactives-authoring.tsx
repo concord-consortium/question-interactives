@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import deepmerge from "deepmerge";
-import { JSONSchema6 } from "json-schema";
+import { RJSFSchema } from "@rjsf/utils";
 import {
   useAuthoredState, getInteractiveList, ILinkedInteractive, setLinkedInteractives
 } from "@concord-consortium/lara-interactive-api";
@@ -14,7 +14,7 @@ export interface ILinkedInteractiveProp {
 
 export interface IProps {
   linkedInteractiveProps?: ILinkedInteractiveProp[];
-  schema: JSONSchema6;
+  schema: RJSFSchema;
 }
 
 type AuthoredState = Record<string, any>;
@@ -98,7 +98,7 @@ const useLinkedInteractivesInAuthoredState = (linkedInteractiveProps?: ILinkedIn
 };
 
 // Get the list of interactives that are on the same page.
-const useLinkedInteractivesInSchema = (schema: JSONSchema6, linkedInteractiveProps?: ILinkedInteractiveProp[]) => {
+const useLinkedInteractivesInSchema = (schema: RJSFSchema, linkedInteractiveProps?: ILinkedInteractiveProp[]) => {
   const initMessage = useContextInitMessage();
   const [ interactiveList, setInteractiveList ] = useState<{[label: string]: {names: string[], ids: string[]}}>({});
 

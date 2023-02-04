@@ -1,6 +1,6 @@
 import React from "react";
-import { FormValidation } from "react-jsonschema-form";
-import { JSONSchema6 } from "json-schema";
+import { FormValidation } from "@rjsf/utils";
+import { RJSFSchema } from "@rjsf/utils";
 import { BaseQuestionApp } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
 import { Runtime } from "./runtime";
 import { blankRegexp, defaultBlankSize, IAuthoredState, IInteractiveState } from "./types";
@@ -55,7 +55,7 @@ export const baseAuthoringProps = {
         }
       }
     }
-  } as JSONSchema6,
+  } as RJSFSchema,
 
   uiSchema: {
     version: {
@@ -84,7 +84,7 @@ export const baseAuthoringProps = {
       const sortedBlanks = (formData.prompt.match(blankRegexp) || []).sort();
       for (let i = 0; i < sortedBlanks.length - 1; i++) {
         if (sortedBlanks[i] === sortedBlanks[i + 1]) {
-          errors.prompt.addError(`The same blank ID used multiple times: ${sortedBlanks[i]}`);
+          errors.prompt?.addError(`The same blank ID used multiple times: ${sortedBlanks[i]}`);
           return errors;
         }
       }

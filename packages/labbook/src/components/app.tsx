@@ -1,9 +1,9 @@
 import React from "react";
-import { JSONSchema6 } from "json-schema";
+import { RJSFSchema } from "@rjsf/utils";
 import { BaseQuestionApp } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
 import { Runtime } from "./runtime";
 import { IAuthoredState, IInteractiveState } from "./types";
-import { FormValidation } from "react-jsonschema-form";
+import { FormValidation } from "@rjsf/utils";
 import { baseAuthoringProps as drawingToolBaseAuthoringProps } from "drawing-tool-interactive/src/components/app";
 import deepmerge from "deepmerge";
 
@@ -30,7 +30,7 @@ const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
         default: "snapshot"
       }
     }
-  } as JSONSchema6,
+  } as RJSFSchema,
 
   uiSchema: {
     maxItems: {

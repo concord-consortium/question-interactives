@@ -1,6 +1,6 @@
 import { baseAuthoringProps } from "./app";
 import { defaultBlankSize } from "./types";
-import { FormValidation } from "react-jsonschema-form";
+import { FormValidation } from "@rjsf/utils";
 
 describe("preprocessFormData helper", () => {
   it("handles missing props", () => {
@@ -65,9 +65,9 @@ describe("validation helper", () => {
       }
     } as unknown as FormValidation;
     baseAuthoringProps.validate({ version: 1, questionType: "iframe_interactive", prompt: "test [blank-1], [blank-2], and [blank-3]"}, errors);
-    expect(errors.prompt.addError).not.toHaveBeenCalled();
+    expect(errors.prompt?.addError).not.toHaveBeenCalled();
 
     baseAuthoringProps.validate({ version: 1, questionType: "iframe_interactive", prompt: "test [blank-1], [blank-2], and [blank-1]"}, errors);
-    expect(errors.prompt.addError).toHaveBeenCalledWith("The same blank ID used multiple times: [blank-1]");
+    expect(errors.prompt?.addError).toHaveBeenCalledWith("The same blank ID used multiple times: [blank-1]");
   });
 });

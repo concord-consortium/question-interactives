@@ -10,8 +10,8 @@ export const UploadImageAuthoredState = {
   backgroundSource: "upload",
 	maxItems: 12,
 	showItems: 4,
-	imageFit: "shrinkBackgroundToCanvas",
-	imagePosition: "center",
+	imageFit: "shrinkBackgroundToCanvas", // 1st option in the list
+	imagePosition: "center", // 1st option in the list
 };
 
 export const TakeSnapshotAuthoredState = {
@@ -22,8 +22,8 @@ export const TakeSnapshotAuthoredState = {
   backgroundSource: "snapshot",
 	maxItems: 10,
 	showItems: 3,
-	imageFit: "shrinkBackgroundToCanvas",
-	imagePosition: "center",
+	imageFit: "shrinkBackgroundToCanvas", // 1st option in the list
+	imagePosition: "center", // 1st option in the list
   showUploadImageButton: true
 };
 
@@ -240,8 +240,10 @@ context("Test Lab book interactive", () => {
       ae.getAuthoringView().should("include.text", "Hint");
       ae.getPrompt().should("include.text", UploadImageAuthoredState.prompt);
       ae.getHint().should("have.value", UploadImageAuthoredState.hint);
-      ae.getImageFit(UploadImageAuthoredState.imageFit).should("be.checked");
-      ae.getImagePosition(UploadImageAuthoredState.imagePosition).should("be.checked");
+      // New version of react-jsonschema-form doesn't set the value of the radio buttons to any descriptive value.
+      // We need to rely on index.
+      ae.getImageFit("0").should("be.checked");
+      ae.getImagePosition("0").should("be.checked");
       ae.getShowUploadImage().should("not.exist");
       ae.getSnapshotTarget().should("not.exist");
       ae.getMaxItems().should("have.value", UploadImageAuthoredState.maxItems);
@@ -257,8 +259,8 @@ context("Test Lab book interactive", () => {
       ae.getAuthoringView().should("include.text", "Hint");
       ae.getPrompt().should("include.text", TakeSnapshotAuthoredState.prompt);
       ae.getHint().should("have.value", TakeSnapshotAuthoredState.hint);
-      ae.getImageFit(TakeSnapshotAuthoredState.imageFit).should("be.checked");
-      ae.getImagePosition(TakeSnapshotAuthoredState.imagePosition).should("be.checked");
+      ae.getImageFit("0").should("be.checked");
+      ae.getImagePosition("0").should("be.checked");
       ae.getShowUploadImage().should("be.checked");
       ae.getSnapshotTarget().should("exist");
       ae.getMaxItems().should("have.value", TakeSnapshotAuthoredState.maxItems);
