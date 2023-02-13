@@ -3,7 +3,6 @@ import { RJSFSchema } from "@rjsf/utils";
 import { BaseQuestionApp } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
 import { Runtime } from "./runtime";
 import { IAuthoredState, IInteractiveState } from "./types";
-import { FormValidation } from "@rjsf/utils";
 import { baseAuthoringProps as drawingToolBaseAuthoringProps } from "drawing-tool-interactive/src/components/app";
 import deepmerge from "deepmerge";
 
@@ -47,11 +46,7 @@ const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
     }
   },
   // Just overwrite array, don't merge values.
-  arrayMerge: (destinationArray:any, sourceArray:any) => sourceArray,
-  validate: (formData: IAuthoredState, errors: FormValidation) => {
-    // TODO: Some actual validation would be good.
-    return errors;
-  }
+  arrayMerge: (destinationArray:any, sourceArray:any) => sourceArray
 });
 
 // This list combines all the fields from drawing-tool app and custom ones specified by Labbook.
