@@ -1,6 +1,6 @@
 {
   "name": "bar-graph",
-  "version": "1.10.5",
+  "version": "1.11.0",
   "description": "Bar Graph interactive",
   "repository": {
     "type": "git",
@@ -106,13 +106,13 @@
   },
   "dependencies": {
     "@concord-consortium/lara-interactive-api": "1.7.2",
-    "@concord-consortium/question-interactives-helpers": "^1.10.5",
+    "@concord-consortium/question-interactives-helpers": "^1.11.0",
+    "@rjsf/utils": "^5.0.1",
     "chart.js": "^3.9.1",
     "classnames": "^2.3.1",
     "react": "^17.0.2",
     "react-chartjs-2": "^4.3.1",
     "react-dom": "^17.0.2",
-    "@rjsf/utils": "^5.0.1",
     "semver": "^7.3.8"
   }
 }
