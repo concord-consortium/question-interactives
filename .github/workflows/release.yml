@@ -1,0 +1,76 @@
+name: Perform Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: The git tag for the version to use for index.html
+        required: true
+    release-type:
+      description: The index file to create
+      type: choice
+      required: true
+      options:
+        - index-staging.html
+        - index.html
+      default: index-staging.html
+
+env:
+  BUCKET: models-resources
+  PREFIX: ${{ github.event.repository.name }}
+  SRC_FILE: index-top.html
+  DEST_FILE: ${{ github.event.inputs.release-type }}
+  AWS_DEFAULT_REGION: us-east-1
+  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+
+jobs:
+  release:
+    name: Copy [interactive]/index-top.html
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          # Add new Question Interactives to this list
+          - INTERACTIVE_FOLDER: bar-graph
+          - INTERACTIVE_FOLDER: carousel
+          - INTERACTIVE_FOLDER: drag-and-drop
+          - INTERACTIVE_FOLDER: drawing-tool
+          - INTERACTIVE_FOLDER: fill-in-the-blank
+          - INTERACTIVE_FOLDER: full-screen
+          - INTERACTIVE_FOLDER: graph
+          - INTERACTIVE_FOLDER: helpers
+          - INTERACTIVE_FOLDER: image-question
+          - INTERACTIVE_FOLDER: image
+          - INTERACTIVE_FOLDER: labbook
+          - INTERACTIVE_FOLDER: multiple-choice-alerts
+          - INTERACTIVE_FOLDER: multiple-choice
+          - INTERACTIVE_FOLDER: open-response
+          - INTERACTIVE_FOLDER: scaffolded-question
+          - INTERACTIVE_FOLDER: score-bot
+          - INTERACTIVE_FOLDER: side-by-side
+          - INTERACTIVE_FOLDER: tests-e2e
+          - INTERACTIVE_FOLDER: video-player
+          - INTERACTIVE_FOLDER: wrapper
+    steps:
+      - name: Set S3 Paths
+        run: |
+          echo "S3_VERSIONED_INTERACTIVE_PATH=s3://${{ env.BUCKET }}/${{ env.PREFIX }}/version/${{ github.event.inputs.version }}/${{ matrix.INTERACTIVE_FOLDER }}" >> $GITHUB_ENV
+          echo "S3_TOP_INTERACTIVE_PATH=s3://${{ env.BUCKET }}/${{ env.PREFIX }}/${{ matrix.INTERACTIVE_FOLDER }}" >> $GITHUB_ENV
+      # Copy from:
+      # models-resources/question-interactives/version/v1.0.0/open-response/index-top.html
+      # to:
+      # models-resources/question-interactives/open-response/index.html
+      - name: Copy index-top.html & version.json files
+        run: |-
+          aws s3 cp \
+            ${{ env.S3_VERSIONED_INTERACTIVE_PATH }}/${{ env.SRC_FILE }} \
+            ${{ env.S3_TOP_INTERACTIVE_PATH }}/${{ env.DEST_FILE }}
+          aws s3 cp \
+            ${{ env.S3_VERSIONED_INTERACTIVE_PATH }}/version.json \
+            ${{ env.S3_TOP_INTERACTIVE_PATH }}/version.json
+          if test -f "${{ env.S3_VERSIONED_INTERACTIVE_PATH }}/report-item/index-top.html"; then
+            aws s3 cp \
+              ${{ env.S3_VERSIONED_INTERACTIVE_PATH }}/report-item/index-top.html \
+              ${{ env.S3_TOP_INTERACTIVE_PATH }}/report-item/index.html
+          fi
