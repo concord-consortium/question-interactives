@@ -5,6 +5,7 @@ import { IAuthoredState, IInteractiveState } from "../types";
 import { renderStyledComponentToString } from "@concord-consortium/question-interactives-helpers/src/utilities/render-styled-component-to-string";
 import { FeedbackReport } from "./feedback-report";
 import { getLastFeedback, getLastScore, getMaxScore, getNumberOfAttempts, isFeedbackOutdated } from "../../utils";
+import { DynamicTextContext, fakeDynamicTextContext } from "@concord-consortium/dynamic-text";
 
 export const reportItemHandler: IGetReportItemAnswerHandler<IInteractiveState, IAuthoredState> = request => {
   const { interactiveState, authoredState, platformUserId, version, itemsType } = request;
@@ -26,7 +27,9 @@ export const reportItemHandler: IGetReportItemAnswerHandler<IInteractiveState, I
       const feedback = getLastFeedback(authoredState, interactiveState);
       const isOutdated = isFeedbackOutdated(interactiveState);
       const feedbackHtml = renderStyledComponentToString(
-        <FeedbackReport score={score} maxScore={maxScore} attempts={attempts} feedback={feedback} outdated={isOutdated} />,
+        <DynamicTextContext.Provider value={fakeDynamicTextContext}>
+          <FeedbackReport score={score} maxScore={maxScore} attempts={attempts} feedback={feedback} outdated={isOutdated} />,
+        </DynamicTextContext.Provider>
       );
       items.push({ type: "html", html: feedbackHtml });
     }

@@ -4,6 +4,8 @@ import { IAuthoredState, IInteractiveState } from "./types";
 import { log } from "@concord-consortium/lara-interactive-api";
 import { DecorateChildren } from "@concord-consortium/text-decorator";
 import { useGlossaryDecoration } from "@concord-consortium/question-interactives-helpers/src/hooks/use-glossary-decoration";
+import { DynamicText } from "@concord-consortium/dynamic-text";
+
 import css from "./runtime.scss";
 import "./video-js.css";
 
@@ -47,6 +49,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const playerRef = useRef<HTMLVideoElement | null>(null);
   const captionsTrackRef = useRef<TextTrack | null>(null);
   const saveStateInterval = useRef<number>(0);
+  const videoJsPlayerRef = useRef<videojs.Player|null>(null);
   const [captionDisplayState, setCaptionDisplayState] = useState("disabled"); // eslint-disable-line @typescript-eslint/no-unused-vars
   const [hasStartedPlayback, setHasStartedPlayback] = useState(viewedTimestamp > 0 || viewedProgress > 0);
 
@@ -57,8 +60,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   viewedTimestampRef.current = viewedTimestamp;
 
   useEffect(() => {
-    if (playerRef.current) {
-      const player: videojs.Player = videojs(playerRef.current,
+    // only initialize the player once
+    if (playerRef.current && !videoJsPlayerRef.current) {
+      const player: videojs.Player = videoJsPlayerRef.current = videojs(playerRef.current,
         {
           controls: true,
           fluid: !(authoredState.fixedAspectRatio || authoredState.fixedHeight),
@@ -105,7 +109,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       });
 
       return () => {
-        player.dispose();
+        // do not dispose of the video player due to a re-render after the DynamicText
+        // context was added, otherwise the video element is deleted and then is not
+        // found on the second render - this next line is intentionally commented out
+        // player.dispose();
       };
     }
   }, [authoredState]);
@@ -181,9 +188,12 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   return (
     <div className={css.runtime}>
       { authoredState.prompt &&
-        <DecorateChildren decorateOptions={decorateOptions}>
-          <div className={css.prompt}>{ authoredState.prompt }</div>
-        </DecorateChildren> }
+        <DynamicText>
+          <DecorateChildren decorateOptions={decorateOptions}>
+            <div className={css.prompt}>{ authoredState.prompt }</div>
+          </DecorateChildren>
+        </DynamicText>
+      }
       <div className={`${css.videoPlayerContainer} last-viewed${viewedTimestamp}`}>
         <div className="video-player" data-vjs-player={true}>
           <video
@@ -199,8 +209,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           />
         </div>
       </div>
-      {authoredState.caption && <div className={css.caption}>{authoredState.caption}</div>}
-      {authoredState.credit && <div className={css.credit}>{authoredState.credit}</div>}
+      {authoredState.caption && <div className={css.caption}><DynamicText>{authoredState.caption}</DynamicText></div>}
+      {authoredState.credit && <div className={css.credit}><DynamicText>{authoredState.credit}</DynamicText></div>}
       {
         authoredState.creditLink &&
         <div className={css.creditLink}><a href={authoredState.creditLink} target="_blank" rel="noreferrer">

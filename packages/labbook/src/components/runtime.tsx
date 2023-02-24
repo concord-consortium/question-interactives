@@ -4,6 +4,9 @@ import hash from "object-hash";
 import { v4 as uuidv4 } from "uuid";
 import { IInteractiveState as IDrawingToolInteractiveState} from "drawing-tool-interactive/src/components/types";
 import { DrawingTool } from "drawing-tool-interactive/src/components/drawing-tool";
+import { renderHTML } from "@concord-consortium/question-interactives-helpers/src/utilities/render-html";
+import { DynamicText } from "@concord-consortium/dynamic-text";
+
 // import { PreviewPanel } from "./preview-panel"; // For mockup / Zeplin matching.
 import { Log } from "../labbook-logging";
 import { ThumbnailChooser, IThumbnailChooserProps } from "./thumbnail-chooser/thumbnail-chooser";
@@ -15,7 +18,6 @@ import { TakeSnapshot } from "./take-snapshot";
 import { ThumbnailTitle } from "./thumbnail-chooser/thumbnail-title";
 
 import css from "./runtime.scss";
-import { renderHTML } from "@concord-consortium/question-interactives-helpers/src/utilities/render-html";
 
 export interface IProps {
   authoredState: IAuthoredState;
@@ -223,7 +225,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   return (
     <>
     { authoredState.prompt &&
-      <div>{renderHTML(authoredState.prompt)}</div>
+      <div><DynamicText>{renderHTML(authoredState.prompt)}</DynamicText></div>
     }
     <div className={css["app"]} ref={containerRef}>
       <div className={css["container"]} style={{width: containerWidth}}>

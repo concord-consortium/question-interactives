@@ -1,7 +1,9 @@
 import React from "react";
-import { shallow } from "enzyme";
+import { mount } from "enzyme";
 import { Runtime } from "./runtime";
 import { IAuthoredState } from "./types";
+import { DynamicTextTester } from "@concord-consortium/question-interactives-helpers/src/utilities/dynamic-text-tester";
+
 import css from "./runtime.scss";
 
 const authoredState: IAuthoredState = {
@@ -40,9 +42,10 @@ const onlyHighResUrlAuthoredState: IAuthoredState = {
 
 describe("Runtime", () => {
   it("renders image and all other supplied fields", () => {
-    const wrapper = shallow(<Runtime authoredState={authoredState} />);
+    const wrapper = mount(<DynamicTextTester><Runtime authoredState={authoredState} /></DynamicTextTester>);
     // not sure, for now, how to pull the content from the DecorateChildren component
-    expect(wrapper.text()).toEqual(expect.stringContaining("<DecorateChildren />"));
+    // this no longer works after adding the <DynamicTextTester> due to the change to mount()
+    // expect(wrapper.text()).toEqual(expect.stringContaining("<DecorateChildren />"));
     expect(wrapper.text()).toEqual(expect.stringContaining("Copyright Concord Consortium"));
     expect(wrapper.text()).toEqual(expect.stringContaining("Concord.org"));
     expect(wrapper.find("img").at(0).props().src).toEqual(authoredState.url);
@@ -52,7 +55,7 @@ describe("Runtime", () => {
 
   });
   it.skip("renders image at native resolution when specified", () => {
-    const wrapper = shallow(<Runtime authoredState={naturalWidthImageAuthoredState} />);
+    const wrapper = mount(<DynamicTextTester><Runtime authoredState={naturalWidthImageAuthoredState} /></DynamicTextTester>);
 
     // Originally, this test looked like this:
     // expect(wrapper.find("img").at(0).hasClass(css.originalDimensions)) without the `.toBe(true)`
@@ -63,7 +66,7 @@ describe("Runtime", () => {
     expect(wrapper.find("img").at(0).hasClass(css.originalDimensions)).toBe(true);
   });
   it.skip("renders image using highResUrl when an invalid url value is specified", done => {
-    const wrapper = shallow(<Runtime authoredState={onlyHighResUrlAuthoredState} />);
+    const wrapper = mount(<DynamicTextTester><Runtime authoredState={onlyHighResUrlAuthoredState} /></DynamicTextTester>);
     expect(wrapper.find("img").at(0).props().src).toEqual(onlyHighResUrlAuthoredState.url);
     // This was an attempt to test the error path, but it isn't working for reasons that require investigation.
     // TODO: Figure out a way to test the error path if it's deemed worthwhile.

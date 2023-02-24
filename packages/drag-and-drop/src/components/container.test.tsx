@@ -6,6 +6,7 @@ import { ContainerWithDndProvider } from "./container-with-dnd-provider";
 import { DraggableItemPreview } from "./draggable-item-preview";
 import { IDropZone } from "./types";
 import { cssUrlValue } from "@concord-consortium/question-interactives-helpers/src/utilities/css-url-value";
+import { DynamicTextTester } from "@concord-consortium/question-interactives-helpers/src/utilities/dynamic-text-tester";
 
 const authoredState = {
   version: 1,
@@ -26,7 +27,7 @@ const authoredState = {
 
 describe("Container", () => {
   it("renders dragging area with provided dimensions", () => {
-    const wrapper = mount(<ContainerWithDndProvider authoredState={authoredState} />);
+    const wrapper = mount(<DynamicTextTester><ContainerWithDndProvider authoredState={authoredState} /></DynamicTextTester>);
     expect(wrapper.find("[data-cy='dnd-container']").prop("style")).toEqual({
       backgroundImage: cssUrlValue(authoredState.backgroundImageUrl),
       height: "200px",
@@ -35,23 +36,23 @@ describe("Container", () => {
   });
 
   it("renders dragging area prompt", () => {
-    const wrapper = mount(<ContainerWithDndProvider authoredState={authoredState} />);
+    const wrapper = mount(<DynamicTextTester><ContainerWithDndProvider authoredState={authoredState} /></DynamicTextTester>);
     expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.draggingAreaPrompt));
   });
 
   it("renders draggable items", () => {
-    const wrapper = mount(<ContainerWithDndProvider authoredState={authoredState} />);
+    const wrapper = mount(<DynamicTextTester><ContainerWithDndProvider authoredState={authoredState} /></DynamicTextTester>);
     expect(wrapper.find(DraggableItemWrapper).length).toEqual(2);
   });
 
   it.skip("renders draggable item preview", () => { //preview is only show as an alternative to the actual item
-    const wrapper = mount(<ContainerWithDndProvider authoredState={authoredState} />);
+    const wrapper = mount(<DynamicTextTester><ContainerWithDndProvider authoredState={authoredState} /></DynamicTextTester>);
     expect(wrapper.find(DraggableItemPreview).length).toEqual(1);
   });
 
   describe("draggable item position", () => {
     it("is calculated automatically when there's no interactive or initial state", () => {
-      const wrapper = mount(<ContainerWithDndProvider authoredState={authoredState} />);
+      const wrapper = mount(<DynamicTextTester><ContainerWithDndProvider authoredState={authoredState} /></DynamicTextTester>);
       const draggableItems = wrapper.find(DraggableItemWrapper);
       expect(draggableItems.at(0).prop("position")).toEqual({ left: marginLeft, top: marginTop });
       expect(draggableItems.at(1).prop("position")).toEqual({ left: marginLeft, top: marginTop + margin });
@@ -70,7 +71,7 @@ describe("Container", () => {
           }
         }
       };
-      const wrapper = mount(<ContainerWithDndProvider authoredState={authoredStateWithInitialState} />);
+      const wrapper = mount(<DynamicTextTester><ContainerWithDndProvider authoredState={authoredStateWithInitialState} /></DynamicTextTester>);
       const draggableItems = wrapper.find(DraggableItemWrapper);
       expect(draggableItems.at(0).prop("position")).toEqual({ left: 123, top: 321 });
       expect(draggableItems.at(1).prop("position")).toEqual({ left: 111, top: 222 });
@@ -95,7 +96,7 @@ describe("Container", () => {
           1: {left: 222, top: 222}
         }
       };
-      const wrapper = mount(<ContainerWithDndProvider authoredState={authoredStateWithInitialState} interactiveState={interactiveState} />);
+      const wrapper = mount(<DynamicTextTester><ContainerWithDndProvider authoredState={authoredStateWithInitialState} interactiveState={interactiveState} /></DynamicTextTester>);
       const draggableItems = wrapper.find(DraggableItemWrapper);
       expect(draggableItems.at(0).prop("position")).toEqual({ left: 123, top: 321 });
       expect(draggableItems.at(1).prop("position")).toEqual({ left: 999, top: 999 });

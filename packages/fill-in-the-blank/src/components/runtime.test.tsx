@@ -2,6 +2,7 @@ import React from "react";
 import { fireEvent, render } from "@testing-library/react";
 import { Runtime, replaceBlanksWithInputs, replaceBlanksWithValues } from "./runtime";
 import { IAuthoredState, IInteractiveState } from "./types";
+import { DynamicTextTester } from "@concord-consortium/question-interactives-helpers/src/utilities/dynamic-text-tester";
 
 const authoredState = {
   version: 1,
@@ -32,7 +33,7 @@ const interactiveState: IInteractiveState = {
 describe("Runtime", () => {
 
   it("renders prompt and inputs", () => {
-    const { container, getByText } = render(<Runtime authoredState={authoredState} />);
+    const { container, getByText } = render(<DynamicTextTester><Runtime authoredState={authoredState} /></DynamicTextTester>);
     expect(getByText("Test prompt with", { exact: false })).toBeDefined();
     const inputs = container.querySelectorAll("input");
     expect(inputs.length).toBe(2);
@@ -43,7 +44,7 @@ describe("Runtime", () => {
   });
 
   it("handles passed interactiveState", () => {
-    const { container } = render(<Runtime authoredState={authoredState} interactiveState={interactiveState} />);
+    const { container } = render(<DynamicTextTester><Runtime authoredState={authoredState} interactiveState={interactiveState} /></DynamicTextTester>);
     const inputs = container.querySelectorAll("input");
     expect(inputs[0].value).toEqual(interactiveState.blanks[0].response);
     expect(inputs[1].value).toEqual("");
@@ -52,14 +53,14 @@ describe("Runtime", () => {
   it("renders minimal states", () => {
     const minimalAuthoredState: IAuthoredState = { version: 1, questionType: "iframe_interactive" };
     const minimalInteractiveState: IInteractiveState = { answerType: "interactive_state" } as any;
-    const { container } = render(<Runtime authoredState={minimalAuthoredState} interactiveState={minimalInteractiveState} />);
+    const { container } = render(<DynamicTextTester><Runtime authoredState={minimalAuthoredState} interactiveState={minimalInteractiveState} /></DynamicTextTester>);
     const inputs = container.querySelectorAll("input");
     expect(inputs.length).toBe(0);
   });
 
   it("calls setInteractiveState when user provides an answer", () => {
     const setState = jest.fn();
-    const { container } = render(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} />);
+    const { container } = render(<DynamicTextTester><Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} /></DynamicTextTester>);
     const inputs = container.querySelectorAll("input");
     fireEvent.change(inputs[1], { target: { value: "New response" } });
     const newState = setState.mock.calls[0][0](interactiveState);
@@ -86,7 +87,7 @@ describe("Runtime", () => {
 
   describe("report mode", () => {
     it("renders prompt and *disabled* inputs", () => {
-      const { container, getByText } = render(<Runtime authoredState={authoredState} report={true} />);
+      const { container, getByText } = render(<DynamicTextTester><Runtime authoredState={authoredState} report={true} /></DynamicTextTester>);
       expect(getByText("Test prompt with", { exact: false })).toBeDefined();
       const inputs = container.querySelectorAll("input");
       expect(inputs.length).toEqual(2);
@@ -95,7 +96,7 @@ describe("Runtime", () => {
     });
 
     it("handles passed interactiveState", () => {
-      const { container } = render(<Runtime authoredState={authoredState} interactiveState={interactiveState} report={true} />);
+      const { container } = render(<DynamicTextTester><Runtime authoredState={authoredState} interactiveState={interactiveState} report={true} /></DynamicTextTester>);
       const inputs = container.querySelectorAll("input");
       expect(inputs[0].value).toEqual(interactiveState.blanks[0].response);
       expect(inputs[1].value).toEqual("");

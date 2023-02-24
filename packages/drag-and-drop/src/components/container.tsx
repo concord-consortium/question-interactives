@@ -9,6 +9,7 @@ import css from "./container.scss";
 import { generateDataset } from "../utils/generate-dataset";
 import { flushStateUpdates } from "@concord-consortium/lara-interactive-api";
 import { cssUrlValue } from "@concord-consortium/question-interactives-helpers/src/utilities/css-url-value";
+import { DynamicText } from "@concord-consortium/dynamic-text";
 
 export interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {
   // Used only for authoring (initial state is part of the authored state).
@@ -240,7 +241,7 @@ export const Container: React.FC<IProps> = ({ authoredState, interactiveState, s
   return (
     <div ref={drop} className={css.draggingArea} style={draggingAreaStyle} data-cy="dnd-container">
       <div ref={draggingAreaPromptRef} className={css.prompt} style={{top: marginTop, left: marginLeft}}>
-        {renderHTML(authoredState.draggingAreaPrompt || "")}
+        <DynamicText>{renderHTML(authoredState.draggingAreaPrompt || "")}</DynamicText>
       </div>
       { authoredState.dropZones?.map((target, idx) => {
           let position = targetPositions[target.id];

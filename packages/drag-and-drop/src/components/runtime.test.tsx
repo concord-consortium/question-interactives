@@ -1,7 +1,8 @@
 import React from "react";
-import { shallow } from "enzyme";
+import { mount } from "enzyme";
 import { Runtime } from "./runtime";
 import { ContainerWithDndProvider } from "./container-with-dnd-provider";
+import { DynamicTextTester } from "@concord-consortium/question-interactives-helpers/src/utilities/dynamic-text-tester";
 
 const authoredState = {
   version: 1,
@@ -11,7 +12,7 @@ const authoredState = {
 
 describe("Runtime", () => {
   it("renders prompt and container", () => {
-    const wrapper = shallow(<Runtime authoredState={authoredState} />);
+    const wrapper = mount(<DynamicTextTester><Runtime authoredState={authoredState} /></DynamicTextTester>);
     expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.prompt));
     expect(wrapper.find(ContainerWithDndProvider).length).toEqual(1);
   });

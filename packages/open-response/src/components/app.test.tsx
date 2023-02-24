@@ -1,7 +1,7 @@
 import React from "react";
 import { act, render } from "@testing-library/react";
-import { useAuthoredState, useInitMessage, useInteractiveState
-        } from "@concord-consortium/lara-interactive-api";
+import { useAuthoredState, useInitMessage, useInteractiveState } from "@concord-consortium/lara-interactive-api";
+
 import { App } from "./app";
 import { IAuthoredState, IInteractiveState } from "./types";
 
@@ -13,6 +13,9 @@ jest.mock("@concord-consortium/lara-interactive-api", () => ({
   useInteractiveState: jest.fn(),
   setSupportedFeatures: jest.fn(),
   getFirebaseJwt: jest.fn().mockReturnValue({token: "test"}),
+  getClient: jest.fn().mockReturnValue({
+    addListener: jest.fn()
+  }),
 }));
 
 const useInitMessageMock = useInitMessage as jest.Mock;

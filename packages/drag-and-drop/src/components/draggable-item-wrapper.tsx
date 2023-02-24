@@ -1,8 +1,11 @@
 import React, { useRef } from "react";
-import { IDraggableItem, IPosition } from "./types";
+import { DynamicText } from "@concord-consortium/dynamic-text";
 import { DragSourceMonitor, useDrag } from "react-dnd";
+
+import { IDraggableItem, IPosition } from "./types";
 import { DraggableItem } from "./draggable-item";
 import { DraggableItemPreview } from "./draggable-item-preview";
+
 import css from "./draggable-item-wrapper.scss";
 
 export interface IProps {
@@ -42,7 +45,7 @@ export const DraggableItemWrapper: React.FC<IProps> = ({ item, position, draggab
         <div ref={draggableElement}>
           <DraggableItem item={item} />
         </div>
-        <div className={css.itemLabel}>{item.label}</div>
+        <div className={css.itemLabel}><DynamicText>{item.label}</DynamicText></div>
       </div>
   );
 };

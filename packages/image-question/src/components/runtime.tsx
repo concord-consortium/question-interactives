@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import { IRuntimeQuestionComponentProps } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
-import { IAuthoredState, IInteractiveState } from "./types";
 import { closeModal, showModal } from "@concord-consortium/lara-interactive-api";
 import { TakeSnapshot } from "drawing-tool-interactive/src/components/take-snapshot";
 import { UploadBackground } from "drawing-tool-interactive/src/components/upload-background";
@@ -13,9 +12,12 @@ import PencilIcon from "@concord-consortium/question-interactives-helpers/src/ic
 import { useCorsImageErrorCheck } from "@concord-consortium/question-interactives-helpers/src/hooks/use-cors-image-error-check";
 import { DecorateChildren } from "@concord-consortium/text-decorator";
 import { useGlossaryDecoration } from "@concord-consortium/question-interactives-helpers/src/hooks/use-glossary-decoration";
+import { DynamicText } from "@concord-consortium/dynamic-text";
+
+import { IAuthoredState, IInteractiveState } from "./types";
+
 import css from "./runtime.scss";
 import cssHelpers from "@concord-consortium/question-interactives-helpers/src/styles/helpers.scss";
-
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
 
@@ -111,14 +113,16 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     // Render answer prompt and answer text in inline mode to replicate LARA's Image Question UI
     return <div>
       { authoredState.prompt &&
-        <DecorateChildren decorateOptions={decorateOptions}>
-          <div>{renderHTML(authoredState.prompt)}</div>
-        </DecorateChildren>
+        <DynamicText>
+          <DecorateChildren decorateOptions={decorateOptions}>
+            <div>{renderHTML(authoredState.prompt)}</div>
+          </DecorateChildren>
+        </DynamicText>
       }
       { inlineImage && <div><img src={inlineImage} className={css.inlineImg} alt="user work"/></div> }
       { authoredState.answerPrompt && <>
-        <div>{renderHTML(authoredState.answerPrompt)}</div>
-        <div className={css.studentAnswerText}>{interactiveState?.answerText}</div>
+        <div><DynamicText>{renderHTML(authoredState.answerPrompt)}</DynamicText></div>
+        <div className={css.studentAnswerText}><DynamicText>{interactiveState?.answerText}</DynamicText></div>
       </> }
       {
         !readOnly &&
@@ -162,10 +166,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         />
       </div>
       <div className={css.dialogRightPanel}>
-        { authoredState.prompt && <div>{renderHTML(authoredState.prompt)}</div> }
+        { authoredState.prompt && <div><DynamicText>{renderHTML(authoredState.prompt)}</DynamicText></div> }
         { authoredState.answerPrompt && <>
           <hr />
-          <div className={css.answerPrompt}>{renderHTML(authoredState.answerPrompt)}</div>
+          <div className={css.answerPrompt}><DynamicText>{renderHTML(authoredState.answerPrompt)}</DynamicText></div>
           <textarea
             value={interactiveState?.answerText || ""}
             onChange={handleTextChange}

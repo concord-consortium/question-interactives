@@ -1,16 +1,18 @@
 import React, { useState } from "react";
 import { IRuntimeQuestionComponentProps } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
 import { renderHTML } from "@concord-consortium/question-interactives-helpers/src/utilities/render-html";
-import { IAuthoredState, IInteractiveState } from "./types";
 import { DecorateChildren } from "@concord-consortium/text-decorator";
 import { useGlossaryDecoration } from "@concord-consortium/question-interactives-helpers/src/hooks/use-glossary-decoration";
 import { log } from "@concord-consortium/lara-interactive-api";
-import { getScoreBOTFeedback } from "../get-scorebot-feedback";
+import { DynamicText } from "@concord-consortium/dynamic-text";
+
 import { Feedback } from "./feedback";
+import { getScoreBOTFeedback } from "../get-scorebot-feedback";
+import { IAuthoredState, IInteractiveState } from "./types";
+import { getLastAttemptAnswerText, getLastFeedback, getLastScore, getMaxScore, getValidScoreMapping, isFeedbackOutdated } from "../utils";
 
 import css from "./runtime.scss";
 import cssHelpers from "@concord-consortium/question-interactives-helpers/src/styles/helpers.scss";
-import { getLastAttemptAnswerText, getLastFeedback, getLastScore, getMaxScore, getValidScoreMapping, isFeedbackOutdated } from "../utils";
 
 export const isAnswered = (interactiveState?: IInteractiveState | null) => !!interactiveState?.answerText;
 
@@ -97,11 +99,15 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   return (
     <fieldset className={css.scoreBot}>
       { authoredState.prompt &&
-        <DecorateChildren decorateOptions={decorateOptions}>
-          <legend className={css.prompt} data-testid="legend">
-            {renderHTML(authoredState.prompt)}
-          </legend>
-        </DecorateChildren> }
+        <DynamicText>
+          <DecorateChildren decorateOptions={decorateOptions}>
+            <legend className={css.prompt} data-testid="legend">
+              {renderHTML(authoredState.prompt)}
+            </legend>
+          </DecorateChildren>
+        </DynamicText>
+      }
+
       <div className={css.inputContainer}>
         <textarea
           value={answerText}

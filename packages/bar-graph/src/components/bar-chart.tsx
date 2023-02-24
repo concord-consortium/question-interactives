@@ -13,6 +13,7 @@ import {
 import { Bar } from 'react-chartjs-2';
 import classnames from "classnames";
 import { log as logToLara } from "@concord-consortium/lara-interactive-api";
+import { DynamicText } from "@concord-consortium/dynamic-text";
 
 import { IRuntimeQuestionComponentProps } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
 import { DefaultAuthoredState, IAuthoredState, IBarValue, IInteractiveState } from "./types";
@@ -182,10 +183,10 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
           className={classnames(css.yAxisLabel, {[css.horizontalLabel]: hasHorizontalLabel, [css.verticalLabel]: !hasHorizontalLabel})}
           tabIndex={yAxisTabIndex}
           data-cy="yAxisLabel">
-          {authoredState.yAxisLabel}
+          <DynamicText>{authoredState.yAxisLabel}</DynamicText>
         </div>
         <div className={css.chartAndXAxisLabel}>
-          {authoredState.title && <div className={css.title} tabIndex={titleTabIndex} data-cy="title">{authoredState.title}</div>}
+          {authoredState.title && <div className={css.title} tabIndex={titleTabIndex} data-cy="title"><DynamicText>{authoredState.title}</DynamicText></div>}
           <div className={css.chartContainer}>
             <Bar options={options} data={data} ref={chartRef} />
 
@@ -203,7 +204,7 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
                 };
                 const value = authoredState.numberOfDecimalPlaces ? renderedBar.value.toFixed(authoredState.numberOfDecimalPlaces) : renderedBar.value;
                 const title = `${bar.label}: ${value} ${authoredState.yAxisLabel}`;
-                return <div key={index} style={style} tabIndex={StartChartTabIndex + (2 * index)} title={title} data-cy={`barValue${index}`}>{value}</div>;
+                return <div key={index} style={style} tabIndex={StartChartTabIndex + (2 * index)} title={title} data-cy={`barValue${index}`}><DynamicText>{value}</DynamicText></div>;
               })}
               {!readOnly && chartInfo.bars.map(renderedBar => {
                 const { index } = renderedBar;
@@ -223,7 +224,7 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
               })}
             </div>}
           </div>
-          {authoredState.xAxisLabel && <div className={css.xAxisLabel} tabIndex={xAxisTabIndex} data-cy="xAxisLabel">{authoredState.xAxisLabel}</div>}
+          {authoredState.xAxisLabel && <div className={css.xAxisLabel} tabIndex={xAxisTabIndex} data-cy="xAxisLabel"><DynamicText>{authoredState.xAxisLabel}</DynamicText></div>}
         </div>
       </div>
     </div>

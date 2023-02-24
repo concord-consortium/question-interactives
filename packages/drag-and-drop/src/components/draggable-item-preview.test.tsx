@@ -4,6 +4,7 @@ import { DraggableItem } from "./draggable-item";
 import { TouchBackend } from "react-dnd-touch-backend";
 import { DndProvider } from "react-dnd";
 import { DraggableItemPreview } from "./draggable-item-preview";
+import { DynamicTextTester } from "@concord-consortium/question-interactives-helpers/src/utilities/dynamic-text-tester";
 
 jest.mock("react-dnd-preview", () => ({
   usePreview: () => ({
@@ -22,7 +23,9 @@ describe("DraggableItemPreview", () => {
   it("renders DraggableItem", () => {
     const wrapper = mount(
       <DndProvider backend={TouchBackend} options={{enableMouseEvents: true}}>
-        <DraggableItemPreview />
+        <DynamicTextTester>
+          <DraggableItemPreview />
+        </DynamicTextTester>
       </DndProvider>
     );
     expect(wrapper.find(DraggableItem).length).toEqual(1);

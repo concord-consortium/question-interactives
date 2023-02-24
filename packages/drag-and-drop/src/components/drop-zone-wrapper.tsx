@@ -1,7 +1,8 @@
 import React from "react";
-import { DropTargetMonitor, useDrop } from "react-dnd";
+import { DropTargetMonitor, useDrop, DragSourceMonitor, useDrag } from "react-dnd";
+import { DynamicText } from "@concord-consortium/dynamic-text";
+
 import { IDropZone, IPosition } from "./types";
-import { DragSourceMonitor, useDrag } from "react-dnd";
 import { DropZone } from "./drop-zone";
 import { DropZonePreview } from "./drop-zone-preview";
 import { DraggableItemWrapperType, IDraggableItemWrapper } from "./draggable-item-wrapper";
@@ -60,7 +61,7 @@ export const DropZoneWrapper: React.FC<IProps> = ({ target, position, draggable,
         data-cy="drop-zone-wrapper"
       >
         <DropZone target={target} />
-        <div className={css.targetLabel}>{target.targetLabel}</div>
+        <div className={css.targetLabel}><DynamicText>{target.targetLabel}</DynamicText></div>
       </div>
   );
 };

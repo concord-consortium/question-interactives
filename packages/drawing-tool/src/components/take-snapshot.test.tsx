@@ -4,6 +4,7 @@ import { TakeSnapshot } from "./take-snapshot";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { getInteractiveSnapshot, useInitMessage } from "@concord-consortium/lara-interactive-api";
 import { InitMessageContext } from "@concord-consortium/question-interactives-helpers/src/hooks/use-context-init-message";
+import { act } from "react-dom/test-utils";
 
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
   getInteractiveSnapshot: jest.fn(() => new Promise(resolve => resolve({success: true, snapshotUrl: "http://snapshot/123" }))),

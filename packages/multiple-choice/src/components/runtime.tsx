@@ -8,10 +8,12 @@ import { renderHTML } from "@concord-consortium/question-interactives-helpers/sr
 import { DecorateChildren } from "@concord-consortium/text-decorator";
 import { useGlossaryDecoration } from "@concord-consortium/question-interactives-helpers/src/hooks/use-glossary-decoration";
 import buttonCss from "@concord-consortium/question-interactives-helpers/src/styles/helpers.scss";
-import css from "./runtime.scss";
 import { log, useCustomMessages, ICustomMessage } from "@concord-consortium/lara-interactive-api";
 import CheckMarkIcon from "@concord-consortium/question-interactives-helpers/src/icons/check_mark.svg";
 import XMarkIcon from "@concord-consortium/question-interactives-helpers/src/icons/x_mark.svg";
+import { DynamicText } from "@concord-consortium/dynamic-text";
+
+import css from "./runtime.scss";
 
 const DEFAULT_INCORRECT = "Sorry, that is incorrect.";
 const DEFAULT_CORRECT = "Yes! You are correct.";
@@ -140,7 +142,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             </div>
           }
           <label htmlFor={inputId}>
-            {choice.content}
+            <DynamicText inline={true}>{choice.content}</DynamicText>
           </label>
         </div>
       );
@@ -194,8 +196,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     const symbol = isCorrect ? <CheckIcon /> : <CrossIcon />;
     return (
       <div className={css.answerFeedback} data-cy={`feedback-${isCorrect}`}>
-        <div className={symbolCss}>{ symbol }</div>
-        <div className={css.feedback}>{ feedback }</div>
+        <DynamicText>
+          <div className={symbolCss}>{ symbol }</div>
+          <div className={css.feedback}>{ feedback }</div>
+        </DynamicText>
       </div>
     );
   };
@@ -210,19 +214,22 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   return (
     <div>
       <fieldset>
-        { authoredState.prompt &&
-          <DecorateChildren decorateOptions={decorateOptions}>
-            <legend className={css.prompt + " list-unstyled "}>
-              {renderHTML(authoredState.prompt)}
-            </legend>
-          </DecorateChildren> }
-        <div className={css.choices + " " + (css[layout] || "")} data-cy="choices-container">
-          {
-            authoredState.layout !== "dropdown"
-            ? renderRadioChecks()
-            : renderSelect()
+          { authoredState.prompt &&
+            <DynamicText>
+              <DecorateChildren decorateOptions={decorateOptions}>
+                <legend className={css.prompt + " list-unstyled "}>
+                  {renderHTML(authoredState.prompt)}
+                </legend>
+              </DecorateChildren>
+            </DynamicText>
           }
-        </div>
+          <div className={css.choices + " " + (css[layout] || "")} data-cy="choices-container">
+            {
+              authoredState.layout !== "dropdown"
+              ? renderRadioChecks()
+              : renderSelect()
+            }
+          </div>
       </fieldset>
       {
         showAnswerFeedback && !readOnly && renderFeedback()

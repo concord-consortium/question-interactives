@@ -1,10 +1,12 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { IframeRuntime } from "@concord-consortium/question-interactives-helpers/src/components/iframe-runtime";
-import { IAuthoredState, IInteractiveState } from "./types";
 import { renderHTML } from "@concord-consortium/question-interactives-helpers/src/utilities/render-html";
 import { libraryInteractiveIdToUrl } from "@concord-consortium/question-interactives-helpers/src/utilities/library-interactives";
 import { IAddLinkedInteractiveStateListenerRequest } from "@concord-consortium/lara-interactive-api";
 import { IframePhone } from "@concord-consortium/question-interactives-helpers/src/types";
+import { DynamicText } from "@concord-consortium/dynamic-text";
+
+import { IAuthoredState, IInteractiveState } from "./types";
 
 import css from "./runtime.scss";
 
@@ -76,7 +78,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   return (
     <div>
       { (!report || view === "standalone") && prompt &&
-        <div>{renderHTML(prompt)}</div> }
+        <div><DynamicText>{renderHTML(prompt)}</DynamicText></div>
+      }
       <div className={css.split} style={{gridTemplateColumns: `${leftDivision}% ${rightDivision}%`}}>
         { leftInteractive &&
         <div className={css.runtime}>

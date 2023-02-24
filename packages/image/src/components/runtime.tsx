@@ -1,11 +1,13 @@
 import React, { SyntheticEvent, useRef } from "react";
-import { IAuthoredState } from "./types";
 import { setSupportedFeatures, showModal } from "@concord-consortium/lara-interactive-api";
 import ReactDOMServer from "react-dom/server";
 import { log } from "@concord-consortium/lara-interactive-api";
 import { DecorateChildren } from "@concord-consortium/text-decorator";
 import { useGlossaryDecoration } from "@concord-consortium/question-interactives-helpers/src/hooks/use-glossary-decoration";
 import ZoomIcon from "@concord-consortium/question-interactives-helpers/src/icons/zoom-in.svg";
+import { DynamicText } from "@concord-consortium/dynamic-text";
+
+import { IAuthoredState } from "./types";
 
 import css from "./runtime.scss";
 
@@ -92,11 +94,13 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
         <div className={css.textContainer}>
           {
             caption &&
-            <DecorateChildren decorateOptions={decorateOptions}>
-              <div className={css.caption}>{caption}</div>
-            </DecorateChildren>
+            <DynamicText>
+              <DecorateChildren decorateOptions={decorateOptions}>
+                <div className={css.caption}>{caption}</div>
+              </DecorateChildren>
+            </DynamicText>
           }
-          { credit && <div className={css.credit}>{credit}</div> }
+          { credit && <div className={css.credit}><DynamicText>{credit}</DynamicText></div> }
           { getCreditLink() }
         </div>
         <div className={`${css.viewHighRes} .glyphicon-zoom-in`} onClick={handleClick}><ZoomIcon /></div>

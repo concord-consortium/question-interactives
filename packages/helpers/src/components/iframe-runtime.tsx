@@ -1,9 +1,12 @@
 import React, { useEffect, useRef, useState } from "react";
-import { renderHTML } from "@concord-consortium/question-interactives-helpers/src/utilities/render-html";
-import { IframePhone } from "../types";
 import iframePhone from "iframe-phone";
-import { closeModal, flushStateUpdates, getClient, IAddLinkedInteractiveStateListenerRequest, IAttachmentUrlRequest, IAttachmentUrlResponse, ICloseModal, IGetInteractiveState, IHintRequest, IInitInteractive, IShowModal, log, setOnUnload, showModal } from "@concord-consortium/lara-interactive-api";
+import { DynamicText } from "@concord-consortium/dynamic-text";
+import { renderHTML } from "@concord-consortium/question-interactives-helpers/src/utilities/render-html";
+import { closeModal, flushStateUpdates, getClient, IAddLinkedInteractiveStateListenerRequest, IAttachmentUrlRequest, IAttachmentUrlResponse, ICloseModal, ICustomMessage, IGetInteractiveState, IHintRequest, IInitInteractive, IShowModal, log, setOnUnload, showModal } from "@concord-consortium/lara-interactive-api";
+
+import { IframePhone } from "../types";
 import { getLibraryInteractive } from "../utilities/library-interactives";
+
 import css from "./iframe-runtime.scss";
 
 // This should be part of lara-interactive-api
@@ -147,6 +150,11 @@ export const IframeRuntime: React.FC<IProps> =
         }, request.requestId);
       });
 
+      // proxy custom messages between host and iframed element to enable dynamic text
+      const client = getClient();
+      client.addListener("customMessage", (message: ICustomMessage) => phone.post("customMessage", message));
+      phone.addListener("customMessage", (message: ICustomMessage) => client.post("customMessage", message));
+
       // if we have local linked interactives, we need to pass them in the linkedInteractives array
       let linkedInteractives: {id: string; label: string}[] = [];
       const libraryInteractive = getLibraryInteractive(url);
@@ -206,7 +214,7 @@ export const IframeRuntime: React.FC<IProps> =
         allow="geolocation; microphone; camera; bluetooth; clipboard-read; clipboard-write"
       />
       { internalHint &&
-        <div className={css.hint}>{renderHTML(internalHint)}</div> }
+        <div className={css.hint}><DynamicText>{renderHTML(internalHint)}</DynamicText></div> }
     </>
   );
 };

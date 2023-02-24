@@ -3,7 +3,10 @@ import { IAuthoredState, IInteractiveState } from "../types";
 import { IReportItemAnswer, IReportItemAnswerItemScore, sendReportItemAnswer } from "@concord-consortium/lara-interactive-api";
 
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
-  sendReportItemAnswer: jest.fn()
+  sendReportItemAnswer: jest.fn(),
+  getClient: jest.fn().mockReturnValue({
+    addListener: jest.fn()
+  }),
 }));
 
 const authoredState = {

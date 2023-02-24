@@ -6,7 +6,10 @@ jest.mock("@concord-consortium/lara-interactive-api", () => ({
   useInitMessage: jest.fn(() => initMessage),
   useAuthoredState: jest.fn(() => useAuthoredStateResult),
   useInteractiveState: jest.fn(() => ({})),
-  setSupportedFeatures: jest.fn()
+  setSupportedFeatures: jest.fn(),
+  getClient: jest.fn().mockReturnValue({
+    addListener: jest.fn()
+  }),
 }));
 
 let initMessage = {};

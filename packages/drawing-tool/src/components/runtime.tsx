@@ -1,13 +1,16 @@
 import React from "react";
-import 'drawing-tool/dist/drawing-tool.css';
-import { IAuthoredState, IInteractiveState } from "./types";
+import { DynamicText } from "@concord-consortium/dynamic-text";
+import { DecorateChildren } from "@concord-consortium/text-decorator";
 import { renderHTML } from "@concord-consortium/question-interactives-helpers/src/utilities/render-html";
+import { useCorsImageErrorCheck } from "@concord-consortium/question-interactives-helpers/src/hooks/use-cors-image-error-check";
+import { useGlossaryDecoration } from "@concord-consortium/question-interactives-helpers/src/hooks/use-glossary-decoration";
+
+import { IAuthoredState, IInteractiveState } from "./types";
 import { UploadBackground } from "./upload-background";
 import { TakeSnapshot } from "./take-snapshot";
 import { DrawingTool } from "./drawing-tool";
-import { useCorsImageErrorCheck } from "@concord-consortium/question-interactives-helpers/src/hooks/use-cors-image-error-check";
-import { DecorateChildren } from "@concord-consortium/text-decorator";
-import { useGlossaryDecoration } from "@concord-consortium/question-interactives-helpers/src/hooks/use-glossary-decoration";
+
+import 'drawing-tool/dist/drawing-tool.css';
 import css from "./runtime.scss";
 
 export interface IProps {
@@ -34,7 +37,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     <div>
       { authoredState.prompt &&
         <DecorateChildren decorateOptions={decorateOptions}>
-          <div>{renderHTML(authoredState.prompt)}</div>
+          <div><DynamicText>{renderHTML(authoredState.prompt)}</DynamicText></div>
         </DecorateChildren> }
       <DrawingTool authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} readOnly={readOnly} />
       {

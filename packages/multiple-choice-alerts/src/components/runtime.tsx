@@ -6,8 +6,12 @@
 
 import React from "react";
 import { v4 as uuidv4 } from "uuid";
-import { IAuthoredState, IChoice, IInteractiveState } from "./app";
 import { showModal } from "@concord-consortium/lara-interactive-api";
+import { DynamicText } from "@concord-consortium/dynamic-text";
+import { renderHTML } from "@concord-consortium/question-interactives-helpers/src/utilities/render-html";
+
+import { IAuthoredState, IChoice, IInteractiveState } from "./app";
+
 import css from "./runtime.scss";
 import buttonCss from "@concord-consortium/question-interactives-helpers/src/styles/helpers.scss";
 
@@ -94,7 +98,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             disabled={readOnly}
           />
           <label htmlFor={inputId}>
-            {choice.content}
+            <DynamicText inline={true}>{choice.content}</DynamicText>
           </label>
         </div>
       );
@@ -158,7 +162,13 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   return (
     <div>
       <fieldset>
-        { authoredState.prompt && <legend className={css.prompt + " list-unstyled"}>{ authoredState.prompt }</legend> }
+        { authoredState.prompt &&
+          <DynamicText>
+            <legend className={css.prompt + " list-unstyled"}>
+              { renderHTML(authoredState.prompt) }
+            </legend>
+          </DynamicText>
+        }
         <div className={css.choices + " " + css[layout]} data-cy="choices-container">
           {
             authoredState.layout !== "dropdown"

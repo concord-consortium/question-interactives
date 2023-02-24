@@ -1,6 +1,7 @@
 import React from "react";
 import { render } from "@testing-library/react";
 import { Runtime, getAspectRatio } from "./runtime";
+import { DynamicTextTester } from "@concord-consortium/question-interactives-helpers/src/utilities/dynamic-text-tester";
 
 const authoredState = {
   version: 1,
@@ -33,7 +34,7 @@ beforeEach(() => {
 
 describe("Runtime", () => {
   it("renders prompt and video with credits", () => {
-    const { container, getByText } = render(<Runtime authoredState={authoredState} />);
+    const { container, getByText } = render(<DynamicTextTester><Runtime authoredState={authoredState} /></DynamicTextTester>);
     expect(getByText(authoredState.prompt)).toBeDefined();
     expect(container.querySelectorAll("video").length).toBe(1);
     expect(container.querySelectorAll("video")[0].poster).toBe(authoredState.poster);
@@ -43,7 +44,7 @@ describe("Runtime", () => {
   });
 
   it("renders video in a paused state at the point where it was previously played until", () => {
-    const { container } = render(<Runtime authoredState={authoredState} interactiveState={interactiveState} />);
+    const { container } = render(<DynamicTextTester><Runtime authoredState={authoredState} interactiveState={interactiveState} /></DynamicTextTester>);
     expect(container.querySelectorAll("video").length).toBe(1);
     expect(container.querySelectorAll(".vjs-paused").length).toBe(1);
   });
@@ -58,7 +59,7 @@ describe("Runtime", () => {
 
 describe("Report", () => {
   it("renders video in read-only mode", () => {
-    const { container } = render(<Runtime authoredState={authoredState} />);
+    const { container } = render(<DynamicTextTester><Runtime authoredState={authoredState} /></DynamicTextTester>);
     expect(container.querySelectorAll("video").length).toBe(1);
     expect(container.querySelectorAll("video")[0].ontimeupdate).toBe(null);
     expect(container.querySelectorAll("video")[0].onpause).toBe(null);
