@@ -1,6 +1,5 @@
 import React from "react";
 import { IframeRuntime } from "@concord-consortium/question-interactives-helpers/src/components/iframe-runtime";
-import { IInteractiveState, IAuthoredState } from "./types";
 import { SubmitButton } from "@concord-consortium/question-interactives-helpers/src/components/submit-button";
 import { LockedInfo } from "@concord-consortium/question-interactives-helpers/src/components/locked-info";
 import { useStudentSettings } from "@concord-consortium/question-interactives-helpers/src/hooks/use-student-settings";
@@ -9,6 +8,10 @@ import { log } from "@concord-consortium/lara-interactive-api";
 import { libraryInteractiveIdToUrl } from "@concord-consortium/question-interactives-helpers/src/utilities/library-interactives";
 import { DecorateChildren } from "@concord-consortium/text-decorator";
 import { useGlossaryDecoration } from "@concord-consortium/question-interactives-helpers/src/hooks/use-glossary-decoration";
+import { DynamicText } from "@concord-consortium/dynamic-text";
+
+import { IInteractiveState, IAuthoredState } from "./types";
+
 import css from "./runtime.scss";
 
 interface IProps {
@@ -93,9 +96,12 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   return (
     <div className={css.runtime} tabIndex={1}>
       { authoredState.prompt &&
-        <DecorateChildren decorateOptions={decorateOptions}>
-          <div>{renderHTML(authoredState.prompt)}</div>
-        </DecorateChildren> }
+        <DynamicText>
+          <DecorateChildren decorateOptions={decorateOptions}>
+            <div>{renderHTML(authoredState.prompt)}</div>
+          </DecorateChildren>
+        </DynamicText>
+      }
       <IframeRuntime
         key={currentInteractive.id}
         id={currentInteractive.id}

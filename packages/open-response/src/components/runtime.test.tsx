@@ -1,8 +1,10 @@
 import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
+import { DynamicTextTester } from "@concord-consortium/question-interactives-helpers/src/utilities/dynamic-text-tester";
 import * as Component from "./runtime";
 import { Runtime } from "./runtime";
 import { IInteractiveState } from "./types";
+
 
 const authoredState = {
   version: 1,
@@ -80,46 +82,46 @@ afterEach(() => {
 
 describe("Runtime", () => {
   it("renders prompt and textarea", () => {
-    render(<Runtime authoredState={authoredState} />);
+    render(<DynamicTextTester><Runtime authoredState={authoredState} /></DynamicTextTester>);
     const prompt = screen.getByTestId("legend");
     expect(prompt.innerHTML).toEqual(expect.stringContaining(authoredState.prompt));
     expect(screen.getByTestId("response-textarea")).toBeDefined();
   });
 
   it("renders rich text prompt and textarea", () => {
-    render(<Runtime authoredState={authoredRichState} />);
+    render(<DynamicTextTester><Runtime authoredState={authoredRichState} /></DynamicTextTester>);
     const prompt = screen.getByTestId("legend");
     expect(prompt.innerHTML).toEqual(expect.stringContaining(authoredRichState.prompt));
     expect(screen.getByTestId("response-textarea")).toBeDefined();
   });
 
   it("handles passed interactiveState", () => {
-    render(<Runtime authoredState={authoredState} interactiveState={interactiveState} />);
+    render(<DynamicTextTester><Runtime authoredState={authoredState} interactiveState={interactiveState} /></DynamicTextTester>);
     expect(screen.getByTestId("response-textarea")).toHaveValue(interactiveState.answerText);
   });
 
   it("calls setInteractiveState when user provides an answer", () => {
     const setState = jest.fn();
-    render(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} />);
+    render(<DynamicTextTester><Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} /></DynamicTextTester>);
     fireEvent.change(screen.getByTestId("response-textarea"), { target: { value: "new answer" } });
     const newState = setState.mock.calls[0][0](interactiveState);
     expect(newState).toEqual({answerType: "open_response_answer", answerText: "new answer"});
   });
 
   it("does not render an audio record button if audioEnabled is false", () => {
-    render(<Runtime authoredState={authoredState} interactiveState={interactiveState} />);
+    render(<DynamicTextTester><Runtime authoredState={authoredState} interactiveState={interactiveState} /></DynamicTextTester>);
     expect(screen.queryAllByTestId("audio-record-button")).toHaveLength(0);
     expect(screen.getByTestId("response-textarea")).toHaveAttribute("placeholder", "Please type your answer here.");
   });
 
   it("renders an audio record button if audioEnabled is true", () => {
-    render(<Runtime authoredState={authoredStateWithAudioEnabled} interactiveState={interactiveState} />);
+    render(<DynamicTextTester><Runtime authoredState={authoredStateWithAudioEnabled} interactiveState={interactiveState} /></DynamicTextTester>);
     expect(screen.getByTestId("audio-record-button")).toBeDefined();
     expect(screen.getByTestId("response-textarea")).toHaveAttribute("placeholder", "Please type your answer here, or record your answer using the microphone.");
   });
 
   it("allows user to record an audio response if audioEnabled is true", async () => {
-    render(<Runtime authoredState={authoredStateWithAudioEnabled} interactiveState={interactiveState} />);
+    render(<DynamicTextTester><Runtime authoredState={authoredStateWithAudioEnabled} interactiveState={interactiveState} /></DynamicTextTester>);
     const recordButton = screen.getByTestId("audio-record-button");
     expect(recordButton).toBeDefined();
     // await waitFor(() => {
@@ -131,7 +133,7 @@ describe("Runtime", () => {
 
   it("loads a previously saved audio response", async () => {
     const mockFetchAudioUrl = jest.spyOn(Component, "fetchAudioUrl").mockResolvedValue(`https://concord.org/${savedAudioFileName}`);
-    render(<Runtime authoredState={authoredStateWithAudioEnabled} interactiveState={interactiveStateWithSavedAudio} />);
+    render(<DynamicTextTester><Runtime authoredState={authoredStateWithAudioEnabled} interactiveState={interactiveStateWithSavedAudio} /></DynamicTextTester>);
     expect(mockFetchAudioUrl).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId("response-textarea")).toBeDefined();
     await waitFor(() => {
@@ -160,20 +162,20 @@ describe("Runtime", () => {
 
   describe("report mode", () => {
     it("renders prompt and *disabled* textarea", () => {
-      render(<Runtime authoredState={authoredState} report={true} />);
+      render(<DynamicTextTester><Runtime authoredState={authoredState} report={true} /></DynamicTextTester>);
       const prompt = screen.getByTestId("legend");
       expect(prompt.innerHTML).toEqual(expect.stringContaining(authoredState.prompt));
       expect(screen.getByTestId("response-textarea")).toHaveAttribute("disabled");
     });
 
     it("handles passed interactiveState", () => {
-      render(<Runtime authoredState={authoredState} interactiveState={interactiveState} report={true} />);
+      render(<DynamicTextTester><Runtime authoredState={authoredState} interactiveState={interactiveState} report={true} /></DynamicTextTester>);
       expect(screen.getByTestId("response-textarea")).toHaveValue(interactiveState.answerText);
     });
 
     it("never calls setInteractiveState when user selects an answer", () => {
       const setState = jest.fn();
-      render(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} report={true} />);
+      render(<DynamicTextTester><Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} report={true} /></DynamicTextTester>);
       fireEvent.change(screen.getByTestId("response-textarea"), { target: { value: "diff answer" } });
       expect(setState).not.toHaveBeenCalled();
     });

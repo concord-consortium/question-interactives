@@ -1,6 +1,7 @@
 import React from "react";
-import { shallow } from "enzyme";
+import { shallow, mount } from "enzyme";
 import { Runtime } from "./runtime";
+import { DynamicTextContext, DynamicTextInterface } from "@concord-consortium/dynamic-text";
 
 const authoredState = {
   version: 1,
@@ -19,9 +20,19 @@ const interactiveState = {
   selectedChoiceIds: [ "id2" ]
 };
 
+const dynamicTextTester: DynamicTextInterface = {
+  registerComponent: jest.fn(),
+  unregisterComponent: jest.fn(),
+  selectComponent: jest.fn()
+};
+
 describe("Runtime", () => {
   it("renders prompt, extra instructions and choices", () => {
-    const wrapper = shallow(<Runtime authoredState={authoredState} />);
+    const wrapper = mount(
+      <DynamicTextContext.Provider value={dynamicTextTester}>
+        <Runtime authoredState={authoredState} />
+      </DynamicTextContext.Provider>
+    );
     const prompt = wrapper.find("legend");
     expect(prompt.html()).toEqual(expect.stringContaining(authoredState.prompt));
     expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[0].content));
@@ -134,7 +145,11 @@ describe("Runtime", () => {
 
   describe("report mode", () => {
     it("renders prompt, extra instructions and *disabled* choices", () => {
-      const wrapper = shallow(<Runtime authoredState={authoredState} report={true} />);
+      const wrapper = mount(
+        <DynamicTextContext.Provider value={dynamicTextTester}>
+          <Runtime authoredState={authoredState} report={true} />
+        </DynamicTextContext.Provider>
+      );
       const prompt = wrapper.find("legend");
       expect(prompt.html()).toEqual(expect.stringContaining(authoredState.prompt));
       expect(wrapper.text()).toEqual(expect.stringContaining(authoredState.choices[0].content));
@@ -181,7 +196,11 @@ describe("Runtime", () => {
     };
 
     it("renders prompt, extra instructions and choices", () => {
-      const wrapper = shallow(<Runtime authoredState={dropdownAuthoredState} />);
+      const wrapper = mount(
+        <DynamicTextContext.Provider value={dynamicTextTester}>
+          <Runtime authoredState={dropdownAuthoredState} />
+        </DynamicTextContext.Provider>
+      );
       const prompt = wrapper.find("legend");
       expect(prompt.html()).toEqual(expect.stringContaining(dropdownAuthoredState.prompt));
       expect(wrapper.text()).toEqual(expect.stringContaining(dropdownAuthoredState.choices[0].content));

@@ -2,9 +2,12 @@ import React, { useCallback } from "react";
 import striptags from "striptags";
 import { IRuntimeQuestionComponentProps } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
 import { ParseHTMLReplacer, renderHTML } from "@concord-consortium/question-interactives-helpers/src/utilities/render-html";
-import { blankRegexp, defaultBlankSize, IAuthoredState, IBlankDef, IFilledBlank, IInteractiveState } from "./types";
 import { DecorateChildren } from "@concord-consortium/text-decorator";
 import { useGlossaryDecoration } from "@concord-consortium/question-interactives-helpers/src/hooks/use-glossary-decoration";
+import { DynamicText } from "@concord-consortium/dynamic-text";
+
+import { blankRegexp, defaultBlankSize, IAuthoredState, IBlankDef, IFilledBlank, IInteractiveState } from "./types";
+
 import css from "./runtime.scss";
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {
@@ -76,6 +79,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                                                       authoredState.blanks || [],
                                                       interactiveState?.blanks || []);
         const _handleChange = (event: React.ChangeEvent<HTMLInputElement>) => handleChange(blankId, event.target.value);
+        // clicks are swallowed so the outer dynamic text is not triggered
+        const _swallowClicks = (event: React.MouseEvent<HTMLInputElement>) => event.stopPropagation();
         return (
           <input id={blankId} type="text"
             className={getInputClass(report, userInfo?.response, authorInfo?.matchTerm)}
@@ -84,6 +89,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             readOnly={readOnly}
             disabled={readOnly}
             onChange={_handleChange}
+            onClick={_swallowClicks}
             />
         );
       }
@@ -94,7 +100,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   return (
     <div className="fill-in-the-blank">
       <DecorateChildren decorateOptions={decorateOptions}>
-        {renderHTML(htmlContents, replaceInputs)}
+        <DynamicText>{renderHTML(htmlContents, replaceInputs)}</DynamicText>
       </DecorateChildren>
     </div>
   );

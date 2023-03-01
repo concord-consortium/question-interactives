@@ -1,4 +1,6 @@
 import React, { useEffect, useRef } from "react";
+import { DynamicTextContext, useDynamicTextProxy } from "@concord-consortium/dynamic-text";
+
 import { useAutoHeight } from "../hooks/use-auto-height";
 import { useHint } from "../hooks/use-hint";
 import { useRequiredQuestion } from "../hooks/use-required-question";
@@ -15,8 +17,8 @@ import { useBasicLogging } from "../hooks/use-basic-logging";
 import { useLinkedInteractives } from "../hooks/use-linked-interactives";
 import { ILinkedInteractiveProp } from "../hooks/use-linked-interactives-authoring";
 import { InitMessageContext } from "../hooks/use-context-init-message";
-import css from "./base-app.scss";
 
+import css from "./base-app.scss";
 
 interface IBaseQuestionAuthoredState extends IBaseAuthoredState {
   hint?: string;
@@ -62,6 +64,8 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
   const initMessage = useInitMessage();
   const isLoading = !initMessage;
   const isRuntimeView = initMessage?.mode === "runtime";
+
+  const dynamicTextProxy = useDynamicTextProxy();
 
   useAutoHeight({ container: container.current, disabled: isRuntimeView && disableAutoHeight || isLoading });
   useHint();
@@ -143,7 +147,9 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
   return (
     <div ref={container}>
       <InitMessageContext.Provider value={initMessage}>
-        { renderMode() }
+        <DynamicTextContext.Provider value={dynamicTextProxy}>
+          { renderMode() }
+        </DynamicTextContext.Provider>
       </InitMessageContext.Provider>
     </div>
   );

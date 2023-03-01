@@ -1,11 +1,13 @@
 import React, { useEffect, useRef, useState } from "react";
 import { IRuntimeQuestionComponentProps } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
 import { renderHTML } from "@concord-consortium/question-interactives-helpers/src/utilities/render-html";
-import { IAuthoredState, IInteractiveState } from "./types";
 import { DecorateChildren } from "@concord-consortium/text-decorator";
 import { useGlossaryDecoration } from "@concord-consortium/question-interactives-helpers/src/hooks/use-glossary-decoration";
 import { getAttachmentUrl, IGetInteractiveState, log, setOnUnload, writeAttachment } from "@concord-consortium/lara-interactive-api";
 import AudioRecorder from "audio-recorder-polyfill";
+import { DynamicText } from "@concord-consortium/dynamic-text";
+
+import { IAuthoredState, IInteractiveState } from "./types";
 
 import css from "./runtime.scss";
 import iconCss from "@concord-consortium/question-interactives-helpers/src/components/icons.scss";
@@ -220,11 +222,14 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   return (
     <fieldset className={css.openResponse}>
       { authoredState.prompt &&
-        <DecorateChildren decorateOptions={decorateOptions}>
-          <legend className={css.prompt} data-testid="legend">
-            {renderHTML(authoredState.prompt)}
-          </legend>
-        </DecorateChildren> }
+        <DynamicText>
+          <DecorateChildren decorateOptions={decorateOptions}>
+            <legend className={css.prompt} data-testid="legend">
+              {renderHTML(authoredState.prompt)}
+            </legend>
+          </DecorateChildren>
+        </DynamicText>
+      }
       <div className={`${css.inputContainer} ${audioEnabled ? css.audioEnabled : ""}`} style={containerStyle}>
         <textarea
           value={answerText}

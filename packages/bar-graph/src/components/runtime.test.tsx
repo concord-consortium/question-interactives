@@ -5,13 +5,17 @@ import { Bar } from "react-chartjs-2";
 import { DemoAuthoredState } from "./types";
 import { InitMessageContext } from "@concord-consortium/question-interactives-helpers/src/hooks/use-context-init-message";
 import { useInitMessage, log } from "@concord-consortium/lara-interactive-api";
+import { DynamicTextTester } from "@concord-consortium/question-interactives-helpers/src/utilities/dynamic-text-tester";
 
 const useInitMessageMock = useInitMessage as jest.Mock;
 const logMock = log as jest.Mock;
 
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
   useInitMessage: jest.fn(),
-  log: jest.fn()
+  log: jest.fn(),
+  getClient: jest.fn().mockReturnValue({
+    addListener: jest.fn()
+  }),
 }));
 
 const initMessage = {
@@ -27,7 +31,9 @@ describe("Graph runtime", () => {
   it("renders a graph with the correct props", () => {
     const wrapper = mount(
       <InitMessageContext.Provider value={initMessage as any}>
-        <Runtime authoredState={DemoAuthoredState} />
+        <DynamicTextTester>
+          <Runtime authoredState={DemoAuthoredState} />
+        </DynamicTextTester>
       </InitMessageContext.Provider>
     );
     expect(wrapper.find(Bar).length).toEqual(1);
@@ -111,7 +117,9 @@ describe("Graph runtime", () => {
   it("logs a init message at startup", () => {
     mount(
       <InitMessageContext.Provider value={initMessage as any}>
-        <Runtime authoredState={DemoAuthoredState} />
+        <DynamicTextTester>
+          <Runtime authoredState={DemoAuthoredState} />
+        </DynamicTextTester>
       </InitMessageContext.Provider>
     );
     expect(logMock).toHaveBeenCalledWith("init bar chart", {barChart: DemoAuthoredState});

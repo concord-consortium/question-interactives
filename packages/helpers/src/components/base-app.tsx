@@ -1,12 +1,15 @@
 import React, { useEffect, useRef } from "react";
+import { setSupportedFeatures, useAuthoredState, useInitMessage } from "@concord-consortium/lara-interactive-api";
+import { DynamicTextContext, useDynamicTextProxy } from "@concord-consortium/dynamic-text";
+
 import { useAutoHeight } from "../hooks/use-auto-height";
 import { useShutterbug } from "../hooks/use-shutterbug";
 import { BaseAuthoring, IBaseAuthoringProps } from "./base-authoring";
-import { setSupportedFeatures, useAuthoredState, useInitMessage } from "@concord-consortium/lara-interactive-api";
 import { useBasicLogging } from "../hooks/use-basic-logging";
 import { useLinkedInteractives } from "../hooks/use-linked-interactives";
 import { ILinkedInteractiveProp } from "../hooks/use-linked-interactives-authoring";
 import { InitMessageContext } from "../hooks/use-context-init-message";
+
 import css from "./base-app.scss";
 
 export type UpdateFunc<State> = (prevState: State | null) => State;
@@ -45,6 +48,8 @@ export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps
   const initMessage = useInitMessage();
   const isLoading = !initMessage;
   const isRuntimeView = initMessage?.mode === "runtime";
+
+  const dynamicTextProxy = useDynamicTextProxy();
 
   useAutoHeight({ container: container.current, disabled: isRuntimeView && disableAutoHeight || isLoading });
   useShutterbug({ container: "." + css.runtime });
@@ -97,7 +102,9 @@ export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps
   return (
     <div ref={container}>
       <InitMessageContext.Provider value={initMessage}>
-        { renderMode() }
+        <DynamicTextContext.Provider value={dynamicTextProxy}>
+          { renderMode() }
+        </DynamicTextContext.Provider>
       </InitMessageContext.Provider>
     </div>
   );

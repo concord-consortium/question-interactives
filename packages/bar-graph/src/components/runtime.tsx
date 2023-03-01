@@ -1,9 +1,10 @@
 import React from "react";
-
 import { IRuntimeQuestionComponentProps } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
+import { renderHTML } from "@concord-consortium/question-interactives-helpers/src/utilities/render-html";
+import { DynamicText } from "@concord-consortium/dynamic-text";
+
 import { DefaultAuthoredState, IAuthoredState, IInteractiveState } from "./types";
 import { BarChartComponent } from "./bar-chart";
-import { renderHTML } from "@concord-consortium/question-interactives-helpers/src/utilities/render-html";
 
 import css from "./runtime.scss";
 
@@ -14,7 +15,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   return (
     <div className={css.barGraph}>
-      {authoredState.prompt && <div>{renderHTML(authoredState.prompt)}</div>}
+      {authoredState.prompt && <div><DynamicText>{renderHTML(authoredState.prompt)}</DynamicText></div>}
       <BarChartComponent
         authoredState={authoredState}
         interactiveState={interactiveState}

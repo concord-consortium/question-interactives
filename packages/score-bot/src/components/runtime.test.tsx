@@ -2,6 +2,7 @@ import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { Runtime } from "./runtime";
 import { IInteractiveState } from "./types";
+import { DynamicTextTester } from "@concord-consortium/question-interactives-helpers/src/utilities/dynamic-text-tester";
 
 const authoredState = {
   version: 1,
@@ -26,27 +27,27 @@ const interactiveState: IInteractiveState = {
 
 describe("Runtime", () => {
   it("renders prompt and textarea", () => {
-    render(<Runtime authoredState={authoredState} />);
+    render(<DynamicTextTester><Runtime authoredState={authoredState} /></DynamicTextTester>);
     const prompt = screen.getByTestId("legend");
     expect(prompt.innerHTML).toEqual(expect.stringContaining(authoredState.prompt));
     expect(screen.getByTestId("response-textarea")).toBeDefined();
   });
 
   it("renders rich text prompt and textarea", () => {
-    render(<Runtime authoredState={authoredRichState} />);
+    render(<DynamicTextTester><Runtime authoredState={authoredRichState} /></DynamicTextTester>);
     const prompt = screen.getByTestId("legend");
     expect(prompt.innerHTML).toEqual(expect.stringContaining(authoredRichState.prompt));
     expect(screen.getByTestId("response-textarea")).toBeDefined();
   });
 
   it("handles passed interactiveState", () => {
-    render(<Runtime authoredState={authoredState} interactiveState={interactiveState} />);
+    render(<DynamicTextTester><Runtime authoredState={authoredState} interactiveState={interactiveState} /></DynamicTextTester>);
     expect(screen.getByTestId("response-textarea")).toHaveValue(interactiveState.answerText);
   });
 
   it("calls setInteractiveState when user provides an answer", () => {
     const setState = jest.fn();
-    render(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} />);
+    render(<DynamicTextTester><Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} /></DynamicTextTester>);
     fireEvent.change(screen.getByTestId("response-textarea"), { target: { value: "new answer" } });
     const newState = setState.mock.calls[0][0](interactiveState);
     expect(newState).toEqual({answerType: "interactive_state", answerText: "new answer", score: undefined, submitted: false});
@@ -54,20 +55,20 @@ describe("Runtime", () => {
 
   describe("report mode", () => {
     it("renders prompt and *disabled* textarea", () => {
-      render(<Runtime authoredState={authoredState} report={true} />);
+      render(<DynamicTextTester><Runtime authoredState={authoredState} report={true} /></DynamicTextTester>);
       const prompt = screen.getByTestId("legend");
       expect(prompt.innerHTML).toEqual(expect.stringContaining(authoredState.prompt));
       expect(screen.getByTestId("response-textarea")).toHaveAttribute("disabled");
     });
 
     it("handles passed interactiveState", () => {
-      render(<Runtime authoredState={authoredState} interactiveState={interactiveState} report={true} />);
+      render(<DynamicTextTester><Runtime authoredState={authoredState} interactiveState={interactiveState} report={true} /></DynamicTextTester>);
       expect(screen.getByTestId("response-textarea")).toHaveValue(interactiveState.answerText);
     });
 
     it("never calls setInteractiveState when user selects an answer", () => {
       const setState = jest.fn();
-      render(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} report={true} />);
+      render(<DynamicTextTester><Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} report={true} /></DynamicTextTester>);
       fireEvent.change(screen.getByTestId("response-textarea"), { target: { value: "diff answer" } });
       expect(setState).not.toHaveBeenCalled();
     });

@@ -1,6 +1,8 @@
 import React from "react";
 import classNames from "classnames";
 import styled from "styled-components";
+import { DynamicText } from "@concord-consortium/dynamic-text";
+
 import PointerSVG from "../assets/pointer.svg";
 
 // Note that this component needs to be styled using styled-components (inline CSS) because it gets rendered
@@ -85,7 +87,7 @@ export const Score: React.FC<IProps> = ({ score, maxScore }) => {
   const labels = maxScore === 6 ? [0, 1, 2, 3, 4, 5, 6] : [0, 1, 2, 3, 4];
   return (
     <Container data-cy="score-bot-score">
-      <Title>Level of Scientific Explanation</Title>
+      <Title><DynamicText>Level of Scientific Explanation</DynamicText></Title>
       <Scale>
         {
           labels.map(label => (
@@ -97,7 +99,7 @@ export const Score: React.FC<IProps> = ({ score, maxScore }) => {
       <Labels>
         {
           labels.map(label => (
-            <Label key={label} className={`scale-to-${maxScore}`} >{ label }</Label>
+            <Label key={label} className={`scale-to-${maxScore}`} ><DynamicText>{ label }</DynamicText></Label>
           ))
         }
       </Labels>

@@ -13,6 +13,9 @@ jest.mock("@concord-consortium/lara-interactive-api", () => ({
   setSupportedFeatures: jest.fn(),
   getInteractiveList: jest.fn(() => new Promise(() => { /* never resolve */ })),
   getFirebaseJwt: jest.fn().mockReturnValue({token: "test"}),
+  getClient: jest.fn().mockReturnValue({
+    addListener: jest.fn()
+  }),
 }));
 
 const useInitMessageMock = useInitMessage as jest.Mock;

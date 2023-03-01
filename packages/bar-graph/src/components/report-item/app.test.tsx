@@ -11,7 +11,10 @@ jest.mock("@concord-consortium/lara-interactive-api", () => ({
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
   useInitMessage: jest.fn(),
   useAutoSetHeight: jest.fn(),
-  useReportItem: jest.fn()
+  useReportItem: jest.fn(),
+  getClient: jest.fn().mockReturnValue({
+    addListener: jest.fn()
+  }),
 }));
 
 const useInitMessageMock = useInitMessage as jest.Mock;

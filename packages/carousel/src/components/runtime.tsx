@@ -9,6 +9,7 @@ import classNames from "classnames";
 
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
 import css from "./runtime.scss";
+import { DynamicText } from "@concord-consortium/dynamic-text";
 
 interface IProps {
   authoredState: IAuthoredState;
@@ -111,7 +112,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           return (
             <div key={index} className={classNames(css.runtime, { [css.disabled]: readOnly })}>
               { authoredState.prompt &&
-                <div>{renderHTML(authoredState.prompt)}</div> }
+                <div><DynamicText>{renderHTML(authoredState.prompt)}</DynamicText></div> }
                 <IframeRuntime
                   key={interactive.id}
                   id={interactive.id}
