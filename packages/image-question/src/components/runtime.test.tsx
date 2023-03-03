@@ -1,12 +1,14 @@
 import React from "react";
-import { mount } from "enzyme";
+import { mount, render } from "enzyme";
 import { Runtime } from "./runtime";
 import { getInteractiveSnapshot, closeModal } from "@concord-consortium/lara-interactive-api";
 import { TakeSnapshot } from "drawing-tool-interactive/src/components/take-snapshot";
 import { UploadBackground } from "drawing-tool-interactive/src/components/upload-background";
-import { DrawingTool } from "drawing-tool-interactive/src/components/drawing-tool";
+// import { DrawingTool } from "drawing-tool-interactive/src/components/drawing-tool";
 import Shutterbug  from "shutterbug";
 import { DynamicTextTester } from "@concord-consortium/question-interactives-helpers/src/utilities/dynamic-text-tester";
+import { useInitMessage } from "@concord-consortium/lara-interactive-api";
+import { InitMessageContext } from "@concord-consortium/question-interactives-helpers/src/hooks/use-context-init-message";
 
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
   getInteractiveSnapshot: jest.fn(() => new Promise(resolve => resolve({success: true, snapshotUrl: "http://snapshot/123" }))),
@@ -15,6 +17,7 @@ jest.mock("@concord-consortium/lara-interactive-api", () => ({
   getClient: jest.fn().mockReturnValue({
     addListener: jest.fn()
   }),
+  useInitMessage: jest.fn(),
 }));
 const getInteractiveSnapshotMock = getInteractiveSnapshot as jest.Mock;
 const closeModalMock = closeModal as jest.Mock;
@@ -28,6 +31,19 @@ let useCorsImageErrorResult = false;
 jest.mock("@concord-consortium/question-interactives-helpers/src/hooks/use-cors-image-error-check", () => ({
   useCorsImageErrorCheck: () => useCorsImageErrorResult
 }));
+
+
+const useInitMessageMock = useInitMessage as jest.Mock;
+const initMessage = {
+  mode: "runtime" as const,
+  linkedInteractives: [
+    {
+      id: "123-MwInteractive",
+      label: "snapshotTarget"
+    }
+  ]
+};
+useInitMessageMock.mockReturnValue(initMessage);
 
 const authoredState = {
   version: 1,
@@ -67,15 +83,20 @@ describe("Runtime", () => {
     expect(wrapper.text()).toEqual(expect.stringContaining(interactiveState.answerText));
   });
 
-  // BROKEN TEST AFTER DYNAMIC TEXT ADDED
-  // it("renders snapshot UI when backgroundSource === snapshot", () => {
-  //   const wrapperWithoutSnapshot = mount(<DynamicTextTester><Runtime authoredState={authoredState} interactiveState={interactiveState} /></DynamicTextTester>);
-  //   expect(wrapperWithoutSnapshot.find(TakeSnapshot).length).toEqual(0);
-  //
-  //   const authoredStateWithSnapshot = {...authoredState, backgroundSource: "snapshot" as const, snapshotTarget: "interactive_123"};
-  //   const wrapper = mount(<DynamicTextTester><Runtime authoredState={authoredStateWithSnapshot} interactiveState={interactiveState} /></DynamicTextTester>);
-  //   expect(wrapper.find(TakeSnapshot).length).toEqual(1);
-  // });
+  it("renders snapshot UI when backgroundSource === snapshot", () => {
+    const wrapperWithoutSnapshot = render(<DynamicTextTester><Runtime authoredState={authoredState} interactiveState={interactiveState} /></DynamicTextTester>);
+    expect(wrapperWithoutSnapshot.html()).not.toContain("Take a Snapshot");
+
+    const authoredStateWithSnapshot = {...authoredState, backgroundSource: "snapshot" as const, snapshotTarget: "interactive_123"};
+    const wrapper = mount(
+      <InitMessageContext.Provider value={initMessage as any}>
+        <DynamicTextTester>
+          <Runtime authoredState={authoredStateWithSnapshot} interactiveState={interactiveState} />
+        </DynamicTextTester>
+      </InitMessageContext.Provider>
+    );
+    expect(wrapper.html()).toContain("Take a Snapshot");
+  });
 
   it("renders upload UI when backgroundSource === upload", () => {
     const wrapperWithoutUpload = mount(<DynamicTextTester><Runtime authoredState={authoredState} interactiveState={interactiveState} /></DynamicTextTester>);
@@ -99,14 +120,21 @@ describe("Runtime", () => {
       };
     });
 
-    // BROKEN TEST AFTER DYNAMIC TEXT ADDED
-    // it("renders prompts, drawing tool and text area", () => {
-    //   const wrapper = mount(<DynamicTextTester><Runtime authoredState={authoredState} interactiveState={interactiveState} /></DynamicTextTester>);
-    //   expect(wrapper.html()).toEqual(expect.stringContaining(authoredState.prompt));
-    //   expect(wrapper.html()).toEqual(expect.stringContaining(authoredState.answerPrompt));
-    //   expect(wrapper.find(DrawingTool).length).toEqual(1);
-    //   expect(wrapper.find("textarea").length).toEqual(1);
-    // });
+    it("renders prompts, drawing tool and text area", () => {
+      const wrapper = render(<DynamicTextTester><Runtime authoredState={authoredState} interactiveState={interactiveState} /></DynamicTextTester>);
+      expect(wrapper.html()).toEqual(expect.stringContaining(authoredState.prompt));
+      expect(wrapper.html()).toEqual(expect.stringContaining(authoredState.answerPrompt));
+      expect(wrapper.html()).toEqual(expect.stringContaining("drawingTool"));
+      expect(wrapper.find("textarea").length).toEqual(1);
+    });
+
+    // The following three tests now break due to having to change from shallow() to mount() in order
+    // for the DynamicTextTester context to be added to provide a value for the DynamicText component.
+    // When mount() is used the inner DrawingTool is mounted with causes this error to be thrown
+    // from inside the drawing tool: `Error: Uncaught [TypeError: EventEmitter2 is not a constructor]`
+    // Mocking `eventemitter2` in this test suite does not fix the issue and changing from shallow()
+    // to render() so the innter DrawingTool is not rendered invalidates the test as we are not able
+    // to then simulate the events as render() returns static html
 
     // BROKEN TEST AFTER DYNAMIC TEXT ADDED
     // it("calls setInteractiveState when user provides an answer", () => {
