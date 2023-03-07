@@ -6,7 +6,7 @@ $themeColor2: #34a5be;
 
 @mixin ap-styles {
   // These values should match the Activity Player. In the future, we might extend interactive API so the Activity Player can provide them.
-  font-family: Lato, Arial, Helvetica, sans-serif;
+  font-family: Andika, Arial, Helvetica, sans-serif;
   font-size: 16px;
   font-weight: 400;
   line-height: 1.35 !important;
@@ -37,7 +37,7 @@ $themeColor2: #34a5be;
   cursor: pointer;
   flex-grow: 0;
   flex-shrink: 0;
-  font: bold 20px Lato, Arial, Helvetica, sans-serif;
+  font: bold 20px Andika, Arial, Helvetica, sans-serif;
   height: 44px;
   min-width: 100px;
   padding: 5px 10px 5px 10px;
