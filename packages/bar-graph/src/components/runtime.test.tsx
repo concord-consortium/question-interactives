@@ -54,7 +54,7 @@ describe("Graph runtime", () => {
             "ticks": {
               "font": {
                 "size": 20,
-                "family": "'Lato', sans-serif",
+                "family": "'Andika', sans-serif",
                 "weight": undefined,
               },
               "color": "#3f3f3f"

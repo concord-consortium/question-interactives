@@ -18,7 +18,7 @@ const GlobalStyle = createGlobalStyle`
 `;
 
 const Container = styled.div`
-  font-family: Lato;
+  font-family: Andika;
   font-size: 16px;
   color: #3f3f3f;
   margin-top: 20px;
@@ -88,7 +88,7 @@ export const FeedbackReport: React.FC<IProps> = ({ score, attempts, maxScore, fe
   }
   return (
     <Container className={outdated ? "outdated" : ""} data-cy="score-bot-feedback">
-      <link href="https://fonts.googleapis.com/css2?family=Lato:wght@100;400;700;900&display=swap" rel="stylesheet" />
+      <link href="https://fonts.googleapis.com/css2?family=Andika:wght@100;400;700;900&display=swap" rel="stylesheet" />
       <GlobalStyle />
       <Header>ScoreBOT Feedback</Header>
       <ScoreValue>Score: <span className="value">{ score }</span> Tries: <span className="value">{ attempts }</span></ScoreValue>

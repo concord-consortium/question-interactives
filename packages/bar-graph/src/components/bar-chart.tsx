@@ -41,7 +41,7 @@ const xAxisTabIndex = yAxisTabIndex + 1;
 export const StartChartTabIndex = xAxisTabIndex + 1;
 
 export const DefaultBarColor = "#0592AF";
-const fontFamily = "'Lato', sans-serif";
+const fontFamily = "'Andika', sans-serif";
 
 const font = (size: number, options?: {bold?: boolean}) => {
   return {
