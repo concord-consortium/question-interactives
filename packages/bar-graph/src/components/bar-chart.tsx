@@ -204,7 +204,7 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
                 };
                 const value = authoredState.numberOfDecimalPlaces ? renderedBar.value.toFixed(authoredState.numberOfDecimalPlaces) : renderedBar.value;
                 const title = `${bar.label}: ${value} ${authoredState.yAxisLabel}`;
-                return <div key={index} style={style} tabIndex={StartChartTabIndex + (2 * index)} title={title} data-cy={`barValue${index}`}><DynamicText>{value}</DynamicText></div>;
+                return <div key={index} style={style} tabIndex={StartChartTabIndex + (2 * index)} title={title} data-cy={`barValue${index}`}><DynamicText inline={true}>{value}</DynamicText></div>;
               })}
               {!readOnly && chartInfo.bars.map(renderedBar => {
                 const { index } = renderedBar;

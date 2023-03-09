@@ -196,10 +196,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     const symbol = isCorrect ? <CheckIcon /> : <CrossIcon />;
     return (
       <div className={css.answerFeedback} data-cy={`feedback-${isCorrect}`}>
-        <DynamicText>
-          <div className={symbolCss}>{ symbol }</div>
-          <div className={css.feedback}>{ feedback }</div>
-        </DynamicText>
+        <div className={symbolCss}>{ symbol }</div>
+        <div className={css.feedback}><DynamicText inline={true}>{ feedback }</DynamicText></div>
       </div>
     );
   };

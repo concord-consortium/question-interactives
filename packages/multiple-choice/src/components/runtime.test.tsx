@@ -90,7 +90,11 @@ describe("Runtime", () => {
   it("has a Check Answer button that is enabled when an answer is selected and when clicked shows correct feedback when correct answer is selected", () => {
     const setState = jest.fn();
     interactiveState.selectedChoiceIds = ['id1'];
-    const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} />);
+    const wrapper = mount(
+      <DynamicTextContext.Provider value={dynamicTextTester}>
+        <Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} />)
+      </DynamicTextContext.Provider>
+    );
     const checkAnswerButton = wrapper.find("[data-cy='check-answer-button']");
     expect(checkAnswerButton.length).toEqual(1);
     expect(checkAnswerButton.props().disabled).toEqual(false);
@@ -108,7 +112,11 @@ describe("Runtime", () => {
       {id: "id2", content: "Choice B", correct: false},
       {id: "id3", content: "Choice C", correct: true}
     ];
-    const wrapper = shallow(<Runtime authoredState={Object.assign({}, authoredState, {choices: multiChoices, multipleAnswers: true})} interactiveState={interactiveState} setInteractiveState={setState} />);
+    const wrapper = mount(
+      <DynamicTextContext.Provider value={dynamicTextTester}>
+        <Runtime authoredState={Object.assign({}, authoredState, {choices: multiChoices, multipleAnswers: true})} interactiveState={interactiveState} setInteractiveState={setState} />
+      </DynamicTextContext.Provider>
+    );
     const checkAnswerButton = wrapper.find("[data-cy='check-answer-button']");
     checkAnswerButton.simulate("click");
     expect(wrapper.find(".answerFeedback").length).toEqual(1);
@@ -123,7 +131,11 @@ describe("Runtime", () => {
       {id: "id2", content: "Choice B", correct: false},
       {id: "id3", content: "Choice C", correct: true}
     ];
-    const wrapper = shallow(<Runtime authoredState={Object.assign({}, authoredState, {choices: multiChoices, multipleAnswers: true})} interactiveState={interactiveState} setInteractiveState={setState} />);
+    const wrapper = mount(
+      <DynamicTextContext.Provider value={dynamicTextTester}>
+        <Runtime authoredState={Object.assign({}, authoredState, {choices: multiChoices, multipleAnswers: true})} interactiveState={interactiveState} setInteractiveState={setState} />
+      </DynamicTextContext.Provider>
+    );
     const checkAnswerButton = wrapper.find("[data-cy='check-answer-button']");
     checkAnswerButton.simulate("click");
     expect(wrapper.find(".answerFeedback").length).toEqual(1);
@@ -133,7 +145,11 @@ describe("Runtime", () => {
   it("has a Check Answer button that is enabled when an answer is selected and when clicked shows incorrect feedback if an incorrect answer is selected", () => {
     const setState = jest.fn();
     interactiveState.selectedChoiceIds = ['id2'];
-    const wrapper = shallow(<Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} />);
+    const wrapper = mount(
+      <DynamicTextContext.Provider value={dynamicTextTester}>
+        <Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} />
+      </DynamicTextContext.Provider>
+    );
     const checkAnswerButton = wrapper.find("[data-cy='check-answer-button']");
     expect(checkAnswerButton.length).toEqual(1);
     expect(checkAnswerButton.props().disabled).toEqual(false);
