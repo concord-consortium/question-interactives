@@ -1,6 +1,6 @@
 {
   "name": "wrapper-page",
-  "version": "1.11.0",
+  "version": "1.12.0",
   "description": "wrapper page used by Cypress",
   "repository": {
     "type": "git",
