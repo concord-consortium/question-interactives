@@ -12,7 +12,7 @@ export interface ICommentFieldProps {
   readOnly: boolean;
 }
 
-const kLogCommentWaitTimeout = 10 * 1000;  // 10 seconds
+const kLogCommentWaitTimeout = 2 * 1000;  // 2 seconds, like the question saving
 
 export const CommentField = (props: ICommentFieldProps) => {
   const {title, comment, empty, setComment, readOnly } = props;
