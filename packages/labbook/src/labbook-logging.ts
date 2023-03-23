@@ -9,6 +9,7 @@ export type LabbookLogType =
   | "item deleted"
   | "item selected"
   | "upload fail"
+  | "comment updated"
 
 export interface ILogParams {
   action: LabbookLogType;
