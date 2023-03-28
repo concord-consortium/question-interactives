@@ -6,14 +6,14 @@ on:
       version:
         description: The git tag for the version to use for index.html
         required: true
-    release-type:
-      description: The index file to create
-      type: choice
-      required: true
-      options:
-        - index-staging.html
-        - index.html
-      default: index-staging.html
+      release-type:
+        description: The index file to create
+        type: choice
+        required: true
+        options:
+          - index-staging.html
+          - index.html
+        default: index-staging.html
 
 env:
   BUCKET: models-resources
