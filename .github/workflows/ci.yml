@@ -87,9 +87,8 @@ jobs:
           prefix: ${{ github.event.repository.name }} # 'question-interactives'
           awsAccessKeyId: ${{ secrets.AWS_ACCESS_KEY_ID }}
           awsSecretAccessKey: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          # Add the default branch and the current branch as top branches
+          # Add the default branch as a top branch
           topBranches: |-
             [
-              "${{ github.event.repository.default_branch }}",
-              "${{ github.ref_name }}"
+              "${{ github.event.repository.default_branch }}"
             ]
