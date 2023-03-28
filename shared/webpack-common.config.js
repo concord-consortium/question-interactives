@@ -5,7 +5,10 @@ const os = require('os');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 const GenerateJsonFromJsPlugin = require('generate-json-from-js-webpack-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 const { merge } = require('webpack-merge');
+
+const DEPLOY_PATH = process.env.DEPLOY_PATH;
 
 module.exports = (env, argv, interactiveDirName, customizations) => {
   const devMode = argv.mode !== 'production';
@@ -25,7 +28,7 @@ module.exports = (env, argv, interactiveDirName, customizations) => {
     devtool: devMode ? 'eval-cheap-module-source-map' : 'source-map',
     mode: 'development',
     output: {
-       // set the path to be ./dist in the top-level monorepo directory
+      // set the path to be ./dist in the top-level monorepo directory
       path: `${rootDir}/dist`,
       filename: '[name]/assets/index.[contenthash].js'
     },
@@ -106,11 +109,12 @@ module.exports = (env, argv, interactiveDirName, customizations) => {
         // cf. https://github.com/facebook/react/issues/13991#issuecomment-435587809
         react: path.resolve(__dirname, '../node_modules/react'),
       },
-      extensions: [ '.ts', '.tsx', '.js' ]
+      extensions: ['.ts', '.tsx', '.js']
     },
     stats: {
       // suppress "export not found" warnings about re-exported types
-      warningsFilter: /export .* was not found in/
+      warningsFilter: /export .* was not found in/,
+      children: true,
     },
     plugins: [
       new MiniCssExtractPlugin({
@@ -122,6 +126,13 @@ module.exports = (env, argv, interactiveDirName, customizations) => {
       //   filename: 'wrapper.html',
       //   template: 'packages/helpers/wrapper.html'
       // }),
+      // index-top.html
+      ...(DEPLOY_PATH ? [new HtmlWebpackPlugin({
+        chunks: [interactiveName],
+        filename: `${interactiveName}/index-top.html`,
+        template: '../../shared/index.html',
+        publicPath: `../${DEPLOY_PATH}/`,
+      })] : []),
       // generate version.json
       new GenerateJsonFromJsPlugin({
         path: `${rootDir}/shared/generate-version-json.js`,
@@ -129,7 +140,7 @@ module.exports = (env, argv, interactiveDirName, customizations) => {
         data: { interactiveDirName }
       }),
       new ESLintPlugin({
-        extensions: ['ts','tsx']
+        extensions: ['ts', 'tsx']
       })
     ]
   };
