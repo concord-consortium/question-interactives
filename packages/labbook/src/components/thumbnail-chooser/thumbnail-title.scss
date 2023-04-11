@@ -1,3 +1,5 @@
+@import "../../../../helpers/src/styles/px-to-rem.scss";
+
 .thumbnail-title {
   position: absolute;
   top: 0px;
@@ -17,7 +19,7 @@
   background-color: var(--white);
 
   font-family: Lato;
-  font-size: 16px;
+  font-size: pxToRem(16);
   font-weight: bold;
   text-align: center;
   color: var(--cc-charcoal);

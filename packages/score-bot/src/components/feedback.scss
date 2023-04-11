@@ -1,3 +1,5 @@
+@import "../../../helpers/src/styles/px-to-rem.scss";
+
 .scoreBotFeedback {
   margin-top: 12px;
   border: 1px solid #ededed;
@@ -16,7 +18,7 @@
   .header {
     background-color: #ededed;
     color: #525252;
-    font-size: 16px;
+    font-size: pxToRem(16);
     font-weight: lighter;
     padding: 5px 10px;
     width: 100%;
