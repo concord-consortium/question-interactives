@@ -1,3 +1,5 @@
+@import "../../../helpers/src/styles/px-to-rem.scss";
+
 // Colors &etc.
 
 :root {
@@ -35,7 +37,7 @@
   background-color: #dfdfdf;
 
   font-family: Lato;
-  font-size: 16px;
+  font-size: pxToRem(16);
   color: var(--cc-charcoal);
   .container {
     position: relative;

@@ -1,11 +1,12 @@
 @import "../styles/helpers";
+@import "../styles/px-to-rem.scss";
 
 .locked {
 
   .header {
     background-color: #ededed;
     color: #525252;
-    font-size: 16px;
+    font-size: pxToRem(16);
     font-weight: lighter;
     margin-top: 10px;
     padding: 5px 10px;

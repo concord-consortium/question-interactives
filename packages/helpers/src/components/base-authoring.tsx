@@ -12,7 +12,7 @@ import { TokenServiceClient } from "@concord-consortium/token-service";
 import { NumberInputWidget } from "../widgets/number-input/number-input";
 
 import css from "../styles/authoring.scss";
-import "../styles/boostrap-3.3.7.css"; // necessary to style react-jsonschema-form
+import "../styles/bootstrap-3.3.7.scss"; // necessary to style react-jsonschema-form
 
 export interface IBaseAuthoringProps<IAuthoredState> {
   authoredState: IAuthoredState;
