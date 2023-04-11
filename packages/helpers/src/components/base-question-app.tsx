@@ -17,6 +17,7 @@ import { useBasicLogging } from "../hooks/use-basic-logging";
 import { useLinkedInteractives } from "../hooks/use-linked-interactives";
 import { ILinkedInteractiveProp } from "../hooks/use-linked-interactives-authoring";
 import { InitMessageContext } from "../hooks/use-context-init-message";
+import { useFontSize } from "../hooks/use-font-size";
 
 import css from "./base-app.scss";
 
@@ -73,6 +74,7 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
   useShutterbug({ container: "." + css.runtime });
   useBasicLogging({ disabled: !isRuntimeView });
   useLinkedInteractives(linkedInteractiveProps?.map(li => li.label), initMessage);
+  useFontSize();
 
   useEffect(() => {
     setSupportedFeatures({
