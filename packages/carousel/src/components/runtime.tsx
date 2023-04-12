@@ -6,10 +6,11 @@ import { Carousel } from "react-responsive-carousel";
 import { libraryInteractiveIdToUrl } from "@concord-consortium/question-interactives-helpers/src/utilities/library-interactives";
 import { cssUrlValue } from "@concord-consortium/question-interactives-helpers/src/utilities/css-url-value";
 import classNames from "classnames";
+import { DynamicText } from "@concord-consortium/dynamic-text";
+import { useFontSize } from "@concord-consortium/question-interactives-helpers/src/hooks/use-font-size";
 
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
 import css from "./runtime.scss";
-import { DynamicText } from "@concord-consortium/dynamic-text";
 
 interface IProps {
   authoredState: IAuthoredState;
@@ -23,6 +24,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const [currentSlide, setCurrentSlide] = useState(0);
   const currentSlideRef = useRef(currentSlide);
   currentSlideRef.current = currentSlide;
+
+  const fontSize = useFontSize();
 
   const updateCurrentSlide = useCallback((index: number, event?: MouseEvent<HTMLButtonElement>) => {
     if (event) {
@@ -123,6 +126,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                   setInteractiveState={handleNewInteractiveState.bind(null, interactive.id)}
                   onUnloadCallback={handleNewInteractiveState.bind(null, interactive.id)}
                   scrolling="no"
+                  initMessage={{fontSize} as any}
                 />
             </div>
           );

@@ -56,7 +56,7 @@ export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps
   useShutterbug({ container: "." + css.runtime });
   useBasicLogging({ disabled: !isRuntimeView });
   useLinkedInteractives(linkedInteractiveProps?.map(li => li.label), initMessage);
-  useFontSize();
+  useFontSize({updateHtml: true});
 
   useEffect(() => {
     setSupportedFeatures({

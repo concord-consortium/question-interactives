@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 
 import { IframeRuntime } from "../components/iframe-runtime";
 import { DemoAuthoringComponent } from "./demo-authoring";
+import { useFontSize } from "../hooks/use-font-size";
 
 import css from "./demo.scss";
 
@@ -24,6 +25,8 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
   const [reportItemHtml, setReportItemHtml] = useState<string>();
   const [reportItemHeight, setReportItemHeight] = useState(0);
   const timeoutRef = useRef<number|undefined>();
+
+  const fontSize = useFontSize();
 
   // send the new authored state to the root demo and have it re-render the runtime container
   const handleSetAuthoredState = (newAuthoredState: IAuthoredState) => {
@@ -150,6 +153,7 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
             interactiveState={interactiveState}
             setInteractiveState={setInteractiveState}
             flushOnSave={true}
+            initMessage={{fontSize} as any}
           />
           {renderReportItemHtml()}
         </>

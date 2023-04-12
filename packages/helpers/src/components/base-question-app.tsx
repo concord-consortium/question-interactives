@@ -74,7 +74,7 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
   useShutterbug({ container: "." + css.runtime });
   useBasicLogging({ disabled: !isRuntimeView });
   useLinkedInteractives(linkedInteractiveProps?.map(li => li.label), initMessage);
-  useFontSize();
+  useFontSize({updateHtml: true});
 
   useEffect(() => {
     setSupportedFeatures({

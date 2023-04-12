@@ -7,6 +7,7 @@ import { IframePhone } from "@concord-consortium/question-interactives-helpers/s
 import { DynamicText } from "@concord-consortium/dynamic-text";
 
 import { IAuthoredState, IInteractiveState } from "./types";
+import { useFontSize } from "@concord-consortium/question-interactives-helpers/src/hooks/use-font-size";
 
 import css from "./runtime.scss";
 
@@ -24,6 +25,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const [dataListeners, setDataListeners] = useState<{id: string, phone: IframePhone}[]>([]);
   const leftDivision = division;
   const rightDivision = 100 - division;
+
+  const fontSize = useFontSize();
 
   const updateDataListeners = useCallback((newInteractiveState: any) => {
     dataListeners.forEach(listener => {
@@ -93,6 +96,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               addLocalLinkedDataListener={handleAddLocalLinkedDataListener}
               report={report}
               scale={report && view !== "standalone" ? scaleForReportLeft : undefined}
+              initMessage={{fontSize} as any}
             />
         </div> }
         { rightInteractive &&
@@ -107,6 +111,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               addLocalLinkedDataListener={handleAddLocalLinkedDataListener}
               report={report}
               scale={report && view !== "standalone" ? scaleForReportRight : undefined}
+              initMessage={{fontSize} as any}
             />
         </div> }
       </div>
