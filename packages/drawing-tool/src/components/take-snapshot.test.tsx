@@ -59,7 +59,11 @@ const baseInitMessage = {
       colorB: "blue"
     }
   },
-  version: 1 as const
+  version: 1 as const,
+  accessibility: {
+    fontSize: "normal",
+    fontSizeInPx: 16
+  }
 };
 
 const initMessageWithSnapshotTarget = {

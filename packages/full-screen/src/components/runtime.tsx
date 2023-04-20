@@ -5,6 +5,7 @@ import { FullScreenButton } from "./full-screen-button";
 import { useForceUpdate } from "@concord-consortium/question-interactives-helpers/src/hooks/use-force-update";
 import { IframeRuntime } from "@concord-consortium/question-interactives-helpers/src/components/iframe-runtime";
 import { setHint, setSupportedFeatures, useInitMessage, useInteractiveState } from "@concord-consortium/lara-interactive-api";
+import { useAccessibility } from "@concord-consortium/question-interactives-helpers/src/hooks/use-accessibility";
 import { IInteractiveState } from "./types";
 
 const screenfull = _screenfull.isEnabled ? _screenfull : undefined;
@@ -15,6 +16,8 @@ export const Runtime: React.FC = () => {
   const toggleFullScreen = useCallback(() => {
     screenfull?.toggle();
   },[]);
+
+  const accessibility = useAccessibility();
 
   useEffect(() => {
     const onChange = () => forceUpdate();
@@ -101,6 +104,7 @@ export const Runtime: React.FC = () => {
                        initMessage={initMessage}
                        report={initMessage?.mode === "report"}
                        flushOnSave={true}
+                       accessibility={accessibility}
         />
         {screenfull &&
           <FullScreenButton isFullScreen={screenfull.isFullscreen} handleToggleFullScreen={toggleFullScreen} />}

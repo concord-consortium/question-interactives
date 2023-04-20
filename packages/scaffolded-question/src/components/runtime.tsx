@@ -9,6 +9,7 @@ import { libraryInteractiveIdToUrl } from "@concord-consortium/question-interact
 import { DecorateChildren } from "@concord-consortium/text-decorator";
 import { useGlossaryDecoration } from "@concord-consortium/question-interactives-helpers/src/hooks/use-glossary-decoration";
 import { DynamicText } from "@concord-consortium/dynamic-text";
+import { useAccessibility } from "@concord-consortium/question-interactives-helpers/src/hooks/use-accessibility";
 
 import { IInteractiveState, IAuthoredState } from "./types";
 
@@ -25,6 +26,8 @@ interface IProps {
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const decorateOptions = useGlossaryDecoration();
   const studentSettings = useStudentSettings();
+  const accessibility = useAccessibility();
+
   // 1 means that student get to the easiest question variant. 5 means that user is limited to the most difficult
   // one (assuming there are 5 levels in total).
   const minAllowedLevel = studentSettings?.scaffoldedQuestionLevel || 1;
@@ -116,6 +119,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         // get its interactiveState overwritten. So we use the report boolean to determine if onUnloadCallback
         // should be set instead of the readOnly boolean.
         onUnloadCallback={report ? undefined : handleNewInteractiveState.bind(null, currentInteractive.id)}
+        accessibility={accessibility}
       />
       {
         !report &&

@@ -5,6 +5,7 @@ import { libraryInteractiveIdToUrl } from "@concord-consortium/question-interact
 import { IAddLinkedInteractiveStateListenerRequest } from "@concord-consortium/lara-interactive-api";
 import { IframePhone } from "@concord-consortium/question-interactives-helpers/src/types";
 import { DynamicText } from "@concord-consortium/dynamic-text";
+import { useAccessibility } from "@concord-consortium/question-interactives-helpers/src/hooks/use-accessibility";
 
 import { IAuthoredState, IInteractiveState } from "./types";
 
@@ -24,6 +25,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const [dataListeners, setDataListeners] = useState<{id: string, phone: IframePhone}[]>([]);
   const leftDivision = division;
   const rightDivision = 100 - division;
+
+  const accessibility = useAccessibility();
 
   const updateDataListeners = useCallback((newInteractiveState: any) => {
     dataListeners.forEach(listener => {
@@ -93,6 +96,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               addLocalLinkedDataListener={handleAddLocalLinkedDataListener}
               report={report}
               scale={report && view !== "standalone" ? scaleForReportLeft : undefined}
+              accessibility={accessibility}
             />
         </div> }
         { rightInteractive &&
@@ -107,6 +111,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               addLocalLinkedDataListener={handleAddLocalLinkedDataListener}
               report={report}
               scale={report && view !== "standalone" ? scaleForReportRight : undefined}
+              accessibility={accessibility}
             />
         </div> }
       </div>
