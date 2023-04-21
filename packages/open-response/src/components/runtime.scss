@@ -1,9 +1,11 @@
+@import "../../../helpers/src/styles/px-to-rem.scss";
+
 .openResponse {
   legend.prompt {     // clear bootstrap stuff
     display: unset;
     width: unset;
     margin-bottom: unset;
-    font-size: unset;
+    font-size: 1rem;
     border: unset;
     padding-bottom: 5px;
 
@@ -17,7 +19,7 @@
     border: none;
     box-sizing: content-box;
     color: #313131;
-    font-size: 34px;
+    font-size: pxToRem(34);
     height: 34px;
     margin: 0;
     padding: 5px;
@@ -86,7 +88,7 @@
 
       .saveIndicator {
         animation: isActive .7s infinite;
-        font-size: 14px;
+        font-size: pxToRem(14);
       }
       .audioControls {
         align-items: center;
@@ -105,7 +107,7 @@
       justify-content: flex-end;
       position: absolute;
       right: 10px;
-  
+
       audio {
         display: none;
       }

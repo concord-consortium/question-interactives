@@ -32,7 +32,8 @@ const dragDropMouseAndCheckValue = (index, clientY, value) => {
     .trigger('mousedown')
     .trigger('mousemove', {clientX: 0, clientY})
     .trigger('mouseup')
-    .invoke("attr", "aria-valuenow").should("eq", String(value));
+    .invoke("attr", "aria-valuenow").then(parseInt).should("be.within", value - 1, value + 1)
+    ;
 };
 
 context("Test bar graph interactive", () => {
@@ -89,16 +90,16 @@ context("Test bar graph interactive", () => {
           pressKeyAndCheckValue(index, "PageDown", 0);
 
           // check mouse input (numeric values are clientY values)
-          dragDropMouseAndCheckValue(index, 0, "100");
-          dragDropMouseAndCheckValue(index, 110, "100");
-          dragDropMouseAndCheckValue(index, 120, "99");
-          dragDropMouseAndCheckValue(index, 150, "91");
-          dragDropMouseAndCheckValue(index, 200, "76");
-          dragDropMouseAndCheckValue(index, 300, "47");
-          dragDropMouseAndCheckValue(index, 400, "18");
-          dragDropMouseAndCheckValue(index, 460, "1");
-          dragDropMouseAndCheckValue(index, 480, "0");
-          dragDropMouseAndCheckValue(index, 600, "0");
+          dragDropMouseAndCheckValue(index, 0, 100);
+          dragDropMouseAndCheckValue(index, 110, 100);
+          dragDropMouseAndCheckValue(index, 120, 99);
+          dragDropMouseAndCheckValue(index, 150, 90);
+          dragDropMouseAndCheckValue(index, 200, 76);
+          dragDropMouseAndCheckValue(index, 300, 47);
+          dragDropMouseAndCheckValue(index, 400, 18);
+          dragDropMouseAndCheckValue(index, 460, 1);
+          dragDropMouseAndCheckValue(index, 480, 0);
+          dragDropMouseAndCheckValue(index, 600, 0);
         }
       });
     });

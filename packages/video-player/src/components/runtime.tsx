@@ -7,6 +7,10 @@ import { useGlossaryDecoration } from "@concord-consortium/question-interactives
 import { DynamicText } from "@concord-consortium/dynamic-text";
 
 import css from "./runtime.scss";
+
+// the font size changes here are causing problems so leave it out for now until I can figure out what is causing the problem
+// import "./video-js.scss";
+
 import "./video-js.css";
 
 interface IProps {

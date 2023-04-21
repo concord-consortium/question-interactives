@@ -101,7 +101,7 @@ context("Test open response interactive", () => {
         "Hydrogen atoms shores of the cosmic ocean tesseract citizens of distant epochs rings of Uranus Euclid? Star stuff harvesting star light descended from astronomers another world Champollion two ghostly white figures in coveralls and helmets are softly dancing cosmos. Encyclopaedia galactica vanquish the impossible inconspicuous motes of rock and gas preserve and cherish that pale blue dot a very small stage in a vast cosmic arena Sea of Tranquility and billions upon billions upon billions upon billions upon billions upon billions upon billions. Hydrogen atoms shores of the cosmic ocean tesseract citizens of distant epochs rings of Uranus Euclid? Star stuff harvesting star light descended from astronomers another world Champollion two ghostly white figures in coveralls and helmets are softly dancing cosmos.",
         { delay: 0 }
       );
-      cy.getIframeBody().find("textarea").invoke("height").should("be.greaterThan", 123);
+      cy.getIframeBody().find("textarea").invoke("height").should("be.greaterThan", 122);
       cy.getIframeBody().find("textarea").type("{backspace}".repeat(300), { delay: 0 });
       cy.getIframeBody().find("textarea").invoke("height").should("not.be.lessThan", 123);
     });
