@@ -7,7 +7,7 @@ import { libraryInteractiveIdToUrl } from "@concord-consortium/question-interact
 import { cssUrlValue } from "@concord-consortium/question-interactives-helpers/src/utilities/css-url-value";
 import classNames from "classnames";
 import { DynamicText } from "@concord-consortium/dynamic-text";
-import { useAccessibility } from "@concord-consortium/question-interactives-helpers/src/hooks/use-accessibility";
+import { useAccessibility } from "@concord-consortium/lara-interactive-api";
 
 import "react-responsive-carousel/lib/styles/carousel.min.css"; // requires a loader
 import css from "./runtime.scss";

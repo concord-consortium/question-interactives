@@ -5,6 +5,7 @@ import { BaseApp } from "./base-app";
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
   useInitMessage: jest.fn(() => initMessage),
   useAuthoredState: jest.fn(() => useAuthoredStateResult),
+  useAccessibility: jest.fn(() => useAccessibilityResult),
   useInteractiveState: jest.fn(() => ({})),
   setSupportedFeatures: jest.fn(),
   getClient: jest.fn().mockReturnValue({
@@ -14,6 +15,7 @@ jest.mock("@concord-consortium/lara-interactive-api", () => ({
 
 let initMessage = {};
 let useAuthoredStateResult = {};
+let useAccessibilityResult = {};
 
 describe("BaseApp", () => {
   beforeEach(() => {

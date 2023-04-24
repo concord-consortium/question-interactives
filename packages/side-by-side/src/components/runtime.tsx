@@ -2,10 +2,9 @@ import React, { useCallback, useEffect, useState } from "react";
 import { IframeRuntime } from "@concord-consortium/question-interactives-helpers/src/components/iframe-runtime";
 import { renderHTML } from "@concord-consortium/question-interactives-helpers/src/utilities/render-html";
 import { libraryInteractiveIdToUrl } from "@concord-consortium/question-interactives-helpers/src/utilities/library-interactives";
-import { IAddLinkedInteractiveStateListenerRequest } from "@concord-consortium/lara-interactive-api";
+import { IAddLinkedInteractiveStateListenerRequest, useAccessibility } from "@concord-consortium/lara-interactive-api";
 import { IframePhone } from "@concord-consortium/question-interactives-helpers/src/types";
 import { DynamicText } from "@concord-consortium/dynamic-text";
-import { useAccessibility } from "@concord-consortium/question-interactives-helpers/src/hooks/use-accessibility";
 
 import { IAuthoredState, IInteractiveState } from "./types";
 

@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useAccessibility } from "@concord-consortium/lara-interactive-api";
 
 import { IframeRuntime } from "../components/iframe-runtime";
 import { DemoAuthoringComponent } from "./demo-authoring";
-import { useAccessibility } from "../hooks/use-accessibility";
 
 import css from "./demo.scss";
 

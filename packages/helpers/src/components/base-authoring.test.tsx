@@ -5,6 +5,14 @@ import { RJSFSchema } from "@rjsf/utils";
 import Form from "@rjsf/core";
 import { useLinkedInteractivesAuthoring } from "../hooks/use-linked-interactives-authoring";
 
+let useAccessibilityResult = {};
+let getFirebaseJwtResult = {};
+
+jest.mock("@concord-consortium/lara-interactive-api", () => ({
+  getFirebaseJwt: jest.fn(() => getFirebaseJwtResult),
+  useAccessibility: jest.fn(() => useAccessibilityResult),
+}));
+
 jest.mock("../hooks/use-linked-interactives-authoring", () => ({
   useLinkedInteractivesAuthoring: jest.fn((props: any) => props.schema)
 }));

@@ -10,10 +10,12 @@ jest.mock("@concord-consortium/lara-interactive-api", () => ({
   getClient: jest.fn().mockReturnValue({
     addListener: jest.fn()
   }),
+  useAccessibility: jest.fn(() => useAccessibilityResult),
 }));
 
 let initMessage = {};
 let useAuthoredStateResult = {};
+let useAccessibilityResult = {};
 
 describe("BaseApp", () => {
   beforeEach(() => {

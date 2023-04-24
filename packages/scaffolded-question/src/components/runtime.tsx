@@ -4,12 +4,11 @@ import { SubmitButton } from "@concord-consortium/question-interactives-helpers/
 import { LockedInfo } from "@concord-consortium/question-interactives-helpers/src/components/locked-info";
 import { useStudentSettings } from "@concord-consortium/question-interactives-helpers/src/hooks/use-student-settings";
 import { renderHTML } from "@concord-consortium/question-interactives-helpers/src/utilities/render-html";
-import { log } from "@concord-consortium/lara-interactive-api";
+import { log, useAccessibility } from "@concord-consortium/lara-interactive-api";
 import { libraryInteractiveIdToUrl } from "@concord-consortium/question-interactives-helpers/src/utilities/library-interactives";
 import { DecorateChildren } from "@concord-consortium/text-decorator";
 import { useGlossaryDecoration } from "@concord-consortium/question-interactives-helpers/src/hooks/use-glossary-decoration";
 import { DynamicText } from "@concord-consortium/dynamic-text";
-import { useAccessibility } from "@concord-consortium/question-interactives-helpers/src/hooks/use-accessibility";
 
 import { IInteractiveState, IAuthoredState } from "./types";
 

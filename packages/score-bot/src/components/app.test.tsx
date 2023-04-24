@@ -16,6 +16,7 @@ jest.mock("@concord-consortium/lara-interactive-api", () => ({
   getClient: jest.fn().mockReturnValue({
     addListener: jest.fn()
   }),
+  useAccessibility: jest.fn(() => ({})),
 }));
 
 const useInitMessageMock = useInitMessage as jest.Mock;
