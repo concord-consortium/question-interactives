@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import iframePhone from "iframe-phone";
 import { DynamicText } from "@concord-consortium/dynamic-text";
 import { renderHTML } from "@concord-consortium/question-interactives-helpers/src/utilities/render-html";
-import { closeModal, flushStateUpdates, getClient, IAddLinkedInteractiveStateListenerRequest, IAttachmentUrlRequest, IAttachmentUrlResponse, ICloseModal, ICustomMessage, IGetInteractiveState, IHintRequest, IInitInteractive, IShowModal, log, setOnUnload, showModal } from "@concord-consortium/lara-interactive-api";
+import { closeModal, flushStateUpdates, getClient, IAccessibilitySettings, IAddLinkedInteractiveStateListenerRequest, IAttachmentUrlRequest, IAttachmentUrlResponse, ICloseModal, ICustomMessage, IGetInteractiveState, IHintRequest, IInitInteractive, IShowModal, log, setOnUnload, showModal } from "@concord-consortium/lara-interactive-api";
 
 import { IframePhone } from "../types";
 import { getLibraryInteractive } from "../utilities/library-interactives";
@@ -31,12 +31,13 @@ interface IProps {
   onUnloadCallback?: (state: any) => void;
   scrolling?: "auto" | "yes" | "no";
   flushOnSave?: boolean;
+  accessibility: IAccessibilitySettings;
 }
 
 export const IframeRuntime: React.FC<IProps> =
   ({ authoredState, id, iframeStyling, interactiveState, logRequestData, report,
       url, setHint, setInteractiveState, addLocalLinkedDataListener, initMessage,
-      scale, onUnloadCallback, scrolling, flushOnSave }) => {
+      scale, onUnloadCallback, scrolling, flushOnSave, accessibility }) => {
     const [ iframeHeight, setIframeHeight ] = useState(300);
     const [ internalHint, setInternalHint ] = useState("");
     const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -162,7 +163,7 @@ export const IframeRuntime: React.FC<IProps> =
         linkedInteractives = [ {id: authoredState[libraryInteractive.localLinkedInteractiveProp], label: libraryInteractive.localLinkedInteractiveProp} ];
       }
 
-      const initInteractiveMessage = {
+      const initInteractiveMessage: any = {
         ...initMessage,   // for now only fullscreen sets this prop so that the needed info for cfm interactiveApi is passed
         mode: report ? "report" : "runtime",
         authoredState,
@@ -170,6 +171,10 @@ export const IframeRuntime: React.FC<IProps> =
         interactiveState: interactiveStateRef.current,
         linkedInteractives
       };
+
+      if (!report) {
+        initInteractiveMessage.accessibility = accessibility;
+      }
 
       phone.post("initInteractive", initInteractiveMessage);
     };
@@ -186,7 +191,7 @@ export const IframeRuntime: React.FC<IProps> =
         phoneRef.current.disconnect();
       }
     };
-  },[addLocalLinkedDataListener, authoredState, logRequestData, report, setHint, url, initMessage, onUnloadCallback, flushOnSave]);
+  },[addLocalLinkedDataListener, authoredState, logRequestData, report, setHint, url, initMessage, onUnloadCallback, flushOnSave, accessibility]);
 
   let scaledIframeStyle = undefined;
   if (scale && report) {

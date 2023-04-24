@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import { setSupportedFeatures, useAuthoredState, useInitMessage } from "@concord-consortium/lara-interactive-api";
+import { setSupportedFeatures, useAccessibility, useAuthoredState, useInitMessage } from "@concord-consortium/lara-interactive-api";
 import { DynamicTextContext, useDynamicTextProxy } from "@concord-consortium/dynamic-text";
 
 import { useAutoHeight } from "../hooks/use-auto-height";
@@ -55,6 +55,7 @@ export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps
   useShutterbug({ container: "." + css.runtime });
   useBasicLogging({ disabled: !isRuntimeView });
   useLinkedInteractives(linkedInteractiveProps?.map(li => li.label), initMessage);
+  useAccessibility({updateHtmlFontSize: true, addBodyClass: true});
 
   useEffect(() => {
     setSupportedFeatures({

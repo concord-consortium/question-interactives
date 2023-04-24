@@ -106,7 +106,7 @@
   },
   "dependencies": {
     "@concord-consortium/dynamic-text": "^1.0.2",
-    "@concord-consortium/lara-interactive-api": "1.8.0",
+    "@concord-consortium/lara-interactive-api": "^1.9.2",
     "@concord-consortium/question-interactives-helpers": "^1.12.0",
     "@rjsf/utils": "^5.0.1",
     "chart.js": "^3.9.1",

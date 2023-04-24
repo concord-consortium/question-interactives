@@ -4,7 +4,7 @@ import { SubmitButton } from "@concord-consortium/question-interactives-helpers/
 import { LockedInfo } from "@concord-consortium/question-interactives-helpers/src/components/locked-info";
 import { useStudentSettings } from "@concord-consortium/question-interactives-helpers/src/hooks/use-student-settings";
 import { renderHTML } from "@concord-consortium/question-interactives-helpers/src/utilities/render-html";
-import { log } from "@concord-consortium/lara-interactive-api";
+import { log, useAccessibility } from "@concord-consortium/lara-interactive-api";
 import { libraryInteractiveIdToUrl } from "@concord-consortium/question-interactives-helpers/src/utilities/library-interactives";
 import { DecorateChildren } from "@concord-consortium/text-decorator";
 import { useGlossaryDecoration } from "@concord-consortium/question-interactives-helpers/src/hooks/use-glossary-decoration";
@@ -25,6 +25,8 @@ interface IProps {
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const decorateOptions = useGlossaryDecoration();
   const studentSettings = useStudentSettings();
+  const accessibility = useAccessibility();
+
   // 1 means that student get to the easiest question variant. 5 means that user is limited to the most difficult
   // one (assuming there are 5 levels in total).
   const minAllowedLevel = studentSettings?.scaffoldedQuestionLevel || 1;
@@ -116,6 +118,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         // get its interactiveState overwritten. So we use the report boolean to determine if onUnloadCallback
         // should be set instead of the readOnly boolean.
         onUnloadCallback={report ? undefined : handleNewInteractiveState.bind(null, currentInteractive.id)}
+        accessibility={accessibility}
       />
       {
         !report &&

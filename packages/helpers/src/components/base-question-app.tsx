@@ -10,7 +10,8 @@ import { SubmitButton } from "./submit-button";
 import { LockedInfo } from "./locked-info";
 import {
   IAuthoringMetadata, IRuntimeMetadata, setSupportedFeatures, useAuthoredState, useInitMessage, useInteractiveState,
-  IReportInitInteractive
+  IReportInitInteractive,
+  useAccessibility
 } from "@concord-consortium/lara-interactive-api";
 import { IBaseAuthoredState, UpdateFunc, IAuthoringComponentProps, IRuntimeComponentProps } from "./base-app";
 import { useBasicLogging } from "../hooks/use-basic-logging";
@@ -73,6 +74,7 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
   useShutterbug({ container: "." + css.runtime });
   useBasicLogging({ disabled: !isRuntimeView });
   useLinkedInteractives(linkedInteractiveProps?.map(li => li.label), initMessage);
+  useAccessibility({updateHtmlFontSize: true, addBodyClass: true});
 
   useEffect(() => {
     setSupportedFeatures({

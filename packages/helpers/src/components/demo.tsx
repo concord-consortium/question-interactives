@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useAccessibility } from "@concord-consortium/lara-interactive-api";
 
 import { IframeRuntime } from "../components/iframe-runtime";
 import { DemoAuthoringComponent } from "./demo-authoring";
@@ -24,6 +25,8 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
   const [reportItemHtml, setReportItemHtml] = useState<string>();
   const [reportItemHeight, setReportItemHeight] = useState(0);
   const timeoutRef = useRef<number|undefined>();
+
+  const accessibility = useAccessibility();
 
   // send the new authored state to the root demo and have it re-render the runtime container
   const handleSetAuthoredState = (newAuthoredState: IAuthoredState) => {
@@ -150,6 +153,7 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
             interactiveState={interactiveState}
             setInteractiveState={setInteractiveState}
             flushOnSave={true}
+            accessibility={accessibility}
           />
           {renderReportItemHtml()}
         </>
