@@ -1,4 +1,13 @@
 .authoring {
+  /*
+    This is a sledgehammer approach to fixing the issue of the authoring form styling breaking after the bootstrap
+    file was converted to scss and the fonts were changed to rems from px to accomodate the accessbility font-size
+    feature.
+
+    This :global addition adds a second copy of the original unmodified bootstrap.css file. This locallizes the
+    original bootstrap layout to the authoring form area ensuring it lays out the same as it did before the
+    font-size update.
+  */
   :global {
     /*!
     * Bootstrap v3.3.7 (http://getbootstrap.com)
