@@ -14,7 +14,7 @@ const Container = styled.div`
 `;
 
 const Title = styled.div`
-  font-size: 14px;
+  font-size: 0.875rem;
   font-weight: 500;
   font-stretch: normal;
   font-style: italic;
