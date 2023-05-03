@@ -9,6 +9,7 @@ export interface IAuthoredState extends IAuthoringOpenResponseMetadata {
   hint?: string;
   predictionFeedback?: string;
   audioEnabled?: boolean;
+  voiceTypingEnabled?: boolean;
 }
 
 export interface IInteractiveState extends IRuntimeOpenResponseMetadata {
@@ -23,5 +24,6 @@ export const DemoAuthoredState: IAuthoredState = {
   defaultAnswer: "",
   hint: "",
   predictionFeedback: "",
-  audioEnabled: false
+  audioEnabled: false,
+  voiceTypingEnabled: false
 };
