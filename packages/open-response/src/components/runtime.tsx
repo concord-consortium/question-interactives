@@ -1,6 +1,7 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { IRuntimeQuestionComponentProps } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
 import { renderHTML } from "@concord-consortium/question-interactives-helpers/src/utilities/render-html";
+import { VoiceTyping } from "@concord-consortium/question-interactives-helpers/src/utilities/voice-typing";
 import { DecorateChildren } from "@concord-consortium/text-decorator";
 import { useGlossaryDecoration } from "@concord-consortium/question-interactives-helpers/src/hooks/use-glossary-decoration";
 import { getAttachmentUrl, IGetInteractiveState, log, setOnUnload, writeAttachment } from "@concord-consortium/lara-interactive-api";
@@ -20,14 +21,27 @@ export const fetchAudioUrl = async (attachedAudioFile: string) => {
   }
 };
 
+export const getPlaceholderText = (authoredState: Pick<IAuthoredState, "audioEnabled"|"voiceTypingEnabled">) => {
+  const {audioEnabled, voiceTypingEnabled} = authoredState;
+
+  if (audioEnabled && (voiceTypingEnabled && VoiceTyping.Supported)) {
+    return "Please type or voice type your answer here, or record your answer using the microphone.";
+  }
+  if (voiceTypingEnabled && VoiceTyping.Supported) {
+    return "Please type or voice type your answer here.";
+  }
+  if (audioEnabled) {
+    return "Please type your answer here, or record your answer using the microphone.";
+  }
+  return "Please type your answer here.";
+};
+
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
-  const audioEnabled = authoredState.audioEnabled;
+  const {audioEnabled, voiceTypingEnabled} = authoredState;
   window.MediaRecorder = AudioRecorder;
   const browserSupportsAudio = !!navigator.mediaDevices && !!navigator.mediaDevices.getUserMedia;
-  const placeholderText = audioEnabled
-                            ? "Please type your answer here, or record your answer using the microphone."
-                            : "Please type your answer here.";
+  const placeholderText = getPlaceholderText(authoredState);
   const answerText = !interactiveState?.answerText ? authoredState.defaultAnswer : interactiveState.answerText;
   const attachedAudioFile = interactiveState?.audioFile ? interactiveState.audioFile : undefined;
   let recordedBlobs: Blob[] = [];
@@ -43,9 +57,14 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const [playDisabled, setPlayDisabled] = useState(false);
   const [stopDisabled, setStopDisabled] = useState(true);
   const [timerReading, setTimerReading] = useState<string>("00:00");
+  const [voiceTypingActive, setVoiceTypingActive] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder>();
   const audioPlayerRef = useRef<HTMLAudioElement>(null);
   const audioTimerRef = useRef<any>();
+  const textAreaRef = useRef<HTMLTextAreaElement|null>(null);
+  const selectionRef = useRef<{start: number, end: number}>({start: 0, end: 0});
+  const voiceTypingRef = useRef<VoiceTyping>();
+  const initialTextRef = useRef("");
 
   useEffect(() => {
     setOnUnload((options: IGetInteractiveState) => {
@@ -76,17 +95,35 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     getAudioUrl();
   }, [attachedAudioFile]);
 
-  const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    const { value } = event.target;
-    const target = event.currentTarget as HTMLTextAreaElement;
-    if (audioEnabled && target.scrollHeight >= defaultHeight) {
-      setTextareaHeight(target.scrollHeight);
+  const handleUpdateTextArea = useCallback((value: string) => {
+    if (audioEnabled && textAreaRef.current && textAreaRef.current.scrollHeight >= defaultHeight) {
+      setTextareaHeight(textAreaRef.current.scrollHeight);
     }
     setInteractiveState?.(prevState => ({
       ...prevState,
       answerType: "open_response_answer",
       answerText: value
     }));
+  }, [setTextareaHeight, setInteractiveState, audioEnabled]);
+
+  useEffect(() => {
+    voiceTypingRef.current = voiceTypingRef.current || new VoiceTyping();
+    if (voiceTypingActive) {
+      initialTextRef.current = textAreaRef.current?.value || "";
+      voiceTypingRef.current.enable(transcript => {
+        const selection = selectionRef.current || {start: 0, end: 0};
+        handleUpdateTextArea([
+          initialTextRef.current.substring(0, selection.start),
+          transcript,
+          initialTextRef.current.substring(selection.end)
+        ].join(""));
+      });
+    }
+    return () => voiceTypingRef.current?.disable();
+  }, [voiceTypingActive, handleUpdateTextArea]);
+
+  const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
+    handleUpdateTextArea(event.target.value);
   };
 
   const handleMouseUp = (event: React.MouseEvent<HTMLTextAreaElement>) => {
@@ -215,10 +252,35 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     log("audio response recording failed", {error});
   };
 
+  const handleFocusOrBlurTextArea = () => {
+    selectionRef.current = {
+      start: textAreaRef.current?.selectionStart || 0,
+      end: textAreaRef.current?.selectionEnd || 0
+    };
+  };
+
+  const handleToggleVoiceTyping = () => {
+    setVoiceTypingActive(prev => {
+      if (prev) {
+        setTimeout(() => textAreaRef.current?.focus(), 1);
+      }
+      return !prev;
+    });
+  };
+
+  const handleClickTextArea = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    // end voice typing if the user clicks on the (disabled) text area during voice typing
+    if (voiceTypingActive && e.target === textAreaRef.current) {
+      handleToggleVoiceTyping();
+    }
+  }, [voiceTypingActive]);
+
   const decorateOptions = useGlossaryDecoration();
   const containerWidth = audioEnabled && textareaWidth ? textareaWidth + "px" : undefined;
   const containerStyle = audioEnabled && textareaHeight ? { height: textareaHeight + "px", width: containerWidth } : undefined;
   const textareaStyle = audioEnabled && textareaHeight ? { height: textareaHeight + "px" } : undefined;
+  const voiceTypingLabel = voiceTypingActive ? "Stop Voice Typing" : "Start Voice Typing";
+
   return (
     <fieldset className={css.openResponse}>
       { authoredState.prompt &&
@@ -230,48 +292,65 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           </DecorateChildren>
         </DynamicText>
       }
-      <div className={`${css.inputContainer} ${audioEnabled ? css.audioEnabled : ""}`} style={containerStyle}>
+      <div className={`${css.inputContainer} ${audioEnabled ? css.audioEnabled : ""}`} style={containerStyle} onClick={handleClickTextArea}>
         <textarea
           value={answerText}
           onChange={readOnly ? undefined : handleChange}
           readOnly={readOnly}
-          disabled={readOnly}
+          disabled={readOnly || voiceTypingActive}
           rows={8}
           placeholder={placeholderText}
           data-testid="response-textarea"
           className={css.openResponseTextarea}
           onMouseUp={audioEnabled ? handleMouseUp : undefined}
           style={textareaStyle}
+          ref={textAreaRef}
+          onBlur={handleFocusOrBlurTextArea}
+          onFocus={handleFocusOrBlurTextArea}
         />
-        { audioEnabled && !audioUrl && !readOnly &&
+        {!readOnly && ((voiceTypingEnabled && VoiceTyping.Supported) || audioEnabled) &&
           <div className={css.recordUIContainer}>
-            { recordingDisabled && <span className={css.saveIndicator} data-testid="saving-indicator">Saving. Please wait...</span> }
-            { recordingFailed && <span className={css.saveIndicator} data-testid="saving-indicator">Recording failed. Please try again.</span> }
-            <div className={css.audioControls}>
+            {voiceTypingEnabled && VoiceTyping.Supported &&
+            <div className={css.voiceTypingControls}>
               <button
-                aria-label="Record Audio"
-                title="Record Audio"
-                className={`${iconCss.iconRecord} ${css.audioControl} ${recordingActive ? css.recordingActive : ""}`}
-                onClick={!recordingActive ? handleAudioRecord : undefined}
-                disabled={recordingDisabled}
-                data-testid="audio-record-button"
+                aria-label={voiceTypingLabel}
+                title={voiceTypingLabel}
+                className={`${iconCss.iconVoiceTyping} ${css.audioControl2} ${voiceTypingActive ? css.voiceTypingActive : ""}`}
+                onClick={handleToggleVoiceTyping}
+                data-testid="voice-typing-button"
               >
-                <span className={css.buttonText}>Record</span>
+                <span className={css.buttonText}>{voiceTypingLabel}</span>
               </button>
-              <span className="timer" data-testid="record-timer-readout">{timerReading}</span>
-              <button
-                aria-label="Stop Recording Audio"
-                title="Stop Recording Audio"
-                className={`${iconCss.iconStop} ${css.audioControl} ${!recordingActive ? css.disabled : ""}`}
-                onClick={handleAudioRecordStop}
-                disabled={recordingDisabled}
-                data-testid="audio-stop-record-button"
-              >
-                <span className={css.buttonText}>Stop</span>
-              </button>
-            </div>
-          </div> }
-        { audioEnabled && audioUrl &&
+            </div> }
+            {audioEnabled && !audioUrl &&
+            <>
+              { recordingDisabled && <span className={css.saveIndicator} data-testid="saving-indicator">Saving. Please wait...</span> }
+              { recordingFailed && <span className={css.saveIndicator} data-testid="saving-indicator">Recording failed. Please try again.</span> }
+              <div className={css.audioControls}>
+                <button
+                  aria-label="Record Audio"
+                  title="Record Audio"
+                  className={`${iconCss.iconRecord} ${css.audioControl} ${recordingActive ? css.recordingActive : ""}`}
+                  onClick={!recordingActive ? handleAudioRecord : undefined}
+                  disabled={recordingDisabled}
+                  data-testid="audio-record-button"
+                >
+                  <span className={css.buttonText}>Record</span>
+                </button>
+                <span className="timer" data-testid="record-timer-readout">{timerReading}</span>
+                <button
+                  aria-label="Stop Recording Audio"
+                  title="Stop Recording Audio"
+                  className={`${iconCss.iconStop} ${css.audioControl} ${!recordingActive ? css.disabled : ""}`}
+                  onClick={handleAudioRecordStop}
+                  disabled={recordingDisabled}
+                  data-testid="audio-stop-record-button"
+                >
+                  <span className={css.buttonText}>Stop</span>
+                </button>
+              </div>
+            </>}
+          { audioEnabled && audioUrl &&
           <div className={css.audioPlayerUIContainer}>
             <audio ref={audioPlayerRef} controls preload="auto" onEnded={handleAudioPlayEnded}>
               <source src={audioUrl} type="audio/mpeg" />
@@ -310,6 +389,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               </button>
             </div>
           </div> }
+        </div> }
       </div>
     </fieldset>
   );

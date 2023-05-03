@@ -65,6 +65,7 @@
     "@testing-library/react-hooks": "^8.0.1",
     "@types/deep-equal": "^1.0.1",
     "@types/dom-mediacapture-record": "^1.0.14",
+    "@types/dom-speech-recognition": "^0.0.1",
     "@types/enzyme": "^3.10.12",
     "@types/jest": "^29.2.4",
     "@types/react": "^17.0.39",

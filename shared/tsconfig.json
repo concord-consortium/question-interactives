@@ -10,7 +10,7 @@
     "resolveJsonModule": true,
     "experimentalDecorators": true,
     "strictNullChecks": true,
-    "types": ["jest", "dom-mediacapture-record"],
+    "types": ["jest", "dom-mediacapture-record", "dom-speech-recognition"],
     "jsx": "react",
     "lib": [
       "dom",

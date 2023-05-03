@@ -168,3 +168,9 @@
     content: "\e907";
   }
 }
+.iconVoiceTyping {
+  @extend %icon;
+  &:before {
+    content: "\e90b";
+  }
+}
