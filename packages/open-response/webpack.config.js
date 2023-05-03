@@ -14,7 +14,8 @@ module.exports = (env, argv) => {
     // Add custom webpack configuration here
     entry: {
       [`${interactiveName}`]: './src/index.tsx',
-      [`${interactiveName}/report-item`]: './src/report-item-index.tsx'
+      [`${interactiveName}/report-item`]: './src/report-item-index.tsx',
+      [`${interactiveName}/demo`]: './src/demo.tsx'
     },
     plugins: [
       new HtmlWebpackPlugin({
@@ -25,6 +26,11 @@ module.exports = (env, argv) => {
       new HtmlWebpackPlugin({
         chunks: [`${interactiveName}/report-item`],
         filename: `${interactiveName}/report-item/index.html`,
+        template: '../../shared/index.html'
+      }),
+      new HtmlWebpackPlugin({
+        chunks: [`${interactiveName}/demo`],
+        filename: `${interactiveName}/demo.html`,
         template: '../../shared/index.html'
       }),
       ...(DEPLOY_PATH ? [new HtmlWebpackPlugin({
