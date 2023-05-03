@@ -28,6 +28,10 @@ const baseAuthoringProps = {
         title: "Allow students to record audio response",
         type: "boolean"
       },
+      voiceTypingEnabled: {
+        title: "Allow students to use voice typing",
+        type: "boolean"
+      },
       hint: {
         title: "Hint",
         type: "string"
