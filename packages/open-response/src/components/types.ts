@@ -16,3 +16,12 @@ export interface IInteractiveState extends IRuntimeOpenResponseMetadata {
   audioFile?: string;
   submitted?: boolean;
 }
+
+export const DemoAuthoredState: IAuthoredState = {
+  version: 1,
+  questionType: "open_response",
+  defaultAnswer: "",
+  hint: "",
+  predictionFeedback: "",
+  audioEnabled: false
+};
