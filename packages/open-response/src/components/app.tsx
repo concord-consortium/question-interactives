@@ -29,7 +29,7 @@ const baseAuthoringProps = {
         type: "boolean"
       },
       voiceTypingEnabled: {
-        title: "Allow students to use voice typing",
+        title: "Allow students to use voice typing (Only available to students on certain browsers)",
         type: "boolean"
       },
       hint: {
