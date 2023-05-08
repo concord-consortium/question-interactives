@@ -5,7 +5,6 @@ import { renderHTML } from "@concord-consortium/question-interactives-helpers/sr
 import { Carousel } from "react-responsive-carousel";
 import { libraryInteractiveIdToUrl } from "@concord-consortium/question-interactives-helpers/src/utilities/library-interactives";
 import { cssUrlValue } from "@concord-consortium/question-interactives-helpers/src/utilities/css-url-value";
-import classNames from "classnames";
 import { DynamicText } from "@concord-consortium/dynamic-text";
 import { useAccessibility } from "@concord-consortium/lara-interactive-api";
 
@@ -113,7 +112,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                                                             subinteractive_id: interactive.id,
                                                           };
           return (
-            <div key={index} className={classNames(css.runtime, { [css.disabled]: readOnly })}>
+            <div key={index} className={css.runtime}>
               { authoredState.prompt &&
                 <div><DynamicText>{renderHTML(authoredState.prompt)}</DynamicText></div> }
                 <IframeRuntime
@@ -127,6 +126,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                   onUnloadCallback={handleNewInteractiveState.bind(null, interactive.id)}
                   scrolling="no"
                   accessibility={accessibility}
+                  readOnly={readOnly}
                 />
             </div>
           );

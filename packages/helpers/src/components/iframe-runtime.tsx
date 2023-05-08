@@ -22,6 +22,7 @@ interface IProps {
   interactiveState: any;
   logRequestData?: Record<string, unknown>;
   report?: boolean;
+  readOnly?: boolean;
   url: string;
   initMessage?: IInitInteractive | null;
   setInteractiveState: (state: any) => void | null;
@@ -37,7 +38,7 @@ interface IProps {
 export const IframeRuntime: React.FC<IProps> =
   ({ authoredState, id, iframeStyling, interactiveState, logRequestData, report,
       url, setHint, setInteractiveState, addLocalLinkedDataListener, initMessage,
-      scale, onUnloadCallback, scrolling, flushOnSave, accessibility }) => {
+      scale, onUnloadCallback, scrolling, flushOnSave, accessibility, readOnly }) => {
     const [ iframeHeight, setIframeHeight ] = useState(300);
     const [ internalHint, setInternalHint ] = useState("");
     const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -209,6 +210,11 @@ export const IframeRuntime: React.FC<IProps> =
                         : scaledIframeStyle
                           ? scaledIframeStyle
                           : {width: "100%", height: iframeHeight, border: "none"};
+
+  if (readOnly) {
+    iframeStyle.pointerEvents = "none";
+  }
+
   return (
     <>
       <iframe
@@ -216,6 +222,7 @@ export const IframeRuntime: React.FC<IProps> =
         src={url}
         style={iframeStyle}
         scrolling={scrolling}
+        tabIndex={readOnly ? -1 : undefined}
         allow="geolocation; microphone; camera; bluetooth; clipboard-read; clipboard-write"
       />
       { internalHint &&

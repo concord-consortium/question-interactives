@@ -111,7 +111,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         authoredState={currentInteractive.authoredState}
         interactiveState={subState}
         setInteractiveState={readOnly ? undefined : handleNewInteractiveState.bind(null, currentInteractive.id)}
-        report={readOnly}
+        report={report}
+        readOnly={readOnly}
         logRequestData={logRequestData}
         // Since child interactives still have a functioning onUnload handler after a scaffolded question is
         // submitted and locked, onUnloadCallback should still be set to make sure the scaffolded question doesn't
