@@ -76,6 +76,7 @@ const baseAuthoringProps = {
       "prompt",
       "required",
       "audioEnabled",
+      "voiceTypingEnabled",
       "predictionFeedback",
       "*"
     ],
