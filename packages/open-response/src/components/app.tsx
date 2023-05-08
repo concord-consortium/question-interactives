@@ -39,35 +39,11 @@ const baseAuthoringProps = {
       defaultAnswer: {
         type: "string",
         title: "Default answer"
-      }
-    },
-    dependencies: {
-      required: {
-        oneOf: [
-          {
-            properties: {
-              required: {
-                enum: [
-                  false
-                ]
-              }
-            }
-          },
-          {
-            properties: {
-              required: {
-                enum: [
-                  true
-                ]
-              },
-              predictionFeedback: {
-                title: "Post-submission feedback (optional)",
-                type: "string"
-              }
-            }
-          }
-        ]
-      }
+      },
+      predictionFeedback: {
+        title: "Prediction feedback (optional)",
+        type: "string"
+      },
     }
   } as RJSFSchema,
 
@@ -77,6 +53,8 @@ const baseAuthoringProps = {
       "required",
       "audioEnabled",
       "voiceTypingEnabled",
+      "hint",
+      "defaultAnswer",
       "predictionFeedback",
       "*"
     ],
