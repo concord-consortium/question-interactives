@@ -65,6 +65,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const selectionRef = useRef<{start: number, end: number}>({start: 0, end: 0});
   const voiceTypingRef = useRef<VoiceTyping>();
   const initialTextRef = useRef("");
+  const lastTranscriptRef = useRef("");
 
   useEffect(() => {
     setOnUnload((options: IGetInteractiveState) => {
@@ -110,13 +111,19 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     voiceTypingRef.current = voiceTypingRef.current || new VoiceTyping();
     if (voiceTypingActive) {
       initialTextRef.current = textAreaRef.current?.value || "";
+      lastTranscriptRef.current = "";
       voiceTypingRef.current.enable(transcript => {
-        const selection = selectionRef.current || {start: 0, end: 0};
-        handleUpdateTextArea([
-          initialTextRef.current.substring(0, selection.start),
-          transcript,
-          initialTextRef.current.substring(selection.end)
-        ].join(""));
+        if (transcript !== lastTranscriptRef.current) {
+          const selection = selectionRef.current || {start: 0, end: 0};
+          const updatedText = [
+            initialTextRef.current.substring(0, selection.start),
+            transcript,
+            initialTextRef.current.substring(selection.end)
+          ].join("");
+          handleUpdateTextArea(updatedText);
+          lastTranscriptRef.current = transcript;
+          log("voice typing updated", {voiceText: transcript, updatedText});
+        }
       });
     }
     return () => voiceTypingRef.current?.disable();
@@ -260,11 +267,16 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const handleToggleVoiceTyping = () => {
-    setVoiceTypingActive(prev => {
-      if (prev) {
+    setVoiceTypingActive(prevVoiceTypingActive => {
+      const currentText = textAreaRef.current?.value || "";
+      if (prevVoiceTypingActive) {
+        log("voice typing stopped", {finalText: currentText});
+        // re-focus in the textarea when the voice typing is turned off
         setTimeout(() => textAreaRef.current?.focus(), 1);
+      } else {
+        log("voice typing started", {startingText: currentText});
       }
-      return !prev;
+      return !prevVoiceTypingActive;
     });
   };
 
