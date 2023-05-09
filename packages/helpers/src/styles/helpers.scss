@@ -9,6 +9,7 @@ $themeColor2: #34a5be;
 @mixin ap-styles {
   // These values should match the Activity Player. In the future, we might extend interactive API so the Activity Player can provide them.
   font-family: Lato, Arial, Helvetica, sans-serif;
+  font-size: pxToRem(16);
   font-weight: 400;
   line-height: 1.35 !important;
   padding: 20px 20px 13px;
@@ -23,6 +24,7 @@ $themeColor2: #34a5be;
   padding: 20px 20px 13px;
   font-family: Helvetica, Arial, sans-serif;
   font-weight: 500;
+  font-size: pxToRem(16);
 
   input[type=checkbox], input[type=radio] {
     margin-right: 10px;
