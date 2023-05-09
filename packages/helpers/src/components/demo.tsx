@@ -73,6 +73,11 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
             }, 500);
           }
           break;
+        case "log":
+          if (rootDemo) {
+            console.log("DEMO LOG:", JSON.stringify(data.content));
+          }
+          break;
       }
     };
     if (rootDemo || iframe === "runtime-container") {
