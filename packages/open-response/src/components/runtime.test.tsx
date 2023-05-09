@@ -1,10 +1,12 @@
 import React from "react";
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { DynamicTextTester } from "@concord-consortium/question-interactives-helpers/src/utilities/dynamic-text-tester";
+import { VoiceTyping } from "@concord-consortium/question-interactives-helpers/src/utilities/voice-typing";
 import * as Component from "./runtime";
 import { Runtime } from "./runtime";
 import { IInteractiveState } from "./types";
 
+const initialVoiceTypingSupport = VoiceTyping.Supported;
 
 const authoredState = {
   version: 1,
@@ -13,7 +15,8 @@ const authoredState = {
   hint: "hint",
   required: false,
   defaultAnswer: "",
-  audioEnabled: false
+  audioEnabled: false,
+  voiceTypingEnabled: false
 };
 
 const authoredRichState = {
@@ -27,6 +30,7 @@ const interactiveState: IInteractiveState = {
 };
 
 const authoredStateWithAudioEnabled = {...authoredState, audioEnabled: true};
+const authoredStateWithVoiceTypingEnabled = {...authoredState, voiceTypingEnabled: true};
 const savedAudioFileName = "test-audio.mp3";
 const interactiveStateWithSavedAudio = {...interactiveState, audioFile: savedAudioFileName};
 
@@ -178,6 +182,86 @@ describe("Runtime", () => {
       render(<DynamicTextTester><Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} report={true} /></DynamicTextTester>);
       fireEvent.change(screen.getByTestId("response-textarea"), { target: { value: "diff answer" } });
       expect(setState).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Voice Typing", () => {
+    afterAll(() => VoiceTyping.Supported = initialVoiceTypingSupport);
+
+    describe("when voice typing is supported", () => {
+      beforeAll(() => VoiceTyping.Supported = true);
+
+      it("does not render a voice typing button if voiceTypingEnabled is false", () => {
+        render(<DynamicTextTester><Runtime authoredState={authoredState} interactiveState={interactiveState} /></DynamicTextTester>);
+        expect(screen.queryAllByTestId("voice-typing-button")).toHaveLength(0);
+        expect(screen.getByTestId("response-textarea")).toHaveAttribute("placeholder", "Please type your answer here.");
+      });
+
+      it("renders a voice typing button if voiceTypingEnabled is true and voice typing is supported", () => {
+        render(<DynamicTextTester><Runtime authoredState={authoredStateWithVoiceTypingEnabled} interactiveState={interactiveState} /></DynamicTextTester>);
+        expect(screen.getByTestId("voice-typing-button")).toBeDefined();
+        expect(screen.getByTestId("response-textarea")).toHaveAttribute("placeholder", "Please type or voice type your answer here.");
+      });
+    });
+
+    describe("when voice typing is not supported", () => {
+      beforeAll(() => VoiceTyping.Supported = false);
+
+      it("does not render a voice typing button if voiceTypingEnabled is false", () => {
+        render(<DynamicTextTester><Runtime authoredState={authoredState} interactiveState={interactiveState} /></DynamicTextTester>);
+        expect(screen.queryAllByTestId("voice-typing-button")).toHaveLength(0);
+        expect(screen.getByTestId("response-textarea")).toHaveAttribute("placeholder", "Please type your answer here.");
+      });
+
+      it("does not renders a voice typing button if voiceTypingEnabled is true and voice typing is not supported", () => {
+        render(<DynamicTextTester><Runtime authoredState={authoredStateWithVoiceTypingEnabled} interactiveState={interactiveState} /></DynamicTextTester>);
+        expect(screen.queryAllByTestId("voice-typing-button")).toHaveLength(0);
+        expect(screen.getByTestId("response-textarea")).toHaveAttribute("placeholder", "Please type your answer here.");
+      });
+    });
+  });
+
+  describe("getPlaceholderText()", () => {
+    afterAll(() => VoiceTyping.Supported = initialVoiceTypingSupport);
+
+    describe("when voice typing is supported", () => {
+      beforeAll(() => VoiceTyping.Supported = true);
+
+      it("renders the correct text when audio enabled and voice typing enabled", () => {
+        expect(Component.getPlaceholderText({audioEnabled: true, voiceTypingEnabled: true})).toBe("Please type or voice type your answer here, or record your answer using the microphone.");
+      });
+
+      it("renders the correct text when audio disabled and voice typing enabled", () => {
+        expect(Component.getPlaceholderText({audioEnabled: false, voiceTypingEnabled: true})).toBe("Please type or voice type your answer here.");
+      });
+
+      it("renders the correct text when audio enabled and voice typing disabled", () => {
+        expect(Component.getPlaceholderText({audioEnabled: true, voiceTypingEnabled: false})).toBe("Please type your answer here, or record your answer using the microphone.");
+      });
+
+      it("renders the correct text when audio disabled and voice typing disabled", () => {
+        expect(Component.getPlaceholderText({audioEnabled: false, voiceTypingEnabled: false})).toBe("Please type your answer here.");
+      });
+    });
+
+    describe("when voice typing is not supported", () => {
+      beforeAll(() => VoiceTyping.Supported = false);
+
+      it("renders the correct text when audio enabled and voice typing enabled", () => {
+        expect(Component.getPlaceholderText({audioEnabled: true, voiceTypingEnabled: true})).toBe("Please type your answer here, or record your answer using the microphone.");
+      });
+
+      it("renders the correct text when audio disabled and voice typing enabled", () => {
+        expect(Component.getPlaceholderText({audioEnabled: false, voiceTypingEnabled: true})).toBe("Please type your answer here.");
+      });
+
+      it("renders the correct text when audio enabled and voice typing disabled", () => {
+        expect(Component.getPlaceholderText({audioEnabled: true, voiceTypingEnabled: false})).toBe("Please type your answer here, or record your answer using the microphone.");
+      });
+
+      it("renders the correct text when audio disabled and voice typing disabled", () => {
+        expect(Component.getPlaceholderText({audioEnabled: false, voiceTypingEnabled: false})).toBe("Please type your answer here.");
+      });
     });
   });
 });
