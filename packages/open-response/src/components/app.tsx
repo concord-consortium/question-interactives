@@ -41,7 +41,7 @@ const baseAuthoringProps = {
         title: "Default answer"
       },
       predictionFeedback: {
-        title: "Prediction feedback (optional)",
+        title: "Post-submission feedback (optional)",
         type: "string"
       },
     }
