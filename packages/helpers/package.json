@@ -1,6 +1,6 @@
 {
   "name": "@concord-consortium/question-interactives-helpers",
-  "version": "1.12.0",
+  "version": "1.14.0",
   "description": "Concord Consortium question interactives helpers library",
   "repository": {
     "type": "git",
