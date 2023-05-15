@@ -177,14 +177,14 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             placeholder={authoredState.defaultAnswer || kGlobalDefaultAnswer}
           />
         </> }
-      </div>
-      <div className={css.closeDialogSection}>
-        { savingAnnotatedImage ?
-          <div>Please wait while your drawing is being saved...</div> :
-          <button className={cssHelpers.apButton} onClick={handleClose} data-test="close-dialog-btn">
-            Close
-          </button>
-        }
+        <div className={css.closeDialogSection}>
+          { savingAnnotatedImage ?
+            <div>Please wait while your drawing is being saved...</div> :
+            <button className={cssHelpers.apButton} onClick={handleClose} data-test="close-dialog-btn">
+              Close
+            </button>
+          }
+        </div>
       </div>
     </div>
   );

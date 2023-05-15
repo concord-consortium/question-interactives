@@ -36,7 +36,6 @@ legend.prompt { // clear bootstrap stuff
 }
 
 .dialogContent {
-  height: 600px;
   width: 960px;
   margin: 0 auto;
   position: relative;
@@ -52,13 +51,9 @@ legend.prompt { // clear bootstrap stuff
     vertical-align: top;
     display: inline-block;
     width: 280px;
-  }
 
-  .closeDialogSection {
-    width: 280px;
-    text-align: right;
-    position: absolute;
-    bottom: 0;
-    right: 0;
+    .closeDialogSection {
+      text-align: right;
+    }
   }
 }
