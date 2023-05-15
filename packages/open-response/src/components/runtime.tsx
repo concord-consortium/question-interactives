@@ -122,7 +122,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           ].join("");
           handleUpdateTextArea(updatedText);
           lastTranscriptRef.current = transcript;
-          log("voice typing updated", {voiceText: transcript, updatedText});
+          log("voice typing updated", {voiceText: transcript});
         }
       });
     }
