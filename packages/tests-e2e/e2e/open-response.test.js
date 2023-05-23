@@ -70,7 +70,6 @@ context("Test open response interactive", () => {
 
       cy.getIframeBody().find("[data-testid=audio-record-button]").should("be.visible");
       cy.getIframeBody().find("[data-testid=timer-readout]").should("be.visible");
-      // cy.getIframeBody().find("[data-testid=audio-stop-record-button]").should("be.visible");
       cy.getIframeBody().find("[data-testid=timer-readout]").should("include.text", "00:00");
       cy.getIframeBody().find("[data-testid=audio-record-button]").click();
       cy.wait(1000);

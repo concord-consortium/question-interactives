@@ -112,8 +112,6 @@ export const AudioRecordingControls: React.FC<IAudioRecordingControlsProps> = (p
     timerReading,
     handleAudioPlayStop, handleAudioPlay, handleAudioRecordStop, handleAudioRecord, handleAudioDelete
   } = props;
-  const [hovering, setHovering] = useState(false);
-  const [showDelete, setShowDelete] = useState(false);
 
   if (readOnly || !audioEnabled) {
     return null;
@@ -130,22 +128,17 @@ export const AudioRecordingControls: React.FC<IAudioRecordingControlsProps> = (p
     buttonLabel = playing ? "Pause Audio" : "Play Audio";
     buttonActive = playing;
     buttonDisabled = false;
-    ButtonIcon = playing && hovering ? PauseIcon : PlayIcon;
+    ButtonIcon = playing ? PauseIcon : PlayIcon;
     testId = "audio-play-or-pause-button";
     handleButtonClick = playing ? handleAudioPlayStop : handleAudioPlay;
   } else {
     buttonLabel = recordingActive ? "Stop Recording Audio" : "Record Audio";
     buttonActive = recordingActive;
     buttonDisabled = recordingDisabled;
-    ButtonIcon = recordingActive && hovering ? StopIcon : RecordIcon;
+    ButtonIcon = recordingActive || recordingDisabled ? StopIcon : RecordIcon;
     testId = "audio-record-button";
     handleButtonClick = recordingActive ? handleAudioRecordStop : handleAudioRecord;
   }
-
-  const handleMouseEnter = () => setHovering(true);
-  const handleMouseLeave = () => setHovering(false);
-  const handleMouseEnterTimer = () => setShowDelete(true);
-  const handleMouseLeaveTimer = () => setShowDelete(false);
 
   // emulate buttons
   const handleKeyUp = (e: React.KeyboardEvent<HTMLOrSVGElement>) => {
@@ -157,7 +150,7 @@ export const AudioRecordingControls: React.FC<IAudioRecordingControlsProps> = (p
   };
 
   return (
-    <div className={css.controls} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
+    <div className={css.controls}>
       { recordingDisabled && <span className={css.saveIndicator} data-testid="saving-indicator">Saving ...</span> }
       { recordingFailed && <span className={css.saveIndicator} data-testid="saving-indicator">Save failed!</span> }
 
@@ -177,12 +170,10 @@ export const AudioRecordingControls: React.FC<IAudioRecordingControlsProps> = (p
       <div
         className={`${css.timer} ${timerReading === "00:00" ? css.zero : ""} ${buttonActive ? css.active : ""}`}
         data-testid="timer-readout"
-        onMouseEnter={handleMouseEnterTimer}
-        onMouseLeave={handleMouseLeaveTimer}
       >
         {timerReading}
         <div className={css.deleteContainer}>
-          {audioUrl && showDelete && <DeleteIcon onClick={handleAudioDelete} data-testid="audio-delete-button" />}
+          {audioUrl && <DeleteIcon onClick={handleAudioDelete} data-testid="audio-delete-button" />}
         </div>
       </div>
     </div>

@@ -143,8 +143,6 @@ describe("Runtime", () => {
     await waitFor(() => {
       const playOrPauseButton = screen.getByTestId("audio-play-or-pause-button");
       const playbackTimerReadout = screen.getByTestId("timer-readout");
-      // trigger a hover over the timer to cause the delete button to show
-      fireEvent.mouseEnter(playbackTimerReadout);
       const deleteButton = screen.getByTestId("audio-delete-button");
       expect(playOrPauseButton).toBeDefined();
       expect(deleteButton).toBeDefined();
