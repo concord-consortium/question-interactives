@@ -28,6 +28,10 @@ const baseAuthoringProps = {
         title: "Allow students to record audio response",
         type: "boolean"
       },
+      voiceTypingEnabled: {
+        title: "Allow students to use voice typing (Only available to students on certain browsers)",
+        type: "boolean"
+      },
       hint: {
         title: "Hint",
         type: "string"
@@ -35,35 +39,11 @@ const baseAuthoringProps = {
       defaultAnswer: {
         type: "string",
         title: "Default answer"
-      }
-    },
-    dependencies: {
-      required: {
-        oneOf: [
-          {
-            properties: {
-              required: {
-                enum: [
-                  false
-                ]
-              }
-            }
-          },
-          {
-            properties: {
-              required: {
-                enum: [
-                  true
-                ]
-              },
-              predictionFeedback: {
-                title: "Post-submission feedback (optional)",
-                type: "string"
-              }
-            }
-          }
-        ]
-      }
+      },
+      predictionFeedback: {
+        title: "Post-submission feedback (optional)",
+        type: "string"
+      },
     }
   } as RJSFSchema,
 
@@ -72,6 +52,9 @@ const baseAuthoringProps = {
       "prompt",
       "required",
       "audioEnabled",
+      "voiceTypingEnabled",
+      "hint",
+      "defaultAnswer",
       "predictionFeedback",
       "*"
     ],

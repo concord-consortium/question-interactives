@@ -3,6 +3,7 @@ import { useAccessibility } from "@concord-consortium/lara-interactive-api";
 
 import { IframeRuntime } from "../components/iframe-runtime";
 import { DemoAuthoringComponent } from "./demo-authoring";
+import { DynamicTextContext, useDynamicTextProxy } from "@concord-consortium/dynamic-text";
 
 import css from "./demo.scss";
 
@@ -16,6 +17,8 @@ interface IProps<IAuthoredState, IInteractiveState> {
 
 const iframe = new URLSearchParams(window.location.search).get("iframe");
 const rootDemo = !iframe;
+
+const dynamicTextProxy = useDynamicTextProxy();
 
 export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<IAuthoredState, IInteractiveState>) => {
   const { App, title, getReportItemHtml } = props;
@@ -68,6 +71,11 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
                 return prev;
               });
             }, 500);
+          }
+          break;
+        case "log":
+          if (rootDemo) {
+            console.log("DEMO LOG:", JSON.stringify(data.content));
           }
           break;
       }
@@ -135,11 +143,13 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
       return (
         <>
           <strong>Authoring:</strong>
-          <DemoAuthoringComponent
-            url="demo.html?iframe=authoring"
-            authoredState={authoredState}
-            setAuthoredState={handleSetAuthoredState}
-          />
+          <DynamicTextContext.Provider value={dynamicTextProxy}>
+            <DemoAuthoringComponent
+              url="demo.html?iframe=authoring"
+              authoredState={authoredState}
+              setAuthoredState={handleSetAuthoredState}
+            />
+          </DynamicTextContext.Provider>
         </>
       );
 
@@ -147,14 +157,16 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
       return (
         <>
           <strong>Interactive:</strong>
-          <IframeRuntime
-            url="demo.html?iframe=runtime"
-            authoredState={authoredState}
-            interactiveState={interactiveState}
-            setInteractiveState={setInteractiveState}
-            flushOnSave={true}
-            accessibility={accessibility}
-          />
+          <DynamicTextContext.Provider value={dynamicTextProxy}>
+            <IframeRuntime
+              url="demo.html?iframe=runtime"
+              authoredState={authoredState}
+              interactiveState={interactiveState}
+              setInteractiveState={setInteractiveState}
+              flushOnSave={true}
+              accessibility={accessibility}
+            />
+          </DynamicTextContext.Provider>
           {renderReportItemHtml()}
         </>
       );
@@ -169,7 +181,11 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
       );
 
     case "runtime":
-      return App;
+      return (
+        <DynamicTextContext.Provider value={dynamicTextProxy}>
+          {App}
+        </DynamicTextContext.Provider>
+      );
 
     default:
       return (
