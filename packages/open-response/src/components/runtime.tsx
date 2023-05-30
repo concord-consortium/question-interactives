@@ -127,7 +127,7 @@ export const AudioRecordingControls: React.FC<IAudioRecordingControlsProps> = (p
   if (audioUrl) {
     buttonLabel = playing ? "Pause Audio" : "Play Audio";
     buttonActive = playing;
-    buttonDisabled = false;
+    buttonDisabled = recordingDisabled;
     ButtonIcon = playing ? PauseIcon : PlayIcon;
     testId = "audio-play-or-pause-button";
     handleButtonClick = playing ? handleAudioPlayStop : handleAudioPlay;
@@ -140,10 +140,30 @@ export const AudioRecordingControls: React.FC<IAudioRecordingControlsProps> = (p
     handleButtonClick = recordingActive ? handleAudioRecordStop : handleAudioRecord;
   }
 
-  // emulate buttons
-  const handleKeyUp = (e: React.KeyboardEvent<HTMLOrSVGElement>) => {
-    if (isSpaceOrEnterKey(e)) {
+  const handleButtonClickIfNotDisabled = () => {
+    if (!buttonDisabled) {
       handleButtonClick();
+    }
+  };
+
+  const handleAudioDeleteIfNotDisabled = () => {
+    if (!buttonDisabled) {
+      handleAudioDelete();
+    }
+  };
+
+
+  // emulate buttons
+  const handleMainButtonKeyUp = (e: React.KeyboardEvent<HTMLOrSVGElement>) => {
+    if (isSpaceOrEnterKey(e)) {
+      handleButtonClickIfNotDisabled();
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+  const handleDeleteButtonKeyUp = (e: React.KeyboardEvent<HTMLOrSVGElement>) => {
+    if (isSpaceOrEnterKey(e)) {
+      handleAudioDeleteIfNotDisabled();
       e.preventDefault();
       e.stopPropagation();
     }
@@ -154,17 +174,19 @@ export const AudioRecordingControls: React.FC<IAudioRecordingControlsProps> = (p
       { recordingDisabled && <span className={css.saveIndicator} data-testid="saving-indicator">Saving ...</span> }
       { recordingFailed && <span className={css.saveIndicator} data-testid="saving-indicator">Save failed!</span> }
 
-      <div className={`${css.controlContainer} ${buttonActive ? css.active : ""}`}>
+      <div
+        className={`${css.controlContainer} ${buttonActive ? css.active : ""}`}
+        tabIndex={0}
+        role="button"
+        aria-label={buttonLabel}
+        title={buttonLabel}
+        onClick={handleButtonClickIfNotDisabled}
+        onKeyUp={handleMainButtonKeyUp}
+        >
         <ButtonIcon
-          role="button"
-          aria-label={buttonLabel}
-          title={buttonLabel}
           className={css.control}
-          onClick={handleButtonClick}
-          onKeyUp={handleKeyUp}
-          disabled={buttonDisabled}
           data-testid={testId}
-          tabIndex={0}
+          disabled={buttonDisabled}
           />
       </div>
       <div
@@ -172,9 +194,19 @@ export const AudioRecordingControls: React.FC<IAudioRecordingControlsProps> = (p
         data-testid="timer-readout"
       >
         {timerReading}
-        <div className={css.deleteContainer}>
-          {audioUrl && <DeleteIcon onClick={handleAudioDelete} data-testid="audio-delete-button" />}
-        </div>
+        {audioUrl &&
+          <div
+            className={css.deleteContainer}
+            tabIndex={0}
+            role="button"
+            aria-label="Delete Audio"
+            title="Delete Audio"
+            onClick={handleAudioDeleteIfNotDisabled}
+            onKeyUp={handleDeleteButtonKeyUp}
+          >
+            <DeleteIcon data-testid="audio-delete-button" />
+          </div>
+        }
       </div>
     </div>
   );
@@ -343,12 +375,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         setTimerReading(`${mins}:${secs}`);
       }
     }, 100);
-
-    if (demo) {
-      setTimeout(() => {
-        handleAudioPlayEnded();
-      }, 2000);
-    }
   };
 
   const handleAudioPlayStop = () => {
