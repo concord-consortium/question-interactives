@@ -14,101 +14,6 @@
       max-width: 100%;
     }
   }
-  button.audioControl {
-    background: transparent;
-    border: none;
-    box-sizing: content-box;
-    color: #313131;
-    font-size: 34px;
-    height: 34px;
-    margin: 0;
-    padding: 5px;
-    position: relative;
-    transition: .2s;
-    width: 34px;
-
-    .buttonText {
-      display: block;
-      height: 0;
-      overflow: hidden;
-      text-indent: 100%;
-      white-space: nowrap;
-      width: 0;
-    }
-
-    &:hover {
-      border-color: #0592af;
-      color: #0592af;
-    }
-    &:active {
-      border-color: #02607c;
-      color: #02607c;
-    }
-    &.active {
-      animation: isActive .7s infinite;
-      border-color: #0592af;
-      color: #0592af;
-      cursor: not-allowed;
-    }
-    &.recordingActive {
-      animation: isActive .7s infinite;
-      border-color: #0592af;
-      color: #0592af;
-      cursor: not-allowed;
-    }
-    &.disabled {
-      cursor: not-allowed;
-      opacity: .5;
-      &:hover {
-        border-color: #313131;
-        color: #313131;
-      }
-    }
-  }
-
-  // NOTE: this will be integrated with button.audioControl when the audio recording UI is updated in a follow on PT story
-  button.audioControl2 {
-    background: transparent;
-    border: none;
-    box-sizing: content-box;
-    color: #313131;
-    border-color: #313131;
-    font-size: 41px;
-    height: 41px;
-    margin: 0;
-    padding: 2px 2px 1px 2px;
-    position: relative;
-    transition: .2s;
-    width: 41px;
-
-    .buttonText {
-      display: block;
-      height: 0;
-      overflow: hidden;
-      text-indent: 100%;
-      white-space: nowrap;
-      width: 0;
-    }
-
-    &:hover {
-      color: #016082;
-    }
-    &:active {
-      color: #0481a0;
-    }
-    &.voiceTypingActive {
-      animation: isActive .7s infinite;
-      color: #016082;
-    }
-    &.disabled {
-      cursor: not-allowed;
-      opacity: .5;
-      &:hover {
-        border-color: #313131;
-        color: #313131;
-      }
-    }
-  }
 
   .inputContainer {
     position: relative;
@@ -122,7 +27,7 @@
       }
     }
 
-    .recordUIContainer {
+    .controlsContainer {
       align-items: center;
       bottom: 10px;
       display: flex;
@@ -134,43 +39,111 @@
       .saveIndicator {
         animation: isActive .7s infinite;
         font-size: pxToRem(14);
+        position: absolute;
+        top: -20px;
+        width: 80px;
+        text-align: center;
+        color: #0481a0;
       }
-      .audioControls {
-        align-items: center;
-        border: solid 1px #ccc;
-        border-radius: 8px;
-        display: flex;
-        margin-left: 5px;
-        text-align: right;
-      }
-      .voiceTypingControls {
-        align-items: center;
-        border: solid 1px #ccc;
-        border-radius: 8px;
-        display: flex;
-        margin-left: 5px;
-        text-align: right;
-      }
-    }
 
-    .audioPlayerUIContainer {
-      align-items: center;
-      bottom: 10px;
-      display: flex;
-      justify-content: flex-end;
-      position: absolute;
-      right: 10px;
+      .controls {
+        align-items: center;
+        border: solid 1px #ccc;
+        border-radius: 8px;
+        display: flex;
+        margin-left: 5px;
+        text-align: right;
+
+        .controlContainer {
+          width: 45px;
+          height: 45px;
+
+          &:hover {
+            svg {
+              path {
+                fill: #016082;
+              }
+            }
+          }
+
+          &.disabled {
+            cursor: not-allowed;
+            opacity: .5;
+            &:hover {
+              border-color: #313131;
+              color: #313131;
+            }
+          }
+
+          &.active {
+            animation: isActive .7s infinite;
+            color: #016082;
+
+            svg {
+              path {
+                fill: #016082;
+              }
+            }
+          }
+
+          .control {
+            background: transparent;
+            box-sizing: content-box;
+            color: #313131;
+            border-color: #313131;
+            margin: 0;
+            position: relative;
+            transition: .2s;
+            height: 45px;
+            // padding: 2px 2px 1px 2px;
+            width: 45px;
+          }
+        }
+      }
+
+      .timer {
+        display: flex;
+        height: 45px;
+        align-items: center;
+        font-size: 1rem;
+        padding: 0 5px 0 0;
+
+        &.zero {
+          color: #919191;
+        }
+
+        &.active {
+          color: #016082;
+        }
+      }
+
+      .deleteContainer {
+        position: absolute;
+        right: -5px;
+        top: -15px;
+        width: 30px;
+        height: 30px;
+
+        cursor: pointer;
+
+        svg {
+          filter: drop-shadow(2px 2px 2px rgba(49, 49, 49, 0.5));
+        }
+
+        &:hover {
+          svg {
+            path {
+              fill: #016082;
+            }
+            circle {
+              stroke: #016082;
+            }
+          }
+        }
+      }
 
       audio {
         display: none;
-      }
-      .audioControls {
-        align-items: center;
-        border: solid 1px #ccc;
-        border-radius: 8px;
-        display: flex;
-        margin-left: 5px;
-        text-align: right;
       }
     }
   }

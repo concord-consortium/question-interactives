@@ -8,12 +8,43 @@ import { getAttachmentUrl, IGetInteractiveState, log, setOnUnload, writeAttachme
 import AudioRecorder from "audio-recorder-polyfill";
 import { DynamicText } from "@concord-consortium/dynamic-text";
 
+import PauseIcon from "@concord-consortium/question-interactives-helpers/src/icons/pause-icon.svg";
+import PlayIcon from "@concord-consortium/question-interactives-helpers/src/icons/play-icon.svg";
+import StopIcon from "@concord-consortium/question-interactives-helpers/src/icons/stop-icon.svg";
+import RecordIcon from "@concord-consortium/question-interactives-helpers/src/icons/recording-icon.svg";
+import VoiceTypingIcon from "@concord-consortium/question-interactives-helpers/src/icons/voice-typing-icon.svg";
+import DeleteIcon from "@concord-consortium/question-interactives-helpers/src/icons/delete-button-no-drop-shadow.svg";
+
 import { IAuthoredState, IInteractiveState } from "./types";
 
 import css from "./runtime.scss";
-import iconCss from "@concord-consortium/question-interactives-helpers/src/components/icons.scss";
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
+
+interface IVoiceTypingControlsProps {
+  readOnly: boolean;
+  voiceTypingEnabled: boolean;
+  voiceTypingActive: boolean;
+  handleToggleVoiceTyping: () => void;
+}
+
+interface IAudioRecordingControlsProps {
+  readOnly: boolean;
+  audioEnabled: boolean;
+  audioUrl?: string;
+  playing: boolean;
+  recordingActive: boolean;
+  recordingDisabled: boolean;
+  recordingFailed: boolean;
+  timerReading: string;
+  audioPlayerRef: React.RefObject<HTMLAudioElement>;
+  handleAudioPlayStop: () => void;
+  handleAudioPlay: () => void;
+  handleAudioRecordStop: () => void;
+  handleAudioRecord: () => void;
+  handleAudioDelete: () => void;
+  handleAudioPlayEnded: () => void;
+}
 
 export const fetchAudioUrl = async (attachedAudioFile: string) => {
   if (attachedAudioFile) {
@@ -36,7 +67,153 @@ export const getPlaceholderText = (authoredState: Pick<IAuthoredState, "audioEna
   return "Please type your answer here.";
 };
 
+const isSpaceOrEnterKey = (e: React.KeyboardEvent<HTMLOrSVGElement>) => {
+  return (e.code === "Space") || (e.code === "Enter");
+};
+
+export const VoiceTypingControls: React.FC<IVoiceTypingControlsProps> = (props) => {
+  const {readOnly, voiceTypingEnabled, voiceTypingActive, handleToggleVoiceTyping} = props;
+  const voiceTypingLabel = voiceTypingActive ? "Stop Voice Typing" : "Start Voice Typing";
+
+  if (readOnly || !voiceTypingEnabled || !VoiceTyping.Supported) {
+    return null;
+  }
+
+  // emulate buttons
+  const handleKeyUp = (e: React.KeyboardEvent<HTMLOrSVGElement>) => {
+    if (isSpaceOrEnterKey(e)) {
+      handleToggleVoiceTyping();
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
+  return (
+    <div className={css.controls}>
+      <div className={`${css.controlContainer} ${voiceTypingActive ? css.active : ""}`}>
+        <VoiceTypingIcon
+          role="button"
+          aria-label={voiceTypingLabel}
+          title={voiceTypingLabel}
+          className={css.control}
+          onClick={handleToggleVoiceTyping}
+          onKeyUp={handleKeyUp}
+          data-testid="voice-typing-button"
+          tabIndex={0}
+        />
+      </div>
+    </div>
+  );
+};
+
+export const AudioRecordingControls: React.FC<IAudioRecordingControlsProps> = (props) => {
+  const {
+    readOnly, audioEnabled, audioUrl, playing, recordingActive, recordingDisabled, recordingFailed,
+    timerReading,
+    handleAudioPlayStop, handleAudioPlay, handleAudioRecordStop, handleAudioRecord, handleAudioDelete
+  } = props;
+
+  if (readOnly || !audioEnabled) {
+    return null;
+  }
+
+  let buttonLabel = "";
+  let buttonActive = false;
+  let buttonDisabled = false;
+  let ButtonIcon: any;
+  let testId = "";
+  let handleButtonClick: () => void = () => undefined;
+
+  if (audioUrl) {
+    buttonLabel = playing ? "Pause Audio" : "Play Audio";
+    buttonActive = playing;
+    buttonDisabled = recordingDisabled;
+    ButtonIcon = playing ? PauseIcon : PlayIcon;
+    testId = "audio-play-or-pause-button";
+    handleButtonClick = playing ? handleAudioPlayStop : handleAudioPlay;
+  } else {
+    buttonLabel = recordingActive ? "Stop Recording Audio" : "Record Audio";
+    buttonActive = recordingActive;
+    buttonDisabled = recordingDisabled;
+    ButtonIcon = recordingActive || recordingDisabled ? StopIcon : RecordIcon;
+    testId = "audio-record-button";
+    handleButtonClick = recordingActive ? handleAudioRecordStop : handleAudioRecord;
+  }
+
+  const handleButtonClickIfNotDisabled = () => {
+    if (!buttonDisabled) {
+      handleButtonClick();
+    }
+  };
+
+  const handleAudioDeleteIfNotDisabled = () => {
+    if (!buttonDisabled) {
+      handleAudioDelete();
+    }
+  };
+
+
+  // emulate buttons
+  const handleMainButtonKeyUp = (e: React.KeyboardEvent<HTMLOrSVGElement>) => {
+    if (isSpaceOrEnterKey(e)) {
+      handleButtonClickIfNotDisabled();
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+  const handleDeleteButtonKeyUp = (e: React.KeyboardEvent<HTMLOrSVGElement>) => {
+    if (isSpaceOrEnterKey(e)) {
+      handleAudioDeleteIfNotDisabled();
+      e.preventDefault();
+      e.stopPropagation();
+    }
+  };
+
+  return (
+    <div className={css.controls}>
+      { recordingDisabled && <span className={css.saveIndicator} data-testid="saving-indicator">Saving ...</span> }
+      { recordingFailed && <span className={css.saveIndicator} data-testid="saving-indicator">Save failed!</span> }
+
+      <div
+        className={`${css.controlContainer} ${buttonActive ? css.active : ""}`}
+        tabIndex={0}
+        role="button"
+        aria-label={buttonLabel}
+        title={buttonLabel}
+        onClick={handleButtonClickIfNotDisabled}
+        onKeyUp={handleMainButtonKeyUp}
+        >
+        <ButtonIcon
+          className={css.control}
+          data-testid={testId}
+          disabled={buttonDisabled}
+          />
+      </div>
+      <div
+        className={`${css.timer} ${timerReading === "00:00" ? css.zero : ""} ${buttonActive ? css.active : ""}`}
+        data-testid="timer-readout"
+      >
+        {timerReading}
+        {audioUrl &&
+          <div
+            className={css.deleteContainer}
+            tabIndex={0}
+            role="button"
+            aria-label="Delete Audio"
+            title="Delete Audio"
+            onClick={handleAudioDeleteIfNotDisabled}
+            onKeyUp={handleDeleteButtonKeyUp}
+          >
+            <DeleteIcon data-testid="audio-delete-button" />
+          </div>
+        }
+      </div>
+    </div>
+  );
+};
+
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
+  const demo = !!authoredState.demo;
   const readOnly = report || (authoredState.required && interactiveState?.submitted);
   const {audioEnabled, voiceTypingEnabled} = authoredState;
   window.MediaRecorder = AudioRecorder;
@@ -54,8 +231,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const [recordingDisabled, setRecordingDisabled] = useState(false);
   const [recordingFailed, setRecordingFailed] = useState(false);
   const [recordingSaved, setRecordingSaved] = useState(false);
-  const [playDisabled, setPlayDisabled] = useState(false);
-  const [stopDisabled, setStopDisabled] = useState(true);
+  const [playing, setPlaying] = useState(false);
   const [timerReading, setTimerReading] = useState<string>("00:00");
   const [voiceTypingActive, setVoiceTypingActive] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder>();
@@ -142,6 +318,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const handleAudioRecord = () => {
     let secondsElapsed = 0;
     if (audioSupported) {
+      log("audio response started");
       setRecordingFailed(false);
       const startTime = Date.now();
       navigator.mediaDevices
@@ -179,6 +356,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const handleAudioRecordStop = () => {
+    log("audio response stopped");
     mediaRecorderRef.current?.stop();
     setRecordingActive(false);
     clearInterval(audioTimerRef.current);
@@ -186,9 +364,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const handleAudioPlay = () => {
+    log("audio response start playing");
     audioPlayerRef.current?.play();
-    setPlayDisabled(true);
-    setStopDisabled(false);
+    setPlaying(true);
 
     audioTimerRef.current = setInterval(() => {
       if (audioPlayerRef.current) {
@@ -200,14 +378,15 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const handleAudioPlayStop = () => {
+    log("audio response stopped playing");
     audioPlayerRef.current?.pause();
     handleAudioPlayEnded();
     clearInterval(audioTimerRef.current);
   };
 
   const handleAudioPlayEnded = () => {
-    setPlayDisabled(false);
-    setStopDisabled(true);
+    log("audio response play ended");
+    setPlaying(false);
   };
 
   const generateFileName = () => {
@@ -216,6 +395,21 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const handleAudioSave = async (fileData: Blob, timeElapsed: number) => {
+    if (demo) {
+      setRecordingDisabled(true);
+      await new Promise<void>((resolve) => {
+        setTimeout(() => {
+          const url = URL.createObjectURL(fileData);
+          console.log("AUDIO URL", url);
+          setAudioUrl(url);
+          setRecordingSaved(true);
+          setRecordingDisabled(false);
+          resolve();
+        }, 1000);
+      });
+      return;
+    }
+
     setRecordingDisabled(true);
     if (fileData) {
       const fileName = attachedAudioFile ? attachedAudioFile : generateFileName();
@@ -233,16 +427,16 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         log("audio response recorded", {filePath, fileName, timeElapsed});
       } else {
         handleRecordingFailure(saveFileResponse.statusText);
-        setRecordingDisabled(false);
       }
     } else {
       handleRecordingFailure("No file data.");
-      setRecordingDisabled(false);
     }
+    setRecordingDisabled(false);
   };
 
   const handleAudioDelete = () => {
     if (confirm("Are you sure you want to delete the audio recording?")) {
+      log("audio response deleted");
       setAudioUrl(undefined);
       setRecordingActive(false);
       setRecordingDisabled(false);
@@ -291,7 +485,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const containerWidth = audioEnabled && textareaWidth ? textareaWidth + "px" : undefined;
   const containerStyle = audioEnabled && textareaHeight ? { height: textareaHeight + "px", width: containerWidth } : undefined;
   const textareaStyle = audioEnabled && textareaHeight ? { height: textareaHeight + "px" } : undefined;
-  const voiceTypingLabel = voiceTypingActive ? "Stop Voice Typing" : "Start Voice Typing";
 
   return (
     <fieldset className={css.openResponse}>
@@ -320,88 +513,34 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           onBlur={handleFocusOrBlurTextArea}
           onFocus={handleFocusOrBlurTextArea}
         />
-        {!readOnly && ((voiceTypingEnabled && VoiceTyping.Supported) || audioEnabled) &&
-          <div className={css.recordUIContainer}>
-            {voiceTypingEnabled && VoiceTyping.Supported &&
-            <div className={css.voiceTypingControls}>
-              <button
-                aria-label={voiceTypingLabel}
-                title={voiceTypingLabel}
-                className={`${iconCss.iconVoiceTyping} ${css.audioControl2} ${voiceTypingActive ? css.voiceTypingActive : ""}`}
-                onClick={handleToggleVoiceTyping}
-                data-testid="voice-typing-button"
-              >
-                <span className={css.buttonText}>{voiceTypingLabel}</span>
-              </button>
-            </div> }
-            {audioEnabled && !audioUrl &&
-            <>
-              { recordingDisabled && <span className={css.saveIndicator} data-testid="saving-indicator">Saving. Please wait...</span> }
-              { recordingFailed && <span className={css.saveIndicator} data-testid="saving-indicator">Recording failed. Please try again.</span> }
-              <div className={css.audioControls}>
-                <button
-                  aria-label="Record Audio"
-                  title="Record Audio"
-                  className={`${iconCss.iconRecord} ${css.audioControl} ${recordingActive ? css.recordingActive : ""}`}
-                  onClick={!recordingActive ? handleAudioRecord : undefined}
-                  disabled={recordingDisabled}
-                  data-testid="audio-record-button"
-                >
-                  <span className={css.buttonText}>Record</span>
-                </button>
-                <span className="timer" data-testid="record-timer-readout">{timerReading}</span>
-                <button
-                  aria-label="Stop Recording Audio"
-                  title="Stop Recording Audio"
-                  className={`${iconCss.iconStop} ${css.audioControl} ${!recordingActive ? css.disabled : ""}`}
-                  onClick={handleAudioRecordStop}
-                  disabled={recordingDisabled}
-                  data-testid="audio-stop-record-button"
-                >
-                  <span className={css.buttonText}>Stop</span>
-                </button>
-              </div>
-            </>}
-          { audioEnabled && audioUrl &&
-          <div className={css.audioPlayerUIContainer}>
-            <audio ref={audioPlayerRef} controls preload="auto" onEnded={handleAudioPlayEnded}>
-              <source src={audioUrl} type="audio/mpeg" />
-            </audio>
-            <button
-                  aria-label="Delete Audio"
-                  title="Delete Audio"
-                  className={`${iconCss.iconDeleteAudio} ${css.audioControl} ${readOnly ? css.disabled : ""}`}
-                  onClick={readOnly ? undefined : handleAudioDelete}
-                  disabled={readOnly}
-                  data-testid="audio-delete-button"
-              >
-                <span className={css.buttonText}>Delete</span>
-              </button>
-            <div className={css.audioControls}>
-              <button
-                aria-label="Play Audio"
-                title="Play Audio"
-                className={`${iconCss.iconAudio} ${css.audioControl} ${playDisabled ? css.active : ""}`}
-                disabled={playDisabled}
-                onClick={playDisabled ? undefined : handleAudioPlay}
-                data-testid="audio-play-button"
-              >
-                <span className={css.buttonText}>Play</span>
-              </button>
-              <span className="timer" data-testid="playback-timer-readout">{timerReading}</span>
-              <button
-                aria-label="Stop Audio"
-                title="Stop Audio"
-                className={`${iconCss.iconStop} ${css.audioControl} ${stopDisabled ? css.disabled : ""}`}
-                disabled={stopDisabled}
-                onClick={stopDisabled ? undefined : handleAudioPlayStop}
-                data-testid="audio-stop-button"
-              >
-                <span className={css.buttonText}>Stop</span>
-              </button>
-            </div>
-          </div> }
-        </div> }
+        <div className={css.controlsContainer}>
+          <VoiceTypingControls
+            readOnly={readOnly || false}
+            voiceTypingActive={voiceTypingActive}
+            voiceTypingEnabled={voiceTypingEnabled || false}
+            handleToggleVoiceTyping={handleToggleVoiceTyping}
+          />
+          {audioUrl && <audio ref={audioPlayerRef} controls preload="auto" onEnded={handleAudioPlayEnded}>
+            <source src={audioUrl} type="audio/mpeg" />
+          </audio>}
+          <AudioRecordingControls
+            readOnly={readOnly || false}
+            audioEnabled={audioEnabled || false}
+            audioUrl={audioUrl}
+            playing={playing}
+            recordingActive={recordingActive}
+            recordingDisabled={recordingDisabled}
+            recordingFailed={recordingFailed}
+            timerReading={timerReading}
+            audioPlayerRef={audioPlayerRef}
+            handleAudioPlayStop={handleAudioPlayStop}
+            handleAudioPlay={handleAudioPlay}
+            handleAudioRecordStop={handleAudioRecordStop}
+            handleAudioRecord={handleAudioRecord}
+            handleAudioDelete={handleAudioDelete}
+            handleAudioPlayEnded={handleAudioPlayEnded}
+          />
+        </div>
       </div>
     </fieldset>
   );

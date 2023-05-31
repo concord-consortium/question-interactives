@@ -141,23 +141,17 @@ describe("Runtime", () => {
     expect(mockFetchAudioUrl).toHaveBeenCalledTimes(1);
     expect(screen.getByTestId("response-textarea")).toBeDefined();
     await waitFor(() => {
-      const playButton = screen.getByTestId("audio-play-button");
-      const stopButton = screen.getByTestId("audio-stop-button");
+      const playOrPauseButton = screen.getByTestId("audio-play-or-pause-button");
+      const playbackTimerReadout = screen.getByTestId("timer-readout");
       const deleteButton = screen.getByTestId("audio-delete-button");
-      const playbackTimerReadout = screen.getByTestId("playback-timer-readout");
-      expect(playButton).toBeDefined();
-      expect(stopButton).toBeDefined();
+      expect(playOrPauseButton).toBeDefined();
       expect(deleteButton).toBeDefined();
       expect(playbackTimerReadout).toBeDefined();
       expect(playbackTimerReadout).toHaveTextContent("00:00");
-      fireEvent.click(playButton);
+      fireEvent.click(playOrPauseButton);
       expect(mockPlay).toHaveBeenCalledTimes(1);
-      expect(playButton).toHaveAttribute("disabled");
-      expect(stopButton).not.toHaveAttribute("disabled");
-      fireEvent.click(stopButton);
+      fireEvent.click(playOrPauseButton);
       expect(mockPause).toHaveBeenCalledTimes(1);
-      expect(playButton).not.toHaveAttribute("disabled");
-      expect(stopButton).toHaveAttribute("disabled");
       fireEvent.click(deleteButton);
       expect(window.confirm).toHaveBeenCalledTimes(1);
     });
