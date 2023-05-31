@@ -16,12 +16,14 @@ const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
       maxItems: {
         type: "number",
         title: "Maximum number of lab book entries",
-        default: 12
+        default: 12,
+        minimum: 1
       },
       showItems: {
         type: "number",
         title: "How many thumbnails to display",
-        default: 4
+        default: 4,
+        minimum: 1
       },
       backgroundSource: {
         title: "Background source",
