@@ -29,3 +29,14 @@ export interface IBaseInteractiveState extends IRuntimeInteractiveMetadata {
 }
 
 export type IInteractiveState = IBaseInteractiveState;
+
+export const DemoAuthoredState: IAuthoredState = {
+  version: 1,
+  questionType: "iframe_interactive",
+  hint: "",
+  predictionFeedback: "",
+  maxItems: 12,
+  showItems: 4,
+  showUploadImageButton: false,
+  backgroundSource: "upload",
+};
