@@ -15,8 +15,13 @@ interface IProps<IAuthoredState, IInteractiveState> {
   getReportItemHtml?: (options: {interactiveState: IInteractiveState, authoredState: IAuthoredState}) => string;
 }
 
-const iframe = new URLSearchParams(window.location.search).get("iframe");
+const params = new URLSearchParams(window.location.search);
+const iframe = params.get("iframe");
+params.delete("iframe");
+
 const rootDemo = !iframe;
+
+const demoUrl = (newIframe: string) => `demo.html?iframe=${newIframe}&${params.toString()}`
 
 const dynamicTextProxy = useDynamicTextProxy();
 
@@ -145,7 +150,7 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
           <strong>Authoring:</strong>
           <DynamicTextContext.Provider value={dynamicTextProxy}>
             <DemoAuthoringComponent
-              url="demo.html?iframe=authoring"
+              url={demoUrl("authoring")}
               authoredState={authoredState}
               setAuthoredState={handleSetAuthoredState}
             />
@@ -159,7 +164,7 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
           <strong>Interactive:</strong>
           <DynamicTextContext.Provider value={dynamicTextProxy}>
             <IframeRuntime
-              url="demo.html?iframe=runtime"
+              url={demoUrl("runtime")}
               authoredState={authoredState}
               interactiveState={interactiveState}
               setInteractiveState={setInteractiveState}
@@ -192,8 +197,8 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
         <div className={css.demo}>
           <div className={css.header}><h1>{title}</h1></div>
           <div className={css.split}>
-            <div className={css.authoring}><iframe src="demo.html?iframe=authoring-container" /></div>
-            <div className={css.runtime}><iframe src="demo.html?iframe=runtime-container" /></div>
+            <div className={css.authoring}><iframe src={demoUrl("authoring-container")} /></div>
+            <div className={css.runtime}><iframe src={demoUrl("runtime-container")} /></div>
           </div>
         </div>
       );

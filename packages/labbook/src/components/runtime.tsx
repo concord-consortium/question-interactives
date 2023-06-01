@@ -26,6 +26,9 @@ export interface IProps {
   report?: boolean;
 }
 
+const layoutParam = new URLSearchParams(window.location.search).get("layout");
+const layout = layoutParam === "notebook" ? "notebook" : "original";
+
 // convert 1-26 to A-Z.
 const numberToAlpha = (value:number) => (value + 10).toString(26).toUpperCase();
 
@@ -229,7 +232,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
     <div className={css["app"]} ref={containerRef}>
       <div className={css["container"]} style={{width: containerWidth}}>
-        <ThumbnailChooser {...thumbnailChooserProps} />
+        {layout === "original" && <ThumbnailChooser {...thumbnailChooserProps} />}
         <div className={css["draw-tool-wrapper"]} data-testid="draw-tool">
           <ThumbnailTitle className={css["draw-tool-title"]} title={title} />
           <DrawingTool
@@ -276,6 +279,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             setComment={setComment}
           />
         </div>
+        {layout === "notebook" && <ThumbnailChooser {...thumbnailChooserProps} />}
       </div>
     </div>
     </>
