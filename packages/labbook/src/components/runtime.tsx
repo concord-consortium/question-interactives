@@ -61,9 +61,13 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     return result;
   };
 
-  const {maxItems, showItems, showUploadImageButton, backgroundSource } = authoredState;
+  const {showUploadImageButton, backgroundSource } = authoredState;
   const {entries, selectedId} = ensureSelected(interactiveState as IInteractiveState) as IInteractiveState;
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // require at least 1 thumbnail
+  const maxItems = Math.max(authoredState.maxItems, 1);
+  const showItems = Math.max(authoredState.showItems, 1);
 
   // checking if app container is smaller than full-width; if so, we need to scale down app
   useEffect(
