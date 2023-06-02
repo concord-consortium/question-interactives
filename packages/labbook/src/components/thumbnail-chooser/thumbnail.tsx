@@ -10,12 +10,14 @@ export interface IThumbnailProps {
   thumbContent?: React.ReactNode;
   data: any;
   onClick?: ()=> void;
+  wideThumbnail?: boolean;
 }
 
 export const Thumbnail: React.FC<IThumbnailProps> = (props:IThumbnailProps) => {
-  const {thumbContent} = props;
+  const {thumbContent, wideThumbnail} = props;
+  console.log("wideThumbnail", wideThumbnail);
   return (
-    <div className={css["thumbnail"]} data-testid="thumbnail">
+    <div className={`${css["thumbnail"]} ${wideThumbnail && css["wide"]}`} data-testid="thumbnail">
       {thumbContent}
     </div>
   );

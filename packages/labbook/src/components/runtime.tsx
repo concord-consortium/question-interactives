@@ -27,7 +27,7 @@ export interface IProps {
 }
 
 const layoutParam = new URLSearchParams(window.location.search).get("layout");
-const layout = layoutParam === "notebook" ? "notebook" : "original";
+const layout = layoutParam === "wide" ? "wide" : "original";
 
 // convert 1-26 to A-Z.
 const numberToAlpha = (value:number) => (value + 10).toString(26).toUpperCase();
@@ -46,9 +46,14 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const readOnly = !!(report || (authoredState.required && interactiveState?.submitted));
 
+  const isWideLayout = layout === "wide";
+  const defaultContainerWidth = isWideLayout ? 626 : 514;
+  const defaultCanvasWidth = isWideLayout ? 535 : 465;
+  const drawingToolHeight = isWideLayout ? 318 : 495;
+
   const [disableUI, setDisableUI] = useState(false);
-  const [containerWidth, setContainerWidth] = useState(514);
-  const [canvasWidth, setCanvasWidth] = useState(465);
+  const [containerWidth, setContainerWidth] = useState(defaultContainerWidth);
+  const [canvasWidth, setCanvasWidth] = useState(defaultCanvasWidth);
   const ensureSelected = (prev: Partial<IInteractiveState>) => {
     const result = { ...prev };
     if (!result.entries?.length){
@@ -167,7 +172,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     setSelectedItemId: setSelectedItemId,
     clearSelectedItemId: clearSelectedItemID,
     maxDisplayItems: showItems,
-    readOnly
+    readOnly,
+    wideLayout: isWideLayout
   };
 
   const selectedItem = entries.find(i => i.id === selectedId);
@@ -231,9 +237,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       <div><DynamicText>{renderHTML(authoredState.prompt)}</DynamicText></div>
     }
     <div className={css["app"]} ref={containerRef}>
-      <div className={css["container"]} style={{width: containerWidth}}>
+      <div className={`${css["container"]} ${isWideLayout && css["wide"]}`} style={{width: containerWidth}}>
         {layout === "original" && <ThumbnailChooser {...thumbnailChooserProps} />}
-        <div className={css["draw-tool-wrapper"]} data-testid="draw-tool">
+        <div className={`${css["draw-tool-wrapper"]} ${isWideLayout && css["wide"]}`} data-testid="draw-tool">
           <ThumbnailTitle className={css["draw-tool-title"]} title={title} />
           <DrawingTool
             key={selectedId}
@@ -242,11 +248,12 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             setInteractiveState={setDrawingStateFn}
             buttons={drawingToolButtons}
             width={canvasWidth}
-            height={495}
+            height={drawingToolHeight}
             readOnly={readOnly}
+            wideLayout={isWideLayout}
           />
         </div>
-        <div className={css["under-sketch"]}>
+        <div className={`${css["under-sketch"]} ${isWideLayout && css["wide"]}`}>
           {!readOnly &&
           <div className={css["buttons"]}>
             {
@@ -277,9 +284,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             empty={!selectedItem}
             readOnly={readOnly}
             setComment={setComment}
+            wideLayout={isWideLayout}
           />
         </div>
-        {layout === "notebook" && <ThumbnailChooser {...thumbnailChooserProps} />}
+        {layout === "wide" && <ThumbnailChooser {...thumbnailChooserProps} />}
       </div>
     </div>
     </>

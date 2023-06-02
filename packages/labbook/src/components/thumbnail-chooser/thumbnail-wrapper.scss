@@ -22,6 +22,12 @@
     position: relative;
     transition: background-color .25s;
     overflow: hidden;
+    &.wide {
+      width: 105px;
+      &.selected {
+        width: 105px;
+      }
+    }
     svg {
       stroke: var(--cc-charcoal);
     }

@@ -45,12 +45,13 @@ export interface IThumbnailChooserProps {
   disableUnselectedThumbnails?: boolean;
   maxDisplayItems: number;
   readOnly: boolean;
+  wideLayout?: boolean;
 }
 
 export const ThumbnailChooser: React.FC<IThumbnailChooserProps> = (props) => {
   const [offset, setOffset] = useState(0);
 
-  const { items, selectedItemId, setSelectedItemId, maxDisplayItems, clearSelectedItemId, readOnly} = props;
+  const { items, selectedItemId, setSelectedItemId, maxDisplayItems, clearSelectedItemId, readOnly, wideLayout} = props;
   const effectiveOffset = Math.min(offset, items.length - maxDisplayItems);
 
   return (
@@ -72,6 +73,7 @@ export const ThumbnailChooser: React.FC<IThumbnailChooserProps> = (props) => {
               setSelectedContainerId={setSelectedItemId}
               clearContainer={clearSelectedItemId}
               readOnly={readOnly}
+              wideThumbnail={wideLayout}
             />
           );
         })}
