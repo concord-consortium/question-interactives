@@ -38,7 +38,7 @@ interface IAudioRecordingControlsProps {
   recordingFailed: boolean;
   timerReading: string;
   audioPlayerRef: React.RefObject<HTMLAudioElement>;
-  handleAudioPlayStop: () => void;
+  handleAudioPlayPause: () => void;
   handleAudioPlay: () => void;
   handleAudioRecordStop: () => void;
   handleAudioRecord: () => void;
@@ -110,7 +110,7 @@ export const AudioRecordingControls: React.FC<IAudioRecordingControlsProps> = (p
   const {
     readOnly, audioEnabled, audioUrl, playing, recordingActive, recordingDisabled, recordingFailed,
     timerReading,
-    handleAudioPlayStop, handleAudioPlay, handleAudioRecordStop, handleAudioRecord, handleAudioDelete
+    handleAudioPlayPause, handleAudioPlay, handleAudioRecordStop, handleAudioRecord, handleAudioDelete
   } = props;
 
   if (readOnly || !audioEnabled) {
@@ -130,7 +130,7 @@ export const AudioRecordingControls: React.FC<IAudioRecordingControlsProps> = (p
     buttonDisabled = recordingDisabled;
     ButtonIcon = playing ? PauseIcon : PlayIcon;
     testId = "audio-play-or-pause-button";
-    handleButtonClick = playing ? handleAudioPlayStop : handleAudioPlay;
+    handleButtonClick = playing ? handleAudioPlayPause : handleAudioPlay;
   } else {
     buttonLabel = recordingActive ? "Stop Recording Audio" : "Record Audio";
     buttonActive = recordingActive;
@@ -364,7 +364,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const handleAudioPlay = () => {
-    log("audio response start playing");
+    log("audio response start playing", {time: audioPlayerRef.current?.currentTime});
     audioPlayerRef.current?.play();
     setPlaying(true);
 
@@ -377,10 +377,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }, 100);
   };
 
-  const handleAudioPlayStop = () => {
-    log("audio response stopped playing");
+  const handleAudioPlayPause = () => {
+    log("audio response paused playing", {time: audioPlayerRef.current?.currentTime});
     audioPlayerRef.current?.pause();
-    handleAudioPlayEnded();
+    setPlaying(false);
     clearInterval(audioTimerRef.current);
   };
 
@@ -533,7 +533,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             recordingFailed={recordingFailed}
             timerReading={timerReading}
             audioPlayerRef={audioPlayerRef}
-            handleAudioPlayStop={handleAudioPlayStop}
+            handleAudioPlayPause={handleAudioPlayPause}
             handleAudioPlay={handleAudioPlay}
             handleAudioRecordStop={handleAudioRecordStop}
             handleAudioRecord={handleAudioRecord}
