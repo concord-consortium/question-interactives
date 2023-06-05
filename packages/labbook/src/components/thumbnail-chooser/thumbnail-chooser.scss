@@ -7,6 +7,9 @@
   justify-content: space-around;
   align-items: center;
   width: 100%;
+  &.wide {
+    justify-content: space-between;
+  }
 
   .thumbnail-chooser-title {
     font-size: pxToRem(16);
@@ -20,6 +23,10 @@
     display: flex;
     align-items: center;
     overflow: hidden;
+    &.wide {
+      width: 100%;
+      justify-content: space-around;
+    }
   }
 
   .arrow-button {
@@ -30,6 +37,9 @@
     background-color: var(--white);
     border: none;
     opacity: 1.0;
+    &.wide {
+      width: auto;
+    }
     &:hover{
       background-color: var(--cc-teal-light-5);
     }
