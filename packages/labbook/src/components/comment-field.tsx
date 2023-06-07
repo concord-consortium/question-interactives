@@ -1,6 +1,7 @@
 import React, { ChangeEvent, useCallback, useEffect, useState } from "react";
 import { ThumbnailTitle } from "./thumbnail-chooser/thumbnail-title";
 import { Log } from "../labbook-logging";
+import classnames from "classnames";
 
 import css from "./comment-field.scss";
 
@@ -10,12 +11,13 @@ export interface ICommentFieldProps {
   setComment: (comment:string) => void,
   empty: boolean;
   readOnly: boolean;
+  wideLayout?: boolean;
 }
 
 const kLogCommentWaitTimeout = 2 * 1000;  // 2 seconds, like the question saving
 
 export const CommentField = (props: ICommentFieldProps) => {
-  const {title, comment, empty, setComment, readOnly } = props;
+  const {title, comment, empty, setComment, readOnly, wideLayout } = props;
   const placeholder = comment
     ? comment
     : "Add comment … "; // TODO: I18n
@@ -42,7 +44,7 @@ export const CommentField = (props: ICommentFieldProps) => {
   }, [comment, setComment]);
 
   return (
-      <div className={css["comment-field"]} data-testid="comment-field">
+      <div className={classnames(css["comment-field"], {[css.wide]: wideLayout})} data-testid="comment-field">
         <ThumbnailTitle title={title} empty={empty}/>
         {readOnly ? <div className={css["comment-field-text"]} data-testid="comment-field-text">{comment.length === 0 ? <em>No comment.</em> : comment}</div> : null}
         {!readOnly ? <textarea disabled={empty} placeholder={placeholder} value={comment} onChange={handleTextAreaChange} onBlur={logCommentChange} data-testid="comment-field-textarea"></textarea> : null}

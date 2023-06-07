@@ -10,12 +10,14 @@ export interface IThumbnailWrapperProps {
   clearContainer: (id:string) => void;
   content: IThumbnailProps;
   readOnly: boolean;
+  wideThumbnail?: boolean;
 }
 
 export const ThumbnailWrapper: React.FC<IThumbnailWrapperProps> = (props) => {
-  const { selected, setSelectedContainerId, clearContainer, content, readOnly} = props;
+  const { selected, setSelectedContainerId, clearContainer, content, readOnly, wideThumbnail} = props;
   const { onClick, empty, id, label } = content;
-  const classes = classNames(css["thumbnail-button"], { [css.selected]: selected,  [css.empty]: empty });
+  const thumbNailProps = {...content, wideThumbnail};
+  const classes = classNames(css["thumbnail-button"], { [css.selected]: selected,  [css.empty]: empty, [css.wide]: wideThumbnail});
   const containerClasses = classNames(css.container, { [css.disabled]: !selected});
   const handleClose = empty
     ? () => null
@@ -46,7 +48,7 @@ export const ThumbnailWrapper: React.FC<IThumbnailWrapperProps> = (props) => {
         }
         { !empty &&
           <div className={containerClasses}>
-            <Thumbnail {...content}/>
+            <Thumbnail {...thumbNailProps}/>
           </div>
         }
       </button>

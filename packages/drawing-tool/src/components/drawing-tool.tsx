@@ -26,6 +26,7 @@ export interface IProps {
   canvasScale?: number;
   hideReadOnlyOverlay?: boolean;
   onDrawingChanged?: () => void;
+  wideLayout?: boolean;
 }
 
 interface StampCollections {
@@ -39,6 +40,7 @@ interface DrawingToolOpts {
   buttons?: string[];
   onDrawingChanged?: () => void;
   canvasScale?: number;
+  wideLayout?: boolean;
 }
 
 // This relies on DrawingTool internals obviously. Let's keep it at least in a single place. If it ever changes,
@@ -58,7 +60,8 @@ const getCollectionName = (collection: StampCollection) => {
   return name;
 };
 
-export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, readOnly, buttons, width, height, canvasScale, hideReadOnlyOverlay, onDrawingChanged }) => {
+export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState,
+  readOnly, buttons, width, height, canvasScale, hideReadOnlyOverlay, onDrawingChanged, wideLayout }) => {
   const drawingToolRef = useRef<any>();
   const containerRef = useRef<HTMLDivElement>(null);
   const [ containerId ] = useState<string>(uuidv4());
@@ -139,7 +142,8 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
         height: height || kDrawingToolHeight,
         canvasScale,
         buttons,
-        onDrawingChanged
+        onDrawingChanged,
+        wideLayout
       };
 
       if (Object.keys(stampCollections).length > 0) {
