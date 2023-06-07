@@ -1,6 +1,7 @@
 import React, { ChangeEvent, useCallback, useEffect, useState } from "react";
 import { ThumbnailTitle } from "./thumbnail-chooser/thumbnail-title";
 import { Log } from "../labbook-logging";
+import classnames from "classnames";
 
 import css from "./comment-field.scss";
 
@@ -43,7 +44,7 @@ export const CommentField = (props: ICommentFieldProps) => {
   }, [comment, setComment]);
 
   return (
-      <div className={`${css["comment-field"]} ${wideLayout && css["wide"]}`} data-testid="comment-field">
+      <div className={classnames(css["comment-field"], {[css.wide]: wideLayout})} data-testid="comment-field">
         <ThumbnailTitle title={title} empty={empty}/>
         {readOnly ? <div className={css["comment-field-text"]} data-testid="comment-field-text">{comment.length === 0 ? <em>No comment.</em> : comment}</div> : null}
         {!readOnly ? <textarea disabled={empty} placeholder={placeholder} value={comment} onChange={handleTextAreaChange} onBlur={logCommentChange} data-testid="comment-field-textarea"></textarea> : null}

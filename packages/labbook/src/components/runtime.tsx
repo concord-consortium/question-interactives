@@ -16,6 +16,7 @@ import { CommentField } from "./comment-field";
 import { IAuthoredState, IInteractiveState, ILabbookEntry } from "./types";
 import { TakeSnapshot } from "./take-snapshot";
 import { ThumbnailTitle } from "./thumbnail-chooser/thumbnail-title";
+import classnames from "classnames";
 
 import css from "./runtime.scss";
 
@@ -237,9 +238,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       <div><DynamicText>{renderHTML(authoredState.prompt)}</DynamicText></div>
     }
     <div className={css["app"]} ref={containerRef}>
-      <div className={`${css["container"]} ${isWideLayout && css["wide"]}`} style={{width: containerWidth}}>
+      <div className={classnames(css["container"], {[css.wide]: isWideLayout})} style={{width: containerWidth}}>
         {layout === "original" && <ThumbnailChooser {...thumbnailChooserProps} />}
-        <div className={`${css["draw-tool-wrapper"]} ${isWideLayout && css["wide"]}`} data-testid="draw-tool">
+        <div className={classnames(css["draw-tool-wrapper"], {[css.wide]: isWideLayout})} data-testid="draw-tool">
           <ThumbnailTitle className={css["draw-tool-title"]} title={title} />
           <DrawingTool
             key={selectedId}
@@ -253,7 +254,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             wideLayout={isWideLayout}
           />
         </div>
-        <div className={`${css["under-sketch"]} ${isWideLayout && css["wide"]}`}>
+        <div className={classnames(css["under-sketch"], {[css.wide]: isWideLayout})}>
           {!readOnly &&
           <div className={css["buttons"]}>
             {
