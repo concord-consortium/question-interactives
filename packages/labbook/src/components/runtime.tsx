@@ -48,8 +48,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const readOnly = !!(report || (authoredState.required && interactiveState?.submitted));
 
   const isWideLayout = layout === "wide";
-  const defaultContainerWidth = isWideLayout ? 626 : 514;
-  const defaultCanvasWidth = isWideLayout ? 535 : 465;
+  const defaultContainerWidth = isWideLayout ? 574 : 514;
+  const defaultCanvasWidth = isWideLayout ? 530 : 465;
   const drawingToolHeight = isWideLayout ? 318 : 495;
 
   const [disableUI, setDisableUI] = useState(false);
@@ -237,7 +237,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     { authoredState.prompt &&
       <div><DynamicText>{renderHTML(authoredState.prompt)}</DynamicText></div>
     }
-    <div className={css["app"]} ref={containerRef}>
+    <div className={classnames(css["app"], {[css.wide]: isWideLayout})} ref={containerRef}>
       <div className={classnames(css["container"], {[css.wide]: isWideLayout})} style={{width: containerWidth}}>
         {layout === "original" && <ThumbnailChooser {...thumbnailChooserProps} />}
         <div className={classnames(css["draw-tool-wrapper"], {[css.wide]: isWideLayout})} data-testid="draw-tool">

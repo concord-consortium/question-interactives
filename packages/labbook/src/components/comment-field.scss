@@ -8,6 +8,10 @@
   border-radius: 8px;
   border: solid 1.5px var(--cc-charcoal-light-2);
 
+  &.wide {
+    margin-right: 0px;
+  }
+
   &:focus, &:focus-visible {
     border: solid 1.5px var(--cc-charcoal-light-3);
   }

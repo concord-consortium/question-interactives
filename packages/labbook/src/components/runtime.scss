@@ -39,6 +39,9 @@
   font-family: Lato;
   font-size: pxToRem(16);
   color: var(--cc-charcoal);
+  &.wide {
+    background-color: white;
+  }
   .container {
     position: relative;
     margin: 0px;
