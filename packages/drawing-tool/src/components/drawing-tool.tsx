@@ -13,7 +13,7 @@ const kDrawingToolPreferredWidth = 600; // in practice it can be smaller if ther
 const kDrawingToolHeight = 600;
 
 // Use LARA image proxy to avoid tainting canvas when external image URL is used.
-export const LARA_IMAGE_PROXY = "https://lara-master.concordqa.org/image-proxy?url=";
+export const LARA_IMAGE_PROXY = "https://authoring.concord.org/image-proxy?url=";
 
 export interface IProps {
   authoredState: IGenericAuthoredState; // so it works with DrawingTool and ImageQuestion
