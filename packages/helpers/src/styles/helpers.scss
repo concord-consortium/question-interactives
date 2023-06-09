@@ -1,5 +1,35 @@
 @import "./px-to-rem.scss";
 
+// Colors &etc.
+
+:root {
+  --white: #ffffff;
+  --cc-charcoal: #3f3f3f;
+  --cc-charcoal-hint: #828282;
+  --cc-charcoal-light-1: #979797;
+  --cc-charcoal-light-2: #dfdfdf;
+  --cc-teal-dark-2: #016082;
+  --cc-teal-dark-1: #0481a0;
+  --cc-teal: #0592af;
+  --cc-teal-light-1: #2ba5c1;
+  --cc-teal-light-2: #6fc6da;
+  --cc-teal-light-3: #93d5e4;
+  --cc-teal-light-4: #b7e2ec;
+  --cc-teal-light-5: #cdebf2;
+  --cc-teal-light-6: #e2f4f8;
+  --cc-teal-light-7: #f5fbfc;
+  --cc-orange-dark-1: #ea6d2f;
+  --cc-orange: #ff8415;
+  --cc-orange-light-1: #ffa350;
+  --cc-orange-light-2: #ffc18a;
+  --cc-orange-light-3: #ffcea1;
+  --cc-orange-light-4: #ffe6d0;
+  --cc-orange-light-4-b: #ffeddc;
+  --cc-orange-light-5: #fff2e7;
+  --cc-orange-light-6: #fff9f3;
+}
+
+
 $correctColor: #055c05;
 $incorrectColor: #930606;
 
@@ -30,6 +60,42 @@ $themeColor2: #34a5be;
     margin-right: 10px;
   }
 }
+
+@mixin interactive-button {
+  display: flex;
+  align-items: center;
+  margin: 5px 10px;
+  width: fit-content;
+  box-sizing: border-box;
+  border-radius: 4px;
+  height: 34px;
+  border: solid 1.5px var(--cc-charcoal-light-1);
+  background-color: var(--cc-teal-light-5);
+  font-family: Lato;
+  font-weight: normal;
+  color: var(--cc-charcoal);
+  &:hover {
+    background-color: var(--cc-teal-light-4);
+  }
+  &:active {
+    background-color: var(--cc-teal-light-3);
+  }
+  &.disabled {
+    opacity: 0.3;
+  }
+  svg {
+    fill: var(--cc-teal-dark-1);
+    width: 36px;
+  }
+  .buttonText {
+    margin: 7px 0 8px 5px;
+    font-size: pxToRem(16);
+    white-space: nowrap;
+    padding-right: 10px;
+  }
+}
+
+
 
 @mixin ap-button {
   background-color: #ffa350;
@@ -116,6 +182,13 @@ $themeColor2: #34a5be;
 
 .apButton {
   @include ap-button;
+  & + & {
+    margin-left: 10px;
+  }
+}
+
+.interactiveButton {
+  @include interactive-button;
   & + & {
     margin-left: 10px;
   }

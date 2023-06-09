@@ -4,7 +4,6 @@ import classNames from "classnames";
 import { StyledFileInput } from "./styled-file-input";
 import { copyImageToS3, copyLocalImageToS3 } from "@concord-consortium/question-interactives-helpers/src/utilities/copy-image-to-s3";
 import { Log } from "../labbook-logging";
-import css from "./upload-button.scss";
 import UploadIcon from "../assets/upload-image-icon.svg";
 
 import {
@@ -12,6 +11,8 @@ import {
   IGenericAuthoredState,
   IGenericInteractiveState
 } from "drawing-tool-interactive/src/components/types";
+
+import css from "./upload-button.scss";
 
 export interface IUploadButtonProps {label?:string}
 
