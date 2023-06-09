@@ -5,6 +5,8 @@ import classNames from "classnames";
 export interface IStyledFileInputProps {
   onChange: (fileOrUrl: File | undefined) => void;
   buttonClass: string;
+  id?: string;
+  selectNextItem?: () => void;
 }
 
 /*
@@ -16,7 +18,7 @@ export interface IStyledFileInputProps {
  * - https://webaim.org/techniques/css/invisiblecontent/
  */
 export const StyledFileInput: React.FC<IStyledFileInputProps> = (props) => {
-  const {children, onChange, buttonClass} = props;
+  const {children, onChange, buttonClass, id} = props;
   const classes = classNames(buttonClass);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -37,12 +39,12 @@ export const StyledFileInput: React.FC<IStyledFileInputProps> = (props) => {
   return (
     <>
       <label
-        htmlFor="file-upload"
+        htmlFor={`file-upload-${id}`}
         className={classes}
         data-testid="upload-btn">
           {children}
       </label>
-      <input ref={fileInputRef} className={css.hidden} id="file-upload" type="file" onClick={handleClick} onChange={handleChange}/>
+      <input ref={fileInputRef} className={css.hidden} id={`file-upload-${id}`} type="file" onClick={handleClick} onChange={handleChange}/>
     </>
   );
 };

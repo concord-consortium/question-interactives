@@ -4,7 +4,6 @@ import classNames from "classnames";
 import { StyledFileInput } from "./styled-file-input";
 import { copyImageToS3, copyLocalImageToS3 } from "@concord-consortium/question-interactives-helpers/src/utilities/copy-image-to-s3";
 import { Log } from "../labbook-logging";
-import css from "./upload-button.scss";
 import UploadIcon from "../assets/upload-image-icon.svg";
 
 import {
@@ -12,6 +11,8 @@ import {
   IGenericAuthoredState,
   IGenericInteractiveState
 } from "drawing-tool-interactive/src/components/types";
+
+import css from "./upload-button.scss";
 
 export interface IUploadButtonProps {label?:string}
 
@@ -23,9 +24,13 @@ export interface IProps {
   uploadButtonClass?: 'string';
   uploadIcon?: React.ReactNode;
   disabled?: boolean;
+  text?: string;
+  showUploadIcon?: boolean;
+  selectNextItem?: () => void;
 }
 
-export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveState, onUploadStart, onUploadComplete, uploadButtonClass, uploadIcon, children, disabled}) => {
+export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveState, onUploadStart, onUploadComplete, text,
+  disabled, showUploadIcon, selectNextItem}) => {
   const [ uploadInProgress, setUploadInProgress ] = useState(false);
 
   const uploadFile = (fileOrUrl: File | string) => {
@@ -67,15 +72,15 @@ export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveSta
 
   return (
     <>
-      <StyledFileInput buttonClass={classes} onChange={handleFileUpload}>
-        <UploadIcon />
-        <div className={css["button-text"]}>
-          { uploadInProgress || disabled
-            ? "Please Wait"
-            : "Upload Image"
-          }
-        </div>
-      </StyledFileInput>
+    <StyledFileInput buttonClass={classes} onChange={handleFileUpload} id={text} selectNextItem={selectNextItem}>
+      {showUploadIcon && <UploadIcon/>}
+      <div className={css["button-text"]}>
+        { uploadInProgress || disabled
+          ? "Please Wait"
+          : text
+        }
+      </div>
+    </StyledFileInput>
     </>
   );
 };

@@ -17,6 +17,8 @@ import { IAuthoredState, IInteractiveState, ILabbookEntry } from "./types";
 import { TakeSnapshot } from "./take-snapshot";
 import { ThumbnailTitle } from "./thumbnail-chooser/thumbnail-title";
 import classnames from "classnames";
+import { OpenModalButton } from "./open-modal-button";
+import { UploadModal } from "./upload-image-modal";
 
 import css from "./runtime.scss";
 
@@ -55,6 +57,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const [disableUI, setDisableUI] = useState(false);
   const [containerWidth, setContainerWidth] = useState(defaultContainerWidth);
   const [canvasWidth, setCanvasWidth] = useState(defaultCanvasWidth);
+
   const ensureSelected = (prev: Partial<IInteractiveState>) => {
     const result = { ...prev };
     if (!result.entries?.length){
@@ -68,6 +71,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const {showUploadImageButton, backgroundSource } = authoredState;
+  const [showUploadModal, setShowUploadModal] = useState(false);
   const {entries, selectedId} = ensureSelected(interactiveState as IInteractiveState) as IInteractiveState;
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -225,7 +229,23 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const onUploadStart = () => setDisableUI(true);
-  const onUploadEnd = () => setDisableUI(false);
+  const onUploadEnd = () => {
+    setDisableUI(false);
+    setShowUploadModal(false);
+  };
+
+  const handleUploadModalClick = () => {
+    // need to:
+    // get id of currently selected item
+    // add new item so it's created in entries
+    addItem();
+    // because adding new item will set selected item to that item, set selected back to previous, and keep track of next item somewhere
+    setShowUploadModal(true);
+  };
+
+  const selectNextItem = () => {
+    // change selected item to the next item
+  };
 
   const drawingToolButtons = [
     'select',
@@ -243,6 +263,16 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
     <div className={classnames(css["app"], {[css.wide]: isWideLayout})} ref={containerRef}>
       <div className={classnames(css["container"], {[css.wide]: isWideLayout})} style={{width: containerWidth}}>
+        {showUploadModal &&
+          <UploadModal
+            authoredState={authoredState}
+            setInteractiveState={setDrawingStateFn}
+            disabled={disableUI}
+            onUploadStart={onUploadStart}
+            onUploadComplete={onUploadEnd}
+            handleCloseModal={() => setShowUploadModal(false)}
+            selectNextItem={selectNextItem}
+            />}
         {layout === "original" && <ThumbnailChooser {...thumbnailChooserProps} />}
         <div className={classnames(css["draw-tool-wrapper"], {[css.wide]: isWideLayout})} data-testid="draw-tool">
           <ThumbnailTitle className={css["draw-tool-title"]} title={title} />
@@ -262,13 +292,21 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           {!readOnly &&
           <div className={css["buttons"]}>
             {
-              (backgroundSource === "upload" || showUploadImageButton) &&
+              ((backgroundSource === "upload" || showUploadImageButton) && selectedItem?.data?.userBackgroundImageUrl) &&
+              <OpenModalButton
+                handleClick={handleUploadModalClick}
+              />
+            }
+            {
+              ((backgroundSource === "upload" || showUploadImageButton) && !selectedItem?.data?.userBackgroundImageUrl) &&
               <UploadImage
                 authoredState={authoredState}
                 setInteractiveState={setDrawingStateFn}
                 disabled={disableUI}
                 onUploadStart={onUploadStart}
                 onUploadComplete={onUploadEnd}
+                text={"Upload Image"}
+                showUploadIcon={true}
               />
             }
             {
