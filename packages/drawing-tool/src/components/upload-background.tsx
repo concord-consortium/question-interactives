@@ -5,6 +5,7 @@ import { copyImageToS3, copyLocalImageToS3 } from "@concord-consortium/question-
 import css from "./runtime.scss";
 import cssHelpers from "@concord-consortium/question-interactives-helpers/src/styles/helpers.scss";
 import { getAnswerType, IGenericAuthoredState, IGenericInteractiveState } from "./types";
+import classnames from "classnames";
 
 export interface IProps {
   authoredState: IGenericAuthoredState;
@@ -80,7 +81,7 @@ export const UploadBackground: React.FC<IProps> = ({ authoredState, setInteracti
     <>
       {
         !uploadControlsVisible && !uploadInProgress &&
-        <button className={cssHelpers.interactiveButton} onClick={handleUploadBtnClick} data-test="upload-btn">
+        <button className={classnames(cssHelpers.interactiveButton, cssHelpers.withIcon)} onClick={handleUploadBtnClick} data-test="upload-btn">
           <UploadIcon />
           <div className={cssHelpers.buttonText}>Upload Image</div>
         </button>

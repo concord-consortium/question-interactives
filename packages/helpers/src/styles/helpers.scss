@@ -67,6 +67,7 @@ $themeColor2: #34a5be;
   margin: 5px 10px;
   width: fit-content;
   box-sizing: border-box;
+  padding: 7px 10px 8px;
   border-radius: 4px;
   height: 34px;
   border: solid 1.5px var(--cc-charcoal-light-1);
@@ -74,6 +75,9 @@ $themeColor2: #34a5be;
   font-family: Lato;
   font-weight: normal;
   color: var(--cc-charcoal);
+  &.withIcon {
+    padding: 0px;
+  }
   &:hover {
     background-color: var(--cc-teal-light-4);
   }
@@ -84,11 +88,11 @@ $themeColor2: #34a5be;
     opacity: 0.3;
   }
   svg {
-    fill: var(--cc-teal-dark-1);
+    fill: var(--cc-teal-light-1);
     width: 36px;
   }
   .buttonText {
-    margin: 7px 0 8px 5px;
+    // margin: 7px 0 8px 5px;
     font-size: pxToRem(16);
     white-space: nowrap;
     padding-right: 10px;

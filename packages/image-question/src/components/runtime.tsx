@@ -1,7 +1,9 @@
 import React, { useState } from "react";
+import classnames from "classnames";
 import { IRuntimeQuestionComponentProps } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
 import { closeModal, showModal } from "@concord-consortium/lara-interactive-api";
 import { TakeSnapshot } from "drawing-tool-interactive/src/components/take-snapshot";
+import CorrectIcon from "@concord-consortium/question-interactives-helpers/src/icons/correct.svg";
 import { UploadBackground } from "drawing-tool-interactive/src/components/upload-background";
 import { getURLParam } from "@concord-consortium/question-interactives-helpers/src/utilities/get-url-param";
 import { DrawingTool, drawingToolCanvasSelector } from "drawing-tool-interactive/src/components/drawing-tool";
@@ -71,6 +73,16 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     setControlsHidden(true);
   };
 
+  const handleCancel = () => {
+    setInteractiveState?.((prevState: IInteractiveState) => ({
+      ...prevState,
+      userBackgroundImageUrl: undefined,
+      answerType: "image_question_answer"
+    }));
+    closeModal({});
+    return;
+  };
+
   const handleClose = () => {
     if (!drawingStateUpdated) {
       // Just close the modal, there's no need to take a new PNG copy of the drawing tool.
@@ -110,6 +122,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     const previousAnswerAvailable = interactiveState?.userBackgroundImageUrl || interactiveState?.answerImageUrl;
     const authoredBackgroundUrl = authoredState?.backgroundSource === "url" && authoredState.backgroundImageUrl;
     const inlineImage = interactiveState?.answerImageUrl || interactiveState?.userBackgroundImageUrl || authoredBackgroundUrl;
+
     // Render answer prompt and answer text in inline mode to replicate LARA's Image Question UI
     return <div>
       { authoredState.prompt &&
@@ -147,7 +160,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           }
           {
             !controlsHidden && (renderMakeDrawing || previousAnswerAvailable) &&
-            <button className={cssHelpers.interactiveButton} onClick={openDrawingToolDialog} data-test="edit-btn">
+            <button className={classnames(cssHelpers.interactiveButton, {[cssHelpers.withIcon]: !previousAnswerAvailable})} onClick={openDrawingToolDialog} data-test="edit-btn">
               { previousAnswerAvailable ? "Edit" : <span><PencilIcon className={cssHelpers.smallIcon}/> Make Drawing</span> }
             </button>
           }
@@ -166,7 +179,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         />
       </div>
       <div className={css.dialogRightPanel}>
-        { authoredState.prompt && <div><DynamicText>{renderHTML(authoredState.prompt)}</DynamicText></div> }
+        { authoredState.prompt && <div className={css.prompt}><DynamicText>{renderHTML(authoredState.prompt)}</DynamicText></div> }
         { authoredState.answerPrompt && <>
           <hr />
           <div className={css.answerPrompt}><DynamicText>{renderHTML(authoredState.answerPrompt)}</DynamicText></div>
@@ -180,9 +193,15 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         <div className={css.closeDialogSection}>
           { savingAnnotatedImage ?
             <div>Please wait while your drawing is being saved...</div> :
-            <button className={cssHelpers.interactiveButton} onClick={handleClose} data-test="close-dialog-btn">
-              Close
-            </button>
+            <div className={css.closeDialogButtons}>
+              <button className={cssHelpers.interactiveButton} onClick={handleCancel} data-test="cancel-upload-btn">
+                Cancel
+              </button>
+              <button className={classnames(cssHelpers.interactiveButton, cssHelpers.withIcon)} onClick={handleClose} data-test="close-dialog-btn">
+                <CorrectIcon/>
+                <div className={cssHelpers.buttonText}>Done</div>
+              </button>
+            </div>
           }
         </div>
       </div>
