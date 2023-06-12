@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import classNames from "classnames";
 
 import { StyledFileInput } from "./styled-file-input";
@@ -32,6 +32,12 @@ export interface IProps {
 export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveState, onUploadStart, onUploadComplete, text,
   disabled, showUploadIcon, itemIndex}) => {
   const [ uploadInProgress, setUploadInProgress ] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      setUploadInProgress(false);
+    };
+  }, []);
 
   const uploadFile = (fileOrUrl: File | string) => {
     setUploadInProgress(true);
