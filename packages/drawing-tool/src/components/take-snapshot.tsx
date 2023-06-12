@@ -2,10 +2,11 @@ import React, { useState } from "react";
 import 'drawing-tool/dist/drawing-tool.css';
 import css from "./runtime.scss";
 import cssHelpers from "@concord-consortium/question-interactives-helpers/src/styles/helpers.scss";
-import CameraIcon from "@concord-consortium/question-interactives-helpers/src/icons/camera.svg";
+import SnapshotIcon from "@concord-consortium/question-interactives-helpers/src/icons/snapshot-icon.svg";
 import { getInteractiveSnapshot } from "@concord-consortium/lara-interactive-api";
 import { getAnswerType, IGenericAuthoredState, IGenericInteractiveState } from "./types";
 import { useLinkedInteractiveId } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
+import classnames from "classnames";
 
 export interface IProps {
   authoredState: IGenericAuthoredState; // so it works with DrawingTool and ImageQuestion
@@ -45,8 +46,9 @@ export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState
     <>
       {
         snapshotTarget &&
-        <button className={cssHelpers.apButton} onClick={handleSnapshot} disabled={snapshotInProgress} data-testid="snapshot-btn">
-          <CameraIcon className={cssHelpers.smallIcon} /> { interactiveState?.userBackgroundImageUrl ? "Replace Snapshot" : "Take a Snapshot" }
+        <button className={classnames(cssHelpers.interactiveButton, cssHelpers.withIcon)} onClick={handleSnapshot} disabled={snapshotInProgress} data-testid="snapshot-btn">
+          <SnapshotIcon />
+          <div className={cssHelpers.buttonText}>{ interactiveState?.userBackgroundImageUrl ? "Replace Snapshot" : "Take a Snapshot" }</div>
         </button>
       }
       { snapshotInProgress && <p>Please wait while the snapshot is being taken...</p> }

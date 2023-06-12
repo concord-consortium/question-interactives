@@ -51,9 +51,24 @@ legend.prompt { // clear bootstrap stuff
     vertical-align: top;
     display: inline-block;
     width: 280px;
+    color: var(--cc-charcoal);
+
+    .prompt {
+      margin-top: 5px;
+    }
+
+    hr {
+      border-color: var(--cc-charcoal-light-1);
+    }
 
     .closeDialogSection {
       text-align: right;
+
+      .closeDialogButtons {
+        display: flex;
+        width: 100%;
+        justify-content: center;
+      }
     }
   }
 }
