@@ -6,7 +6,6 @@ export interface IStyledFileInputProps {
   onChange: (fileOrUrl: File | undefined) => void;
   buttonClass: string;
   id?: string;
-  selectNextItem?: () => void;
 }
 
 /*

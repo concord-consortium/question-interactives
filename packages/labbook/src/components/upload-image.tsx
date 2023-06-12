@@ -18,7 +18,7 @@ export interface IUploadButtonProps {label?:string}
 
 export interface IProps {
   authoredState: IGenericAuthoredState;
-  setInteractiveState?: (updateFunc: (prevState: IGenericInteractiveState | null) => IGenericInteractiveState) => void;
+  setInteractiveState?: (updateFunc: (prevState: IGenericInteractiveState | null) => IGenericInteractiveState, itemIdx?: number) => void;
   onUploadStart?: () => void;
   onUploadComplete?: (result: { success: boolean }) => void;
   uploadButtonClass?: 'string';
@@ -26,11 +26,11 @@ export interface IProps {
   disabled?: boolean;
   text?: string;
   showUploadIcon?: boolean;
-  selectNextItem?: () => void;
+  itemIndex?: number;
 }
 
 export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveState, onUploadStart, onUploadComplete, text,
-  disabled, showUploadIcon, selectNextItem}) => {
+  disabled, showUploadIcon, itemIndex}) => {
   const [ uploadInProgress, setUploadInProgress ] = useState(false);
 
   const uploadFile = (fileOrUrl: File | string) => {
@@ -44,7 +44,7 @@ export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveSta
           ...prevState,
           userBackgroundImageUrl: url,
           answerType: getAnswerType(authoredState.questionType)
-        }));
+        }), itemIndex);
         Log({action: "picture uploaded", data: {url}});
         onUploadComplete?.({ success: true });
       })
@@ -54,8 +54,8 @@ export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveSta
         console.error(error);
       })
       .finally(() => {
-        onUploadComplete?.({ success: false });
         setUploadInProgress(false);
+        onUploadComplete?.({ success: false });
       });
   };
 
@@ -72,7 +72,7 @@ export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveSta
 
   return (
     <>
-    <StyledFileInput buttonClass={classes} onChange={handleFileUpload} id={text} selectNextItem={selectNextItem}>
+    <StyledFileInput buttonClass={classes} onChange={handleFileUpload} id={text}>
       {showUploadIcon && <UploadIcon/>}
       <div className={css["button-text"]}>
         { uploadInProgress || disabled

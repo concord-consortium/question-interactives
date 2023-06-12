@@ -2,21 +2,21 @@ import React from "react";
 import css from "./upload-image-modal.scss";
 import { IGenericAuthoredState, IGenericInteractiveState } from "drawing-tool-interactive/src/components/types";
 import { UploadImage } from "./upload-image";
-
 export interface IProps {
   authoredState: IGenericAuthoredState;
-  setInteractiveState?: (updateFunc: (prevState: IGenericInteractiveState | null) => IGenericInteractiveState) => void;
+  setInteractiveState?: (updateFunc: (prevState: IGenericInteractiveState | null) => IGenericInteractiveState, itemIdx?: number) => void;
   onUploadStart?: () => void;
   onUploadComplete?: (result: { success: boolean }) => void;
   uploadButtonClass?: 'string';
   uploadIcon?: React.ReactNode;
   disabled?: boolean;
   handleCloseModal: () => void;
-  selectNextItem: () => void;
+  replaceItemIndex: number;
+  newItemIndex: number;
 }
 
 export const UploadModal: React.FC<IProps> = ({authoredState, setInteractiveState, onUploadStart, onUploadComplete,
-  handleCloseModal, disabled, selectNextItem}) => {
+  handleCloseModal, disabled, replaceItemIndex, newItemIndex}) => {
   return (
     <div className={css.modal}>
       <div className={css.modalContent}>
@@ -28,6 +28,7 @@ export const UploadModal: React.FC<IProps> = ({authoredState, setInteractiveStat
             onUploadStart={onUploadStart}
             onUploadComplete={onUploadComplete}
             text={"Replace Current Image"}
+            itemIndex={replaceItemIndex}
           />
           <UploadImage
             authoredState={authoredState}
@@ -36,7 +37,7 @@ export const UploadModal: React.FC<IProps> = ({authoredState, setInteractiveStat
             onUploadStart={onUploadStart}
             onUploadComplete={onUploadComplete}
             text={"Create New Image"}
-            selectNextItem={selectNextItem}
+            itemIndex={newItemIndex}
           />
         </div>
         <div><button onClick={handleCloseModal}>Cancel</button></div>
