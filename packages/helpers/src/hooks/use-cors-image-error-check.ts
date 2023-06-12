@@ -14,7 +14,11 @@ export const isImgCORSEnabled = (imgSrc: string): Promise<boolean> => {
 export const shouldUseLARAImgProxy = (imgSrc?: string): boolean => {
   try {
     const url = new URL(imgSrc || "");
-    if (!url.host.match(/concord\.org/)) {
+    const host = url.host;
+    // concordqa.org should be used by the staging environment. token-service-files.s3.amazonaws.com probably should
+    // not be used at all, but Token Service has been misconfigured for a long time and it's used for plenty of
+    // authored backgrounds. See: https://www.pivotaltracker.com/story/show/185233166
+    if (!host.match(/concord\.org/) && !host.match(/concordqa\.org/) && !host.match(/token-service-files\.s3\.amazonaws\.com/)) {
       // Use LARA image proxy to avoid tainting canvas when external image URL is used.
       // Note that concord.org domain is actually not enough when the subdomains are different.
       // So, the host needs to have CORS headers enabled. It's more likely for servers owned by CC. In practice

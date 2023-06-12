@@ -269,7 +269,10 @@ export const baseAuthoringProps = {
     if (formData.backgroundImageUrl && formData.backgroundSource === "url") {
       try {
         const url = new URL(formData.backgroundImageUrl);
-        if (!url.host.match(/concord\.org/) && !url.host.match(/token-service-files\.s3\.amazonaws\.com/)) {
+        // concordqa.org should be used by the staging environment. token-service-files.s3.amazonaws.com probably should
+        // not be used at all, but Token Service has been misconfigured for a long time and it's used for plenty of
+        // authored backgrounds. See: https://www.pivotaltracker.com/story/show/185233166
+        if (!url.host.match(/concord\.org/) && !url.host.match(/concordqa\.org/) && !url.host.match(/token-service-files\.s3\.amazonaws\.com/)) {
           errors.backgroundImageUrl?.addError(`Please use only uploaded images or images hosted at *.concord.org.`);
         }
       } catch (e) {
