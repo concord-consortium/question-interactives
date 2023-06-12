@@ -6,6 +6,7 @@ import SnapshotIcon from "@concord-consortium/question-interactives-helpers/src/
 import { getInteractiveSnapshot } from "@concord-consortium/lara-interactive-api";
 import { getAnswerType, IGenericAuthoredState, IGenericInteractiveState } from "./types";
 import { useLinkedInteractiveId } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
+import classnames from "classnames";
 
 export interface IProps {
   authoredState: IGenericAuthoredState; // so it works with DrawingTool and ImageQuestion
@@ -45,7 +46,7 @@ export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState
     <>
       {
         snapshotTarget &&
-        <button className={cssHelpers.interactiveButton} onClick={handleSnapshot} disabled={snapshotInProgress} data-testid="snapshot-btn">
+        <button className={classnames(cssHelpers.interactiveButton, cssHelpers.withIcon)} onClick={handleSnapshot} disabled={snapshotInProgress} data-testid="snapshot-btn">
           <SnapshotIcon />
           <div className={cssHelpers.buttonText}>{ interactiveState?.userBackgroundImageUrl ? "Replace Snapshot" : "Take a Snapshot" }</div>
         </button>
