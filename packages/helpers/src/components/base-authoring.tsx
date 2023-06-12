@@ -40,7 +40,9 @@ const widgets = {
 };
 
 export const getTokenServiceEnv = (claims: any) => {
-  const host = claims?.platform_id || "";
+  // Provided object usually has nested `claims` object. Keep backward compatibility with old (probably incorrect)
+  // format just in case, as it costs us nothing.
+  const host = claims?.platform_id || claims?.claims?.platform_id || "";
   return host.match(/learn\.concord\.org/) ? "production" : "staging";
 };
 
