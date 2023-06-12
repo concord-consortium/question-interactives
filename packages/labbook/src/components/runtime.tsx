@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useCallback } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import deepmerge from "deepmerge";
 import hash from "object-hash";
 import { v4 as uuidv4 } from "uuid";
@@ -218,7 +218,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const setDrawingStateFn = (func: (prevState: IDrawingToolInteractiveState | null) => IDrawingToolInteractiveState, itemIdx?: number) => {
-    const item = itemIdx === entries.length ? addItem() : selectedItem;
+    const item = (itemIdx && itemIdx === entries.length) ? addItem() : selectedItem;
     const drawingState = func(item?.data || null);
     if (drawingState && item) {
       const drawingHash = hash(drawingState);
@@ -284,6 +284,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             height={drawingToolHeight}
             readOnly={readOnly}
             wideLayout={isWideLayout}
+            newItemIndex={newItemIndex}
           />
         </div>
         <div className={classnames(css["under-sketch"], {[css.wide]: isWideLayout})}>

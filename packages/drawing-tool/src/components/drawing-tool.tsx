@@ -18,7 +18,7 @@ export const LARA_IMAGE_PROXY = "https://lara-master.concordqa.org/image-proxy?u
 export interface IProps {
   authoredState: IGenericAuthoredState; // so it works with DrawingTool and ImageQuestion
   interactiveState?: IGenericInteractiveState | null;
-  setInteractiveState?: (updateFunc: (prevState: IGenericInteractiveState | null) => IGenericInteractiveState) => void;
+  setInteractiveState?: (updateFunc: (prevState: IGenericInteractiveState | null) => IGenericInteractiveState, itemIdx?: number) => void;
   readOnly?: boolean;
   buttons?: string[];
   width?: number;
@@ -27,6 +27,7 @@ export interface IProps {
   hideReadOnlyOverlay?: boolean;
   onDrawingChanged?: () => void;
   wideLayout?: boolean;
+  newItemIndex?: number;
 }
 
 interface StampCollections {
@@ -61,7 +62,7 @@ const getCollectionName = (collection: StampCollection) => {
 };
 
 export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState,
-  readOnly, buttons, width, height, canvasScale, hideReadOnlyOverlay, onDrawingChanged, wideLayout }) => {
+  readOnly, buttons, width, height, canvasScale, hideReadOnlyOverlay, onDrawingChanged, wideLayout, newItemIndex }) => {
   const drawingToolRef = useRef<any>();
   const containerRef = useRef<HTMLDivElement>(null);
   const [ containerId ] = useState<string>(uuidv4());
@@ -74,6 +75,7 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
       answerType: getAnswerType(authoredState.questionType)
     }));
   };
+
   // useRef to avoid passing interactiveState into useEffect, or it will reload on every drawing edit
   const initialInteractiveStateRef = useRef<IGenericInteractiveState | null | undefined>(interactiveState);
   const setInteractiveStateRef = useRef<((state: any) => void)>(handleSetInteractiveState);
@@ -159,6 +161,7 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
       }
 
       drawingToolRef.current.on("drawing:changed", () => {
+        console.log("the drawing tool changed");
         if (readOnly) return;
         setInteractiveStateRef.current({ drawingState: drawingToolRef.current.save() });
       });

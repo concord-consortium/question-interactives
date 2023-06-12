@@ -2,6 +2,7 @@ import React from "react";
 import css from "./upload-image-modal.scss";
 import { IGenericAuthoredState, IGenericInteractiveState } from "drawing-tool-interactive/src/components/types";
 import { UploadImage } from "./upload-image";
+
 export interface IProps {
   authoredState: IGenericAuthoredState;
   setInteractiveState?: (updateFunc: (prevState: IGenericInteractiveState | null) => IGenericInteractiveState, itemIdx?: number) => void;
