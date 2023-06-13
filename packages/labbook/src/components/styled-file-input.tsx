@@ -25,17 +25,17 @@ export const StyledFileInput: React.FC<IStyledFileInputProps> = (props) => {
   const classes = classNames(buttonClass);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent) => {
     // Reset current file input value as soon as user clicks on the button. Otherwise, user won't be able to upload
     // the same file again. This is necessary in Labbook after user deletes the current thumbnail, and might be
     // generally useful in other scenarios. See: https://www.pivotaltracker.com/story/show/183721375
-    if (setHideUploadButtons) {
-      setHideUploadButtons(true);
-    }
-    if (item && setSelectedItemId) {
-      setSelectedItemId(item.id);
-      item.onClick?.();
-    }
+    // if (setHideUploadButtons) {
+    //   setHideUploadButtons(true);
+    // }
+    // if (item && setSelectedItemId) {
+    //   setSelectedItemId(item.id);
+    //   item.onClick?.();
+    // }
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
     }
@@ -54,7 +54,14 @@ export const StyledFileInput: React.FC<IStyledFileInputProps> = (props) => {
         data-testid="upload-btn">
           {children}
       </label>
-      <input ref={fileInputRef} className={css.hidden} id={`file-upload-${id}`} type="file" onClick={handleClick} onChange={handleChange}/>
+      <input
+        ref={fileInputRef}
+        className={css.hidden}
+        id={`file-upload-${id}`}
+        type="file"
+        onClick={handleClick}
+        onChange={handleChange}
+      />
     </>
   );
 };

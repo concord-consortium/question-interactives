@@ -17,7 +17,6 @@ import { IAuthoredState, IInteractiveState, ILabbookEntry } from "./types";
 import { TakeSnapshot } from "./take-snapshot";
 import { ThumbnailTitle } from "./thumbnail-chooser/thumbnail-title";
 import classnames from "classnames";
-import { OpenModalButton } from "./open-modal-button";
 import { UploadModal } from "./upload-image-modal";
 
 import css from "./runtime.scss";
@@ -217,7 +216,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
   };
 
-  const setDrawingStateFn = (func: (prevState: IDrawingToolInteractiveState | null) => IDrawingToolInteractiveState, itemIdx?: number) => {
+  const setDrawingStateFn = (func: (prevState: IDrawingToolInteractiveState | null) => IDrawingToolInteractiveState) => {
     // const item = (itemIdx && itemIdx === entries.length) ? addItem() : selectedItem;
     const drawingState = func(selectedItem?.data || null);
     if (drawingState && selectedItem) {
@@ -228,11 +227,27 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
   };
 
+  const setNextItemFn = (func: (prevState: IDrawingToolInteractiveState | null) => IDrawingToolInteractiveState, item: ILabbookEntry) => {
+    setSelectedItemId(item.id);
+    addItem();
+    const drawingState = func(item?.data || null);
+    if (drawingState && selectedItem) {
+      const drawingHash = hash(drawingState);
+      if (item?.dataHash !== drawingHash) {
+        updateSelectedEntryState({ data: drawingState }, item.id);
+      }
+    }
+  };
+
   const setComment = (newComment:string) => {
     updateSelectedEntryState({comment: newComment});
   };
 
-  const onUploadStart = () => setDisableUI(true);
+  const onUploadStart = () => {
+    setDisableUI(true);
+    setShowUploadModal(false);
+  };
+
   const onUploadEnd = () => {
     setDisableUI(false);
     setShowUploadModal(false);
@@ -264,6 +279,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           <UploadModal
             authoredState={authoredState}
             setInteractiveState={setDrawingStateFn}
+            setNextInteractiveState={setNextItemFn}
             disabled={disableUI}
             onUploadStart={onUploadStart}
             onUploadComplete={onUploadEnd}
@@ -292,13 +308,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           {!readOnly &&
           <div className={css["buttons"]}>
             {
-              ((backgroundSource === "upload" || showUploadImageButton) && selectedItem?.data?.userBackgroundImageUrl) &&
-              <OpenModalButton
-                handleClick={handleUploadModalClick}
-              />
-            }
-            {
-              ((backgroundSource === "upload" || showUploadImageButton) && !selectedItem?.data?.userBackgroundImageUrl) &&
+              ((backgroundSource === "upload" || showUploadImageButton)) &&
               <UploadImage
                 authoredState={authoredState}
                 setInteractiveState={setDrawingStateFn}
@@ -306,6 +316,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                 onUploadStart={onUploadStart}
                 onUploadComplete={onUploadEnd}
                 text={"Upload Image"}
+                useModal={selectedItem?.data?.userBackgroundImageUrl}
+                useModalClick={handleUploadModalClick}
                 showUploadIcon={true}
               />
             }

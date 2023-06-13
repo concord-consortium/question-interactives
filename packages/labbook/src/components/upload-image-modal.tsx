@@ -4,10 +4,12 @@ import { IGenericAuthoredState, IGenericInteractiveState } from "drawing-tool-in
 import { UploadImage } from "./upload-image";
 import { IThumbnailChooserProps, ThumbnailChooser } from "./thumbnail-chooser/thumbnail-chooser";
 import classnames from "classnames";
+import { ILabbookEntry } from "./types";
 
 export interface IProps {
   authoredState: IGenericAuthoredState;
   setInteractiveState?: (updateFunc: (prevState: IGenericInteractiveState | null) => IGenericInteractiveState, itemIdx?: number) => void;
+  setNextInteractiveState?: (updateFunc: (prevState: IGenericInteractiveState | null) => IGenericInteractiveState, item: ILabbookEntry) => void;
   onUploadStart?: () => void;
   onUploadComplete?: (result: { success: boolean }) => void;
   uploadButtonClass?: 'string';
@@ -19,7 +21,7 @@ export interface IProps {
   selectedId: string;
 }
 
-export const UploadModal: React.FC<IProps> = ({authoredState, setInteractiveState, onUploadStart, onUploadComplete,
+export const UploadModal: React.FC<IProps> = ({authoredState, setInteractiveState, setNextInteractiveState, onUploadStart, onUploadComplete,
   handleCloseModal, disabled, thumbnailChooserProps, setSelectedItemId, selectedId}) => {
   const [hideUI, setHideUI] = useState<boolean>(false);
   const nextItem = thumbnailChooserProps.items.find(i => i.empty);
@@ -31,6 +33,9 @@ export const UploadModal: React.FC<IProps> = ({authoredState, setInteractiveStat
   return (
     <div className={css.modal}>
       <div className={css.modalContent}>
+        <div className={classnames(css.header, {[css.hidden]: hideUI})}>
+          What would you like to do?
+        </div>
         <div className={classnames(css.thumbnails, {[css.hidden]: hideUI})}>
           <ThumbnailChooser {...thumbnailPreviewProps} />
         </div>
@@ -46,7 +51,7 @@ export const UploadModal: React.FC<IProps> = ({authoredState, setInteractiveStat
           />
           <UploadImage
             authoredState={authoredState}
-            setInteractiveState={setInteractiveState}
+            setNextInteractiveState={setNextInteractiveState}
             disabled={disabled}
             onUploadStart={onUploadStart}
             onUploadComplete={onUploadComplete}
@@ -56,8 +61,10 @@ export const UploadModal: React.FC<IProps> = ({authoredState, setInteractiveStat
             setHideUploadButtons={setHideUI}
           />
         </div>
-        {hideUI && <div>Select a file to upload</div>}
-        <div><button onClick={handleCloseModal}>Cancel</button></div>
+        {hideUI && <div className={css.loadingMessage}>Please Wait</div>}
+        {!hideUI && <div className={classnames(css.cancel, {[css.hidden]: hideUI})}>
+          <button onClick={handleCloseModal}>Cancel</button>
+        </div>}
       </div>
     </div>
   );

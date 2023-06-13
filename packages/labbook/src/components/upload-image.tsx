@@ -11,14 +11,18 @@ import {
   IGenericAuthoredState,
   IGenericInteractiveState
 } from "drawing-tool-interactive/src/components/types";
+import { UploadButton } from "./upload-button";
+
 
 import css from "./upload-button.scss";
+import { ILabbookEntry } from "./types";
 
 export interface IUploadButtonProps {label?:string}
 
 export interface IProps {
   authoredState: IGenericAuthoredState;
-  setInteractiveState?: (updateFunc: (prevState: IGenericInteractiveState | null) => IGenericInteractiveState, itemIdx?: number) => void;
+  setInteractiveState?: (updateFunc: (prevState: IGenericInteractiveState | null) => IGenericInteractiveState) => void;
+  setNextInteractiveState?: (updateFunc: (prevState: IGenericInteractiveState | null) => IGenericInteractiveState, item?: ILabbookEntry) => void;
   onUploadStart?: () => void;
   onUploadComplete?: (result: { success: boolean }) => void;
   uploadButtonClass?: 'string';
@@ -29,11 +33,14 @@ export interface IProps {
   item?: IThumbnailProps;
   setSelectedItemId?: (id: string) => void;
   setHideUploadButtons?: (bool: boolean) => void;
+  useModal?: string;
+  useModalClick?: () => void;
 }
 
-export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveState, onUploadStart, onUploadComplete, text,
-  disabled, showUploadIcon, item, setSelectedItemId, setHideUploadButtons}) => {
+export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveState, setNextInteractiveState, onUploadStart, onUploadComplete, text,
+  disabled, showUploadIcon, item, setSelectedItemId, setHideUploadButtons, useModal, useModalClick}) => {
   const [ uploadInProgress, setUploadInProgress ] = useState(false);
+  const stateSaverToUse = setNextInteractiveState ? setNextInteractiveState : setInteractiveState;
 
   useEffect(() => {
     return () => {
@@ -49,7 +56,7 @@ export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveSta
     // is used by ActivityPlayer. So, copying to S3 is a safer option.
     (typeof fileOrUrl === "string" ? copyImageToS3(fileOrUrl) : copyLocalImageToS3(fileOrUrl))
       .then(url => {
-        setInteractiveState?.(prevState => ({
+        stateSaverToUse?.(prevState => ({
           ...prevState,
           userBackgroundImageUrl: url,
           answerType: getAnswerType(authoredState.questionType)
@@ -79,6 +86,28 @@ export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveSta
 
   const classes = classNames(css["upload-button"], {[css.disabled]: uploadInProgress||disabled});
 
+  const renderButtonContents = () => {
+    return (
+      <>
+      {showUploadIcon && <UploadIcon/>}
+      <div className={css["button-text"]}>
+        { uploadInProgress || disabled
+          ? "Please Wait"
+          : text
+        }
+      </div>
+      </>
+    );
+  };
+
+  if (useModal) {
+    return (
+      <UploadButton disabled={uploadInProgress || disabled} onClick={useModalClick}>
+        {renderButtonContents()}
+      </UploadButton>
+    );
+  }
+
   return (
     <>
     <StyledFileInput
@@ -89,13 +118,7 @@ export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveSta
       id={text}
       setHideUploadButtons={setHideUploadButtons}
     >
-      {showUploadIcon && <UploadIcon/>}
-      <div className={css["button-text"]}>
-        { uploadInProgress || disabled
-          ? "Please Wait"
-          : text
-        }
-      </div>
+      {renderButtonContents()}
     </StyledFileInput>
     </>
   );
