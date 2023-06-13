@@ -1,7 +1,9 @@
-import React from "react";
+import React, { useState } from "react";
 import css from "./upload-image-modal.scss";
 import { IGenericAuthoredState, IGenericInteractiveState } from "drawing-tool-interactive/src/components/types";
 import { UploadImage } from "./upload-image";
+import { IThumbnailChooserProps, ThumbnailChooser } from "./thumbnail-chooser/thumbnail-chooser";
+import classnames from "classnames";
 
 export interface IProps {
   authoredState: IGenericAuthoredState;
@@ -12,16 +14,27 @@ export interface IProps {
   uploadIcon?: React.ReactNode;
   disabled?: boolean;
   handleCloseModal: () => void;
-  replaceItemIndex: number;
-  newItemIndex: number;
+  thumbnailChooserProps: IThumbnailChooserProps;
+  setSelectedItemId: (id: string) => void;
+  selectedId: string;
 }
 
 export const UploadModal: React.FC<IProps> = ({authoredState, setInteractiveState, onUploadStart, onUploadComplete,
-  handleCloseModal, disabled, replaceItemIndex, newItemIndex}) => {
+  handleCloseModal, disabled, thumbnailChooserProps, setSelectedItemId, selectedId}) => {
+  const [hideUI, setHideUI] = useState<boolean>(false);
+  const nextItem = thumbnailChooserProps.items.find(i => i.empty);
+  const thumbnailItems = thumbnailChooserProps.items.filter((i) => {
+    return i.id === selectedId || i.id === nextItem?.id;
+  });
+  const thumbnailPreviewProps = {...thumbnailChooserProps, items: thumbnailItems, readOnly: true, uploadPreviewMode: true};
+
   return (
     <div className={css.modal}>
       <div className={css.modalContent}>
-        <div className={css.uploadButtons}>
+        <div className={classnames(css.thumbnails, {[css.hidden]: hideUI})}>
+          <ThumbnailChooser {...thumbnailPreviewProps} />
+        </div>
+        <div className={classnames(css.uploadButtons, {[css.hidden]: hideUI})}>
           <UploadImage
             authoredState={authoredState}
             setInteractiveState={setInteractiveState}
@@ -29,7 +42,7 @@ export const UploadModal: React.FC<IProps> = ({authoredState, setInteractiveStat
             onUploadStart={onUploadStart}
             onUploadComplete={onUploadComplete}
             text={"Replace Current Image"}
-            itemIndex={replaceItemIndex}
+            setHideUploadButtons={setHideUI}
           />
           <UploadImage
             authoredState={authoredState}
@@ -38,9 +51,12 @@ export const UploadModal: React.FC<IProps> = ({authoredState, setInteractiveStat
             onUploadStart={onUploadStart}
             onUploadComplete={onUploadComplete}
             text={"Create New Image"}
-            itemIndex={newItemIndex}
+            item={nextItem}
+            setSelectedItemId={setSelectedItemId}
+            setHideUploadButtons={setHideUI}
           />
         </div>
+        {hideUI && <div>Select a file to upload</div>}
         <div><button onClick={handleCloseModal}>Cancel</button></div>
       </div>
     </div>

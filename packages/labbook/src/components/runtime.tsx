@@ -199,7 +199,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       const item = pEntries?.find(i => i.id === id);
       if (item) {
         const updatedEntry: ILabbookEntry = deepmerge(item, fields) as ILabbookEntry;
-        const newEntries = pEntries.map(i => i.id === itemId || selectedId ? updatedEntry : i);
+        const newEntries = pEntries.map(i => i.id === selectedId ? updatedEntry : i);
         return {
           ...prevState,
           answerType: "interactive_state",
@@ -218,12 +218,12 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const setDrawingStateFn = (func: (prevState: IDrawingToolInteractiveState | null) => IDrawingToolInteractiveState, itemIdx?: number) => {
-    const item = (itemIdx && itemIdx === entries.length) ? addItem() : selectedItem;
-    const drawingState = func(item?.data || null);
-    if (drawingState && item) {
+    // const item = (itemIdx && itemIdx === entries.length) ? addItem() : selectedItem;
+    const drawingState = func(selectedItem?.data || null);
+    if (drawingState && selectedItem) {
       const drawingHash = hash(drawingState);
-      if (item?.dataHash !== drawingHash) {
-        updateSelectedEntryState({ data: drawingState }, item.id);
+      if (selectedItem?.dataHash !== drawingHash) {
+        updateSelectedEntryState({ data: drawingState }, selectedItem.id);
       }
     }
   };
@@ -268,8 +268,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             onUploadStart={onUploadStart}
             onUploadComplete={onUploadEnd}
             handleCloseModal={() => setShowUploadModal(false)}
-            replaceItemIndex={selectedIndex}
-            newItemIndex={newItemIndex}
+            thumbnailChooserProps={thumbnailChooserProps}
+            setSelectedItemId={setSelectedItemId}
+            selectedId={selectedId}
             />}
         {layout === "original" && <ThumbnailChooser {...thumbnailChooserProps} />}
         <div className={classnames(css["draw-tool-wrapper"], {[css.wide]: isWideLayout})} data-testid="draw-tool">

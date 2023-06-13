@@ -161,7 +161,6 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
       }
 
       drawingToolRef.current.on("drawing:changed", () => {
-        console.log("the drawing tool changed");
         if (readOnly) return;
         setInteractiveStateRef.current({ drawingState: drawingToolRef.current.save() });
       });

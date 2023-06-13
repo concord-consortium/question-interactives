@@ -5,7 +5,7 @@ import { StyledFileInput } from "./styled-file-input";
 import { copyImageToS3, copyLocalImageToS3 } from "@concord-consortium/question-interactives-helpers/src/utilities/copy-image-to-s3";
 import { Log } from "../labbook-logging";
 import UploadIcon from "../assets/upload-image-icon.svg";
-
+import { IThumbnailProps } from "./thumbnail-chooser/thumbnail";
 import {
   getAnswerType,
   IGenericAuthoredState,
@@ -26,18 +26,21 @@ export interface IProps {
   disabled?: boolean;
   text?: string;
   showUploadIcon?: boolean;
-  itemIndex?: number;
+  item?: IThumbnailProps;
+  setSelectedItemId?: (id: string) => void;
+  setHideUploadButtons?: (bool: boolean) => void;
 }
 
 export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveState, onUploadStart, onUploadComplete, text,
-  disabled, showUploadIcon, itemIndex}) => {
+  disabled, showUploadIcon, item, setSelectedItemId, setHideUploadButtons}) => {
   const [ uploadInProgress, setUploadInProgress ] = useState(false);
 
   useEffect(() => {
     return () => {
       setUploadInProgress(false);
+       setHideUploadButtons?.(false);
     };
-  }, []);
+  }, [setUploadInProgress, setHideUploadButtons]);
 
   const uploadFile = (fileOrUrl: File | string) => {
     setUploadInProgress(true);
@@ -50,7 +53,7 @@ export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveSta
           ...prevState,
           userBackgroundImageUrl: url,
           answerType: getAnswerType(authoredState.questionType)
-        }), itemIndex);
+        }));
         Log({action: "picture uploaded", data: {url}});
         onUploadComplete?.({ success: true });
       })
@@ -78,7 +81,14 @@ export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveSta
 
   return (
     <>
-    <StyledFileInput buttonClass={classes} onChange={handleFileUpload} id={text}>
+    <StyledFileInput
+      buttonClass={classes}
+      onChange={handleFileUpload}
+      setSelectedItemId={setSelectedItemId}
+      item={item}
+      id={text}
+      setHideUploadButtons={setHideUploadButtons}
+    >
       {showUploadIcon && <UploadIcon/>}
       <div className={css["button-text"]}>
         { uploadInProgress || disabled
