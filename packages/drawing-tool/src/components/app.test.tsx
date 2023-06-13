@@ -11,6 +11,9 @@ describe("validation helper", () => {
     baseAuthoringProps.validate({ version: 1, backgroundSource: "url", backgroundImageUrl: "https://aws.concord.org/img/123.png" }, errors);
     expect(errors.backgroundImageUrl?.addError).not.toHaveBeenCalled();
 
+    baseAuthoringProps.validate({ version: 1, backgroundSource: "url", backgroundImageUrl: "https://token-service-files.concordqa.org/img/123.png" }, errors);
+    expect(errors.backgroundImageUrl?.addError).not.toHaveBeenCalled();
+
     baseAuthoringProps.validate({ version: 1, backgroundSource: "url", backgroundImageUrl: "https://token-service-files.s3.amazonaws.com/img/123.png" }, errors);
     expect(errors.backgroundImageUrl?.addError).not.toHaveBeenCalled();
 
