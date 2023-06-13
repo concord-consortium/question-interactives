@@ -57,6 +57,14 @@ legend.prompt { // clear bootstrap stuff
       margin-top: 5px;
     }
 
+    .default {
+      font-style: italic;
+    }
+
+    .typedIn {
+      font-style: normal;
+    }
+
     hr {
       border-color: var(--cc-charcoal-light-1);
     }
