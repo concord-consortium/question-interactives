@@ -161,7 +161,12 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           {
             !controlsHidden && (renderMakeDrawing || previousAnswerAvailable) &&
             <button className={classnames(cssHelpers.interactiveButton, {[cssHelpers.withIcon]: !previousAnswerAvailable})} onClick={openDrawingToolDialog} data-test="edit-btn">
-              { previousAnswerAvailable ? "Edit" : <span><PencilIcon className={cssHelpers.smallIcon}/> Make Drawing</span> }
+              { previousAnswerAvailable ? "Edit" :
+                <>
+                  <PencilIcon className={cssHelpers.smallIcon}/>
+                  <div className={cssHelpers.buttonText}>Make Drawing</div>
+                </>
+              }
             </button>
           }
         </div>

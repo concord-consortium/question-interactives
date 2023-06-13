@@ -90,6 +90,13 @@ $themeColor2: #34a5be;
   svg {
     fill: var(--cc-teal-light-1);
     width: 36px;
+    &.smallIcon {
+      width: 17px;
+      height: 17px;
+      margin-left: 8px;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
   }
   .buttonText {
     // margin: 7px 0 8px 5px;
