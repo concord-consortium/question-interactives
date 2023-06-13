@@ -1,8 +1,11 @@
 import React from "react";
 import { BaseApp } from "@concord-consortium/question-interactives-helpers/src/components/base-app";
+import { exportToMediaLibraryAuthoringProps } from "@concord-consortium/question-interactives-helpers/src/utilities/media-library";
 import { IAuthoredState } from "./types";
 import { Runtime } from "./runtime";
 import { RJSFSchema } from "@rjsf/utils";
+
+const exportToMediaLibrary = exportToMediaLibraryAuthoringProps({type: "image", url: "url", caption: "caption"});
 
 const baseAuthoringProps = {
   schema: {
@@ -62,7 +65,8 @@ const baseAuthoringProps = {
             ]
           },
         ]
-      }
+      },
+      ...exportToMediaLibrary.schemaProperties
     }
   } as RJSFSchema,
 
@@ -97,7 +101,8 @@ const baseAuthoringProps = {
     },
     scaling: {
       "ui:widget": "radio"
-    }
+    },
+    ...exportToMediaLibrary.uiSchema
   }
 };
 

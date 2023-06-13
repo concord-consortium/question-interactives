@@ -3,7 +3,7 @@ import { RJSFSchema } from "@rjsf/utils";
 import { BaseQuestionApp } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
 import { Runtime } from "./runtime";
 import { IAuthoredState, IInteractiveState } from "./types";
-import { baseAuthoringProps as drawingToolBaseAuthoringProps } from "drawing-tool-interactive/src/components/app";
+import { baseAuthoringProps as drawingToolBaseAuthoringProps, exportToMediaLibrary } from "drawing-tool-interactive/src/components/app";
 import deepmerge from "deepmerge";
 
 const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
@@ -35,7 +35,8 @@ const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
   uiSchema: {
     "ui:order": [
       "prompt", "required", "predictionFeedback", "hint", "backgroundSource", "snapshotTarget", "backgroundImageUrl",
-      "imageFit", "imagePosition",  "stampCollections", "answerPrompt", "defaultAnswer", "version", "questionType"
+      "imageFit", "imagePosition",  "stampCollections", "answerPrompt", "defaultAnswer", "version", "questionType",
+      ...exportToMediaLibrary.uiOrder
     ],
     answerPrompt: {
       "ui:widget": "richtext"
