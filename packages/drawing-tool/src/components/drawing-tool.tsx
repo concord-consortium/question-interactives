@@ -163,7 +163,7 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
         setInteractiveStateRef.current({ drawingState: drawingToolRef.current.save() });
       });
     }
-  }, [authoredState, readOnly, setBackground, buttons, width, height, onDrawingChanged, containerId, canvasScale]);
+  }, [authoredState, readOnly, setBackground, buttons, width, height, onDrawingChanged, containerId, canvasScale, wideLayout]);
 
   useEffect(() => {
     setBackground(interactiveState?.userBackgroundImageUrl);

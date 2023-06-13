@@ -2,6 +2,7 @@ import React from "react";
 import { Runtime } from "./runtime";
 import { RJSFSchema } from "@rjsf/utils";
 import { BaseQuestionApp } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
+import { exportToMediaLibraryAuthoringProps } from "@concord-consortium/question-interactives-helpers/src/utilities/media-library";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { FormValidation } from "@rjsf/utils";
 
@@ -122,6 +123,8 @@ const backgroundProps = {
   }
 };
 
+export const exportToMediaLibrary = exportToMediaLibraryAuthoringProps({type: "image", url: "backgroundImageUrl", caption: false});
+
 export const baseAuthoringProps = {
   schema: {
     type: "object",
@@ -169,7 +172,8 @@ export const baseAuthoringProps = {
           "Upload",
           "Snapshot"
         ]
-      }
+      },
+      ...exportToMediaLibrary.schemaProperties
     },
     dependencies: {
       backgroundSource: {
@@ -239,7 +243,7 @@ export const baseAuthoringProps = {
   uiSchema: {
     "ui:order": [
       "prompt", "required", "predictionFeedback", "hint", "backgroundSource", "snapshotTarget", "backgroundImageUrl",
-      "imageFit", "imagePosition",  "stampCollections", "version", "questionType"
+      "imageFit", "imagePosition",  "stampCollections", "version", "questionType", ...exportToMediaLibrary.uiOrder
     ],
     version: {
       "ui:widget": "hidden"
@@ -259,7 +263,8 @@ export const baseAuthoringProps = {
     },
     imagePosition: {
       "ui:widget": "radio"
-    }
+    },
+    ...exportToMediaLibrary.uiSchema
   },
   // Can't get defaults to work with custom stamps, so validating would be ugly and confusing for users until
   // they enter the required properties after they select a custom stamp, so skipping this for now.
@@ -291,3 +296,4 @@ export const App = () => (
     linkedInteractiveProps={[{ label: "snapshotTarget", supportsSnapshots: true }]}
   />
 );
+

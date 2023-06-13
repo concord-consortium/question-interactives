@@ -1,6 +1,7 @@
 import React from "react";
 import { RJSFSchema } from "@rjsf/utils";
 import { BaseQuestionApp } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
+import { exportToMediaLibraryAuthoringProps } from "@concord-consortium/question-interactives-helpers/src/utilities/media-library";
 import { Runtime } from "./runtime";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { v4 as uuidv4 } from "uuid";
@@ -8,6 +9,8 @@ import { InitialStateField } from "./initial-state-field";
 
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
+
+const exportToMediaLibrary = exportToMediaLibraryAuthoringProps({type: "image", url: "backgroundImageUrl", caption: false});
 
 export const baseAuthoringProps = {
   schema: {
@@ -122,7 +125,8 @@ export const baseAuthoringProps = {
             type: "object"
           },
         }
-      }
+      },
+      ...exportToMediaLibrary.schemaProperties
     }
   } as RJSFSchema,
 
@@ -164,7 +168,8 @@ export const baseAuthoringProps = {
     },
     initialState: {
       "ui:field": "initialState"
-    }
+    },
+    ...exportToMediaLibrary.uiSchema
   },
 
   fields: {
