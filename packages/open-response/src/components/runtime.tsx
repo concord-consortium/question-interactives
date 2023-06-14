@@ -364,7 +364,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const handleAudioPlay = () => {
-    log("audio response start playing", {time: audioPlayerRef.current?.currentTime});
+    log("audio response start playing");
     audioPlayerRef.current?.play();
     setPlaying(true);
 
@@ -378,7 +378,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const handleAudioPlayPause = () => {
-    log("audio response paused playing", {time: audioPlayerRef.current?.currentTime});
+    log("audio response paused playing");
     audioPlayerRef.current?.pause();
     setPlaying(false);
     clearInterval(audioTimerRef.current);
