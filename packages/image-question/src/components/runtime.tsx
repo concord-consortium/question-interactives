@@ -32,7 +32,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const [ controlsHidden, setControlsHidden ] = useState(false);
   const [ drawingStateUpdated, setDrawingStateUpdated ] = useState(false);
   const [ savingAnnotatedImage, setSavingAnnotatedImage ] = useState(false);
-  const [textAreaClass, setTextAreaClass] = useState(css.default);
   const drawingToolDialog = getURLParam(drawingToolDialogUrlParam);
   const authoredBgCorsError = useCorsImageErrorCheck({
     performTest: authoredState.backgroundSource === "url" && !!authoredState.backgroundImageUrl,
@@ -63,7 +62,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setTextAreaClass(css.typedIn);
     setInteractiveState?.((prevState: IInteractiveState) => ({
       ...prevState,
       answerText: event.target.value,
@@ -76,7 +74,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const handleCancel = () => {
-    setTextAreaClass(css.default);
     setInteractiveState?.((prevState: IInteractiveState) => ({
       ...prevState,
       userBackgroundImageUrl: undefined,
@@ -195,7 +192,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             value={interactiveState?.answerText || ""}
             onChange={handleTextChange}
             rows={8}
-            className={textAreaClass}
+            className={interactiveState?.answerText ? css.hasAnswer : css.default}
             placeholder={authoredState.defaultAnswer || kGlobalDefaultAnswer}
           />
         </> }
