@@ -13,8 +13,5 @@ html {
     width: 100%;
     padding: 16px;
     font-style: italic;
-    &:focus, &:target {
-      font-style: normal;
-    }
   }
 }
