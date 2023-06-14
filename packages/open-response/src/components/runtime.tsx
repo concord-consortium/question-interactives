@@ -19,6 +19,8 @@ import { IAuthoredState, IInteractiveState } from "./types";
 
 import css from "./runtime.scss";
 
+type PlayMode = "stopped"|"playing"|"paused";
+
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
 
 interface IVoiceTypingControlsProps {
@@ -32,7 +34,7 @@ interface IAudioRecordingControlsProps {
   readOnly: boolean;
   audioEnabled: boolean;
   audioUrl?: string;
-  playing: boolean;
+  playMode: PlayMode;
   recordingActive: boolean;
   recordingDisabled: boolean;
   recordingFailed: boolean;
@@ -108,12 +110,12 @@ export const VoiceTypingControls: React.FC<IVoiceTypingControlsProps> = (props) 
 
 export const AudioRecordingControls: React.FC<IAudioRecordingControlsProps> = (props) => {
   const {
-    readOnly, audioEnabled, audioUrl, playing, recordingActive, recordingDisabled, recordingFailed,
+    readOnly, audioEnabled, audioUrl, playMode, recordingActive, recordingDisabled, recordingFailed,
     timerReading,
     handleAudioPlayPause, handleAudioPlay, handleAudioRecordStop, handleAudioRecord, handleAudioDelete
   } = props;
 
-  if (readOnly || !audioEnabled) {
+  if (!audioEnabled || (readOnly && !audioUrl)) {
     return null;
   }
 
@@ -125,12 +127,12 @@ export const AudioRecordingControls: React.FC<IAudioRecordingControlsProps> = (p
   let handleButtonClick: () => void = () => undefined;
 
   if (audioUrl) {
-    buttonLabel = playing ? "Pause Audio" : "Play Audio";
-    buttonActive = playing;
+    buttonLabel = playMode === "stopped" ? "Play Audio": "Pause Audio";
+    buttonActive = playMode === "playing";
     buttonDisabled = recordingDisabled;
-    ButtonIcon = playing ? PauseIcon : PlayIcon;
+    ButtonIcon = playMode === "stopped" ? PlayIcon : PauseIcon;
     testId = "audio-play-or-pause-button";
-    handleButtonClick = playing ? handleAudioPlayPause : handleAudioPlay;
+    handleButtonClick = playMode === "playing" ? handleAudioPlayPause : handleAudioPlay;
   } else {
     buttonLabel = recordingActive ? "Stop Recording Audio" : "Record Audio";
     buttonActive = recordingActive;
@@ -147,11 +149,10 @@ export const AudioRecordingControls: React.FC<IAudioRecordingControlsProps> = (p
   };
 
   const handleAudioDeleteIfNotDisabled = () => {
-    if (!buttonDisabled) {
+    if (!buttonDisabled && !readOnly) {
       handleAudioDelete();
     }
   };
-
 
   // emulate buttons
   const handleMainButtonKeyUp = (e: React.KeyboardEvent<HTMLOrSVGElement>) => {
@@ -194,7 +195,7 @@ export const AudioRecordingControls: React.FC<IAudioRecordingControlsProps> = (p
         data-testid="timer-readout"
       >
         {timerReading}
-        {audioUrl &&
+        {audioUrl && !readOnly &&
           <div
             className={css.deleteContainer}
             tabIndex={0}
@@ -231,7 +232,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const [recordingDisabled, setRecordingDisabled] = useState(false);
   const [recordingFailed, setRecordingFailed] = useState(false);
   const [recordingSaved, setRecordingSaved] = useState(false);
-  const [playing, setPlaying] = useState(false);
+  const [playMode, setPlayMode] = useState<PlayMode>("stopped");
   const [timerReading, setTimerReading] = useState<string>("00:00");
   const [voiceTypingActive, setVoiceTypingActive] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder>();
@@ -242,6 +243,24 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const voiceTypingRef = useRef<VoiceTyping>();
   const initialTextRef = useRef("");
   const lastTranscriptRef = useRef("");
+
+  const setTimerReadingToValue = useCallback((value: number) => {
+    const mins = String(Math.floor(value / 60)).padStart(2, "0");
+    const secs = String(Math.floor(value % 60)).padStart(2, "0");
+    setTimerReading(`${mins}:${secs}`);
+  }, [setTimerReading]);
+
+  const setTimerToAudioLength = useCallback(() => {
+    setTimerReadingToValue(audioPlayerRef.current?.duration || 0);
+  }, [setTimerReadingToValue]);
+
+  const handleAudioRecordStop = useCallback(() => {
+    log("audio response stopped");
+    mediaRecorderRef.current?.stop();
+    setRecordingActive(false);
+    clearInterval(audioTimerRef.current);
+    setTimerReadingToValue(0);
+  }, [setRecordingActive, setTimerReadingToValue]);
 
   useEffect(() => {
     setOnUnload((options: IGetInteractiveState) => {
@@ -260,7 +279,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       }
       return Promise.resolve(interactiveState || {});
     });
-  }, [interactiveState, recordingActive, recordingDisabled, recordingSaved]);
+  }, [interactiveState, recordingActive, recordingDisabled, recordingSaved, handleAudioRecordStop]);
 
   useEffect(() => {
     const getAudioUrl = async () => {
@@ -316,7 +335,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const handleAudioRecord = () => {
-    let secondsElapsed = 0;
     if (audioSupported) {
       log("audio response started");
       setRecordingFailed(false);
@@ -337,14 +355,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                  mediaRecorderRef.current.start();
                  setRecordingActive(true);
                  setRecordingSaved(false);
+                 const start = Date.now();
                  const recordingTimer = setTimeout(handleAudioRecordStop, 61000);
                  audioTimerRef.current = setInterval(() => {
-                   secondsElapsed = audioTimerRef.current === 60 ? 0 : secondsElapsed + 1;
-                   const minutesElapsed = audioTimerRef.current >= 60 ? Math.floor(secondsElapsed / 60) : 0;
-                   const mins = String(minutesElapsed).padStart(2, "0");
-                   const secs = String(secondsElapsed).padStart(2, "0");
-                   setTimerReading(`${mins}:${secs}`);
-                 }, 1000);
+                   setTimerReadingToValue((Date.now() - start) / 1000);
+                 }, 250);
                })
                .catch((error: string) => {
                  handleRecordingFailure(`${error}`);
@@ -355,38 +370,28 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
   };
 
-  const handleAudioRecordStop = () => {
-    log("audio response stopped");
-    mediaRecorderRef.current?.stop();
-    setRecordingActive(false);
-    clearInterval(audioTimerRef.current);
-    setTimerReading("00:00");
-  };
-
   const handleAudioPlay = () => {
     log("audio response start playing", {time: audioPlayerRef.current?.currentTime});
     audioPlayerRef.current?.play();
-    setPlaying(true);
+    setPlayMode("playing");
 
     audioTimerRef.current = setInterval(() => {
       if (audioPlayerRef.current) {
-        const mins = String(Math.floor(audioPlayerRef.current.currentTime / 60)).padStart(2, "0");
-        const secs = String(Math.floor(audioPlayerRef.current.currentTime % 60)).padStart(2, "0");
-        setTimerReading(`${mins}:${secs}`);
+        setTimerReadingToValue(audioPlayerRef.current.currentTime);
       }
-    }, 100);
+    }, 250);
   };
 
   const handleAudioPlayPause = () => {
     log("audio response paused playing", {time: audioPlayerRef.current?.currentTime});
     audioPlayerRef.current?.pause();
-    setPlaying(false);
+    setPlayMode("paused");
     clearInterval(audioTimerRef.current);
   };
 
   const handleAudioPlayEnded = () => {
     log("audio response play ended");
-    setPlaying(false);
+    setPlayMode("stopped");
   };
 
   const generateFileName = () => {
@@ -440,7 +445,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       setAudioUrl(undefined);
       setRecordingActive(false);
       setRecordingDisabled(false);
-      setTimerReading("00:00");
+      setTimerReadingToValue(0);
+      setPlayMode("stopped");
+      clearInterval(audioTimerRef.current);
       recordedBlobs = [];
       setInteractiveState?.(prevState => ({...prevState, answerType: "open_response_answer", audioFile: undefined}));
     }
@@ -481,6 +488,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
   }, [voiceTypingActive]);
 
+  const handleAudioLoaded = useCallback(() => {
+    setTimerToAudioLength();
+  }, [setTimerToAudioLength]);
+
   const decorateOptions = useGlossaryDecoration();
   const containerWidth = audioEnabled && textareaWidth ? textareaWidth + "px" : undefined;
   const containerStyle = audioEnabled && textareaHeight ? { height: textareaHeight + "px", width: containerWidth } : undefined;
@@ -520,14 +531,14 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             voiceTypingEnabled={voiceTypingEnabled || false}
             handleToggleVoiceTyping={handleToggleVoiceTyping}
           />
-          {audioUrl && <audio ref={audioPlayerRef} controls preload="auto" onEnded={handleAudioPlayEnded}>
+          {audioUrl && <audio ref={audioPlayerRef} controls preload="auto" onEnded={handleAudioPlayEnded} onLoadedMetadata={handleAudioLoaded}>
             <source src={audioUrl} type="audio/mpeg" />
           </audio>}
           <AudioRecordingControls
             readOnly={readOnly || false}
             audioEnabled={audioEnabled || false}
             audioUrl={audioUrl}
-            playing={playing}
+            playMode={playMode}
             recordingActive={recordingActive}
             recordingDisabled={recordingDisabled}
             recordingFailed={recordingFailed}
