@@ -1,29 +1,22 @@
-import React, { useState } from "react";
+import React from "react";
 import css from "./upload-image-modal.scss";
-import { IGenericAuthoredState, IGenericInteractiveState } from "drawing-tool-interactive/src/components/types";
+import { IGenericAuthoredState } from "drawing-tool-interactive/src/components/types";
 import { UploadImage } from "./upload-image";
 import { IThumbnailChooserProps, ThumbnailChooser } from "./thumbnail-chooser/thumbnail-chooser";
-import classnames from "classnames";
-import { ILabbookEntry } from "./types";
 
 export interface IProps {
   authoredState: IGenericAuthoredState;
-  setInteractiveState?: (updateFunc: (prevState: IGenericInteractiveState | null) => IGenericInteractiveState, itemIdx?: number) => void;
-  setNextInteractiveState?: (updateFunc: (prevState: IGenericInteractiveState | null) => IGenericInteractiveState, item: ILabbookEntry) => void;
+  onUploadImage: (url: string, mode?: "replace" | "create") => void;
   onUploadStart?: () => void;
   onUploadComplete?: (result: { success: boolean }) => void;
-  uploadButtonClass?: 'string';
-  uploadIcon?: React.ReactNode;
   disabled?: boolean;
   handleCloseModal: () => void;
   thumbnailChooserProps: IThumbnailChooserProps;
-  setSelectedItemId: (id: string) => void;
   selectedId: string;
 }
 
-export const UploadModal: React.FC<IProps> = ({authoredState, setInteractiveState, setNextInteractiveState, onUploadStart, onUploadComplete,
-  handleCloseModal, disabled, thumbnailChooserProps, setSelectedItemId, selectedId}) => {
-  const [hideUI, setHideUI] = useState<boolean>(false);
+export const UploadModal: React.FC<IProps> = ({authoredState, onUploadImage, onUploadStart, onUploadComplete,
+  handleCloseModal, disabled, thumbnailChooserProps, selectedId}) => {
   const nextItem = thumbnailChooserProps.items.find(i => i.empty);
   const thumbnailItems = thumbnailChooserProps.items.filter((i) => {
     return i.id === selectedId || i.id === nextItem?.id;
@@ -33,38 +26,35 @@ export const UploadModal: React.FC<IProps> = ({authoredState, setInteractiveStat
   return (
     <div className={css.modal}>
       <div className={css.modalContent}>
-        <div className={classnames(css.header, {[css.hidden]: hideUI})}>
+        <div className={css.header}>
           What would you like to do?
         </div>
-        <div className={classnames(css.thumbnails, {[css.hidden]: hideUI})}>
+        <div className={css.thumbnails}>
           <ThumbnailChooser {...thumbnailPreviewProps} />
         </div>
-        <div className={classnames(css.uploadButtons, {[css.hidden]: hideUI})}>
+        <div className={css.uploadButtons}>
           <UploadImage
             authoredState={authoredState}
-            setInteractiveState={setInteractiveState}
+            onUploadImage={onUploadImage}
             disabled={disabled}
             onUploadStart={onUploadStart}
             onUploadComplete={onUploadComplete}
             text={"Replace Current Image"}
-            setHideUploadButtons={setHideUI}
+            uploadMode={"replace"}
           />
           <UploadImage
             authoredState={authoredState}
-            setNextInteractiveState={setNextInteractiveState}
+            onUploadImage={onUploadImage}
             disabled={disabled}
             onUploadStart={onUploadStart}
             onUploadComplete={onUploadComplete}
             text={"Create New Image"}
-            item={nextItem}
-            setSelectedItemId={setSelectedItemId}
-            setHideUploadButtons={setHideUI}
+            uploadMode={"create"}
           />
         </div>
-        {hideUI && <div className={css.loadingMessage}>Please Wait</div>}
-        {!hideUI && <div className={classnames(css.cancel, {[css.hidden]: hideUI})}>
+        <div className={css.cancel}>
           <button onClick={handleCloseModal}>Cancel</button>
-        </div>}
+        </div>
       </div>
     </div>
   );

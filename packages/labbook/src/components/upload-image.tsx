@@ -5,49 +5,36 @@ import { StyledFileInput } from "./styled-file-input";
 import { copyImageToS3, copyLocalImageToS3 } from "@concord-consortium/question-interactives-helpers/src/utilities/copy-image-to-s3";
 import { Log } from "../labbook-logging";
 import UploadIcon from "../assets/upload-image-icon.svg";
-import { IThumbnailProps } from "./thumbnail-chooser/thumbnail";
-import {
-  getAnswerType,
-  IGenericAuthoredState,
-  IGenericInteractiveState
-} from "drawing-tool-interactive/src/components/types";
+import { IGenericAuthoredState } from "drawing-tool-interactive/src/components/types";
 import { UploadButton } from "./upload-button";
 
 
 import css from "./upload-button.scss";
-import { ILabbookEntry } from "./types";
 
 export interface IUploadButtonProps {label?:string}
 
 export interface IProps {
   authoredState: IGenericAuthoredState;
-  setInteractiveState?: (updateFunc: (prevState: IGenericInteractiveState | null) => IGenericInteractiveState) => void;
-  setNextInteractiveState?: (updateFunc: (prevState: IGenericInteractiveState | null) => IGenericInteractiveState, item?: ILabbookEntry) => void;
+  onUploadImage: (url: string, mode?: "replace" | "create") => void;
   onUploadStart?: () => void;
   onUploadComplete?: (result: { success: boolean }) => void;
-  uploadButtonClass?: 'string';
-  uploadIcon?: React.ReactNode;
   disabled?: boolean;
   text?: string;
   showUploadIcon?: boolean;
-  item?: IThumbnailProps;
-  setSelectedItemId?: (id: string) => void;
-  setHideUploadButtons?: (bool: boolean) => void;
   useModal?: string;
   useModalClick?: () => void;
+  uploadMode?: "replace" | "create";
 }
 
-export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveState, setNextInteractiveState, onUploadStart, onUploadComplete, text,
-  disabled, showUploadIcon, item, setSelectedItemId, setHideUploadButtons, useModal, useModalClick}) => {
+export const UploadImage: React.FC<IProps> = ({ onUploadImage, uploadMode, onUploadStart, onUploadComplete, text,
+  disabled, showUploadIcon, useModal, useModalClick}) => {
   const [ uploadInProgress, setUploadInProgress ] = useState(false);
-  const stateSaverToUse = setNextInteractiveState ? setNextInteractiveState : setInteractiveState;
 
   useEffect(() => {
     return () => {
       setUploadInProgress(false);
-       setHideUploadButtons?.(false);
     };
-  }, [setUploadInProgress, setHideUploadButtons]);
+  }, [setUploadInProgress]);
 
   const uploadFile = (fileOrUrl: File | string) => {
     setUploadInProgress(true);
@@ -56,11 +43,7 @@ export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveSta
     // is used by ActivityPlayer. So, copying to S3 is a safer option.
     (typeof fileOrUrl === "string" ? copyImageToS3(fileOrUrl) : copyLocalImageToS3(fileOrUrl))
       .then(url => {
-        stateSaverToUse?.(prevState => ({
-          ...prevState,
-          userBackgroundImageUrl: url,
-          answerType: getAnswerType(authoredState.questionType)
-        }));
+        onUploadImage(url, uploadMode);
         Log({action: "picture uploaded", data: {url}});
         onUploadComplete?.({ success: true });
       })
@@ -113,10 +96,7 @@ export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveSta
     <StyledFileInput
       buttonClass={classes}
       onChange={handleFileUpload}
-      setSelectedItemId={setSelectedItemId}
-      item={item}
       id={text}
-      setHideUploadButtons={setHideUploadButtons}
     >
       {renderButtonContents()}
     </StyledFileInput>
