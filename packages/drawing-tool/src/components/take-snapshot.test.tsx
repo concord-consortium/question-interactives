@@ -62,7 +62,13 @@ const baseInitMessage = {
   version: 1 as const,
   accessibility: {
     fontSize: "normal",
-    fontSizeInPx: 16
+    fontSizeInPx: 16,
+    fontType: "normal",
+    fontFamilyForType: "test-font-family"
+  },
+  mediaLibrary: {
+    enabled: false,
+    items: [],
   }
 };
 

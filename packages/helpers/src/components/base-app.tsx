@@ -55,7 +55,12 @@ export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps
   useShutterbug({ container: "." + css.runtime });
   useBasicLogging({ disabled: !isRuntimeView });
   useLinkedInteractives(linkedInteractiveProps?.map(li => li.label), initMessage);
-  useAccessibility({updateHtmlFontSize: true, addBodyClass: true});
+  useAccessibility({
+    updateDOM: {
+      enabled: true,
+      fontFamilySelector: "[data-font-family-override]"
+    }
+  });
 
   useEffect(() => {
     setSupportedFeatures({
@@ -82,7 +87,7 @@ export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps
       return "Authored state is missing.";
     }
     return (
-      <div className={css.runtime}>
+      <div className={css.runtime} data-font-family-override="true">
         <Runtime authoredState={authoredState} />
       </div>
     );

@@ -119,7 +119,7 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
     <head>
       <style>
         body {
-          font-family: lato, arial, helvetica, sans-serif;
+          font-family: Lato, arial, helvetica, sans-serif;
         }
         .tall {
           display: none;
