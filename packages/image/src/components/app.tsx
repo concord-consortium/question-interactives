@@ -5,7 +5,12 @@ import { IAuthoredState } from "./types";
 import { Runtime } from "./runtime";
 import { RJSFSchema } from "@rjsf/utils";
 
-const exportToMediaLibrary = exportToMediaLibraryAuthoringProps({type: "image", url: "url", caption: "caption"});
+const exportToMediaLibrary = exportToMediaLibraryAuthoringProps({
+  exportLabel: "URL",
+  type: "image",
+  url: "url",
+  caption: "caption"
+});
 
 const baseAuthoringProps = {
   schema: {

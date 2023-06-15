@@ -10,7 +10,12 @@ import { InitialStateField } from "./initial-state-field";
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
 
-const exportToMediaLibrary = exportToMediaLibraryAuthoringProps({type: "image", url: "backgroundImageUrl", caption: false});
+const exportToMediaLibrary = exportToMediaLibraryAuthoringProps({
+  exportLabel: "Background Image URL",
+  type: "image",
+  url: "backgroundImageUrl",
+  caption: false
+});
 
 export const baseAuthoringProps = {
   schema: {

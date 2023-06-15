@@ -123,7 +123,13 @@ const backgroundProps = {
   }
 };
 
-export const exportToMediaLibrary = exportToMediaLibraryAuthoringProps({type: "image", url: "backgroundImageUrl", caption: false});
+export const exportToMediaLibrary = exportToMediaLibraryAuthoringProps({
+  exportLabel: "Background Image URL",
+  type: "image",
+  url: "backgroundImageUrl",
+  caption: false,
+  addAllowUpload: true,
+});
 
 export const baseAuthoringProps = {
   schema: {
