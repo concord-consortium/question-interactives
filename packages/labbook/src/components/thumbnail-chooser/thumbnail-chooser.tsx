@@ -57,9 +57,9 @@ export const ThumbnailChooser: React.FC<IThumbnailChooserProps> = (props) => {
   const effectiveOffset = Math.min(offset, items.length - maxDisplayItems);
 
   return (
-    <div className={classNames(css["thumbnail-chooser"], {[css.wide]: wideLayout})} data-testid="thumbnail-chooser">
+    <div className={classNames(css["thumbnail-chooser"], {[css.wide]: wideLayout, [css.uploadPreview]: uploadPreviewMode})} data-testid="thumbnail-chooser">
       {!uploadPreviewMode && <PrevButton wideLayout={wideLayout} enabled={effectiveOffset > 0} onClick={() => setOffset(effectiveOffset -1)} />}
-      <div className={classNames(css["thumbnail-chooser-list"], {[css.wide]: wideLayout})}>
+      <div className={classNames(css["thumbnail-chooser-list"], {[css.wide]: wideLayout, [css.uploadPreview]: uploadPreviewMode})}>
         {items.map( (item, index) => {
           const {id, empty} = item;
           // Only display a subset of items

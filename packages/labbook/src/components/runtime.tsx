@@ -198,7 +198,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       const item = pEntries?.find(i => i.id === id);
       if (item) {
         const updatedEntry: ILabbookEntry = deepmerge(item, fields) as ILabbookEntry;
-        const newEntries = pEntries.map(i => i === item? updatedEntry : i);
+        const newEntries = pEntries.map(i => i === item ? updatedEntry : i);
         return {
           ...prevState,
           answerType: "interactive_state",
@@ -290,7 +290,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             handleCloseModal={() => setShowUploadModal(false)}
             thumbnailChooserProps={thumbnailChooserProps}
             selectedId={selectedId}
-            />}
+            reachedMaxEntries={entries.length === maxItems}
+            wideLayout={isWideLayout}
+          />}
         {layout === "original" && <ThumbnailChooser {...thumbnailChooserProps} />}
         <div className={classnames(css["draw-tool-wrapper"], {[css.wide]: isWideLayout})} data-testid="draw-tool">
           <ThumbnailTitle className={css["draw-tool-title"]} title={title} />

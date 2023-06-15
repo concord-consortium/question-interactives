@@ -74,7 +74,7 @@ export const UploadImage: React.FC<IProps> = ({ onUploadImage, uploadMode, onUpl
       <>
       {showUploadIcon && <UploadIcon/>}
       <div className={css["button-text"]}>
-        { uploadInProgress || disabled
+        { uploadInProgress
           ? "Please Wait"
           : text
         }

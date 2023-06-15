@@ -7,7 +7,7 @@
   justify-content: space-around;
   align-items: center;
   width: 100%;
-  &.wide {
+  &.wide, .uploadPreview {
     justify-content: space-between;
   }
 
@@ -23,7 +23,7 @@
     display: flex;
     align-items: center;
     overflow: hidden;
-    &.wide {
+    &.wide, &.uploadPreview {
       width: 100%;
       justify-content: space-around;
     }
