@@ -192,6 +192,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             value={interactiveState?.answerText || ""}
             onChange={handleTextChange}
             rows={8}
+            className={interactiveState?.answerText ? css.hasAnswer : css.default}
             placeholder={authoredState.defaultAnswer || kGlobalDefaultAnswer}
           />
         </> }
