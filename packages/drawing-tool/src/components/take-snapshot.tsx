@@ -46,7 +46,7 @@ export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState
     <>
       {
         snapshotTarget &&
-        <button className={classnames(cssHelpers.interactiveButton, cssHelpers.withIcon)} onClick={handleSnapshot} disabled={snapshotInProgress} data-testid="snapshot-btn">
+        <button className={classnames(cssHelpers.interactiveButton, cssHelpers.withIcon, {[cssHelpers.disabled]: snapshotInProgress})} onClick={handleSnapshot} disabled={snapshotInProgress} data-testid="snapshot-btn">
           <SnapshotIcon />
           <div className={cssHelpers.buttonText}>{ interactiveState?.userBackgroundImageUrl ? "Replace Snapshot" : "Take Snapshot" }</div>
         </button>
