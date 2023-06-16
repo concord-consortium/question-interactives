@@ -56,10 +56,9 @@ export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps
   useBasicLogging({ disabled: !isRuntimeView });
   useLinkedInteractives(linkedInteractiveProps?.map(li => li.label), initMessage);
   useAccessibility({
-    updateDOM: {
-      enabled: true,
-      fontFamilySelector: "[data-font-family-override]"
-    }
+    updateHtmlFontSize: true,
+    addBodyClass: true,
+    fontFamilySelector: "[data-font-family-override]",
   });
 
   useEffect(() => {

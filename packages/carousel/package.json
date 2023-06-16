@@ -107,7 +107,7 @@
   },
   "dependencies": {
     "@concord-consortium/dynamic-text": "^1.0.2",
-    "@concord-consortium/lara-interactive-api": "^1.9.3-pre.5",
+    "@concord-consortium/lara-interactive-api": "^1.9.3-pre.6",
     "@concord-consortium/question-interactives-helpers": "^1.14.0",
     "@rjsf/utils": "^5.0.1",
     "classnames": "^2.3.1",

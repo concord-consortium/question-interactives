@@ -105,7 +105,7 @@
     "webpack-dev-server": "^4.7.4"
   },
   "dependencies": {
-    "@concord-consortium/lara-interactive-api": "^1.9.3-pre.5",
+    "@concord-consortium/lara-interactive-api": "^1.9.3-pre.6",
     "@concord-consortium/question-interactives-helpers": "^1.14.0",
     "@rjsf/utils": "^5.0.1",
     "chart.js": "^3.9.1",
