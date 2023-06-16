@@ -50,6 +50,7 @@ export const StyledFileInput: React.FC<IStyledFileInputProps> = (props) => {
         type="file"
         onClick={handleClick}
         onChange={handleChange}
+        data-testid="file-input"
       />
     </>
   );
