@@ -306,7 +306,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             height={drawingToolHeight}
             readOnly={readOnly}
             wideLayout={isWideLayout}
-            newItemIndex={newItemIndex}
           />
         </div>
         <div className={classnames(css["under-sketch"], {[css.wide]: isWideLayout})}>

@@ -18,7 +18,7 @@ export const LARA_IMAGE_PROXY = "https://lara-master.concordqa.org/image-proxy?u
 export interface IProps {
   authoredState: IGenericAuthoredState; // so it works with DrawingTool and ImageQuestion
   interactiveState?: IGenericInteractiveState | null;
-  setInteractiveState?: (updateFunc: (prevState: IGenericInteractiveState | null) => IGenericInteractiveState, itemIdx?: number) => void;
+  setInteractiveState?: (updateFunc: (prevState: IGenericInteractiveState | null) => IGenericInteractiveState) => void;
   readOnly?: boolean;
   buttons?: string[];
   width?: number;
@@ -27,7 +27,6 @@ export interface IProps {
   hideReadOnlyOverlay?: boolean;
   onDrawingChanged?: () => void;
   wideLayout?: boolean;
-  newItemIndex?: number;
 }
 
 interface StampCollections {
@@ -62,7 +61,7 @@ const getCollectionName = (collection: StampCollection) => {
 };
 
 export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState,
-  readOnly, buttons, width, height, canvasScale, hideReadOnlyOverlay, onDrawingChanged, wideLayout, newItemIndex }) => {
+  readOnly, buttons, width, height, canvasScale, hideReadOnlyOverlay, onDrawingChanged, wideLayout }) => {
   const drawingToolRef = useRef<any>();
   const containerRef = useRef<HTMLDivElement>(null);
   const [ containerId ] = useState<string>(uuidv4());
