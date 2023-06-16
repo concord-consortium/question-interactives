@@ -139,7 +139,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       </> }
       {
         !readOnly &&
-        <div>
+        <div className={css.buttonContainer}>
           {
             renderSnapshot &&
             <TakeSnapshot

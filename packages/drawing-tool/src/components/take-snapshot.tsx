@@ -51,7 +51,7 @@ export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState
           <div className={cssHelpers.buttonText}>{ interactiveState?.userBackgroundImageUrl ? "Replace Snapshot" : "Take Snapshot" }</div>
         </button>
       }
-      { snapshotInProgress && <p>Please wait while the snapshot is being taken...</p> }
+      { snapshotInProgress && <div>Please wait while the snapshot is being taken...</div> }
       {
         snapshotTarget === undefined &&
         <p className={css.warn}>Snapshot won&apos;t work, as no target interactive is selected</p>
