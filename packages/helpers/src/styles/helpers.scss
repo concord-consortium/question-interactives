@@ -72,7 +72,6 @@ $themeColor2: #34a5be;
   height: 34px;
   border: solid 1.5px var(--cc-charcoal-light-1);
   background-color: var(--cc-teal-light-5);
-  font-family: Lato;
   font-weight: normal;
   color: var(--cc-charcoal);
   &.withIcon {
@@ -116,7 +115,8 @@ $themeColor2: #34a5be;
   cursor: pointer;
   flex-grow: 0;
   flex-shrink: 0;
-  font: bold pxToRem(20) Lato, Arial, Helvetica, sans-serif;
+  font-weight: bold;
+  font-size: pxToRem(20);
   height: 44px;
   min-width: 100px;
   padding: 5px 10px 5px 10px;
