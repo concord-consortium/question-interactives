@@ -6,7 +6,6 @@ import { copyImageToS3, copyLocalImageToS3 } from "@concord-consortium/question-
 import { Log } from "../labbook-logging";
 import UploadIcon from "../assets/upload-image-icon.svg";
 import { IGenericAuthoredState } from "drawing-tool-interactive/src/components/types";
-import { UploadButton } from "./upload-button";
 
 
 import css from "./upload-button.scss";
@@ -21,13 +20,11 @@ export interface IProps {
   disabled?: boolean;
   text?: string;
   showUploadIcon?: boolean;
-  useModal?: string;
-  useModalClick?: () => void;
   uploadMode?: "replace" | "create";
 }
 
 export const UploadImage: React.FC<IProps> = ({ onUploadImage, uploadMode, onUploadStart, onUploadComplete, text,
-  disabled, showUploadIcon, useModal, useModalClick}) => {
+  disabled, showUploadIcon,}) => {
   const [ uploadInProgress, setUploadInProgress ] = useState(false);
 
   useEffect(() => {
@@ -69,28 +66,6 @@ export const UploadImage: React.FC<IProps> = ({ onUploadImage, uploadMode, onUpl
 
   const classes = classNames(css["upload-button"], {[css.disabled]: uploadInProgress||disabled});
 
-  const renderButtonContents = () => {
-    return (
-      <>
-      {showUploadIcon && <UploadIcon/>}
-      <div className={css["button-text"]}>
-        { uploadInProgress
-          ? "Please Wait"
-          : text
-        }
-      </div>
-      </>
-    );
-  };
-
-  if (useModal) {
-    return (
-      <UploadButton disabled={uploadInProgress || disabled} onClick={useModalClick}>
-        {renderButtonContents()}
-      </UploadButton>
-    );
-  }
-
   return (
     <>
     <StyledFileInput
@@ -98,7 +73,13 @@ export const UploadImage: React.FC<IProps> = ({ onUploadImage, uploadMode, onUpl
       onChange={handleFileUpload}
       id={text}
     >
-      {renderButtonContents()}
+      {showUploadIcon && <UploadIcon/>}
+      <div className={css["button-text"]}>
+        { uploadInProgress
+          ? "Please Wait"
+          : text
+        }
+      </div>
     </StyledFileInput>
     </>
   );

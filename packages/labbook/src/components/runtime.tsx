@@ -2,7 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import deepmerge from "deepmerge";
 import hash from "object-hash";
 import { v4 as uuidv4 } from "uuid";
-import { IInteractiveState as IDrawingToolInteractiveState, getAnswerType} from "drawing-tool-interactive/src/components/types";
+import { IInteractiveState as IDrawingToolInteractiveState} from "drawing-tool-interactive/src/components/types";
 import { DrawingTool } from "drawing-tool-interactive/src/components/drawing-tool";
 import { renderHTML } from "@concord-consortium/question-interactives-helpers/src/utilities/render-html";
 import { DynamicText } from "@concord-consortium/dynamic-text";
@@ -18,6 +18,8 @@ import { TakeSnapshot } from "./take-snapshot";
 import { ThumbnailTitle } from "./thumbnail-chooser/thumbnail-title";
 import classnames from "classnames";
 import { UploadModal } from "./upload-image-modal";
+import { UploadButton } from "./upload-button";
+import UploadIcon from "../assets/upload-image-icon.svg";
 
 import css from "./runtime.scss";
 
@@ -187,7 +189,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const selectedItem = entries.find(i => i.id === selectedId);
   const selectedIndex = entries.findIndex(i => i.id === selectedId);
-  const newItemIndex = entries.length < maxItems ? entries.length : selectedIndex;
   const title = selectedIndex !== -1 ? numberToAlpha(selectedIndex) : "";
 
   const updateEntryId = (id: string, fields: Partial<ILabbookEntry>) => {
@@ -222,7 +223,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       const drawingState: IDrawingToolInteractiveState = {
         ...(item.data || null),
         userBackgroundImageUrl: url,
-        answerType: getAnswerType(authoredState.questionType) as any
+        answerType: "interactive_state"
       };
       setDrawingState(drawingState, item);
     }
@@ -312,7 +313,16 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           {!readOnly &&
           <div className={css["buttons"]}>
             {
-              ((backgroundSource === "upload" || showUploadImageButton)) &&
+              ((backgroundSource === "upload" || showUploadImageButton) && selectedItem?.data?.userBackgroundImageUrl) &&
+                <UploadButton disabled={disableUI} onClick={handleUploadModalClick}>
+                  <UploadIcon/>
+                  <div className={css["button-text"]}>
+                    {disableUI ? "Please Wait" : "Upload Image"}
+                  </div>
+                </UploadButton>
+            }
+            {
+              ((backgroundSource === "upload" || showUploadImageButton) && !(selectedItem?.data?.userBackgroundImageUrl)) &&
               <UploadImage
                 authoredState={authoredState}
                 onUploadImage={handleUploadImage}
@@ -320,8 +330,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                 onUploadStart={onUploadStart}
                 onUploadComplete={onUploadEnd}
                 text={"Upload Image"}
-                useModal={selectedItem?.data?.userBackgroundImageUrl}
-                useModalClick={handleUploadModalClick}
                 showUploadIcon={true}
               />
             }
