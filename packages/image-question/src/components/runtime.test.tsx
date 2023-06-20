@@ -85,7 +85,7 @@ describe("Runtime", () => {
 
   it("renders snapshot UI when backgroundSource === snapshot", () => {
     const wrapperWithoutSnapshot = render(<DynamicTextTester><Runtime authoredState={authoredState} interactiveState={interactiveState} /></DynamicTextTester>);
-    expect(wrapperWithoutSnapshot.html()).not.toContain("Take a Snapshot");
+    expect(wrapperWithoutSnapshot.html()).not.toContain("Take Snapshot");
 
     const authoredStateWithSnapshot = {...authoredState, backgroundSource: "snapshot" as const, snapshotTarget: "interactive_123"};
     const wrapper = mount(
@@ -95,7 +95,7 @@ describe("Runtime", () => {
         </DynamicTextTester>
       </InitMessageContext.Provider>
     );
-    expect(wrapper.html()).toContain("Take a Snapshot");
+    expect(wrapper.html()).toContain("Take Snapshot");
   });
 
   it("renders upload UI when backgroundSource === upload", () => {

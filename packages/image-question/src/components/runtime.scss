@@ -17,6 +17,11 @@ legend.prompt { // clear bootstrap stuff
   margin-bottom: 4px;
 }
 
+.buttonContainer {
+  display: flex;
+  align-items: center;
+}
+
 .warn {
   color: darkred;
 }
