@@ -7,9 +7,6 @@ import { Log } from "../labbook-logging";
 import UploadIcon from "../assets/upload-image-icon.svg";
 import { IGenericAuthoredState } from "drawing-tool-interactive/src/components/types";
 
-
-import css from "./upload-button.scss";
-
 import css from "./upload-button.scss";
 
 export interface IUploadButtonProps {label?:string}
