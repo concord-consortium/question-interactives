@@ -33,6 +33,10 @@ export const getUploadButton = () => {
     return cy.getIframeBody().find("[data-testid=upload-btn]");
 }
 
+export const getFileInput = () => {
+  return cy.getIframeBody().find("[data-testid=file-input]");
+}
+
 export const getCommentsTextArea = () => {
     return cy.getIframeBody().find("[data-testid=comment-field-textarea]");
 }

@@ -11,31 +11,41 @@ export interface IThumbnailWrapperProps {
   content: IThumbnailProps;
   readOnly: boolean;
   wideThumbnail?: boolean;
+  uploadPreviewMode?: boolean;
 }
 
 export const ThumbnailWrapper: React.FC<IThumbnailWrapperProps> = (props) => {
-  const { selected, setSelectedContainerId, clearContainer, content, readOnly, wideThumbnail} = props;
+  const { selected, setSelectedContainerId, clearContainer, content, readOnly, wideThumbnail, uploadPreviewMode} = props;
   const { onClick, empty, id, label } = content;
   const thumbNailProps = {...content, wideThumbnail};
-  const classes = classNames(css["thumbnail-button"], { [css.selected]: selected,  [css.empty]: empty, [css.wide]: wideThumbnail});
+  const classes = classNames(css["thumbnail-button"], {
+    [css.selected]: selected,
+    [css.empty]: empty,
+    [css.wide]: wideThumbnail,
+    [css.preview]: uploadPreviewMode
+  });
   const containerClasses = classNames(css.container, { [css.disabled]: !selected});
+  const showNewText = uploadPreviewMode ? true : readOnly ? false : true;
   const handleClose = empty
     ? () => null
     : (e: React.MouseEvent<HTMLElement>) => clearContainer(id);
 
   const clickHandler = () => {
-    setSelectedContainerId(id);
-    onClick?.();
+    if (!uploadPreviewMode) {
+      setSelectedContainerId(id);
+      onClick?.();
+    }
   };
   return (
     <div className={css["thumbnail-wrapper"]} data-testid="thumbnail-wrapper">
       <button className={classes}
               onClick={clickHandler}
               data-testid="thumbnail-button"
+              disabled={uploadPreviewMode}
       >
         <ThumbnailTitle title={label} empty={empty}/>
         {
-          empty && !readOnly &&
+          empty && showNewText &&
           <div className={css["empty-content"]}>
             <div className={css["plus-button"]} data-testid="thumbnail-plus-button">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">

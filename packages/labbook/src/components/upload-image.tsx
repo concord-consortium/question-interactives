@@ -1,16 +1,14 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import classNames from "classnames";
 
 import { StyledFileInput } from "./styled-file-input";
 import { copyImageToS3, copyLocalImageToS3 } from "@concord-consortium/question-interactives-helpers/src/utilities/copy-image-to-s3";
 import { Log } from "../labbook-logging";
 import UploadIcon from "../assets/upload-image-icon.svg";
+import { IGenericAuthoredState } from "drawing-tool-interactive/src/components/types";
 
-import {
-  getAnswerType,
-  IGenericAuthoredState,
-  IGenericInteractiveState
-} from "drawing-tool-interactive/src/components/types";
+
+import css from "./upload-button.scss";
 
 import css from "./upload-button.scss";
 
@@ -18,16 +16,24 @@ export interface IUploadButtonProps {label?:string}
 
 export interface IProps {
   authoredState: IGenericAuthoredState;
-  setInteractiveState?: (updateFunc: (prevState: IGenericInteractiveState | null) => IGenericInteractiveState) => void;
+  onUploadImage: (url: string, mode?: "replace" | "create") => void;
   onUploadStart?: () => void;
   onUploadComplete?: (result: { success: boolean }) => void;
-  uploadButtonClass?: 'string';
-  uploadIcon?: React.ReactNode;
   disabled?: boolean;
+  text?: string;
+  showUploadIcon?: boolean;
+  uploadMode?: "replace" | "create";
 }
 
-export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveState, onUploadStart, onUploadComplete, uploadButtonClass, uploadIcon, children, disabled}) => {
+export const UploadImage: React.FC<IProps> = ({ onUploadImage, uploadMode, onUploadStart, onUploadComplete, text,
+  disabled, showUploadIcon,}) => {
   const [ uploadInProgress, setUploadInProgress ] = useState(false);
+
+  useEffect(() => {
+    return () => {
+      setUploadInProgress(false);
+    };
+  }, [setUploadInProgress]);
 
   const uploadFile = (fileOrUrl: File | string) => {
     setUploadInProgress(true);
@@ -36,11 +42,7 @@ export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveSta
     // is used by ActivityPlayer. So, copying to S3 is a safer option.
     (typeof fileOrUrl === "string" ? copyImageToS3(fileOrUrl) : copyLocalImageToS3(fileOrUrl))
       .then(url => {
-        setInteractiveState?.(prevState => ({
-          ...prevState,
-          userBackgroundImageUrl: url,
-          answerType: getAnswerType(authoredState.questionType)
-        }));
+        onUploadImage(url, uploadMode);
         Log({action: "picture uploaded", data: {url}});
         onUploadComplete?.({ success: true });
       })
@@ -50,8 +52,8 @@ export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveSta
         console.error(error);
       })
       .finally(() => {
-        onUploadComplete?.({ success: false });
         setUploadInProgress(false);
+        onUploadComplete?.({ success: false });
       });
   };
 
@@ -68,15 +70,19 @@ export const UploadImage: React.FC<IProps> = ({ authoredState, setInteractiveSta
 
   return (
     <>
-      <StyledFileInput buttonClass={classes} onChange={handleFileUpload}>
-        <UploadIcon />
-        <div className={css["button-text"]}>
-          { uploadInProgress || disabled
-            ? "Please Wait"
-            : "Upload Image"
-          }
-        </div>
-      </StyledFileInput>
+    <StyledFileInput
+      buttonClass={classes}
+      onChange={handleFileUpload}
+      id={text}
+    >
+      {showUploadIcon && <UploadIcon/>}
+      <div className={css["button-text"]}>
+        { uploadInProgress
+          ? "Please Wait"
+          : text
+        }
+      </div>
+    </StyledFileInput>
     </>
   );
 };

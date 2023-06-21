@@ -74,6 +74,7 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
       answerType: getAnswerType(authoredState.questionType)
     }));
   };
+
   // useRef to avoid passing interactiveState into useEffect, or it will reload on every drawing edit
   const initialInteractiveStateRef = useRef<IGenericInteractiveState | null | undefined>(interactiveState);
   const setInteractiveStateRef = useRef<((state: any) => void)>(handleSetInteractiveState);

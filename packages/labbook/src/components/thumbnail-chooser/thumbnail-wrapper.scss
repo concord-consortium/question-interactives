@@ -37,7 +37,9 @@
     }
 
     &:disabled {
-      opacity: 0.35;
+      &:not(.preview) {
+        opacity: 0.35;
+      }
     }
 
     // &.empty {

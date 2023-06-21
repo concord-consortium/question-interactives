@@ -17,6 +17,9 @@ import { IAuthoredState, IInteractiveState, ILabbookEntry } from "./types";
 import { TakeSnapshot } from "./take-snapshot";
 import { ThumbnailTitle } from "./thumbnail-chooser/thumbnail-title";
 import classnames from "classnames";
+import { UploadModal } from "./upload-image-modal";
+import { UploadButton } from "./upload-button";
+import UploadIcon from "../assets/upload-image-icon.svg";
 
 import css from "./runtime.scss";
 
@@ -55,6 +58,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const [disableUI, setDisableUI] = useState(false);
   const [containerWidth, setContainerWidth] = useState(defaultContainerWidth);
   const [canvasWidth, setCanvasWidth] = useState(defaultCanvasWidth);
+
   const ensureSelected = (prev: Partial<IInteractiveState>) => {
     const result = { ...prev };
     if (!result.entries?.length){
@@ -68,6 +72,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const {showUploadImageButton, backgroundSource } = authoredState;
+  const [showUploadModal, setShowUploadModal] = useState(false);
   const {entries, selectedId} = ensureSelected(interactiveState as IInteractiveState) as IInteractiveState;
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -106,6 +111,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     const item = generateItem();
     setEntries([...entries||[], item]);
     setSelectedItemId(item.id);
+    return item;
   };
 
   const addBlankItem = () => {
@@ -193,7 +199,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       const item = pEntries?.find(i => i.id === id);
       if (item) {
         const updatedEntry: ILabbookEntry = deepmerge(item, fields) as ILabbookEntry;
-        const newEntries = pEntries.map(i => i.id === selectedId ? updatedEntry : i);
+        const newEntries = pEntries.map(i => i === item ? updatedEntry : i);
         return {
           ...prevState,
           answerType: "interactive_state",
@@ -204,19 +210,38 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     });
   };
 
-  const updateSelectedEntryState = (fields: Partial<ILabbookEntry>) => {
-    if (selectedId) {
-      updateEntryId(selectedId, fields);
+  const updateSelectedEntryState = (fields: Partial<ILabbookEntry>, itemId?: string) => {
+    const id = itemId || selectedId;
+    if (id) {
+      updateEntryId(id, fields);
     }
   };
 
-  const setDrawingStateFn = (func: (prevState: IDrawingToolInteractiveState | null) => IDrawingToolInteractiveState) => {
-    const drawingState = func(selectedItem?.data || null);
+  const handleUploadImage = (url: string, mode: "replace" | "create" = "replace") => {
+    const item = mode === "create" ? addItem() : selectedItem;
+    if (item) {
+      const drawingState: IDrawingToolInteractiveState = {
+        ...(item.data || null),
+        userBackgroundImageUrl: url,
+        answerType: "interactive_state"
+      };
+      setDrawingState(drawingState, item);
+    }
+  };
+
+  const setDrawingState = (drawingState: IDrawingToolInteractiveState, item: ILabbookEntry) => {
     if (drawingState) {
       const drawingHash = hash(drawingState);
-      if (selectedItem?.dataHash !== drawingHash) {
-        updateSelectedEntryState({ data: drawingState });
+      if (item?.dataHash !== drawingHash) {
+        updateSelectedEntryState({ data: drawingState }, item.id);
       }
+    }
+  };
+
+  const handleSetInteractiveStateFn = (func: (prevState: IDrawingToolInteractiveState | null) => IDrawingToolInteractiveState) => {
+    if (selectedItem) {
+      const drawingState = func(selectedItem.data || null);
+      setDrawingState(drawingState, selectedItem);
     }
   };
 
@@ -224,8 +249,21 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     updateSelectedEntryState({comment: newComment});
   };
 
-  const onUploadStart = () => setDisableUI(true);
-  const onUploadEnd = () => setDisableUI(false);
+  const onUploadStart = () => {
+    setDisableUI(true);
+    setShowUploadModal(false);
+  };
+
+  const onUploadEnd = () => {
+    setDisableUI(false);
+    setShowUploadModal(false);
+  };
+
+  const handleUploadModalClick = () => {
+    setShowUploadModal(true);
+  };
+
+
 
   const drawingToolButtons = [
     'select',
@@ -243,6 +281,19 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
     <div className={classnames(css["app"], {[css.wide]: isWideLayout})} ref={containerRef}>
       <div className={classnames(css["container"], {[css.wide]: isWideLayout})} style={{width: containerWidth}}>
+        {showUploadModal &&
+          <UploadModal
+            authoredState={authoredState}
+            onUploadImage={handleUploadImage}
+            disabled={disableUI}
+            onUploadStart={onUploadStart}
+            onUploadComplete={onUploadEnd}
+            handleCloseModal={() => setShowUploadModal(false)}
+            thumbnailChooserProps={thumbnailChooserProps}
+            selectedId={selectedId}
+            reachedMaxEntries={entries.length === maxItems}
+            wideLayout={isWideLayout}
+          />}
         {layout === "original" && <ThumbnailChooser {...thumbnailChooserProps} />}
         <div className={classnames(css["draw-tool-wrapper"], {[css.wide]: isWideLayout})} data-testid="draw-tool">
           <ThumbnailTitle className={css["draw-tool-title"]} title={title} />
@@ -250,7 +301,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             key={selectedId}
             authoredState={authoredState}
             interactiveState={selectedItem?.data}
-            setInteractiveState={setDrawingStateFn}
+            setInteractiveState={handleSetInteractiveStateFn}
             buttons={drawingToolButtons}
             width={canvasWidth}
             height={drawingToolHeight}
@@ -262,13 +313,24 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           {!readOnly &&
           <div className={css["buttons"]}>
             {
-              (backgroundSource === "upload" || showUploadImageButton) &&
+              ((backgroundSource === "upload" || showUploadImageButton) && selectedItem?.data?.userBackgroundImageUrl) &&
+                <UploadButton disabled={disableUI} onClick={handleUploadModalClick}>
+                  <UploadIcon/>
+                  <div className={css["button-text"]}>
+                    {disableUI ? "Please Wait" : "Upload Image"}
+                  </div>
+                </UploadButton>
+            }
+            {
+              ((backgroundSource === "upload" || showUploadImageButton) && !(selectedItem?.data?.userBackgroundImageUrl)) &&
               <UploadImage
                 authoredState={authoredState}
-                setInteractiveState={setDrawingStateFn}
+                onUploadImage={handleUploadImage}
                 disabled={disableUI}
                 onUploadStart={onUploadStart}
                 onUploadComplete={onUploadEnd}
+                text={"Upload Image"}
+                showUploadIcon={true}
               />
             }
             {
@@ -276,7 +338,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               <TakeSnapshot
                 authoredState={authoredState}
                 interactiveState={{...selectedItem?.data, answerType: "interactive_state"}}
-                setInteractiveState={setDrawingStateFn}
+                setInteractiveState={handleSetInteractiveStateFn}
                 disabled={disableUI}
                 onUploadStart={onUploadStart}
                 onUploadComplete={onUploadEnd}

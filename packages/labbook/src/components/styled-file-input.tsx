@@ -5,6 +5,7 @@ import classNames from "classnames";
 export interface IStyledFileInputProps {
   onChange: (fileOrUrl: File | undefined) => void;
   buttonClass: string;
+  id?: string;
 }
 
 /*
@@ -16,11 +17,11 @@ export interface IStyledFileInputProps {
  * - https://webaim.org/techniques/css/invisiblecontent/
  */
 export const StyledFileInput: React.FC<IStyledFileInputProps> = (props) => {
-  const {children, onChange, buttonClass} = props;
+  const {children, onChange, buttonClass, id} = props;
   const classes = classNames(buttonClass);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleClick = () => {
+  const handleClick = (e: React.MouseEvent) => {
     // Reset current file input value as soon as user clicks on the button. Otherwise, user won't be able to upload
     // the same file again. This is necessary in Labbook after user deletes the current thumbnail, and might be
     // generally useful in other scenarios. See: https://www.pivotaltracker.com/story/show/183721375
@@ -37,12 +38,20 @@ export const StyledFileInput: React.FC<IStyledFileInputProps> = (props) => {
   return (
     <>
       <label
-        htmlFor="file-upload"
+        htmlFor={`file-upload-${id}`}
         className={classes}
         data-testid="upload-btn">
           {children}
       </label>
-      <input ref={fileInputRef} className={css.hidden} id="file-upload" type="file" onClick={handleClick} onChange={handleChange}/>
+      <input
+        ref={fileInputRef}
+        className={css.hidden}
+        id={`file-upload-${id}`}
+        type="file"
+        onClick={handleClick}
+        onChange={handleChange}
+        data-testid="file-input"
+      />
     </>
   );
 };
