@@ -71,7 +71,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     return result;
   };
 
-  const {showUploadImageButton, backgroundSource } = authoredState;
+  const {showUploadImageButton, backgroundSource, allowUploadFromMediaLibrary } = authoredState;
   const [showUploadModal, setShowUploadModal] = useState(false);
   const {entries, selectedId} = ensureSelected(interactiveState as IInteractiveState) as IInteractiveState;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -283,7 +283,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       <div className={classnames(css["container"], {[css.wide]: isWideLayout})} style={{width: containerWidth}}>
         {showUploadModal &&
           <UploadModal
-            authoredState={authoredState}
             onUploadImage={handleUploadImage}
             disabled={disableUI}
             onUploadStart={onUploadStart}
@@ -293,6 +292,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             selectedId={selectedId}
             reachedMaxEntries={entries.length === maxItems}
             wideLayout={isWideLayout}
+            allowUploadFromMediaLibrary={true}
           />}
         {layout === "original" && <ThumbnailChooser {...thumbnailChooserProps} />}
         <div className={classnames(css["draw-tool-wrapper"], {[css.wide]: isWideLayout})} data-testid="draw-tool">
@@ -324,7 +324,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             {
               ((backgroundSource === "upload" || showUploadImageButton) && !(selectedItem?.data?.userBackgroundImageUrl)) &&
               <UploadImage
-                authoredState={authoredState}
                 onUploadImage={handleUploadImage}
                 disabled={disableUI}
                 onUploadStart={onUploadStart}

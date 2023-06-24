@@ -25,13 +25,13 @@ describe("UploadBackground", () => {
 
   it("renders upload button", () => {
     const setMock = jest.fn();
-    const wrapper = mount(<UploadImage authoredState={authoredState} onUploadImage={setMock} />);
+    const wrapper = mount(<UploadImage onUploadImage={setMock} />);
     expect(wrapper.find("[data-testid='upload-btn']").length).toEqual(1);
   });
 
   it("lets user upload local file", () => {
     const setMock = jest.fn();
-    const wrapper = mount(<UploadImage authoredState={authoredState} onUploadImage={setMock} />);
+    const wrapper = mount(<UploadImage onUploadImage={setMock} />);
     wrapper.find("[data-testid='upload-btn']").simulate("click");
 
     const fileInput = wrapper.find("input[type='file']");

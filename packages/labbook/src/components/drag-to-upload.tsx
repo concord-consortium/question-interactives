@@ -1,33 +1,19 @@
-import React, { useEffect, useState } from "react";
-import { StyledFileInput } from "./styled-file-input";
+import React, { useState } from "react";
 import { copyImageToS3, copyLocalImageToS3 } from "@concord-consortium/question-interactives-helpers/src/utilities/copy-image-to-s3";
 import { Log } from "../labbook-logging";
-import UploadIcon from "../assets/upload-image-icon.svg";
+import css from "./drag-to-upload.scss";
+import { StyledFileInput } from "./styled-file-input";
 import classnames from "classnames";
 
-import css from "./upload-button.scss";
-
-export interface IUploadButtonProps {label?:string}
-
-export interface IProps {
-  onUploadImage: (url: string, mode?: "replace" | "create") => void;
-  onUploadStart?: () => void;
-  onUploadComplete?: (result: { success: boolean }) => void;
+interface IProps {
   disabled?: boolean;
-  text?: string;
-  showUploadIcon?: boolean;
-  uploadMode?: "replace" | "create";
+  onUploadStart?: () => void;
+  onUploadImage: (url: string) => void;
+  onUploadComplete?: (result: { success: boolean }) => void;
 }
 
-export const UploadImage: React.FC<IProps> = ({ onUploadImage, uploadMode, onUploadStart, onUploadComplete, text,
-  disabled, showUploadIcon,}) => {
+export const DragToUpload: React.FC<IProps> = ({disabled, onUploadImage, onUploadStart, onUploadComplete}) => {
   const [ uploadInProgress, setUploadInProgress ] = useState(false);
-
-  useEffect(() => {
-    return () => {
-      setUploadInProgress(false);
-    };
-  }, [setUploadInProgress]);
 
   const uploadFile = (fileOrUrl: File | string) => {
     setUploadInProgress(true);
@@ -36,7 +22,7 @@ export const UploadImage: React.FC<IProps> = ({ onUploadImage, uploadMode, onUpl
     // is used by ActivityPlayer. So, copying to S3 is a safer option.
     (typeof fileOrUrl === "string" ? copyImageToS3(fileOrUrl) : copyLocalImageToS3(fileOrUrl))
       .then(url => {
-        onUploadImage(url, uploadMode);
+        onUploadImage(url);
         Log({action: "picture uploaded", data: {url}});
         onUploadComplete?.({ success: true });
       })
@@ -60,23 +46,48 @@ export const UploadImage: React.FC<IProps> = ({ onUploadImage, uploadMode, onUpl
     }
   };
 
+  const handleFileDrop = (event: React.DragEvent) => {
+    const file = event.dataTransfer?.files?.[0];
+    if (file) {
+      // Local file dropped.
+      uploadFile(file);
+    } else {
+      // URL dragged.
+      const items = event.dataTransfer?.items;
+      const item = Array.from(items).find(i => i.kind === "string" && i.type.match(/^text\/uri-list/));
+      item?.getAsString(src => {
+        uploadFile(src);
+      });
+    }
+    cancelEvent(event);
+  };
+
+  // Necessary to make file drop work.
+  const cancelEvent = (event: React.DragEvent) => {
+    event.preventDefault();
+    event.stopPropagation();
+  };
+
   const classes = classnames(css["upload-button"], {[css.disabled]: uploadInProgress||disabled});
 
+
   return (
-    <>
-    <StyledFileInput
-      buttonClass={classes}
-      onChange={handleFileUpload}
-      id={text}
-    >
-      {showUploadIcon && <UploadIcon/>}
-      <div className={css["button-text"]}>
-        { uploadInProgress
-          ? "Please Wait"
-          : text
-        }
+    <div className={css.container}>
+      <div className={css.dropArea} onDrop={handleFileDrop} onDragEnter={cancelEvent} onDragOver={cancelEvent} data-test="drop-area">
+        Drop an image here or click the button below to choose an image
       </div>
-    </StyledFileInput>
-    </>
+      <StyledFileInput
+        buttonClass={classes}
+        onChange={handleFileUpload}
+        id={"drop-file-upload"}
+      >
+        <div className={css["button-text"]}>
+          { uploadInProgress
+            ? "Please Wait"
+            : "Upload from Your Device"
+          }
+        </div>
+      </StyledFileInput>
+    </div>
   );
 };
