@@ -174,45 +174,52 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     </div>;
   };
 
-  const renderDialog = () => (
-    <div className={css.dialogContent}>
-      <div className={css.drawingTool}>
-        <DrawingTool
-          authoredState={authoredState}
-          interactiveState={interactiveState}
-          setInteractiveState={handleDrawingToolSetIntState}
-        />
-      </div>
-      <div className={css.dialogRightPanel}>
-        { authoredState.prompt && <div className={css.prompt}><DynamicText>{renderHTML(authoredState.prompt)}</DynamicText></div> }
-        { authoredState.answerPrompt && <>
-          <hr />
-          <div className={css.answerPrompt}><DynamicText>{renderHTML(authoredState.answerPrompt)}</DynamicText></div>
-          <textarea
-            value={interactiveState?.answerText || ""}
-            onChange={handleTextChange}
-            rows={8}
-            className={interactiveState?.answerText ? css.hasAnswer : css.default}
-            placeholder={authoredState.defaultAnswer || kGlobalDefaultAnswer}
+  const renderDialog = () => {
+    // look at the body width and if it looks like we are on an iPad (960px) then reduce the drawing tool to fit
+    const bodyWidth = document.getElementsByTagName("body").item(0)?.clientWidth || window.innerWidth;
+    const onIPad = bodyWidth <= 960;
+
+    return (
+      <div className={css.dialogContent} style={{width: onIPad ? 840 : 960}}>
+        <div className={css.drawingTool} style={{width: onIPad ? 550 : 650}}>
+          <DrawingTool
+            authoredState={authoredState}
+            interactiveState={interactiveState}
+            setInteractiveState={handleDrawingToolSetIntState}
+            width={onIPad ? 500 : 600}
           />
-        </> }
-        <div className={css.closeDialogSection}>
-          { savingAnnotatedImage ?
-            <div>Please wait while your drawing is being saved...</div> :
-            <div className={css.closeDialogButtons}>
-              <button className={cssHelpers.interactiveButton} onClick={handleCancel} data-test="cancel-upload-btn">
-                Cancel
-              </button>
-              <button className={classnames(cssHelpers.interactiveButton, cssHelpers.withIcon)} onClick={handleClose} data-test="close-dialog-btn">
-                <CorrectIcon/>
-                <div className={cssHelpers.buttonText}>Done</div>
-              </button>
-            </div>
-          }
+        </div>
+        <div className={css.dialogRightPanel} style={{width: onIPad ? 250 : 280}}>
+          { authoredState.prompt && <div className={css.prompt}><DynamicText>{renderHTML(authoredState.prompt)}</DynamicText></div> }
+          { authoredState.answerPrompt && <>
+            <hr />
+            <div className={css.answerPrompt}><DynamicText>{renderHTML(authoredState.answerPrompt)}</DynamicText></div>
+            <textarea
+              value={interactiveState?.answerText || ""}
+              onChange={handleTextChange}
+              rows={8}
+              className={interactiveState?.answerText ? css.hasAnswer : css.default}
+              placeholder={authoredState.defaultAnswer || kGlobalDefaultAnswer}
+            />
+          </> }
+          <div className={css.closeDialogSection}>
+            { savingAnnotatedImage ?
+              <div>Please wait while your drawing is being saved...</div> :
+              <div className={css.closeDialogButtons}>
+                <button className={cssHelpers.interactiveButton} onClick={handleCancel} data-test="cancel-upload-btn">
+                  Cancel
+                </button>
+                <button className={classnames(cssHelpers.interactiveButton, cssHelpers.withIcon)} onClick={handleClose} data-test="close-dialog-btn">
+                  <CorrectIcon/>
+                  <div className={cssHelpers.buttonText}>Done</div>
+                </button>
+              </div>
+            }
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
   return drawingToolDialog ? renderDialog() : renderInline();
 };
