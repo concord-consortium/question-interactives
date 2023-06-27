@@ -220,16 +220,21 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const renderDialog = () => {
+    // look at the body width and if it looks like we are on an iPad (960px) then reduce the drawing tool to fit
+    const bodyWidth = document.getElementsByTagName("body").item(0)?.clientWidth || window.innerWidth;
+    const onIPad = bodyWidth <= 960;
+
     return (
-      <div className={css.dialogContent}>
-        <div className={css.drawingTool}>
+      <div className={css.dialogContent} style={{width: onIPad ? 840 : 960}}>
+        <div className={css.drawingTool} style={{width: onIPad ? 550 : 650}}>
           <DrawingTool
             authoredState={authoredState}
             interactiveState={interactiveState}
             setInteractiveState={handleDrawingToolSetIntState}
+            width={onIPad ? 500 : 600}
           />
         </div>
-        <div className={css.dialogRightPanel}>
+        <div className={css.dialogRightPanel} style={{width: onIPad ? 250 : 280}}>
           { authoredState.prompt && <div className={css.prompt}><DynamicText>{renderHTML(authoredState.prompt)}</DynamicText></div> }
           { authoredState.answerPrompt && <>
             <hr />
