@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { copyImageToS3, copyLocalImageToS3 } from "@concord-consortium/question-interactives-helpers/src/utilities/copy-image-to-s3";
-import { Log } from "../labbook-logging";
 import css from "./drag-to-upload.scss";
-import { StyledFileInput } from "./styled-file-input";
+import { StyledFileInput } from "../styled-file-input";
 import classnames from "classnames";
 
 interface IProps {
@@ -10,29 +9,28 @@ interface IProps {
   onUploadStart?: () => void;
   onUploadImage: (url: string) => void;
   onUploadComplete?: (result: { success: boolean }) => void;
+  uploadInProgress?: boolean;
+  setUploadInProgress?: (inProgress: boolean) => void;
 }
 
-export const DragToUpload: React.FC<IProps> = ({disabled, onUploadImage, onUploadStart, onUploadComplete}) => {
-  const [ uploadInProgress, setUploadInProgress ] = useState(false);
+export const DragToUpload: React.FC<IProps> = ({disabled, onUploadImage, onUploadStart, onUploadComplete, uploadInProgress, setUploadInProgress}) => {
 
   const uploadFile = (fileOrUrl: File | string) => {
-    setUploadInProgress(true);
+    setUploadInProgress?.(true);
     // Always copy image to S3 using Shutterbug, so it works even when the image disappears from the external location.
     // Local image could be theoretically stored as dataSrc but it might be too big for Firestore storage that
     // is used by ActivityPlayer. So, copying to S3 is a safer option.
     (typeof fileOrUrl === "string" ? copyImageToS3(fileOrUrl) : copyLocalImageToS3(fileOrUrl))
       .then(url => {
         onUploadImage(url);
-        Log({action: "picture uploaded", data: {url}});
         onUploadComplete?.({ success: true });
       })
       .catch((error) => {
-        Log({action: "upload fail", data: {error}});
         window.alert(error);
         console.error(error);
       })
       .finally(() => {
-        setUploadInProgress(false);
+        setUploadInProgress?.(false);
         onUploadComplete?.({ success: false });
       });
   };

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { StyledFileInput } from "./styled-file-input";
+import { StyledFileInput } from "../../../helpers/src/components/styled-file-input";
 import { copyImageToS3, copyLocalImageToS3 } from "@concord-consortium/question-interactives-helpers/src/utilities/copy-image-to-s3";
 import { Log } from "../labbook-logging";
 import UploadIcon from "../assets/upload-image-icon.svg";

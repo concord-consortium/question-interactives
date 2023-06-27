@@ -1,8 +1,10 @@
 import React, { useState } from "react";
+import { DragToUpload } from "@concord-consortium/question-interactives-helpers/src/components/media-library/drag-to-upload";
+import { MediaLibraryPicker } from "@concord-consortium/question-interactives-helpers/src/components/media-library/media-library-picker";
 import { IThumbnailChooserProps } from "./thumbnail-chooser/thumbnail-chooser";
 import { CreateOrReplaceImage } from "./create-or-replace-image";
 import { IMediaLibraryItem } from "@concord-consortium/lara-interactive-api";
-import { UploadFromMediaLibrary } from "./upload-from-media-library";
+import { Log } from "../labbook-logging";
 import classnames from "classnames";
 
 import css from "./upload-image-modal.scss";
@@ -33,6 +35,7 @@ export const UploadModal: React.FC<IProps> = ({onUploadImage, onUploadStart, onU
   };
 
   const handleUploadImage = (url: string) => {
+    Log({action: "picture uploaded", data: {url}});
     onUploadImage(url, uploadMode);
   };
 
@@ -40,13 +43,22 @@ export const UploadModal: React.FC<IProps> = ({onUploadImage, onUploadStart, onU
     <div className={css.modal}>
       <div className={classnames(css.modalContent, {[css.larger]: !selectedItemHasImageUrl || showMediaLibraryPicker})}>
         {!selectedItemHasImageUrl || showMediaLibraryPicker ?
-          <UploadFromMediaLibrary
-            disabled={disabled}
-            onUploadStart={onUploadStart}
-            onUploadImage={handleUploadImage}
-            onUploadComplete={onUploadComplete}
-            items={mediaLibraryItems}
-          /> :
+          <>
+            <DragToUpload
+              disabled={disabled}
+              onUploadStart={onUploadStart}
+              onUploadImage={handleUploadImage}
+              onUploadComplete={onUploadComplete}
+            />
+            <div className={css.or}>OR</div>
+            <MediaLibraryPicker
+              disabled={disabled}
+              onUploadStart={onUploadStart}
+              onUploadImage={handleUploadImage}
+              onUploadComplete={onUploadComplete}
+              items={mediaLibraryItems}
+            />
+          </> :
           <CreateOrReplaceImage
             onUploadImage={mediaLibraryItems ? handleSetUploadMode : onUploadImage}
             disabled={disabled || reachedMaxEntries}

@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import classnames from "classnames";
 import { IRuntimeQuestionComponentProps } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
-import { closeModal, showModal } from "@concord-consortium/lara-interactive-api";
+import { IMediaLibrary, closeModal, showModal, useInitMessage } from "@concord-consortium/lara-interactive-api";
 import { TakeSnapshot } from "drawing-tool-interactive/src/components/take-snapshot";
 import CorrectIcon from "@concord-consortium/question-interactives-helpers/src/icons/correct.svg";
 import { UploadBackground } from "drawing-tool-interactive/src/components/upload-background";
@@ -15,6 +15,7 @@ import { useCorsImageErrorCheck } from "@concord-consortium/question-interactive
 import { DecorateChildren } from "@concord-consortium/text-decorator";
 import { useGlossaryDecoration } from "@concord-consortium/question-interactives-helpers/src/hooks/use-glossary-decoration";
 import { DynamicText } from "@concord-consortium/dynamic-text";
+import { UploadFromMediaLibraryDialog } from "../../../helpers/src/components/media-library/upload-from-media-library-dialog";
 
 import { IAuthoredState, IInteractiveState } from "./types";
 
@@ -27,15 +28,28 @@ const kGlobalDefaultAnswer = "Please type your answer here.";
 const drawingToolDialogUrlParam = "drawingToolDialog";
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
+  const {required, backgroundSource, backgroundImageUrl, answerPrompt, prompt, allowUploadFromMediaLibrary} = authoredState;
   const decorateOptions = useGlossaryDecoration();
-  const readOnly = report || (authoredState.required && interactiveState?.submitted);
+  const readOnly = report || (required && interactiveState?.submitted);
   const [ controlsHidden, setControlsHidden ] = useState(false);
   const [ drawingStateUpdated, setDrawingStateUpdated ] = useState(false);
   const [ savingAnnotatedImage, setSavingAnnotatedImage ] = useState(false);
+  const [uploadInProgress, setUploadInProgress] = useState(false);
+
+  const [ showUploadModal, setShowUploadModal ] = useState(false);
+  const [mediaLibrary, setMediaLibrary] = useState<IMediaLibrary|undefined>(undefined);
+  const initMessage = useInitMessage();
+
+  useEffect(() => {
+    if (initMessage?.mode === "runtime") {
+      setMediaLibrary(initMessage.mediaLibrary);
+    }
+  }, [initMessage]);
+
   const drawingToolDialog = getURLParam(drawingToolDialogUrlParam);
   const authoredBgCorsError = useCorsImageErrorCheck({
-    performTest: authoredState.backgroundSource === "url" && !!authoredState.backgroundImageUrl,
-    imgSrc: authoredState.backgroundImageUrl
+    performTest: backgroundSource === "url" && !!backgroundImageUrl,
+    imgSrc: backgroundImageUrl
   });
 
   const snapshotOrUploadFinished = ({ success }: { success: boolean }) => {
@@ -69,9 +83,18 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }));
   };
 
-  const hideControls = () => {
+  const handleUploadStart = () => {
     setControlsHidden(true);
   };
+
+  const handleUploadImage = (url: string) => {
+    setInteractiveState?.(prevState => ({
+      ...prevState,
+      userBackgroundImageUrl: url,
+      answerType: "image_question_answer"
+    }));
+  };
+
 
   const handleCancel = () => {
     setInteractiveState?.((prevState: IInteractiveState) => ({
@@ -110,6 +133,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     });
   };
 
+  const mediaLibraryEnabled = allowUploadFromMediaLibrary && mediaLibrary?.enabled && mediaLibrary?.items.length > 0;
+  const mediaLibraryItems = mediaLibraryEnabled ? mediaLibrary.items.filter((i) => i.type === "image") : undefined;
+
   const renderInline = () => {
     if (authoredBgCorsError) {
       return <div className={css.error}>Authored background image is not CORS enabled. Please use a different background
@@ -120,21 +146,21 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     const renderUpload = authoredState?.backgroundSource === "upload";
     const renderMakeDrawing = !renderSnapshot && !renderUpload;
     const previousAnswerAvailable = interactiveState?.userBackgroundImageUrl || interactiveState?.answerImageUrl;
-    const authoredBackgroundUrl = authoredState?.backgroundSource === "url" && authoredState.backgroundImageUrl;
+    const authoredBackgroundUrl = authoredState?.backgroundSource === "url" && backgroundImageUrl;
     const inlineImage = interactiveState?.answerImageUrl || interactiveState?.userBackgroundImageUrl || authoredBackgroundUrl;
 
     // Render answer prompt and answer text in inline mode to replicate LARA's Image Question UI
     return <div>
-      { authoredState.prompt &&
+      { prompt &&
         <DynamicText>
           <DecorateChildren decorateOptions={decorateOptions}>
-            <div>{renderHTML(authoredState.prompt)}</div>
+            <div>{renderHTML(prompt)}</div>
           </DecorateChildren>
         </DynamicText>
       }
       { inlineImage && <div><img src={inlineImage} className={css.inlineImg} alt="user work"/></div> }
-      { authoredState.answerPrompt && <>
-        <div><DynamicText>{renderHTML(authoredState.answerPrompt)}</DynamicText></div>
+      { answerPrompt && <>
+        <div><DynamicText>{renderHTML(answerPrompt)}</DynamicText></div>
         <div className={css.studentAnswerText}><DynamicText>{interactiveState?.answerText}</DynamicText></div>
       </> }
       {
@@ -146,7 +172,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               authoredState={authoredState}
               interactiveState={interactiveState}
               setInteractiveState={setInteractiveState}
-              onUploadStart={hideControls}
+              onUploadStart={handleUploadStart}
               onUploadComplete={snapshotOrUploadFinished}
             />
           }
@@ -155,8 +181,13 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             <UploadBackground
               authoredState={authoredState}
               setInteractiveState={setInteractiveState}
-              onUploadStart={hideControls}
-              onUploadComplete={snapshotOrUploadFinished} />
+              onUploadStart={handleUploadStart}
+              onUploadComplete={snapshotOrUploadFinished}
+              setShowUploadModal={setShowUploadModal}
+              mediaLibraryEnabled={mediaLibraryEnabled}
+              setUploadInProgress={setUploadInProgress}
+              uploadInProgress={uploadInProgress}
+            />
           }
           {
             !controlsHidden && (renderMakeDrawing || previousAnswerAvailable) &&
@@ -174,45 +205,61 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     </div>;
   };
 
-  const renderDialog = () => (
-    <div className={css.dialogContent}>
-      <div className={css.drawingTool}>
-        <DrawingTool
-          authoredState={authoredState}
-          interactiveState={interactiveState}
-          setInteractiveState={handleDrawingToolSetIntState}
-        />
-      </div>
-      <div className={css.dialogRightPanel}>
-        { authoredState.prompt && <div className={css.prompt}><DynamicText>{renderHTML(authoredState.prompt)}</DynamicText></div> }
-        { authoredState.answerPrompt && <>
-          <hr />
-          <div className={css.answerPrompt}><DynamicText>{renderHTML(authoredState.answerPrompt)}</DynamicText></div>
-          <textarea
-            value={interactiveState?.answerText || ""}
-            onChange={handleTextChange}
-            rows={8}
-            className={interactiveState?.answerText ? css.hasAnswer : css.default}
-            placeholder={authoredState.defaultAnswer || kGlobalDefaultAnswer}
+  const renderUploadModal = () => {
+    return (
+      <UploadFromMediaLibraryDialog
+        onUploadImage={handleUploadImage}
+        onUploadStart={handleUploadStart}
+        onUploadComplete={snapshotOrUploadFinished}
+        mediaLibraryItems={mediaLibraryItems}
+        uploadInProgress={uploadInProgress}
+        setUploadInProgress={setUploadInProgress}
+      />
+    );
+  };
+
+  const renderDialog = () => {
+    console.log({interactiveState});
+    return (
+      <div className={css.dialogContent}>
+        <div className={css.drawingTool}>
+          <DrawingTool
+            authoredState={authoredState}
+            interactiveState={interactiveState}
+            setInteractiveState={handleDrawingToolSetIntState}
           />
-        </> }
-        <div className={css.closeDialogSection}>
-          { savingAnnotatedImage ?
-            <div>Please wait while your drawing is being saved...</div> :
-            <div className={css.closeDialogButtons}>
-              <button className={cssHelpers.interactiveButton} onClick={handleCancel} data-test="cancel-upload-btn">
-                Cancel
-              </button>
-              <button className={classnames(cssHelpers.interactiveButton, cssHelpers.withIcon)} onClick={handleClose} data-test="close-dialog-btn">
-                <CorrectIcon/>
-                <div className={cssHelpers.buttonText}>Done</div>
-              </button>
-            </div>
-          }
+        </div>
+        <div className={css.dialogRightPanel}>
+          { authoredState.prompt && <div className={css.prompt}><DynamicText>{renderHTML(authoredState.prompt)}</DynamicText></div> }
+          { authoredState.answerPrompt && <>
+            <hr />
+            <div className={css.answerPrompt}><DynamicText>{renderHTML(authoredState.answerPrompt)}</DynamicText></div>
+            <textarea
+              value={interactiveState?.answerText || ""}
+              onChange={handleTextChange}
+              rows={8}
+              className={interactiveState?.answerText ? css.hasAnswer : css.default}
+              placeholder={authoredState.defaultAnswer || kGlobalDefaultAnswer}
+            />
+          </> }
+          <div className={css.closeDialogSection}>
+            { savingAnnotatedImage ?
+              <div>Please wait while your drawing is being saved...</div> :
+              <div className={css.closeDialogButtons}>
+                <button className={cssHelpers.interactiveButton} onClick={handleCancel} data-test="cancel-upload-btn">
+                  Cancel
+                </button>
+                <button className={classnames(cssHelpers.interactiveButton, cssHelpers.withIcon)} onClick={handleClose} data-test="close-dialog-btn">
+                  <CorrectIcon/>
+                  <div className={cssHelpers.buttonText}>Done</div>
+                </button>
+              </div>
+            }
+          </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  };
 
-  return drawingToolDialog ? renderDialog() : renderInline();
+  return showUploadModal && !uploadInProgress ? renderUploadModal() : drawingToolDialog ? renderDialog() : renderInline();
 };

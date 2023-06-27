@@ -1,19 +1,20 @@
 import React, { useState } from "react";
 import { IMediaLibraryItem } from "@concord-consortium/lara-interactive-api";
 import classnames from "classnames";
-import { Log } from "../labbook-logging";
 
 import css from "./media-library-picker.scss";
 
 interface IProps {
   onUploadImage: (url: string, mode?: "replace" | "create") => void;
-  onUploadStart: () => void;
+  onUploadStart?: () => void;
   onUploadComplete?: (result: { success: boolean }) => void;
   disabled?: boolean;
   items?: IMediaLibraryItem[];
+  setUploadInProgress?: (inProgress: boolean) => void;
+
 }
 
-export const MediaLibraryPicker: React.FC<IProps> = ({items, disabled, onUploadImage, onUploadStart, onUploadComplete}) => {
+export const MediaLibraryPicker: React.FC<IProps> = ({items, disabled, onUploadImage, onUploadStart, onUploadComplete, setUploadInProgress}) => {
   const [selectedThumnail, setSelectedThumbnail] = useState<IMediaLibraryItem>();
 
   const handleUploadFile = (item: IMediaLibraryItem) => {
@@ -22,8 +23,8 @@ export const MediaLibraryPicker: React.FC<IProps> = ({items, disabled, onUploadI
       const {url} = item;
       onUploadStart?.();
       onUploadImage(url);
-      Log({action: "picture uploaded", data: {url}});
       onUploadComplete?.({ success: true });
+      setUploadInProgress?.(false);
     }
   };
 

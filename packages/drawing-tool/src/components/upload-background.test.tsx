@@ -25,7 +25,8 @@ describe("UploadBackground", () => {
 
   it("renders upload button", () => {
     const setMock = jest.fn();
-    const wrapper = mount(<UploadBackground authoredState={authoredState} setInteractiveState={setMock} />);
+    const wrapper = mount(
+      <UploadBackground authoredState={authoredState} setInteractiveState={setMock} uploadInProgress={false} setUploadInProgress={setMock} />);
 
     expect(wrapper.find("[data-test='upload-btn']").length).toEqual(1);
     wrapper.find("[data-test='upload-btn']").simulate("click");
@@ -34,7 +35,7 @@ describe("UploadBackground", () => {
 
   it("lets user upload local file", () => {
     const setMock = jest.fn();
-    const wrapper = mount(<UploadBackground authoredState={authoredState} setInteractiveState={setMock} />);
+    const wrapper = mount(<UploadBackground authoredState={authoredState} setInteractiveState={setMock} uploadInProgress={false} setUploadInProgress={setMock}  />);
     wrapper.find("[data-test='upload-btn']").simulate("click");
     expect(wrapper.find("[data-test='upload-btn']").length).toEqual(0);
 
@@ -53,7 +54,7 @@ describe("UploadBackground", () => {
 
   it("lets user upload image by dropping external URL", () => {
     const setMock = jest.fn();
-    const wrapper = mount(<UploadBackground authoredState={authoredState} setInteractiveState={setMock} />);
+    const wrapper = mount(<UploadBackground authoredState={authoredState} setInteractiveState={setMock} uploadInProgress={false} setUploadInProgress={setMock}  />);
 
     expect(wrapper.find("[data-test='upload-btn']").length).toEqual(1);
     wrapper.find("[data-test='upload-btn']").simulate("click");
