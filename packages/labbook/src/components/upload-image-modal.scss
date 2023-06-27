@@ -21,8 +21,11 @@
     align-items: center;
     justify-content: center;
     &.larger {
-      height: 550px;
+      padding: 10px;
+      max-height: 550px;
+      height: fit-content;
       margin: .75% auto;
+      justify-content: space-between;
     }
     .hidden {
     display: none!important;

@@ -3,7 +3,6 @@ import { IThumbnailChooserProps, ThumbnailChooser } from "./thumbnail-chooser/th
 import { UploadImage } from "./upload-image";
 import classnames from "classnames";
 import { UploadButton } from "./upload-button";
-import UploadIcon from "../assets/upload-image-icon.svg";
 
 import css from "./create-or-replace-image.scss";
 
@@ -17,11 +16,11 @@ export interface IProps {
   selectedId: string;
   reachedMaxEntries: boolean;
   wideLayout: boolean;
-  allowUploadFromMediaLibrary?: boolean;
+  mediaLibraryEnabled?: boolean;
 }
 
 export const CreateOrReplaceImage: React.FC<IProps> = ({onUploadImage, onUploadStart, onUploadComplete,
-  onCloseModal, disabled, thumbnailChooserProps, selectedId, reachedMaxEntries, wideLayout, allowUploadFromMediaLibrary}) => {
+  onCloseModal, disabled, thumbnailChooserProps, selectedId, reachedMaxEntries, wideLayout, mediaLibraryEnabled}) => {
   const nextItem = thumbnailChooserProps.items.find(i => i.empty);
   const thumbnailItems = thumbnailChooserProps.items.filter((i) => {
     return i.id === selectedId || i.id === nextItem?.id;
@@ -50,7 +49,7 @@ export const CreateOrReplaceImage: React.FC<IProps> = ({onUploadImage, onUploadS
   };
 
   const renderButtons = () => {
-    if (allowUploadFromMediaLibrary) {
+    if (mediaLibraryEnabled) {
       return (
         <div className={css.uploadButtons}>
           <UploadButton disabled={disabled} onClick={() => onUploadImage("", "replace")}>

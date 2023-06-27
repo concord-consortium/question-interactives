@@ -49,6 +49,7 @@ export const DragToUpload: React.FC<IProps> = ({disabled, onUploadImage, onUploa
   const handleFileDrop = (event: React.DragEvent) => {
     const file = event.dataTransfer?.files?.[0];
     if (file) {
+      onUploadStart?.();
       // Local file dropped.
       uploadFile(file);
     } else {

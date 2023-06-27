@@ -1,11 +1,12 @@
 import React, { useState } from "react";
 import { IThumbnailChooserProps } from "./thumbnail-chooser/thumbnail-chooser";
 import { CreateOrReplaceImage } from "./create-or-replace-image";
-import { DragToUpload } from "./drag-to-upload";
-import { MediaLibraryPicker } from "./media-library-picker";
+import { IMediaLibraryItem } from "@concord-consortium/lara-interactive-api";
+import { UploadFromMediaLibrary } from "./upload-from-media-library";
+import classnames from "classnames";
 
 import css from "./upload-image-modal.scss";
-import classnames from "classnames";
+
 export interface IProps {
   onUploadImage: (url: string, mode?: "replace" | "create") => void;
   onUploadStart: () => void;
@@ -16,12 +17,13 @@ export interface IProps {
   selectedId: string;
   reachedMaxEntries: boolean;
   wideLayout: boolean;
-  allowUploadFromMediaLibrary?: boolean;
+  mediaLibraryItems?: IMediaLibraryItem[];
+  selectedItemHasImageUrl: boolean;
 }
 
 export const UploadModal: React.FC<IProps> = ({onUploadImage, onUploadStart, onUploadComplete,
   handleCloseModal, disabled, thumbnailChooserProps, selectedId, reachedMaxEntries, wideLayout,
-  allowUploadFromMediaLibrary}) => {
+  mediaLibraryItems, selectedItemHasImageUrl}) => {
     const [uploadMode, setUploadMode] = useState<"replace" | "create">("replace");
     const [showMediaLibraryPicker, setShowMediaLibraryPicker] = useState<boolean>(false);
 
@@ -36,19 +38,17 @@ export const UploadModal: React.FC<IProps> = ({onUploadImage, onUploadStart, onU
 
   return (
     <div className={css.modal}>
-      <div className={classnames(css.modalContent, {[css.larger]: showMediaLibraryPicker})}>
-        {showMediaLibraryPicker ?
-          <>
-            <DragToUpload
-              disabled={disabled}
-              onUploadStart={onUploadStart}
-              onUploadImage={handleUploadImage}
-              onUploadComplete={onUploadComplete}
-            />
-            <MediaLibraryPicker/>
-          </> :
+      <div className={classnames(css.modalContent, {[css.larger]: !selectedItemHasImageUrl || showMediaLibraryPicker})}>
+        {!selectedItemHasImageUrl || showMediaLibraryPicker ?
+          <UploadFromMediaLibrary
+            disabled={disabled}
+            onUploadStart={onUploadStart}
+            onUploadImage={handleUploadImage}
+            onUploadComplete={onUploadComplete}
+            items={mediaLibraryItems}
+          /> :
           <CreateOrReplaceImage
-            onUploadImage={allowUploadFromMediaLibrary ? handleSetUploadMode : onUploadImage}
+            onUploadImage={mediaLibraryItems ? handleSetUploadMode : onUploadImage}
             disabled={disabled || reachedMaxEntries}
             onUploadStart={onUploadStart}
             onUploadComplete={onUploadComplete}
@@ -57,7 +57,7 @@ export const UploadModal: React.FC<IProps> = ({onUploadImage, onUploadStart, onU
             selectedId={selectedId}
             reachedMaxEntries={reachedMaxEntries}
             wideLayout={wideLayout}
-            allowUploadFromMediaLibrary={allowUploadFromMediaLibrary}
+            mediaLibraryEnabled={!!mediaLibraryItems}
           />
         }
       </div>

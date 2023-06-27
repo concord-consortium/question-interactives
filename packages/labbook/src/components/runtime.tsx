@@ -3,6 +3,7 @@ import deepmerge from "deepmerge";
 import hash from "object-hash";
 import { v4 as uuidv4 } from "uuid";
 import { IInteractiveState as IDrawingToolInteractiveState} from "drawing-tool-interactive/src/components/types";
+import { IMediaLibrary, useInitMessage } from "@concord-consortium/lara-interactive-api";
 import { DrawingTool } from "drawing-tool-interactive/src/components/drawing-tool";
 import { renderHTML } from "@concord-consortium/question-interactives-helpers/src/utilities/render-html";
 import { DynamicText } from "@concord-consortium/dynamic-text";
@@ -22,7 +23,6 @@ import { UploadButton } from "./upload-button";
 import UploadIcon from "../assets/upload-image-icon.svg";
 
 import css from "./runtime.scss";
-
 export interface IProps {
   authoredState: IAuthoredState;
   interactiveState?: IInteractiveState;
@@ -72,6 +72,15 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const {showUploadImageButton, backgroundSource, allowUploadFromMediaLibrary } = authoredState;
+  const [mediaLibrary, setMediaLibrary] = useState<IMediaLibrary|undefined>(undefined);
+
+  const initMessage = useInitMessage();
+  useEffect(() => {
+    if (initMessage?.mode === "runtime") {
+      setMediaLibrary(initMessage.mediaLibrary);
+    }
+  }, [initMessage]);
+
   const [showUploadModal, setShowUploadModal] = useState(false);
   const {entries, selectedId} = ensureSelected(interactiveState as IInteractiveState) as IInteractiveState;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -274,6 +283,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     'trash',
   ];
 
+  const uploadImageMode = (backgroundSource === "upload" || showUploadImageButton);
+  const selectedItemHasImageUrl = !!(selectedItem?.data?.userBackgroundImageUrl);
+  const mediaLibraryEnabled = allowUploadFromMediaLibrary && mediaLibrary?.enabled && mediaLibrary?.items.length;
+  const mediaLibraryItems = mediaLibraryEnabled ? mediaLibrary.items.filter((i) => i.type === "image") : undefined;
+
   return (
     <>
     { authoredState.prompt &&
@@ -292,7 +306,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             selectedId={selectedId}
             reachedMaxEntries={entries.length === maxItems}
             wideLayout={isWideLayout}
-            allowUploadFromMediaLibrary={true}
+            selectedItemHasImageUrl={selectedItemHasImageUrl}
+            mediaLibraryItems={mediaLibraryItems}
           />}
         {layout === "original" && <ThumbnailChooser {...thumbnailChooserProps} />}
         <div className={classnames(css["draw-tool-wrapper"], {[css.wide]: isWideLayout})} data-testid="draw-tool">
@@ -313,7 +328,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           {!readOnly &&
           <div className={css["buttons"]}>
             {
-              ((backgroundSource === "upload" || showUploadImageButton) && selectedItem?.data?.userBackgroundImageUrl) &&
+              ((uploadImageMode && selectedItemHasImageUrl) || mediaLibraryEnabled) &&
                 <UploadButton disabled={disableUI} onClick={handleUploadModalClick}>
                   <UploadIcon/>
                   <div className={css["button-text"]}>
@@ -322,7 +337,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                 </UploadButton>
             }
             {
-              ((backgroundSource === "upload" || showUploadImageButton) && !(selectedItem?.data?.userBackgroundImageUrl)) &&
+              ((uploadImageMode && !selectedItemHasImageUrl) && !mediaLibraryEnabled) &&
               <UploadImage
                 onUploadImage={handleUploadImage}
                 disabled={disableUI}
