@@ -49,7 +49,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const handleUploadImage = (url: string) => {
-    console.log("url", url);
     setInteractiveState?.(prevState => ({
       ...prevState,
       userBackgroundImageUrl: url,
@@ -87,6 +86,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           mediaLibraryItems={mediaLibraryItems}
           uploadInProgress={uploadInProgress}
           setUploadInProgress={setUploadInProgress}
+          handleCloseModal={() => setShowUploadModal(false)}
         />
       }
       {

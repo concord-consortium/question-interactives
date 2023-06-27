@@ -11,7 +11,7 @@
   .mediaLibraryPicker {
     max-width: 400px;
     max-height: 277px;
-    overflow: scroll;
+    overflow: auto;
     border-radius: 8px;
     display: flex;
     justify-content: center;
@@ -25,6 +25,9 @@
       flex-wrap: wrap;
       gap: 8px;
       width: 380px;
+      ::-webkit-scrollbar-track {
+        background: red;
+      }
 
       .thumbnail {
         width: 84px;
@@ -60,5 +63,22 @@
         }
       }
     }
+  }
+}
+.bottomButtons {
+  margin-top: 5px;
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-end;
+  width: 398px;
+  button {
+    margin-bottom: 0px;
+    margin-left: 0px;
+    margin-right: 0px;
+  }
+  .cancelButton {
+    border: solid 1.5px var(--cc-charcoal-light-1);
+    margin-left: 9px;
+    background-color: #eaeaea;
   }
 }

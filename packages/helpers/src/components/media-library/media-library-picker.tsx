@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { IMediaLibraryItem } from "@concord-consortium/lara-interactive-api";
 import classnames from "classnames";
 
+import cssHelpers from "@concord-consortium/question-interactives-helpers/src/styles/helpers.scss";
 import css from "./media-library-picker.scss";
 
 interface IProps {
@@ -11,16 +12,15 @@ interface IProps {
   disabled?: boolean;
   items?: IMediaLibraryItem[];
   setUploadInProgress?: (inProgress: boolean) => void;
-
+  onCloseModal: () => void;
 }
 
-export const MediaLibraryPicker: React.FC<IProps> = ({items, disabled, onUploadImage, onUploadStart, onUploadComplete, setUploadInProgress}) => {
-  const [selectedThumnail, setSelectedThumbnail] = useState<IMediaLibraryItem>();
+export const MediaLibraryPicker: React.FC<IProps> = ({items, disabled, onUploadImage, onUploadStart, onUploadComplete, setUploadInProgress, onCloseModal}) => {
+  const [selectedThumbnail, setSelectedThumbnail] = useState<IMediaLibraryItem>();
 
-  const handleUploadFile = (item: IMediaLibraryItem) => {
-    if(!disabled && item?.url) {
-      setSelectedThumbnail(item);
-      const {url} = item;
+  const handleUploadFile = () => {
+    if(!disabled && selectedThumbnail?.url) {
+      const {url} = selectedThumbnail;
       onUploadStart?.();
       onUploadImage(url);
       onUploadComplete?.({ success: true });
@@ -42,6 +42,7 @@ export const MediaLibraryPicker: React.FC<IProps> = ({items, disabled, onUploadI
 
 
   return (
+    <>
     <div className={css.container}>
       <div className={css.instructions}>Upload an image from this activity:</div>
       <div className={css.mediaLibraryPicker}>
@@ -49,11 +50,11 @@ export const MediaLibraryPicker: React.FC<IProps> = ({items, disabled, onUploadI
           {items && items.map((item) => {
             return (
               <div
-                className={classnames(css.thumbnail, {[css.selected]: item === selectedThumnail})}
+                className={classnames(css.thumbnail, {[css.selected]: item === selectedThumbnail})}
                 key={item.url}
                 style={{backgroundImage: `url(${item.url})`}}
                 onMouseMove={showTooltip}
-                onClick={() => handleUploadFile(item)}
+                onClick={() => setSelectedThumbnail(item)}
               >
                 <div className={css.toolTip}>{item.caption}</div>
               </div>
@@ -62,5 +63,14 @@ export const MediaLibraryPicker: React.FC<IProps> = ({items, disabled, onUploadI
         </div>
       </div>
     </div>
+    <div className={css.bottomButtons}>
+      <button className={classnames(cssHelpers.interactiveButton, {[cssHelpers.disabled]: !selectedThumbnail})} disabled={!selectedThumbnail} onClick={handleUploadFile}>
+        Upload from Activity
+      </button>
+      <button className={classnames(cssHelpers.interactiveButton, css.cancelButton)} onClick={onCloseModal}>
+        Cancel
+      </button>
+    </div>
+    </>
   );
 };

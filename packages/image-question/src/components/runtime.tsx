@@ -214,12 +214,12 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         mediaLibraryItems={mediaLibraryItems}
         uploadInProgress={uploadInProgress}
         setUploadInProgress={setUploadInProgress}
+        handleCloseModal={() => setShowUploadModal(false)}
       />
     );
   };
 
   const renderDialog = () => {
-    console.log({interactiveState});
     return (
       <div className={css.dialogContent}>
         <div className={css.drawingTool}>

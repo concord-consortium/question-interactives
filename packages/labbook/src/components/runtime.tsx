@@ -81,8 +81,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
   }, [initMessage]);
 
-  console.log({initMessage});
-
   const [showUploadModal, setShowUploadModal] = useState(false);
   const {entries, selectedId} = ensureSelected(interactiveState as IInteractiveState) as IInteractiveState;
   const containerRef = useRef<HTMLDivElement>(null);
@@ -287,8 +285,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const selectedItemHasImageUrl = !!(selectedItem?.data?.userBackgroundImageUrl);
   const mediaLibraryEnabled = allowUploadFromMediaLibrary && mediaLibrary?.enabled && mediaLibrary?.items.length;
   const mediaLibraryItems = mediaLibraryEnabled ? mediaLibrary.items.filter((i) => i.type === "image") : undefined;
-
-  console.log({mediaLibraryEnabled});
 
   return (
     <>

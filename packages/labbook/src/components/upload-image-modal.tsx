@@ -57,6 +57,7 @@ export const UploadModal: React.FC<IProps> = ({onUploadImage, onUploadStart, onU
               onUploadImage={handleUploadImage}
               onUploadComplete={onUploadComplete}
               items={mediaLibraryItems}
+              onCloseModal={handleCloseModal}
             />
           </> :
           <CreateOrReplaceImage

@@ -11,14 +11,14 @@ export interface IProps {
   onUploadStart?: () => void;
   onUploadComplete?: (result: { success: boolean }) => void;
   disabled?: boolean;
-  handleCloseModal?: () => void;
+  handleCloseModal: () => void;
   mediaLibraryItems?: IMediaLibraryItem[];
   uploadInProgress?: boolean;
   setUploadInProgress?: (inProgress: boolean) => void;
 }
 
 export const UploadFromMediaLibraryDialog: React.FC<IProps> = ({onUploadImage, onUploadStart, onUploadComplete, disabled,
-  mediaLibraryItems, uploadInProgress, setUploadInProgress}) => {
+  mediaLibraryItems, uploadInProgress, setUploadInProgress, handleCloseModal}) => {
   return (
     <div className={css.modal}>
       <div className={classnames(css.modalContent)}>
@@ -38,6 +38,7 @@ export const UploadFromMediaLibraryDialog: React.FC<IProps> = ({onUploadImage, o
           onUploadComplete={onUploadComplete}
           items={mediaLibraryItems}
           setUploadInProgress={setUploadInProgress}
+          onCloseModal={handleCloseModal}
         />
       </div>
     </div>

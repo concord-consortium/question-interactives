@@ -21,10 +21,10 @@
     align-items: center;
     justify-content: center;
     &.larger {
-      padding: 10px;
-      max-height: 550px;
+      padding: 8px;
+      max-height: 560px;
       height: fit-content;
-      margin: .75% auto;
+      margin: .5% auto;
       justify-content: space-between;
     }
     .hidden {
@@ -81,5 +81,7 @@
       }
     }
   }
-
+  .or {
+    font-weight: bold;
+  }
 }
