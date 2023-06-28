@@ -1,18 +1,15 @@
 import React, { useEffect, useState } from "react";
-import classNames from "classnames";
-
-import { StyledFileInput } from "./styled-file-input";
+import { StyledFileInput } from "../../../helpers/src/components/styled-file-input";
 import { copyImageToS3, copyLocalImageToS3 } from "@concord-consortium/question-interactives-helpers/src/utilities/copy-image-to-s3";
 import { Log } from "../labbook-logging";
 import UploadIcon from "../assets/upload-image-icon.svg";
-import { IGenericAuthoredState } from "drawing-tool-interactive/src/components/types";
+import classnames from "classnames";
 
 import css from "./upload-button.scss";
 
 export interface IUploadButtonProps {label?:string}
 
 export interface IProps {
-  authoredState: IGenericAuthoredState;
   onUploadImage: (url: string, mode?: "replace" | "create") => void;
   onUploadStart?: () => void;
   onUploadComplete?: (result: { success: boolean }) => void;
@@ -63,7 +60,7 @@ export const UploadImage: React.FC<IProps> = ({ onUploadImage, uploadMode, onUpl
     }
   };
 
-  const classes = classNames(css["upload-button"], {[css.disabled]: uploadInProgress||disabled});
+  const classes = classnames(css["upload-button"], {[css.disabled]: uploadInProgress||disabled});
 
   return (
     <>

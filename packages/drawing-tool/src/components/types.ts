@@ -18,6 +18,7 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   imageFit?: string;
   imagePosition?: string;
   stampCollections?: StampCollection[];
+  allowUploadFromMediaLibrary?: boolean;
 }
 
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {

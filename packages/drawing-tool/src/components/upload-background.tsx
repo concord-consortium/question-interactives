@@ -1,26 +1,35 @@
 import React, { useState } from "react";
-import 'drawing-tool/dist/drawing-tool.css';
 import UploadIcon from "@concord-consortium/question-interactives-helpers/src/icons/upload.svg";
 import { copyImageToS3, copyLocalImageToS3 } from "@concord-consortium/question-interactives-helpers/src/utilities/copy-image-to-s3";
-import css from "./runtime.scss";
-import cssHelpers from "@concord-consortium/question-interactives-helpers/src/styles/helpers.scss";
 import { getAnswerType, IGenericAuthoredState, IGenericInteractiveState } from "./types";
 import classnames from "classnames";
+
+import 'drawing-tool/dist/drawing-tool.css';
+import css from "./runtime.scss";
+import cssHelpers from "@concord-consortium/question-interactives-helpers/src/styles/helpers.scss";
 
 export interface IProps {
   authoredState: IGenericAuthoredState;
   setInteractiveState?: (updateFunc: (prevState: IGenericInteractiveState | null) => IGenericInteractiveState) => void;
   onUploadStart?: () => void;
   onUploadComplete?: (result: { success: boolean }) => void;
+  mediaLibraryEnabled?: boolean;
+  setShowUploadModal?: (showModal: boolean) => void;
+  uploadInProgress: boolean;
+  setUploadInProgress: (inProgress: boolean) => void;
 }
 
-export const UploadBackground: React.FC<IProps> = ({ authoredState, setInteractiveState, onUploadStart, onUploadComplete }) => {
+export const UploadBackground: React.FC<IProps> = ({ authoredState, setInteractiveState, onUploadStart, onUploadComplete, mediaLibraryEnabled,
+  setShowUploadModal, uploadInProgress, setUploadInProgress}) => {
   const [ uploadControlsVisible, setUploadControlsVisible ] = useState(false);
-  const [ uploadInProgress, setUploadInProgress ] = useState(false);
 
   const handleUploadBtnClick = () => {
-    setUploadControlsVisible(true);
-    onUploadStart?.();
+    if (mediaLibraryEnabled) {
+      setShowUploadModal?.(true);
+    } else {
+      setUploadControlsVisible(true);
+      onUploadStart?.();
+    }
   };
 
   const uploadFile = (fileOrUrl: File | string) => {

@@ -1,0 +1,50 @@
+.header {
+  font-weight: bold;
+  font-size: pxToRem(16);
+  margin: 10px;
+}
+.thumbnails, .uploadButtons {
+  display: flex;
+  width: 355px;
+  justify-content: space-around;
+  align-items: center;
+
+  .reachedMaxEntries {
+    width: 107px;
+  }
+
+  .fakeThumbnail {
+    width: 89px;
+    height: 84px;
+    display: flex;
+    opacity: 0.35;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    border-radius: 8px;
+    border: solid 1.5px var(--cc-charcoal-light-1);
+    &.wide {
+      width: 105px;
+    }
+    .plusButton {
+      stroke: var(--cc-charcoal);
+    }
+  }
+}
+.uploadButtons {
+  margin-left: -16px;
+}
+.bottom {
+  width: 100%;
+  display: flex;
+  margin-top: 30px;
+  justify-content: flex-end;
+  margin-bottom: 10px;
+  .instructions {
+    font-style: italic;
+  }
+  .cancelButton {
+    height: 34px;
+    align-self: flex-end;
+  }
+}

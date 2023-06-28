@@ -83,8 +83,9 @@ $themeColor2: #34a5be;
   &:active {
     background-color: var(--cc-teal-light-3);
   }
-  &.disabled {
+  &.disabled, :disabled {
     opacity: 0.3;
+    pointer-events: none;
   }
   svg {
     fill: var(--cc-teal-light-1);
