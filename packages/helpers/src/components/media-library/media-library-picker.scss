@@ -1,16 +1,13 @@
 .container {
-  display: flex;
-  flex-direction: column;
-
   .instructions {
     font-weight: bold;
-    font-size: 16px;
+    font-size: 1rem;
     margin-bottom: 8px;
   }
 
   .mediaLibraryPicker {
     max-width: 400px;
-    max-height: 277px;
+    max-height: 300px;
     overflow: auto;
     border-radius: 8px;
     display: flex;
@@ -24,10 +21,8 @@
       flex-direction: row;
       flex-wrap: wrap;
       gap: 8px;
+      height: 250px;
       width: 380px;
-      ::-webkit-scrollbar-track {
-        background: red;
-      }
 
       .thumbnail {
         width: 84px;

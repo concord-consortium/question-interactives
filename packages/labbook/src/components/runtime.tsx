@@ -283,7 +283,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const uploadImageMode = (backgroundSource === "upload" || showUploadImageButton);
   const selectedItemHasImageUrl = !!(selectedItem?.data?.userBackgroundImageUrl);
-  const mediaLibraryEnabled = allowUploadFromMediaLibrary && mediaLibrary?.enabled && mediaLibrary?.items.length;
+  const mediaLibraryEnabled = allowUploadFromMediaLibrary && mediaLibrary?.enabled && mediaLibrary?.items.length > 0;
   const mediaLibraryItems = mediaLibraryEnabled ? mediaLibrary.items.filter((i) => i.type === "image") : undefined;
 
   return (

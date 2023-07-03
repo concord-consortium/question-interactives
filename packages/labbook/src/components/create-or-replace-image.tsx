@@ -57,7 +57,7 @@ export const CreateOrReplaceImage: React.FC<IProps> = ({onUploadImage, onUploadS
               {disabled ? "Please Wait" : "Replace Current Image"}
             </div>
           </UploadButton>
-          <UploadButton disabled={disabled} onClick={() => onUploadImage("", "create")}>
+          <UploadButton disabled={disabled || reachedMaxEntries} onClick={() => onUploadImage("", "create")}>
           <div className={css["button-text"]}>
             {disabled ? "Please Wait" : "Create New Image"}
           </div>
