@@ -79,18 +79,18 @@ context("Test drag and drop interactive", () => {
       });
       phoneListen("authoredState");
 
-      cy.getIframeBody().find("#root_prompt").type("Test prompt");
+      cy.getIframeBody().find("#root_prompt").type(" Test prompt");
       getAndClearLastPhoneMessage(state => {
         expect(state.version).eql(1);
         expect(state.prompt).include("Test prompt");
       }, 100);
 
-      cy.getIframeBody().find("#root_hint").type("h{backspace}");
+      cy.getIframeBody().find("#root_hint").type(" h{backspace}");
       getAndClearLastPhoneMessage(state => {
         expect(state.hint).eql("");
       }, 100);
 
-      cy.getIframeBody().find("#root_hint").type("Hint");
+      cy.getIframeBody().find("#root_hint").type(" Hint");
       getAndClearLastPhoneMessage(state => {
         expect(state.hint).include("Hint");
       }, 100);

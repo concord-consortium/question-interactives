@@ -100,14 +100,14 @@ context("Test fill in the blank interactive", () => {
       });
       phoneListen("authoredState");
 
-      cy.getIframeBody().find("#root_prompt").type("Test prompt with [blank-1]");
+      cy.getIframeBody().find("#root_prompt").type(" Test prompt with [blank-1]");
       getAndClearLastPhoneMessage(state => {
         expect(state.version).eql(1);
         expect(state.prompt).include("Test prompt with [blank-1]");
         expect(state.blanks.length).eql(1);
       }, 100);
 
-      cy.getIframeBody().find("#root_hint").type("Hint");
+      cy.getIframeBody().find("#root_hint").type(" Hint");
       getAndClearLastPhoneMessage(state => {
         expect(state.hint).include("Hint");
       }, 100);
