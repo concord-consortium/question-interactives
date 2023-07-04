@@ -312,13 +312,13 @@ context("Test carousel interactive", () => {
       });
       phoneListen("authoredState");
 
-      cy.getIframeBody().find("#root_prompt").type("Test prompt");
+      cy.getIframeBody().find("#root_prompt").type(" Test prompt");
       getAndClearLastPhoneMessage(state => {
         expect(state.version).eql(2);
         expect(state.prompt).include("Test prompt");
       }, 200);
 
-      cy.getIframeBody().find("#root_hint").type("Hint");
+      cy.getIframeBody().find("#root_hint").type(" Hint");
       getAndClearLastPhoneMessage(state => {
         expect(state.hint).include("Hint");
       }, 200);
@@ -327,7 +327,7 @@ context("Test carousel interactive", () => {
       cy.getIframeBody().find("[data-cy=select-subquestion]").select("Open response");
       cy.getIframeBody().find("[data-cy=subquestion-authoring]").click();
 
-      cy.getNestedIframeBody().find("#root_prompt").type("Test subquestion prompt");
+      cy.getNestedIframeBody().find("#root_prompt").type(" Test subquestion prompt");
       getAndClearLastPhoneMessage(state => {
         expect(state.subinteractives[0].authoredState.prompt).include("Test subquestion prompt");
       }, 200);
