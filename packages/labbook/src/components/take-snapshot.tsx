@@ -6,6 +6,8 @@ import { useLinkedInteractiveId } from "@concord-consortium/question-interactive
 import SnapShotIcon from "../assets/snapshot-image-icon.svg";
 import { Log } from "../labbook-logging";
 
+import css from "./upload-button.scss";
+
 export interface IProps {
   authoredState: IGenericAuthoredState; // so it works with DrawingTool and ImageQuestion
   interactiveState?: IGenericInteractiveState | null;
@@ -49,10 +51,12 @@ export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState
             disabled={snapshotInProgress || disabled}
             data-testid="snapshot-btn">
                 <SnapShotIcon />
+                <div className={css["button-text"]}>
                 { snapshotInProgress || disabled
                   ? "Please Wait"
                   : "Take Snapshot"
                 }
+                </div>
           </UploadButton>
       }
     </>

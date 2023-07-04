@@ -7,11 +7,12 @@
 
   .dropArea {
     padding: 13px 25px;
-    width: 197px;
+    width: 300px;
     height: 126px;
     display: flex;
     align-content: center;
     align-items: center;
+    text-align: center;
     justify-content: center;
     background-color: #ddd;
     border-radius: 8px;
@@ -21,7 +22,7 @@
     width: fit-content;
     display: flex;
     align-items: center;
-    margin: 5px 10px;
+    margin: 10px 10px;
     padding: 1px 2px;
     border-radius: 4px;
     border: solid 1.5px var(--cc-charcoal-light-1);

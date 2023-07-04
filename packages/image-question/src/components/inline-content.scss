@@ -1,0 +1,40 @@
+legend.prompt { // clear bootstrap stuff
+  display: unset;
+  width: unset;
+  margin-bottom: unset;
+  font-size: 1rem;
+  border: unset;
+  padding-bottom: 5px;
+
+  img {
+    height: auto;
+    max-width: 100%;
+  }
+}
+
+.answerPrompt {
+  margin-top: 10px;
+  margin-bottom: 4px;
+}
+
+.buttonContainer {
+  display: flex;
+  align-items: center;
+}
+
+.warn {
+  color: darkred;
+}
+
+.error {
+  color: darkred;
+  font-weight: bold;
+}
+
+.studentAnswerText {
+  font-size: 0.9rem;
+}
+
+.inlineImg {
+  max-width: 100%;
+}
