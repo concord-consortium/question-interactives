@@ -1,0 +1,45 @@
+.dialogContent {
+  width: 960px;
+  margin: 0 auto;
+  position: relative;
+
+  .drawingTool {
+    vertical-align: top;
+    margin-right: 20px;
+    width: 650px;
+    display: inline-block;
+  }
+
+  .dialogRightPanel {
+    vertical-align: top;
+    display: inline-block;
+    width: 280px;
+    color: var(--cc-charcoal);
+
+    .prompt {
+      margin-top: 5px;
+    }
+
+    .default {
+      font-style: italic;
+    }
+
+    .hasAnswer {
+      font-style: normal;
+    }
+
+    hr {
+      border-color: var(--cc-charcoal-light-1);
+    }
+
+    .closeDialogSection {
+      text-align: right;
+
+      .closeDialogButtons {
+        display: flex;
+        width: 100%;
+        justify-content: center;
+      }
+    }
+  }
+}

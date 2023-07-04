@@ -80,14 +80,18 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         <TakeSnapshot authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} />
       }
       { showUploadModal &&
-        <UploadFromMediaLibraryDialog
-          onUploadImage={handleUploadImage}
-          onUploadStart={handleUploadStart}
-          mediaLibraryItems={mediaLibraryItems}
-          uploadInProgress={uploadInProgress}
-          setUploadInProgress={setUploadInProgress}
-          handleCloseModal={() => setShowUploadModal(false)}
-        />
+        <>
+          {/*create an empty div with needed height so modal can overlay properly*/}
+          <div style={{height: "600px"}}/>
+          <UploadFromMediaLibraryDialog
+            onUploadImage={handleUploadImage}
+            onUploadStart={handleUploadStart}
+            mediaLibraryItems={mediaLibraryItems}
+            uploadInProgress={uploadInProgress}
+            setUploadInProgress={setUploadInProgress}
+            handleCloseModal={() => setShowUploadModal(false)}
+          />
+        </>
       }
       {
         !readOnly && useUpload && !showUploadModal &&
