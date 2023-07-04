@@ -123,8 +123,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const mediaLibraryEnabled = allowUploadFromMediaLibrary && mediaLibrary?.enabled && mediaLibrary?.items.length > 0;
   const mediaLibraryItems = mediaLibraryEnabled ? mediaLibrary.items.filter((i) => i.type === "image") : undefined;
 
-  console.log({uploadInProgress});
-
   return (
     <>
       { showUploadModal && !uploadInProgress ?
