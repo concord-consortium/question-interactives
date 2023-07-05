@@ -124,8 +124,8 @@ const useLinkedInteractivesInSchema = (schema: RJSFSchema, linkedInteractiveProp
     // or dependency tree.
     const propDefinition = getNestedObject(schemaWithInteractives, name);
     if (propDefinition) {
-      propDefinition.enum = interactiveList[name]?.ids;
-      propDefinition.enumNames = interactiveList[name]?.names;
+      propDefinition.enum = interactiveList[name]?.ids.length ? interactiveList[name]?.ids : ["none"];
+      propDefinition.enumNames = interactiveList[name]?.names.length ? interactiveList[name]?.names : ["No linked interactives available"];
     }
   });
 
