@@ -130,11 +130,29 @@ context("Test graph interactive", () => {
           version: 1,
           graphsPerRow: 2,
           dataSourceInteractive1: "testInt1",
-          dataSourceInteractive2: "testInt2"
+          dataSourceInteractive2: "testInt3"
         },
         // Note that this is necessary, see use-linked-interactives hook for implementation details.
         // Generally, labels need to match authored state properties, and IDs become values in the authored state.
-        linkedInteractives: [ {id: "testInt1", label: "dataSourceInteractive1"}, {id: "testInt2", label: "dataSourceInteractive2"} ]
+        linkedInteractives: [ {id: "testInt1", label: "dataSourceInteractive1"}, {id: "testInt3", label: "dataSourceInteractive2"} ]
+      });
+
+      phoneListen("getInteractiveList");
+
+      cy.wait(500);
+
+      getAndClearAllPhoneMessage(messages => {
+        messages.forEach(msg => {
+          phonePost("interactiveList", {
+            requestId: msg.requestId,
+            interactives: [
+              { id: "testInt1", name: "Test Interactive 1" }, // value / index 0
+              { id: "testInt2", name: "Test Interactive 2" },
+              { id: "testInt3", name: "Test Interactive 3" }, // value / index 2
+              { id: "testInt4", name: "Test Interactive 4" },
+            ]
+          });
+        });
       });
 
       cy.getIframeBody().find("#app").should("include.text", "Number of graphs per row");
@@ -145,8 +163,9 @@ context("Test graph interactive", () => {
       // New version of react-jsonschema-form doesn't set the value of the radio buttons to any descriptive value.
       // We need to rely on index. That's why it's 1 (index) and not 2 (value).
       cy.getIframeBody().find("#root_graphsPerRow input[checked]").should("have.value", "1");
-      cy.getIframeBody().find("#root_dataSourceInteractive1").should("have.value", "testInt1");
-      cy.getIframeBody().find("#root_dataSourceInteractive2").should("have.value", "testInt2");
+      // Similar to above, we need to rely on index too.
+      cy.getIframeBody().find("#root_dataSourceInteractive1").should("have.value", "0");
+      cy.getIframeBody().find("#root_dataSourceInteractive2").should("have.value", "2");
     });
 
     it("renders authoring form and sends back authored state", () => {
@@ -164,7 +183,7 @@ context("Test graph interactive", () => {
       });
 
       // We'd still like to make this work , but couldn't get it to work at the moment.
-      // So instead adding the cy.wait() on line 179
+      // So instead adding the cy.wait() on line 203
       // so that the test doesn't remain flakey which it currently is.
       // phoneListen("getInteractiveList", msg => {
       //   phonePost("interactiveList", {
@@ -181,7 +200,7 @@ context("Test graph interactive", () => {
       phoneListen("getInteractiveList");
       phoneListen("authoredState");
 
-      cy.wait(1000);
+      cy.wait(500);
 
       // The messages that are returned can have an authored state and/or an interactive list request
       // Ideally, we'd like to look for the message type which is currently not present in the receivedMessage

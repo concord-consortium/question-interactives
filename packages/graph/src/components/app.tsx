@@ -51,8 +51,8 @@ const baseAuthoringProps = {
       dataSourceInteractive1: {
         title: "Data Source Interactive 1",
         type: "string",
-        enum: [],
-        enumNames: []
+        enum: ["none"],
+        enumNames: ["No linked interactives available"]
       }
     },
     // Why this strange chain of dependencies?
@@ -70,8 +70,8 @@ const baseAuthoringProps = {
           dataSourceInteractive2: {
             title: "Data Source Interactive 2",
             type: "string",
-            enum: [],
-            enumNames: []
+            enum: ["none"],
+            enumNames: ["No linked interactives available"]
           }
         }
       },
@@ -84,8 +84,8 @@ const baseAuthoringProps = {
           dataSourceInteractive3: {
             title: "Data Source Interactive 3",
             type: "string",
-            enum: [],
-            enumNames: []
+            enum: ["none"],
+            enumNames: ["No linked interactives available"]
           }
         }
       },
