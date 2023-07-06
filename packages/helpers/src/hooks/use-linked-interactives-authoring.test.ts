@@ -59,6 +59,11 @@ describe("useLinkedInteractives", () => {
         }
       }
     };
+    const uiSchema = {
+      linkedInteractive1: {
+        "ui:enumDisabled": []
+      }
+    }
     const HookWrapper = () => {
       return useLinkedInteractivesAuthoring({
         linkedInteractiveProps: [
@@ -67,7 +72,7 @@ describe("useLinkedInteractives", () => {
           { label: "linkedInteractive3" } // this one is not present in the schema definition above
         ],
         schema,
-        // no ui schema passed in this test
+        uiSchema
       });
     };
     await act(async () => {
@@ -94,7 +99,12 @@ describe("useLinkedInteractives", () => {
           }
         }
         // Note that linkedInteractive3 wasn't listed in the original schema, so it's not added here either.
-      }, undefined]);
+      },
+      {
+        linkedInteractive1: {
+          "ui:enumDisabled": []
+        }
+      }]);
       expect(getInteractiveListMock.mock.calls[0][0]).toEqual({ scope: "page", supportsSnapshots: true });
       expect(getInteractiveListMock.mock.calls[1][0]).toEqual({ scope: "page", supportsSnapshots: undefined });
     });
@@ -204,6 +214,52 @@ describe("useLinkedInteractives", () => {
     rerender();
     expect(setLinkedInteractivesMock).toHaveBeenCalledWith({
       linkedInteractives: [{id: "new ID 2", label: "linkedInteractive1"}]
+    });
+  });
+
+  it("disables the 'No linked interactives available' option when there are no linked interactives", async () => {
+    contextInitMessage = {
+      mode: "authoring"
+    };
+    interactiveList = [];
+    const schema = {
+      properties: {
+        interactive: {
+          type: "string" as const
+        }
+      }
+    };
+    const uiSchema = {
+      interactive: {
+        "ui:enumDisabled": []
+      },
+    }
+    const HookWrapper = () => {
+      return useLinkedInteractivesAuthoring({
+        linkedInteractiveProps: [
+          { label: "interactive", supportsSnapshots: true },
+        ],
+        schema,
+        uiSchema
+      });
+    };
+    await act(async () => {
+      const { result, waitForNextUpdate } = renderHook(HookWrapper);
+      await waitForNextUpdate();
+      await waitForNextUpdate();
+      expect(result.current).toEqual([{
+        properties: {
+          interactive: {
+            type: "string",
+            enum: [ "none" ],
+            enumNames: [ "No linked interactives available" ]
+          }
+        }
+      }, {
+        interactive: {
+          "ui:enumDisabled": ["none"]
+        }
+      }]);
     });
   });
 });
