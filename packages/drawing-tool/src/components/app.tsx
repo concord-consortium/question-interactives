@@ -270,6 +270,9 @@ export const baseAuthoringProps = {
     imagePosition: {
       "ui:widget": "radio"
     },
+    snapshotTarget: {
+      "ui:enumDisabled": []
+    },
     ...exportToMediaLibrary.uiSchema
   },
   // Can't get defaults to work with custom stamps, so validating would be ugly and confusing for users until

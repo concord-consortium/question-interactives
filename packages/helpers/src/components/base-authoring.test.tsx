@@ -14,7 +14,7 @@ jest.mock("@concord-consortium/lara-interactive-api", () => ({
 }));
 
 jest.mock("../hooks/use-linked-interactives-authoring", () => ({
-  useLinkedInteractivesAuthoring: jest.fn((props: any) => props.schema)
+  useLinkedInteractivesAuthoring: jest.fn((props: any) => [props.schema, props.uiSchema])
 }));
 
 const useLinkedInteractivesAuthoringMock = useLinkedInteractivesAuthoring as jest.Mock;

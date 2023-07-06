@@ -66,14 +66,15 @@ describe("useLinkedInteractives", () => {
           { label: "linkedInteractive2" },
           { label: "linkedInteractive3" } // this one is not present in the schema definition above
         ],
-        schema
+        schema,
+        // no ui schema passed in this test
       });
     };
     await act(async () => {
       const { result, waitForNextUpdate } = renderHook(HookWrapper);
       await waitForNextUpdate();
       await waitForNextUpdate();
-      expect(result.current).toEqual({
+      expect(result.current).toEqual([{
         properties: {
           linkedInteractive1: {
             type: "string",
@@ -93,7 +94,7 @@ describe("useLinkedInteractives", () => {
           }
         }
         // Note that linkedInteractive3 wasn't listed in the original schema, so it's not added here either.
-      });
+      }, undefined]);
       expect(getInteractiveListMock.mock.calls[0][0]).toEqual({ scope: "page", supportsSnapshots: true });
       expect(getInteractiveListMock.mock.calls[1][0]).toEqual({ scope: "page", supportsSnapshots: undefined });
     });

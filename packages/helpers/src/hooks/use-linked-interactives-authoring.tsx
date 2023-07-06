@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import deepmerge from "deepmerge";
-import { RJSFSchema } from "@rjsf/utils";
+import { RJSFSchema, UiSchema } from "@rjsf/utils";
 import {
   useAuthoredState, getInteractiveList, ILinkedInteractive, setLinkedInteractives
 } from "@concord-consortium/lara-interactive-api";
@@ -15,6 +15,7 @@ export interface ILinkedInteractiveProp {
 export interface IProps {
   linkedInteractiveProps?: ILinkedInteractiveProp[];
   schema: RJSFSchema;
+  uiSchema?: UiSchema;
 }
 
 type AuthoredState = Record<string, any>;
@@ -36,11 +37,11 @@ const getNestedObject = (object: Record<string, any>, targetProp: string): Recor
   }
 };
 
-export const useLinkedInteractivesAuthoring = ({ linkedInteractiveProps, schema }: IProps) => {
+export const useLinkedInteractivesAuthoring = ({ linkedInteractiveProps, schema, uiSchema }: IProps) => {
   // This hook provides two separate features in fact. But it doesn't make sense to use one without another,
   // so it's all provided as one hook.
   useLinkedInteractivesInAuthoredState(linkedInteractiveProps);
-  return useLinkedInteractivesInSchema(schema, linkedInteractiveProps);
+  return useLinkedInteractivesInSchema(schema, uiSchema, linkedInteractiveProps);
 };
 
 // Handle authored state update. Each time one of the linked interactive properties is updated, send updated
@@ -98,7 +99,7 @@ const useLinkedInteractivesInAuthoredState = (linkedInteractiveProps?: ILinkedIn
 };
 
 // Get the list of interactives that are on the same page.
-const useLinkedInteractivesInSchema = (schema: RJSFSchema, linkedInteractiveProps?: ILinkedInteractiveProp[]) => {
+const useLinkedInteractivesInSchema = (schema: RJSFSchema, uiSchema?: UiSchema, linkedInteractiveProps?: ILinkedInteractiveProp[]) => {
   const initMessage = useContextInitMessage();
   const [ interactiveList, setInteractiveList ] = useState<{[label: string]: {names: string[], ids: string[]}}>({});
 
@@ -116,18 +117,29 @@ const useLinkedInteractivesInSchema = (schema: RJSFSchema, linkedInteractiveProp
     }
   }, [initMessage?.mode, interactiveItemId, linkedInteractiveProps, schema?.properties]);
 
-  // Generate new schema with the list of interactives.
+  // Generate new schema and uiSchema with the list of interactives.
   const schemaWithInteractives = deepmerge({}, schema); // deep clone using deepmerge
+  const uiSchemaWithInteractives = uiSchema ? deepmerge({}, uiSchema) : undefined;
   linkedInteractiveProps?.forEach(li => {
     const name = li.label;
     // Why nested object? Property can be either in the schema top-level or nested within other properties
     // or dependency tree.
     const propDefinition = getNestedObject(schemaWithInteractives, name);
     if (propDefinition) {
-      propDefinition.enum = interactiveList[name]?.ids.length ? interactiveList[name]?.ids : ["none"];
+      const hasInteractiveIds = interactiveList[name]?.ids.length > 0;
+      propDefinition.enum = hasInteractiveIds ? interactiveList[name]?.ids : ["none"];
       propDefinition.enumNames = interactiveList[name]?.names.length ? interactiveList[name]?.names : ["No linked interactives available"];
+
+      if (uiSchemaWithInteractives) {
+        // no nested object lookup here as the ui schema only uses top level keys
+        const uiDefinition = uiSchemaWithInteractives[name];
+        if (uiDefinition) {
+          // disable the "none" option when there are no interactives to select
+          uiDefinition["ui:enumDisabled"] = hasInteractiveIds ? [] : propDefinition.enum;
+        }
+      }
     }
   });
 
-  return schemaWithInteractives;
+  return [schemaWithInteractives, uiSchemaWithInteractives] as const;
 };
