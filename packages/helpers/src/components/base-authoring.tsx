@@ -76,7 +76,7 @@ export const BaseAuthoring = <IAuthoredState,>({ authoredState, setAuthoredState
   }, [setTokenServiceClient]);
 
   // This hook provides list of interactives on a given page and saving of the linked interactive IDs.
-  const schemaWithInteractives = useLinkedInteractivesAuthoring({ linkedInteractiveProps, schema });
+  const [schemaWithInteractives, uiSchemaWithInteractives] = useLinkedInteractivesAuthoring({ linkedInteractiveProps, schema, uiSchema });
 
   return (
     <div className={css.authoring}>
@@ -84,7 +84,7 @@ export const BaseAuthoring = <IAuthoredState,>({ authoredState, setAuthoredState
         ref={formRef}
         validator={validator}
         schema={schemaWithInteractives}
-        uiSchema={uiSchema}
+        uiSchema={uiSchemaWithInteractives}
         widgets={widgets}
         formData={authoredState}
         onChange={onChange}

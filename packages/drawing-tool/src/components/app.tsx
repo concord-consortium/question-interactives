@@ -213,8 +213,8 @@ export const baseAuthoringProps = {
               snapshotTarget: {
                 title: "Snapshot target",
                 type: "string",
-                enum: [],
-                enumNames: []
+                enum: ["none"],
+                enumNames: ["No linked interactives available"]
               },
               ...backgroundProps
             }
@@ -269,6 +269,9 @@ export const baseAuthoringProps = {
     },
     imagePosition: {
       "ui:widget": "radio"
+    },
+    snapshotTarget: {
+      "ui:enumDisabled": []
     },
     ...exportToMediaLibrary.uiSchema
   },
