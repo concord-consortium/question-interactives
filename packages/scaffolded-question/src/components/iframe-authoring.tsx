@@ -11,7 +11,7 @@ import css from "./iframe-authoring.scss";
 
 export const IframeAuthoring: React.FC<FieldProps> = props => {
   const { onChange, formData } = props;
-  const { libraryInteractiveId, authoredState, id } = formData;
+  const { libraryInteractiveId, authoredState, id } = formData || {};
   const [ iframeHeight, setIframeHeight ] = useState(300);
   const [ authoringOpened, setAuthoringOpened ] = useState(false);
   const interactiveWrapperClass = authoringOpened ? `${css.iframeAuthoring} ${css.open}` : css.iframeAuthoring;

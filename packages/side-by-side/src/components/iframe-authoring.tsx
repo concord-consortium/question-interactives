@@ -17,7 +17,7 @@ export const LocalLinkedInteractiveId = "Side-by-side Data";
 
 export const IframeAuthoring: React.FC<FieldProps> = props => {
   const { onChange, formData } = props;
-  const { libraryInteractiveId, authoredState, id, navImageUrl, navImageAltText } = formData;
+  const { libraryInteractiveId, authoredState, id, navImageUrl, navImageAltText } = formData || {};
   const [ iframeHeight, setIframeHeight ] = useState(300);
   const [ authoringOpened, setAuthoringOpened ] = useState(false);
   const interactiveWrapperClass = authoringOpened ? `${css.iframeAuthoring} ${css.open}` : css.iframeAuthoring;
