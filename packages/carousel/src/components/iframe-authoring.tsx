@@ -17,7 +17,7 @@ const availableInteractives = libraryInteractives;
 export const IframeAuthoring: React.FC<FieldProps> = props => {
   const { onChange, formData } = props;
   const { tokenServiceClient } = props.formContext as IFormContext<unknown>;
-  const { libraryInteractiveId, authoredState, id, navImageUrl, navImageAltText } = formData;
+  const { libraryInteractiveId, authoredState, id, navImageUrl, navImageAltText } = formData || {};
   const [ iframeHeight, setIframeHeight ] = useState(300);
   const [ authoringOpened, setAuthoringOpened ] = useState(false);
   const interactiveWrapperClass = authoringOpened ? `${css.iframeAuthoring} ${css.open}` : css.iframeAuthoring;
