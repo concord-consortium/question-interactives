@@ -1,6 +1,6 @@
 {
   "name": "graph",
-  "version": "1.14.0",
+  "version": "1.15.0",
   "description": "Graph interactive",
   "repository": {
     "type": "git",
@@ -106,7 +106,7 @@
   },
   "dependencies": {
     "@concord-consortium/lara-interactive-api": "^1.9.3",
-    "@concord-consortium/question-interactives-helpers": "^1.14.0",
+    "@concord-consortium/question-interactives-helpers": "^1.15.0",
     "@rjsf/utils": "^5.0.1",
     "chart.js": "^3.9.1",
     "chartjs-plugin-datalabels": "^2.1.0",
