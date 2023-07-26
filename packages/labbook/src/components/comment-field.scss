@@ -12,13 +12,20 @@
     margin-right: 0px;
   }
 
+  &.readOnly {
+    // take up the full width in the portal reports
+    width: 100%;
+  }
+
   &:focus, &:focus-visible {
     border: solid 1.5px var(--cc-charcoal-light-3);
   }
 
   .comment-field-text {
-    padding-left: 32px;
-    white-space: pre;
+    padding: 10px 10px 10px 32px;
+    // add line breaks to keep the text within the outer comment-field container
+    // but preserve the user entered newlines in the comment.
+    white-space: pre-line;
     max-height: 100%;
     min-height: 56px;
   }
