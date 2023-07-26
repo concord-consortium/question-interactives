@@ -12,6 +12,7 @@ export interface IAuthoredState extends IDrawingToolAuthoredState {
   maxItems: number;
   showItems: number;
   showUploadImageButton: boolean;
+  hideAnnotationTool: boolean;
 }
 
 export interface ILabbookEntry {
@@ -39,4 +40,5 @@ export const DemoAuthoredState: IAuthoredState = {
   showItems: 4,
   showUploadImageButton: false,
   backgroundSource: "upload",
+  hideAnnotationTool: false,
 };
