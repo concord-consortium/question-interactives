@@ -71,7 +71,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     return result;
   };
 
-  const {showUploadImageButton, backgroundSource, allowUploadFromMediaLibrary } = authoredState;
+  const {showUploadImageButton, backgroundSource, allowUploadFromMediaLibrary, hideAnnotationTool } = authoredState;
   const [mediaLibrary, setMediaLibrary] = useState<IMediaLibrary|undefined>(undefined);
 
   const initMessage = useInitMessage();
@@ -272,14 +272,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     setShowUploadModal(true);
   };
 
-  const drawingToolButtons = [
-    'select',
-    'free',
-    'shapesPalette',
-    'stamp',
-    'annotation',
-    'trash',
-  ];
+  const drawingToolButtons = ['select', 'free', 'shapesPalette', 'stamp']
+    .concat(hideAnnotationTool ? [] : ['annotation'])
+    .concat('trash');
 
   const uploadImageMode = (backgroundSource === "upload" || showUploadImageButton);
   const selectedItemHasImageUrl = !!(selectedItem?.data?.userBackgroundImageUrl);
