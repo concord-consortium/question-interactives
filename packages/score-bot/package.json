@@ -1,6 +1,6 @@
 {
   "name": "score-bot",
-  "version": "1.15.0",
+  "version": "1.16.0",
   "description": "Score Bot interactive",
   "repository": {
     "type": "git",
@@ -108,7 +108,7 @@
   "dependencies": {
     "@concord-consortium/dynamic-text": "^1.0.4",
     "@concord-consortium/lara-interactive-api": "^1.9.4",
-    "@concord-consortium/question-interactives-helpers": "^1.15.0",
+    "@concord-consortium/question-interactives-helpers": "^1.16.0",
     "@concord-consortium/text-decorator": "^1.0.2",
     "@rjsf/utils": "^5.0.1",
     "classnames": "^2.3.1",
