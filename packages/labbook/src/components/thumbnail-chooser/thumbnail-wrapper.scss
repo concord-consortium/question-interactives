@@ -71,6 +71,7 @@
     color: $gray-dark;
     font-size: pxToRem(26);
     position: absolute;
+    padding: 0;
     top: -5px;
     right: -5px;
     width: 30px;
@@ -84,6 +85,13 @@
     transition: background-color .25s;
     stroke: $gray-dark;
     cursor: pointer;
+
+    // this nudges the close X svg over to the center of the button on iPads
+    @media only screen and (min-device-width: 768px) and (max-device-width: 1024px) {
+      svg {
+        margin-left: 1px;
+      }
+    }
 
     &:hover {
       background-color: $gray-button-hover;
