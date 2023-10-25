@@ -9,15 +9,22 @@ import { Log } from "../labbook-logging";
 import css from "./upload-button.scss";
 
 export interface IProps {
-  authoredState: IGenericAuthoredState; // so it works with DrawingTool and ImageQuestion
+  authoredState?: IGenericAuthoredState; // so it works with DrawingTool and ImageQuestion
   interactiveState?: IGenericInteractiveState | null;
+  selectedItemHasImageUrl?: boolean;
   setInteractiveState?: (updateFunc: (prevState: IGenericInteractiveState | null) => IGenericInteractiveState) => void;
   onUploadStart?: () => void;
   disabled?: boolean;
+  text?: string;
+  onUploadImage: (url: string, mode?: "replace" | "create") => void;
   onUploadComplete?: (result: { success: boolean }) => void;
+  handleUploadModalClick?: (type: string) => void;
+  uploadMode?: "replace" | "create";
+  showUploadModal?: boolean;
 }
 
-export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, onUploadStart, onUploadComplete, disabled}) => {
+export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState, selectedItemHasImageUrl, disabled, text,
+    uploadMode, showUploadModal, setInteractiveState, onUploadImage, onUploadStart, onUploadComplete, handleUploadModalClick }) => {
   const [ snapshotInProgress, setSnapshotInProgress ] = useState(false);
   const snapshotTarget = useLinkedInteractiveId("snapshotTarget");
 
@@ -28,7 +35,8 @@ export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState
       const response = await getInteractiveSnapshot({ interactiveItemId: snapshotTarget });
       setSnapshotInProgress(false);
       if (response.success && response.snapshotUrl) {
-        setInteractiveState?.(prevState => ({
+        onUploadImage(response.snapshotUrl, uploadMode);
+        authoredState && setInteractiveState?.(prevState => ({
           ...prevState,
           userBackgroundImageUrl: response.snapshotUrl,
           answerType: getAnswerType(authoredState.questionType)
@@ -43,18 +51,26 @@ export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState
     }
   };
 
+  const handleTakeSnapshot = () => {
+    if (selectedItemHasImageUrl && !showUploadModal) {
+      handleUploadModalClick && handleUploadModalClick("snapshot");
+    } else {
+      handleSnapshot();
+    }
+  };
+
   return (
     <>
       {
         snapshotTarget &&
-          <UploadButton onClick={handleSnapshot}
+          <UploadButton onClick={handleTakeSnapshot}
             disabled={snapshotInProgress || disabled}
             data-testid="snapshot-btn">
                 <SnapShotIcon />
                 <div className={css["button-text"]}>
                 { snapshotInProgress || disabled
                   ? "Please Wait"
-                  : "Take Snapshot"
+                  : text
                 }
                 </div>
           </UploadButton>

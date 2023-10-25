@@ -21,11 +21,12 @@ export interface IProps {
   wideLayout: boolean;
   mediaLibraryItems?: IMediaLibraryItem[];
   selectedItemHasImageUrl: boolean;
+  type: string;
 }
 
 export const UploadModal: React.FC<IProps> = ({onUploadImage, onUploadStart, onUploadComplete,
   handleCloseModal, disabled, thumbnailChooserProps, selectedId, reachedMaxEntries, wideLayout,
-  mediaLibraryItems, selectedItemHasImageUrl}) => {
+  mediaLibraryItems, selectedItemHasImageUrl, type}) => {
     const [uploadMode, setUploadMode] = useState<"replace" | "create">("replace");
     const [showMediaLibraryPicker, setShowMediaLibraryPicker] = useState<boolean>(false);
 
@@ -38,6 +39,10 @@ export const UploadModal: React.FC<IProps> = ({onUploadImage, onUploadStart, onU
     Log({action: "picture uploaded", data: {url}});
     onUploadImage(url, uploadMode);
   };
+
+  const uploadImageHandler = mediaLibraryItems
+                              ? handleSetUploadMode
+                              : onUploadImage;
 
   return (
     <div className={css.modal}>
@@ -61,7 +66,7 @@ export const UploadModal: React.FC<IProps> = ({onUploadImage, onUploadStart, onU
             />
           </> :
           <CreateOrReplaceImage
-            onUploadImage={mediaLibraryItems ? handleSetUploadMode : onUploadImage}
+            onUploadImage={uploadImageHandler}
             disabled={disabled}
             onUploadStart={onUploadStart}
             onUploadComplete={onUploadComplete}
@@ -71,6 +76,7 @@ export const UploadModal: React.FC<IProps> = ({onUploadImage, onUploadStart, onU
             reachedMaxEntries={reachedMaxEntries}
             wideLayout={wideLayout}
             mediaLibraryEnabled={!!mediaLibraryItems}
+            type={type}
           />
         }
       </div>
