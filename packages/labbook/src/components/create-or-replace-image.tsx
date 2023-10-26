@@ -22,9 +22,15 @@ export interface IProps {
 export const CreateOrReplaceImage: React.FC<IProps> = ({onUploadImage, onUploadStart, onUploadComplete,
   onCloseModal, disabled, thumbnailChooserProps, selectedId, reachedMaxEntries, wideLayout, mediaLibraryEnabled}) => {
   const nextItem = thumbnailChooserProps.items.find(i => i.empty);
-  const thumbnailItems = thumbnailChooserProps.items.filter((i) => {
-    return i.id === selectedId || i.id === nextItem?.id;
-  });
+  const thumbnailItems = thumbnailChooserProps.items
+    .filter((i) => {
+      return i.id === selectedId || i.id === nextItem?.id;
+    })
+    .map((i) => {
+      // create a new item, with the label showing, so that we don't update the items in the outer thumbnails
+      const newItem = {...i, empty: false};
+      return newItem;
+    });
   const thumbnailPreviewProps = {...thumbnailChooserProps, items: thumbnailItems, readOnly: true, uploadPreviewMode: true};
 
   const renderThumbnails = () => {

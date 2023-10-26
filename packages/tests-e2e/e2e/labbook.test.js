@@ -69,18 +69,23 @@ context("Test Lab book interactive", () => {
         le.getDrawToolThumbnailTitle().should("have.text", "A");
         le.getCommentsFieldThumbnailTitle().should("have.text", "A");
 
-        le.getThumbnailButton(2).should("have.text", "New");
-        le.getThumbnailTitle(2).should("have.text", "");
+        // The titles are now shown, but hidden, for "new" thumbnails so
+        // that the upload/replace dialog can show them as visible choices
+        le.getThumbnailButton(2).should("have.text", "BNew");
+        le.getThumbnailTitle(2).should("have.text", "B");
+        le.getThumbnailTitle(2).should('not.be.visible');
         le.getThumbnailPlusButton(2).should("exist");
         le.getThumbnailClose(2).should("not.exist");
 
-        le.getThumbnailButton(3).should("have.text", "New");
-        le.getThumbnailTitle(3).should("have.text", "");
+        le.getThumbnailButton(3).should("have.text", "DNew");
+        le.getThumbnailTitle(3).should("have.text", "D");
+        le.getThumbnailTitle(3).should('not.be.visible');
         le.getThumbnailPlusButton(3).should("exist");
         le.getThumbnailClose(3).should("not.exist");
 
-        le.getThumbnailButton(4).should("have.text", "New");
-        le.getThumbnailTitle(4).should("have.text", "");
+        le.getThumbnailButton(4).should("have.text", "FNew");
+        le.getThumbnailTitle(4).should("have.text", "F");
+        le.getThumbnailTitle(4).should('not.be.visible');
         le.getThumbnailPlusButton(4).should("exist");
         le.getThumbnailClose(4).should("not.exist");
 
@@ -150,8 +155,9 @@ context("Test Lab book interactive", () => {
         le.getThumbnailTitle(2).should("have.text", "C");
         le.getThumbnailTitle(3).should("have.text", "D");
 
-        le.getThumbnailButton(4).should("have.text", "New");
-        le.getThumbnailTitle(4).should("have.text", "");
+        le.getThumbnailButton(4).should("have.text", "ENew");
+        le.getThumbnailTitle(4).should("have.text", "E");
+        le.getThumbnailTitle(4).should('not.be.visible');
         le.getThumbnailPlusButton(4).should("exist");
         le.getThumbnailClose(4).should("not.exist");
 
@@ -169,15 +175,17 @@ context("Test Lab book interactive", () => {
         le.getThumbnailButton(2).click();
         le.getThumbnailClose(2).click();
 
-        le.getThumbnailButton(2).should("have.text", "New");
-        le.getThumbnailTitle(2).should("have.text", "");
+        le.getThumbnailButton(2).should("have.text", "BNew");
+        le.getThumbnailTitle(2).should("have.text", "B");
+        le.getThumbnailTitle(2).should('not.be.visible');
         le.getThumbnailPlusButton(2).should("exist");
         le.getThumbnailClose(2).should("not.exist");
 
         le.getThumbnailButton(3).click();
         le.getThumbnailClose(2).click();
-        le.getThumbnailButton(2).should("have.text", "New");
-        le.getThumbnailTitle(2).should("have.text", "");
+        le.getThumbnailButton(2).should("have.text", "BNew");
+        le.getThumbnailTitle(2).should("have.text", "B");
+        le.getThumbnailTitle(2).should('not.be.visible');
         le.getThumbnailPlusButton(2).should("exist");
         le.getThumbnailClose(2).should("not.exist");
       });
