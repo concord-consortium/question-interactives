@@ -67,7 +67,7 @@ export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState
             disabled={snapshotInProgress || disabled}
             data-testid="snapshot-btn">
                 <SnapShotIcon />
-                <div className={css["button-text"]}>
+                <div className={css["runtime button-text"]}>
                 { snapshotInProgress || disabled
                   ? "Please Wait"
                   : text
