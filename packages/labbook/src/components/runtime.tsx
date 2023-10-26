@@ -124,11 +124,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     return item;
   };
 
-  const addBlankItem = () => {
+  const addBlankItem = (label: string) => {
     return {
       id: uuidv4(),
       empty: true,
-      label: "",
+      label,
       data: {},
       onClick: addItem
     };
@@ -140,7 +140,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     const numBlanks = Math.max(1, itemsToShow - _items.length);
     if (_items.length < maxItems) {
       for (let c = 0; c < numBlanks; c++) {
-        _items.push(addBlankItem());
+        _items.push(addBlankItem(numberToAlpha(_items.length + c)));
       }
     }
     return _items;
