@@ -34,7 +34,7 @@ const layoutParam = new URLSearchParams(window.location.search).get("layout");
 const layout = layoutParam === "wide" ? "wide" : "original";
 
 // convert 1-26 to A-Z.
-const numberToAlpha = (value:number) => (value + 10).toString(26).toUpperCase();
+export const numberToAlpha = (value:number) => (value + 10).toString(26).toUpperCase();
 
 const generateItem = () => {
   const id = uuidv4();

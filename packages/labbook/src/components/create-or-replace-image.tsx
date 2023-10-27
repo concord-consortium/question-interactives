@@ -4,6 +4,8 @@ import { UploadImage } from "./upload-image";
 import classnames from "classnames";
 import { UploadButton } from "./upload-button";
 import { TakeSnapshot } from "./take-snapshot";
+import { ThumbnailTitle } from "./thumbnail-chooser/thumbnail-title";
+import { numberToAlpha } from "./runtime";
 
 import css from "./create-or-replace-image.scss";
 
@@ -30,11 +32,12 @@ export const CreateOrReplaceImage: React.FC<IProps> = ({onUploadImage, onUploadS
     })
     .map((i) => {
       // create a new item, with the label showing, so that we don't update the items in the outer thumbnails
-      const newItem = {...i, empty: false};
+      const newItem = {...i, empty: false, showNewText: i.empty};
       return newItem;
     });
-  const thumbnailPreviewProps = {...thumbnailChooserProps, items: thumbnailItems, readOnly: true, uploadPreviewMode: true};
+  const thumbnailPreviewProps = {...thumbnailChooserProps, items: thumbnailItems, readOnly: true, uploadPreviewMode: true, inDialog: true};
   const imageString = type === "upload" ? "Image" : "Snapshot";
+  const fakeEntryTitle = numberToAlpha(thumbnailChooserProps.items.length);
 
   const renderThumbnails = () => {
     return (
@@ -44,6 +47,7 @@ export const CreateOrReplaceImage: React.FC<IProps> = ({onUploadImage, onUploadS
           <ThumbnailChooser {...thumbnailPreviewProps} />
         </div>
         <div className={classnames(css.fakeThumbnail, {[css.wide]: wideLayout})}>
+          <ThumbnailTitle title={fakeEntryTitle} empty={false}/>
           <div className={css.plusButton}>
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
               <line x1="8" y1="0" x2="8" y2="16" strokeWidth="2.5"/>
@@ -85,6 +89,7 @@ export const CreateOrReplaceImage: React.FC<IProps> = ({onUploadImage, onUploadS
                     onUploadComplete={onUploadComplete}
                     text={`Replace Current ${imageString}`}
                     uploadMode={"replace"}
+                    inDialog={true}
                   />
                   <UploadImage
                     onUploadImage={onUploadImage}
@@ -93,6 +98,7 @@ export const CreateOrReplaceImage: React.FC<IProps> = ({onUploadImage, onUploadS
                     onUploadComplete={onUploadComplete}
                     text={`Create New ${imageString}`}
                     uploadMode={"create"}
+                    inDialog={true}
                   />
                 </>
               : <>

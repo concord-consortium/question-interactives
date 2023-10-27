@@ -1,5 +1,15 @@
 @import "../../../helpers/src/styles/px-to-rem.scss";
 
+:global(body.font-size-large) {
+  .upload-button {
+    &.in-dialog {
+      .button-text {
+        padding: 5px 0px;
+      }
+    }
+  }
+}
+
 .upload-button {
   width: fit-content;
   min-width: 160px;
@@ -28,9 +38,13 @@
   }
   .button-text {
     margin: 0px 5px;
-    padding: 6px 4px 9px 5px;
     font-size: pxToRem(16);
     white-space: nowrap;
+  }
+  &.in-dialog {
+    .button-text {
+      padding: 6px 4px 9px 5px;
+    }
   }
 }
 

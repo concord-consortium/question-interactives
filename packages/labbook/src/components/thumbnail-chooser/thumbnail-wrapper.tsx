@@ -12,15 +12,17 @@ export interface IThumbnailWrapperProps {
   readOnly: boolean;
   wideThumbnail?: boolean;
   uploadPreviewMode?: boolean;
+  showNewTextOverride?: boolean;
+  inDialog?: boolean;
 }
 
 export const ThumbnailWrapper: React.FC<IThumbnailWrapperProps> = (props) => {
-  const { selected, setSelectedContainerId, clearContainer, content, readOnly, wideThumbnail, uploadPreviewMode} = props;
+  const { selected, setSelectedContainerId, clearContainer, content, readOnly, wideThumbnail, uploadPreviewMode, showNewTextOverride, inDialog} = props;
   const { onClick, empty, id, label } = content;
   const thumbNailProps = {...content, wideThumbnail};
   const classes = classNames(css["thumbnail-button"], {
     [css.selected]: selected,
-    [css.empty]: empty,
+    [css.empty]: empty && !showNewTextOverride,
     [css.wide]: wideThumbnail,
     [css.preview]: uploadPreviewMode
   });
@@ -45,8 +47,8 @@ export const ThumbnailWrapper: React.FC<IThumbnailWrapperProps> = (props) => {
       >
         <ThumbnailTitle title={label} empty={empty}/>
         {
-          empty && showNewText &&
-          <div className={css["empty-content"]}>
+          (showNewTextOverride || (empty && showNewText)) &&
+          <div className={classNames(css["empty-content"], {[css["in-dialog"]]: inDialog })}>
             <div className={css["plus-button"]} data-testid="thumbnail-plus-button">
               <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" width="16" height="16">
                 <line x1="8" y1="0" x2="8" y2="16" strokeWidth="2.5"/>

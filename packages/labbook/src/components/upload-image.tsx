@@ -17,10 +17,11 @@ export interface IProps {
   text?: string;
   showUploadIcon?: boolean;
   uploadMode?: "replace" | "create";
+  inDialog?: boolean;
 }
 
 export const UploadImage: React.FC<IProps> = ({ onUploadImage, uploadMode, onUploadStart, onUploadComplete, text,
-  disabled, showUploadIcon,}) => {
+  disabled, showUploadIcon, inDialog}) => {
   const [ uploadInProgress, setUploadInProgress ] = useState(false);
 
   useEffect(() => {
@@ -60,7 +61,7 @@ export const UploadImage: React.FC<IProps> = ({ onUploadImage, uploadMode, onUpl
     }
   };
 
-  const classes = classnames(css["upload-button"], {[css.disabled]: uploadInProgress||disabled});
+  const classes = classnames(css["upload-button"], {[css.disabled]: uploadInProgress||disabled, [css["in-dialog"]]: inDialog});
 
   return (
     <>

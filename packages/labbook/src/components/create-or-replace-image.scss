@@ -16,6 +16,7 @@
   }
 
   .fakeThumbnail {
+    position: relative;
     width: 89px;
     height: 84px;
     display: flex;
@@ -39,7 +40,7 @@
 .bottom {
   width: 100%;
   display: flex;
-  margin-top: 30px;
+  margin-top: 25px;
   justify-content: flex-end;
   margin-bottom: 10px;
   .instructions {
