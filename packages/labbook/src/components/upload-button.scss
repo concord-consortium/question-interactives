@@ -2,6 +2,8 @@
 
 .upload-button {
   width: fit-content;
+  min-width: 160px;
+  min-height: 41px;
   display: flex;
   align-items: center;
   margin: 5px 10px;

@@ -64,19 +64,19 @@ export const UploadImage: React.FC<IProps> = ({ onUploadImage, uploadMode, onUpl
 
   return (
     <>
-    <StyledFileInput
-      buttonClass={classes}
-      onChange={handleFileUpload}
-      id={text}
-    >
-      {showUploadIcon && <UploadIcon/>}
-      <div className={css["button-text"]}>
-        { uploadInProgress
-          ? "Please Wait"
-          : text
-        }
-      </div>
-    </StyledFileInput>
+      <StyledFileInput
+        buttonClass={classes}
+        onChange={handleFileUpload}
+        id={text}
+      >
+        {showUploadIcon && <UploadIcon/>}
+        <div className={css["button-text"]}>
+          { uploadInProgress
+            ? "Please Wait"
+            : text
+          }
+        </div>
+      </StyledFileInput>
     </>
   );
 };

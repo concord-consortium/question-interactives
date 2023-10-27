@@ -3,6 +3,7 @@ import { IThumbnailChooserProps, ThumbnailChooser } from "./thumbnail-chooser/th
 import { UploadImage } from "./upload-image";
 import classnames from "classnames";
 import { UploadButton } from "./upload-button";
+import { TakeSnapshot } from "./take-snapshot";
 
 import css from "./create-or-replace-image.scss";
 
@@ -17,10 +18,11 @@ export interface IProps {
   reachedMaxEntries: boolean;
   wideLayout: boolean;
   mediaLibraryEnabled?: boolean;
+  type: string;
 }
 
 export const CreateOrReplaceImage: React.FC<IProps> = ({onUploadImage, onUploadStart, onUploadComplete,
-  onCloseModal, disabled, thumbnailChooserProps, selectedId, reachedMaxEntries, wideLayout, mediaLibraryEnabled}) => {
+  onCloseModal, disabled, thumbnailChooserProps, selectedId, reachedMaxEntries, wideLayout, mediaLibraryEnabled, type}) => {
   const nextItem = thumbnailChooserProps.items.find(i => i.empty);
   const thumbnailItems = thumbnailChooserProps.items
     .filter((i) => {
@@ -32,6 +34,7 @@ export const CreateOrReplaceImage: React.FC<IProps> = ({onUploadImage, onUploadS
       return newItem;
     });
   const thumbnailPreviewProps = {...thumbnailChooserProps, items: thumbnailItems, readOnly: true, uploadPreviewMode: true};
+  const imageString = type === "upload" ? "Image" : "Snapshot";
 
   const renderThumbnails = () => {
     return (
@@ -60,12 +63,12 @@ export const CreateOrReplaceImage: React.FC<IProps> = ({onUploadImage, onUploadS
         <div className={css.uploadButtons}>
           <UploadButton disabled={disabled} onClick={() => onUploadImage("", "replace")}>
             <div className={css["button-text"]}>
-              {disabled ? "Please Wait" : "Replace Current Image"}
+              {disabled ? "Please Wait" : `Replace Current ${imageString}`}
             </div>
           </UploadButton>
           <UploadButton disabled={disabled || reachedMaxEntries} onClick={() => onUploadImage("", "create")}>
           <div className={css["button-text"]}>
-            {disabled ? "Please Wait" : "Create New Image"}
+            {disabled ? "Please Wait" : `Create New ${imageString}`}
           </div>
         </UploadButton>
         </div>
@@ -73,22 +76,44 @@ export const CreateOrReplaceImage: React.FC<IProps> = ({onUploadImage, onUploadS
     } else {
       return (
         <div className={css.uploadButtons}>
-          <UploadImage
-            onUploadImage={onUploadImage}
-            disabled={disabled}
-            onUploadStart={onUploadStart}
-            onUploadComplete={onUploadComplete}
-            text={"Replace Current Image"}
-            uploadMode={"replace"}
-          />
-          <UploadImage
-            onUploadImage={onUploadImage}
-            disabled={disabled || reachedMaxEntries}
-            onUploadStart={onUploadStart}
-            onUploadComplete={onUploadComplete}
-            text={"Create New Image"}
-            uploadMode={"create"}
-          />
+          { type === "upload"
+              ?  <>
+                  <UploadImage
+                    onUploadImage={onUploadImage}
+                    disabled={disabled}
+                    onUploadStart={onUploadStart}
+                    onUploadComplete={onUploadComplete}
+                    text={`Replace Current ${imageString}`}
+                    uploadMode={"replace"}
+                  />
+                  <UploadImage
+                    onUploadImage={onUploadImage}
+                    disabled={disabled || reachedMaxEntries}
+                    onUploadStart={onUploadStart}
+                    onUploadComplete={onUploadComplete}
+                    text={`Create New ${imageString}`}
+                    uploadMode={"create"}
+                  />
+                </>
+              : <>
+                  <TakeSnapshot
+                    disabled={disabled}
+                    text={`Replace Current ${imageString}`}
+                    uploadMode={"replace"}
+                    onUploadImage={onUploadImage}
+                    onUploadStart={onUploadStart}
+                    onUploadComplete={onUploadComplete}
+                  />
+                  <TakeSnapshot
+                    disabled={disabled}
+                    text={`Create New ${imageString}`}
+                    uploadMode={"create"}
+                    onUploadImage={onUploadImage}
+                    onUploadStart={onUploadStart}
+                    onUploadComplete={onUploadComplete}
+                  />
+                </>
+          }
         </div>
       );
     }

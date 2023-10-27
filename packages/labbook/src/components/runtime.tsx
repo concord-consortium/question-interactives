@@ -82,6 +82,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   }, [initMessage]);
 
   const [showUploadModal, setShowUploadModal] = useState(false);
+  const [imageType, setImageType] = useState("");
   const {entries, selectedId} = ensureSelected(interactiveState as IInteractiveState) as IInteractiveState;
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -268,8 +269,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     setShowUploadModal(false);
   };
 
-  const handleUploadModalClick = () => {
+  const handleUploadModalClick = (type: string) => {
     setShowUploadModal(true);
+    setImageType(type);
   };
 
   const drawingToolButtons = ['select', 'free', 'shapesPalette', 'stamp']
@@ -301,6 +303,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             wideLayout={isWideLayout}
             selectedItemHasImageUrl={selectedItemHasImageUrl}
             mediaLibraryItems={mediaLibraryItems}
+            type={imageType}
           />}
         {layout === "original" && <ThumbnailChooser {...thumbnailChooserProps} />}
         <div className={classnames(css["draw-tool-wrapper"], {[css.wide]: isWideLayout})} data-testid="draw-tool">
@@ -322,7 +325,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           <div className={css["buttons"]}>
             {
               ((uploadImageMode && selectedItemHasImageUrl) || mediaLibraryEnabled) &&
-                <UploadButton disabled={disableUI} onClick={handleUploadModalClick}>
+                <UploadButton disabled={disableUI} onClick={()=>handleUploadModalClick("upload")}>
                   <UploadIcon/>
                   <div className={css["button-text"]}>
                     {disableUI ? "Please Wait" : "Upload Image"}
@@ -345,10 +348,15 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               <TakeSnapshot
                 authoredState={authoredState}
                 interactiveState={{...selectedItem?.data, answerType: "interactive_state"}}
+                selectedItemHasImageUrl={selectedItemHasImageUrl}
                 setInteractiveState={handleSetInteractiveStateFn}
                 disabled={disableUI}
+                text={"Take Snapshot"}
+                showUploadModal={showUploadModal}
+                onUploadImage={handleUploadImage}
                 onUploadStart={onUploadStart}
                 onUploadComplete={onUploadEnd}
+                handleUploadModalClick={handleUploadModalClick}
               />
             }
           </div>}
