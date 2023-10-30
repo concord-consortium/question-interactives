@@ -1,7 +1,9 @@
 @import "../../../helpers/src/styles/px-to-rem.scss";
 
-:global(body.font-size-large) {
+:global(body.font-size-large.font-type-notebook) {
   .upload-button {
+    margin: 5px 3px;
+
     &.in-dialog {
       .button-text {
         padding: 5px 0px;

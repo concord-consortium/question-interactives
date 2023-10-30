@@ -1,5 +1,11 @@
 @import "../../../helpers/src/styles/px-to-rem.scss";
 
+:global(body.font-size-large.font-type-notebook) {
+  .uploadButtons {
+    margin-left: 0;
+  }
+}
+
 .header {
   font-weight: bold;
   font-size: pxToRem(16);
