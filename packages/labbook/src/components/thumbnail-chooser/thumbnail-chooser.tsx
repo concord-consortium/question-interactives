@@ -48,12 +48,13 @@ export interface IThumbnailChooserProps {
   readOnly: boolean;
   wideLayout?: boolean;
   uploadPreviewMode?: boolean;
+  inDialog?: boolean;
 }
 
 export const ThumbnailChooser: React.FC<IThumbnailChooserProps> = (props) => {
   const [offset, setOffset] = useState(0);
 
-  const { items, selectedItemId, setSelectedItemId, maxDisplayItems, clearSelectedItemId, readOnly, wideLayout, uploadPreviewMode} = props;
+  const { items, selectedItemId, setSelectedItemId, maxDisplayItems, clearSelectedItemId, readOnly, wideLayout, uploadPreviewMode, inDialog} = props;
   const effectiveOffset = Math.min(offset, items.length - maxDisplayItems);
 
   return (
@@ -61,7 +62,7 @@ export const ThumbnailChooser: React.FC<IThumbnailChooserProps> = (props) => {
       {!uploadPreviewMode && <PrevButton wideLayout={wideLayout} enabled={effectiveOffset > 0} onClick={() => setOffset(effectiveOffset -1)} />}
       <div className={classNames(css["thumbnail-chooser-list"], {[css.wide]: wideLayout, [css.uploadPreview]: uploadPreviewMode})}>
         {items.map( (item, index) => {
-          const {id, empty} = item;
+          const {id, empty, showNewText} = item;
           // Only display a subset of items
           if(index < effectiveOffset) { return null; }
           if(index - effectiveOffset >= maxDisplayItems) { return null; }
@@ -77,6 +78,8 @@ export const ThumbnailChooser: React.FC<IThumbnailChooserProps> = (props) => {
               readOnly={readOnly}
               wideThumbnail={wideLayout}
               uploadPreviewMode={uploadPreviewMode}
+              showNewTextOverride={showNewText}
+              inDialog={inDialog}
             />
           );
         })}

@@ -1,6 +1,18 @@
 @import "../vars.scss";
 @import "../../../../helpers/src/styles/px-to-rem.scss";
 
+:global(body.font-size-large) {
+  .thumbnail-wrapper {
+    .thumbnail-button {
+      .empty-content {
+        &.in-dialog {
+          margin-top: 12px;
+        }
+      }
+    }
+  }
+}
+
 .thumbnail-wrapper {
   position: relative;
   height: 94px;
@@ -42,14 +54,12 @@
       }
     }
 
-    // &.empty {
-    //   border: dashed 1px $gray-dark;
-    //   svg {
-    //     stroke: var(--cc-charcoal);
-    //   }
-    // }
     .empty-content {
       font-size: pxToRem(16);
+
+      &.in-dialog {
+        margin-top: 20px;
+      }
     }
 
     &.selected {

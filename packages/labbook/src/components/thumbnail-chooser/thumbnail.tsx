@@ -12,6 +12,7 @@ export interface IThumbnailProps {
   data: any;
   onClick?: ()=> void;
   wideThumbnail?: boolean;
+  showNewText?: boolean;
 }
 
 export const Thumbnail: React.FC<IThumbnailProps> = (props:IThumbnailProps) => {

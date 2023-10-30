@@ -1,5 +1,13 @@
 @import "../../../helpers/src/styles/px-to-rem.scss";
 
+:global(body.font-size-large) {
+  .modal {
+    .modalContent {
+      height: 300px;
+    }
+  }
+}
+
 .modal {
   position: fixed;
   z-index: 5000;
