@@ -22,10 +22,11 @@ export interface IProps {
   uploadMode?: "replace" | "create";
   showUploadModal?: boolean;
   inDialog?: boolean;
+  reachedMaxEntries?: boolean;
 }
 
 export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState, selectedItemHasImageUrl, disabled, text, uploadMode,
-    showUploadModal, inDialog, setInteractiveState, onUploadImage, onUploadStart, onUploadComplete, handleUploadModalClick }) => {
+  reachedMaxEntries, showUploadModal, inDialog, setInteractiveState, onUploadImage, onUploadStart, onUploadComplete, handleUploadModalClick }) => {
   const [ snapshotInProgress, setSnapshotInProgress ] = useState(false);
   // const snapshotTarget = useLinkedInteractiveId("snapshotTarget");
   const snapshotTarget = "123-MWInteractive";
@@ -71,7 +72,7 @@ export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState
             data-testid="snapshot-btn">
                 {!inDialog && <SnapShotIcon />}
                 <div className={css["runtime button-text"]}>
-                { snapshotInProgress || disabled
+                { (disabled && !reachedMaxEntries) || snapshotInProgress
                   ? "Please Wait"
                   : text
                 }

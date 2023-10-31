@@ -112,13 +112,14 @@ export const CreateOrReplaceImage: React.FC<IProps> = ({onUploadImage, onUploadS
                     inDialog={true}
                   />
                   <TakeSnapshot
-                    disabled={disabled}
+                    disabled={disabled || reachedMaxEntries}
                     text={`Create New ${imageString}`}
                     uploadMode={"create"}
                     onUploadImage={onUploadImage}
                     onUploadStart={onUploadStart}
                     onUploadComplete={onUploadComplete}
                     inDialog={true}
+                    reachedMaxEntries={reachedMaxEntries}
                   />
                 </>
           }
@@ -139,7 +140,7 @@ export const CreateOrReplaceImage: React.FC<IProps> = ({onUploadImage, onUploadS
       <div className={css.bottom}>
         {reachedMaxEntries &&
         <div className={css.instructions}>
-          Create New Image is not available because you have reached the maximum number of entries.
+          {`Create ${imageString} is not available because you have reached the maximum number of entries.`}
         </div>}
         <button className={css.cancelButton} onClick={onCloseModal}>Cancel</button>
       </div>
