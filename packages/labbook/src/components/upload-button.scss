@@ -14,10 +14,11 @@
 
 .upload-button {
   width: fit-content;
-  min-width: 160px;
+  min-width: 180px;
   min-height: 41px;
   display: flex;
   align-items: center;
+  justify-content: center;
   margin: 5px 10px;
   padding: 1px 2px;
   border-radius: 4px;
