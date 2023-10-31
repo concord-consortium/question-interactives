@@ -109,6 +109,7 @@ export const CreateOrReplaceImage: React.FC<IProps> = ({onUploadImage, onUploadS
                     onUploadImage={onUploadImage}
                     onUploadStart={onUploadStart}
                     onUploadComplete={onUploadComplete}
+                    inDialog={true}
                   />
                   <TakeSnapshot
                     disabled={disabled}
@@ -117,6 +118,7 @@ export const CreateOrReplaceImage: React.FC<IProps> = ({onUploadImage, onUploadS
                     onUploadImage={onUploadImage}
                     onUploadStart={onUploadStart}
                     onUploadComplete={onUploadComplete}
+                    inDialog={true}
                   />
                 </>
           }
