@@ -1,8 +1,8 @@
 import React, { useState } from "react";
 import { UploadButton } from "./upload-button";
-// import { getInteractiveSnapshot } from "@concord-consortium/lara-interactive-api";
+import { getInteractiveSnapshot } from "@concord-consortium/lara-interactive-api";
 import { getAnswerType, IGenericAuthoredState, IGenericInteractiveState } from "drawing-tool-interactive/src/components/types";
-// import { useLinkedInteractiveId } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
+import { useLinkedInteractiveId } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
 import SnapShotIcon from "../assets/snapshot-image-icon.svg";
 import { Log } from "../labbook-logging";
 
@@ -28,15 +28,13 @@ export interface IProps {
 export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState, selectedItemHasImageUrl, disabled, text, uploadMode,
   reachedMaxEntries, showUploadModal, inDialog, setInteractiveState, onUploadImage, onUploadStart, onUploadComplete, handleUploadModalClick }) => {
   const [ snapshotInProgress, setSnapshotInProgress ] = useState(false);
-  // const snapshotTarget = useLinkedInteractiveId("snapshotTarget");
-  const snapshotTarget = "123-MWInteractive";
+  const snapshotTarget = useLinkedInteractiveId("snapshotTarget");
 
   const handleSnapshot = async () => {
     if (snapshotTarget) {
       onUploadStart?.();
       setSnapshotInProgress(true);
-      // const response = await getInteractiveSnapshot({ interactiveItemId: snapshotTarget });
-      const response = {success: true, snapshotUrl: "https://upload.wikimedia.org/wikipedia/commons/6/68/Szczenie_Jack_Russell_Terrier3.jpg"};
+      const response = await getInteractiveSnapshot({ interactiveItemId: snapshotTarget });
 
       setSnapshotInProgress(false);
       if (response.success && response.snapshotUrl) {
