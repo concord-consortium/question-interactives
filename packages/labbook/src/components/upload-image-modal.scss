@@ -32,6 +32,7 @@
     justify-content: center;
     &.larger {
       padding: 8px;
+      height: fit-content;
       max-height: 560px;
       height: fit-content;
       justify-content: space-between;
