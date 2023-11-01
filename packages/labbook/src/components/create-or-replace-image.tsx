@@ -99,7 +99,6 @@ export const CreateOrReplaceImage: React.FC<IProps> = ({onUploadImage, onUploadS
                     text={`Create New ${imageString}`}
                     uploadMode={"create"}
                     inDialog={true}
-                    reachedMaxEntries={reachedMaxEntries}
                   />
                 </>
               : <>
