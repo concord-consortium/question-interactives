@@ -261,7 +261,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const onUploadStart = () => {
     setDisableUI(true);
-    setShowUploadModal(false);
+    setShowUploadModal(true);
   };
 
   const onUploadEnd = () => {

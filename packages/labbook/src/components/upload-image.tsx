@@ -18,10 +18,11 @@ export interface IProps {
   showUploadIcon?: boolean;
   uploadMode?: "replace" | "create";
   inDialog?: boolean;
+  reachedMaxEntries?: boolean;
 }
 
 export const UploadImage: React.FC<IProps> = ({ onUploadImage, uploadMode, onUploadStart, onUploadComplete, text,
-  disabled, showUploadIcon, inDialog}) => {
+  disabled, showUploadIcon, inDialog, reachedMaxEntries}) => {
   const [ uploadInProgress, setUploadInProgress ] = useState(false);
 
   useEffect(() => {
@@ -72,7 +73,7 @@ export const UploadImage: React.FC<IProps> = ({ onUploadImage, uploadMode, onUpl
       >
         {showUploadIcon && <UploadIcon/>}
         <div className={css["button-text"]}>
-          { uploadInProgress
+          { (disabled && !reachedMaxEntries) || uploadInProgress
             ? "Please Wait"
             : text
           }
