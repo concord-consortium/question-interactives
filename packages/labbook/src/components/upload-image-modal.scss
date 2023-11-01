@@ -3,7 +3,8 @@
 :global(body.font-size-large) {
   .modal {
     .modalContent {
-      height: 300px;
+      height: fit-content;
+      min-height: 300px;
     }
   }
 }
@@ -32,7 +33,6 @@
     justify-content: center;
     &.larger {
       padding: 8px;
-      height: fit-content;
       max-height: 560px;
       height: fit-content;
       justify-content: space-between;
