@@ -21,10 +21,12 @@ export interface IProps {
   handleUploadModalClick?: (type: string) => void;
   uploadMode?: "replace" | "create";
   showUploadModal?: boolean;
+  inDialog?: boolean;
+  reachedMaxEntries?: boolean;
 }
 
-export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState, selectedItemHasImageUrl, disabled, text,
-    uploadMode, showUploadModal, setInteractiveState, onUploadImage, onUploadStart, onUploadComplete, handleUploadModalClick }) => {
+export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState, selectedItemHasImageUrl, disabled, text, uploadMode,
+  reachedMaxEntries, showUploadModal, inDialog, setInteractiveState, onUploadImage, onUploadStart, onUploadComplete, handleUploadModalClick }) => {
   const [ snapshotInProgress, setSnapshotInProgress ] = useState(false);
   const snapshotTarget = useLinkedInteractiveId("snapshotTarget");
 
@@ -33,6 +35,7 @@ export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState
       onUploadStart?.();
       setSnapshotInProgress(true);
       const response = await getInteractiveSnapshot({ interactiveItemId: snapshotTarget });
+
       setSnapshotInProgress(false);
       if (response.success && response.snapshotUrl) {
         onUploadImage(response.snapshotUrl, uploadMode);
@@ -50,7 +53,6 @@ export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState
       }
     }
   };
-
   const handleTakeSnapshot = () => {
     if (selectedItemHasImageUrl && !showUploadModal) {
       handleUploadModalClick && handleUploadModalClick("snapshot");
@@ -66,9 +68,9 @@ export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState
           <UploadButton onClick={handleTakeSnapshot}
             disabled={snapshotInProgress || disabled}
             data-testid="snapshot-btn">
-                <SnapShotIcon />
+                {!inDialog && <SnapShotIcon />}
                 <div className={css["runtime button-text"]}>
-                { snapshotInProgress || disabled
+                { (disabled && !reachedMaxEntries) || snapshotInProgress
                   ? "Please Wait"
                   : text
                 }

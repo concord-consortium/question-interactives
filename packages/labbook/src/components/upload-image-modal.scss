@@ -3,7 +3,8 @@
 :global(body.font-size-large) {
   .modal {
     .modalContent {
-      height: 300px;
+      height: fit-content;
+      min-height: 300px;
     }
   }
 }
