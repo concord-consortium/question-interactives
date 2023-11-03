@@ -65,16 +65,16 @@ export const CreateOrReplaceImage: React.FC<IProps> = ({onUploadImage, onUploadS
     if (mediaLibraryEnabled) {
       return (
         <div className={css.uploadButtons}>
-          <UploadButton disabled={disabled} onClick={() => onUploadImage("", "replace")}>
+          <UploadButton disabled={disabled} onClick={() => onUploadImage("", "replace")} inDialog={true}>
             <div className={css["button-text"]}>
               {disabled ? "Please Wait" : `Replace Current ${imageString}`}
             </div>
           </UploadButton>
-          <UploadButton disabled={disabled || reachedMaxEntries} onClick={() => onUploadImage("", "create")}>
-          <div className={css["button-text"]}>
-            {disabled ? "Please Wait" : `Create New ${imageString}`}
-          </div>
-        </UploadButton>
+          <UploadButton disabled={disabled || reachedMaxEntries} onClick={() => onUploadImage("", "create")} inDialog={true}>
+            <div className={css["button-text"]}>
+              {disabled ? "Please Wait" : `Create New ${imageString}`}
+            </div>
+          </UploadButton>
         </div>
       );
     } else {
