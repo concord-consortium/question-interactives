@@ -140,7 +140,7 @@ export const CreateOrReplaceImage: React.FC<IProps> = ({onUploadImage, onUploadS
       <div className={css.bottom}>
         {reachedMaxEntries &&
         <div className={css.instructions}>
-          {`Create ${imageString} is not available because you have reached the maximum number of entries.`}
+          {`Create New ${imageString} is not available because you have reached the maximum number of entries.`}
         </div>}
         <button className={css.cancelButton} onClick={onCloseModal}>Cancel</button>
       </div>
