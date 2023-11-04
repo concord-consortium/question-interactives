@@ -40,7 +40,7 @@ export const UploadModal: React.FC<IProps> = ({onUploadImage, onUploadStart, onU
     onUploadImage(url, uploadMode);
   };
 
-  const uploadImageHandler = mediaLibraryItems
+  const uploadImageHandler = mediaLibraryItems && type !== "snapshot"
                               ? handleSetUploadMode
                               : onUploadImage;
 

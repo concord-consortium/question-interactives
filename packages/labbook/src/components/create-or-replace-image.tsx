@@ -62,16 +62,17 @@ export const CreateOrReplaceImage: React.FC<IProps> = ({onUploadImage, onUploadS
   };
 
   const renderButtons = () => {
-    if (mediaLibraryEnabled) {
+    if (mediaLibraryEnabled && type !== "snapshot") {
+      const buttonClass = classnames(css["button-text"], css["inDialog"]);
       return (
         <div className={css.uploadButtons}>
-          <UploadButton disabled={disabled} onClick={() => onUploadImage("", "replace")} inDialog={true}>
-            <div className={css["button-text"]}>
+          <UploadButton disabled={disabled} onClick={() => onUploadImage("", "replace")}>
+            <div className={buttonClass}>
               {disabled ? "Please Wait" : `Replace Current ${imageString}`}
             </div>
           </UploadButton>
-          <UploadButton disabled={disabled || reachedMaxEntries} onClick={() => onUploadImage("", "create")} inDialog={true}>
-            <div className={css["button-text"]}>
+          <UploadButton disabled={disabled || reachedMaxEntries} onClick={() => onUploadImage("", "create")}>
+            <div className={buttonClass}>
               {disabled ? "Please Wait" : `Create New ${imageString}`}
             </div>
           </UploadButton>
