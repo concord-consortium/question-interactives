@@ -7,11 +7,12 @@ export interface IUploadButtonProps {
   label?:string;
   disabled?: boolean;
   onClick?: (type: string) => void;
+  inDialog?: boolean;
 }
 
 export const UploadButton: React.FC<IUploadButtonProps> = (props) => {
-  const {children, onClick, disabled} = props;
-  const classes = classNames(css["upload-button"], {[css.disabled]: disabled});
+  const {children, onClick, disabled, inDialog} = props;
+  const classes = classNames(css["upload-button"], {[css.disabled]: disabled, [css.inDialog]: inDialog});
   return (
     <div className={classes} onClick={()=>onClick && onClick("upload")}>
       {children}
