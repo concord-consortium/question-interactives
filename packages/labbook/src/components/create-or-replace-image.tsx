@@ -62,16 +62,17 @@ export const CreateOrReplaceImage: React.FC<IProps> = ({onUploadImage, onUploadS
   };
 
   const renderButtons = () => {
-    if (mediaLibraryEnabled) {
+    if (mediaLibraryEnabled && type !== "snapshot") {
+      const buttonClass = classnames(css["button-text"], css["inDialog"]);
       return (
         <div className={css.uploadButtons}>
-          <UploadButton disabled={disabled} onClick={() => onUploadImage("", "replace")} inDialog={true}>
-            <div className={css["button-text"]}>
+          <UploadButton disabled={disabled} inDialog={true} onClick={() => onUploadImage("", "replace")}>
+            <div className={buttonClass}>
               {disabled ? "Please Wait" : `Replace Current ${imageString}`}
             </div>
           </UploadButton>
-          <UploadButton disabled={disabled || reachedMaxEntries} onClick={() => onUploadImage("", "create")} inDialog={true}>
-            <div className={css["button-text"]}>
+          <UploadButton disabled={disabled || reachedMaxEntries} inDialog={true} onClick={() => onUploadImage("", "create")}>
+            <div className={buttonClass}>
               {disabled ? "Please Wait" : `Create New ${imageString}`}
             </div>
           </UploadButton>
@@ -140,7 +141,7 @@ export const CreateOrReplaceImage: React.FC<IProps> = ({onUploadImage, onUploadS
       <div className={css.bottom}>
         {reachedMaxEntries &&
         <div className={css.instructions}>
-          {`Create ${imageString} is not available because you have reached the maximum number of entries.`}
+          {`Create New ${imageString} is not available because you have reached the maximum number of entries.`}
         </div>}
         <button className={css.cancelButton} onClick={onCloseModal}>Cancel</button>
       </div>

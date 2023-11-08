@@ -3,8 +3,9 @@ import { UploadButton } from "./upload-button";
 import { getInteractiveSnapshot } from "@concord-consortium/lara-interactive-api";
 import { getAnswerType, IGenericAuthoredState, IGenericInteractiveState } from "drawing-tool-interactive/src/components/types";
 import { useLinkedInteractiveId } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
-import SnapShotIcon from "../assets/snapshot-image-icon.svg";
 import { Log } from "../labbook-logging";
+import classNames from "classnames";
+import SnapShotIcon from "../assets/snapshot-image-icon.svg";
 
 import css from "./upload-button.scss";
 
@@ -61,6 +62,8 @@ export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState
     }
   };
 
+  const classes = classNames(css["button-text"], {[css.inDialog]: inDialog});
+
   return (
     <>
       {
@@ -69,7 +72,7 @@ export const TakeSnapshot: React.FC<IProps> = ({ authoredState, interactiveState
             disabled={snapshotInProgress || disabled}
             data-testid="snapshot-btn">
                 {!inDialog && <SnapShotIcon />}
-                <div className={css["runtime button-text"]}>
+                <div className={classes}>
                 { (disabled && !reachedMaxEntries) || snapshotInProgress
                   ? "Please Wait"
                   : text

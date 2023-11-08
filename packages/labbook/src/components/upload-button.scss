@@ -4,7 +4,7 @@
   .upload-button {
     margin: 5px 3px;
 
-    &.in-dialog {
+    &.inDialog {
       .button-text {
         padding: 5px 0px;
       }
@@ -38,22 +38,20 @@
   svg {
     width: 34px;
   }
+  &.inDialog {
+    min-width: 180px;
+    justify-content: center;
+  }
   .button-text {
     margin: 0px 5px;
     font-size: pxToRem(16);
     white-space: nowrap;
-  }
-  &.in-dialog {
-    min-width: 180px;
-    justify-content: center;
-
-    .button-text {
+    text-align: center;
+    text-wrap: nowrap;
+    &.inDialog{
       padding: 6px 4px 9px 5px;
+      text-align: center;
+      text-wrap: wrap;
     }
   }
 }
-
-.upload-button > div {
-  text-align: center;
-}
-
