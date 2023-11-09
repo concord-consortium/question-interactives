@@ -3,7 +3,7 @@ import { StyledFileInput } from "../../../helpers/src/components/styled-file-inp
 import { copyImageToS3, copyLocalImageToS3 } from "@concord-consortium/question-interactives-helpers/src/utilities/copy-image-to-s3";
 import { Log } from "../labbook-logging";
 import UploadIcon from "../assets/upload-image-icon.svg";
-import classnames from "classnames";
+import classNames from "classnames";
 
 import css from "./upload-button.scss";
 
@@ -61,7 +61,8 @@ export const UploadImage: React.FC<IProps> = ({ onUploadImage, uploadMode, onUpl
     }
   };
 
-  const classes = classnames(css["upload-button"], {[css.disabled]: uploadInProgress||disabled, [css["in-dialog"]]: inDialog});
+  const classes = classNames(css["upload-button"], {[css.disabled]: uploadInProgress||disabled}, {[css.inDialog]: inDialog});
+  const buttonTextClasses = classNames(css["button-text"], {[css.inDialog]: inDialog});
 
   return (
     <>
@@ -71,7 +72,7 @@ export const UploadImage: React.FC<IProps> = ({ onUploadImage, uploadMode, onUpl
         id={text}
       >
         {showUploadIcon && <UploadIcon/>}
-        <div className={css["button-text"]}>
+        <div className={buttonTextClasses}>
           { uploadInProgress
             ? "Please Wait"
             : text
