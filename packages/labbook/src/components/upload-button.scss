@@ -51,7 +51,8 @@
     &.inDialog{
       padding: 6px 4px 9px 5px;
       text-align: center;
-      text-wrap: wrap;
+      text-wrap: wrap; //only works in Chrome
+      white-space: pre-wrap; //For Safari and Firefox
     }
   }
 }
