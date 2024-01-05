@@ -6,19 +6,6 @@ import { IAuthoredState, IInteractiveState } from "./types";
 import { baseAuthoringProps as drawingToolBaseAuthoringProps, exportToMediaLibrary } from "drawing-tool-interactive/src/components/app";
 import deepmerge from "deepmerge";
 
-export const ToolbarModificationsWidget = (props: any) => {
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => props.onChange(e.target.checked);
-
-  return (
-    <div className="checkbox">
-      <label>
-        <input type="checkbox" id={props.id} checked={!!props.value} onChange={handleChange} />
-        <span>{props.schema.customLabel}</span>
-      </label>
-    </div>
-  );
-};
-
 const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
   schema: {
     properties: {
@@ -42,12 +29,6 @@ const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
         title: "Background source",
         type: "string",
         default: "snapshot"
-      },
-      hideAnnotationTool: {
-        title: "Toolbar Modifications",
-        customLabel: "Hide Annotation Tool",
-        type: "boolean",
-        default: false
       }
     }
   } as RJSFSchema,
@@ -65,18 +46,21 @@ const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
     questionType: {
       "ui:widget": "hidden"
     },
-    hideAnnotationTool: {
-      "ui:widget": ToolbarModificationsWidget
-    },
   },
   // Just overwrite array, don't merge values.
   arrayMerge: (destinationArray:any, sourceArray:any) => sourceArray
 });
 
+// set the available drawing tools
+const hideDrawingTools = baseAuthoringProps.schema.properties?.hideDrawingTools as any;
+if (hideDrawingTools) {
+  hideDrawingTools.items.enum = ['free', 'shapesPalette', 'annotation'];
+}
+
 // This list combines all the fields from drawing-tool app and custom ones specified by Labbook.
 baseAuthoringProps.uiSchema["ui:order"] = [
   "prompt", "required", "predictionFeedback", "hint", "backgroundSource", "showUploadImageButton", "snapshotTarget",
-  "backgroundImageUrl", "imageFit", "imagePosition", "hideAnnotationTool",  "stampCollections", "maxItems", "showItems", "version", "questionType",
+  "backgroundImageUrl", "imageFit", "imagePosition", "hideDrawingTools", "stampCollections", "maxItems", "showItems", "version", "questionType",
   ...exportToMediaLibrary.uiOrder
 ];
 

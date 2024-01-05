@@ -5,6 +5,7 @@ import { BaseQuestionApp } from "@concord-consortium/question-interactives-helpe
 import { exportToMediaLibraryAuthoringProps } from "@concord-consortium/question-interactives-helpers/src/utilities/media-library";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { FormValidation } from "@rjsf/utils";
+import { HideDrawingToolsWidget, defaultHideDrawingToolWidgetButtons } from "./hide-drawing-tools-widget";
 
 // Note that TS interfaces should match JSON schema. Currently there"s no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
@@ -158,6 +159,16 @@ export const baseAuthoringProps = {
         title: "Hint",
         type: "string"
       },
+      hideDrawingTools: {
+        type: "array",
+        title: "Hide Toolbar Buttons",
+        hint: "Check the boxes below to hide draw tool buttons from the toolbar:",
+        items: {
+          type: "string",
+          enum: defaultHideDrawingToolWidgetButtons,
+        },
+        uniqueItems: true,
+      },
       stampCollections: {
         type: "array",
         title: "Stamp collections",
@@ -249,7 +260,7 @@ export const baseAuthoringProps = {
   uiSchema: {
     "ui:order": [
       "prompt", "required", "predictionFeedback", "hint", "backgroundSource", "snapshotTarget", "backgroundImageUrl",
-      "imageFit", "imagePosition",  "stampCollections", "version", "questionType", ...exportToMediaLibrary.uiOrder
+      "imageFit", "imagePosition", "hideDrawingTools", "stampCollections", "version", "questionType", ...exportToMediaLibrary.uiOrder
     ],
     version: {
       "ui:widget": "hidden"
@@ -272,6 +283,9 @@ export const baseAuthoringProps = {
     },
     snapshotTarget: {
       "ui:enumDisabled": []
+    },
+    hideDrawingTools: {
+      "ui:widget": HideDrawingToolsWidget
     },
     ...exportToMediaLibrary.uiSchema
   },

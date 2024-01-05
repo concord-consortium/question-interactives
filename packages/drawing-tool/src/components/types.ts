@@ -19,6 +19,7 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   imagePosition?: string;
   stampCollections?: StampCollection[];
   allowUploadFromMediaLibrary?: boolean;
+  hideDrawingTools?: string[];
 }
 
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
@@ -34,3 +35,10 @@ export type IGenericInteractiveState = Omit<IInteractiveState, "answerType"> & {
 
 export const getAnswerType = (questionType: "image_question" | "iframe_interactive") =>
   questionType === "image_question" ? "image_question_answer" : "interactive_state";
+
+export const DemoAuthoredState: IAuthoredState = {
+  version: 1,
+  questionType: "iframe_interactive",
+  hint: "",
+  predictionFeedback: "",
+};
