@@ -3,9 +3,9 @@ import { Runtime } from "./runtime";
 import { RJSFSchema } from "@rjsf/utils";
 import { BaseQuestionApp } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
 import { exportToMediaLibraryAuthoringProps } from "@concord-consortium/question-interactives-helpers/src/utilities/media-library";
-import { IAuthoredState, IInteractiveState } from "./types";
+import { IAuthoredState, IInteractiveState, defaultHideableDrawingTools } from "./types";
 import { FormValidation } from "@rjsf/utils";
-import { HideDrawingToolsWidget, defaultHideDrawingToolWidgetButtons } from "./hide-drawing-tools-widget";
+import { HideDrawingToolsWidget } from "./hide-drawing-tools-widget";
 
 // Note that TS interfaces should match JSON schema. Currently there"s no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
@@ -165,7 +165,7 @@ export const baseAuthoringProps = {
         hint: "Check the boxes below to hide draw tool buttons from the toolbar:",
         items: {
           type: "string",
-          enum: defaultHideDrawingToolWidgetButtons,
+          enum: defaultHideableDrawingTools,
         },
         uniqueItems: true,
       },

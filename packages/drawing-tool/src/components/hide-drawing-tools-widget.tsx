@@ -1,15 +1,8 @@
 import React from "react";
 import { WidgetProps } from "@rjsf/utils";
+import { HideableDrawingTools } from "./types";
 
-export const hideDrawingToolWidgetButtons = ["free", "linesPalette", "shapesPalette", "annotation", "text", "strokeColorPalette", "fillColorPalette", "strokeWidthPalette", "clone", "sendToBack", "sendToFront"] as const;
-
-// remove the annotation tool, as it is only used in the labbook
-export const defaultHideDrawingToolWidgetButtons = hideDrawingToolWidgetButtons.filter(b => b !== "annotation");
-
-type HideDrawingToolWidgetButton = typeof hideDrawingToolWidgetButtons[number];
-type HideDrawingToolWidgetButtonMap = Record<HideDrawingToolWidgetButton, string>;
-
-const drawingToolWidgetButtonMap: HideDrawingToolWidgetButtonMap = {
+const hideableDrawingToolLabels: Record<HideableDrawingTools, string> = {
   free: "Free hand drawing tool",
   linesPalette: "Line tool",
   shapesPalette: "Basic shape tool",
@@ -24,7 +17,7 @@ const drawingToolWidgetButtonMap: HideDrawingToolWidgetButtonMap = {
 };
 
 export const HideDrawingToolsWidget = function (props: WidgetProps) {
-  const itemValues = (props.schema.items as any).enum as HideDrawingToolWidgetButton[];
+  const itemValues = (props.schema.items as any).enum as HideableDrawingTools[];
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const {value, checked} = e.target;
@@ -48,7 +41,7 @@ export const HideDrawingToolsWidget = function (props: WidgetProps) {
             <label>
               <span>
                 <input type="checkbox" id={`root_drawingTools-${index}`} name="root_drawingTools" value={value} checked={checked} onChange={handleChange} />
-                <span>{drawingToolWidgetButtonMap[value]}</span>
+                <span>{hideableDrawingToolLabels[value]}</span>
               </span>
             </label>
           </div>
