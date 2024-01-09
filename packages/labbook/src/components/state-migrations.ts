@@ -9,7 +9,9 @@ export const migrateAuthoredState = (authoredState: IAuthoredStateV1 | IAuthored
     const newState: IAuthoredState = {...authoredState, version: 2};
     if (hideAnnotationTool) {
       newState.hideDrawingTools = newState.hideDrawingTools ?? [];
-      newState.hideDrawingTools.push("annotation");
+      if (newState.hideDrawingTools.indexOf("annotation") === -1) {
+        newState.hideDrawingTools.push("annotation");
+      }
     }
     return newState;
   }
