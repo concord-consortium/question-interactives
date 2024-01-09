@@ -7,6 +7,17 @@ import {
 } from "@concord-consortium/lara-interactive-api";
 
 export interface IAuthoredState extends IDrawingToolAuthoredState {
+  version: 2;
+  // IAuthoringLabbookMetadata adds:
+  answerPrompt?: string;
+  maxItems: number;
+  showItems: number;
+  showUploadImageButton: boolean;
+  // hideAnnotationTool: boolean; <-- removed in version 2
+}
+
+export interface IAuthoredStateV1 extends IDrawingToolAuthoredState {
+  version: 1;
   // IAuthoringLabbookMetadata adds:
   answerPrompt?: string;
   maxItems: number;
@@ -32,7 +43,7 @@ export interface IBaseInteractiveState extends IRuntimeInteractiveMetadata {
 export type IInteractiveState = IBaseInteractiveState;
 
 export const DemoAuthoredState: IAuthoredState = {
-  version: 1,
+  version: 2,
   questionType: "iframe_interactive",
   hint: "",
   predictionFeedback: "",
@@ -40,5 +51,4 @@ export const DemoAuthoredState: IAuthoredState = {
   showItems: 4,
   showUploadImageButton: false,
   backgroundSource: "upload",
-  hideAnnotationTool: false,
 };

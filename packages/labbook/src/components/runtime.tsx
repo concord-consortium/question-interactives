@@ -71,7 +71,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     return result;
   };
 
-  const {showUploadImageButton, backgroundSource, allowUploadFromMediaLibrary, hideAnnotationTool } = authoredState;
+  const {showUploadImageButton, backgroundSource, allowUploadFromMediaLibrary } = authoredState;
   const [mediaLibrary, setMediaLibrary] = useState<IMediaLibrary|undefined>(undefined);
 
   const initMessage = useInitMessage();
@@ -275,12 +275,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const drawingToolButtons = ['select', 'free', 'shapesPalette', 'stamp', 'annotation', 'trash'];
-
-  // hideAnnotationTool used to be its own option but now should be part of the hidden tools array
-  if (hideAnnotationTool) {
-    authoredState.hideDrawingTools = authoredState.hideDrawingTools ?? [];
-    authoredState.hideDrawingTools.push('annotation');
-  }
 
   const uploadImageMode = (backgroundSource === "upload" || showUploadImageButton);
   const selectedItemHasImageUrl = !!(selectedItem?.data?.userBackgroundImageUrl);

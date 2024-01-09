@@ -5,6 +5,7 @@ import { Runtime } from "./runtime";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { baseAuthoringProps as drawingToolBaseAuthoringProps, exportToMediaLibrary } from "drawing-tool-interactive/src/components/app";
 import deepmerge from "deepmerge";
+import { migrateAuthoredState } from "./state-migrations";
 
 const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
   schema: {
@@ -87,5 +88,6 @@ export const App = () => (
     disableAutoHeight={false}
     isAnswered={isAnswered}
     linkedInteractiveProps={[{ label: "snapshotTarget", supportsSnapshots: true }]}
+    migrateAuthoredState={migrateAuthoredState}
   />
 );
