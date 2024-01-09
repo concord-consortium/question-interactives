@@ -1,5 +1,12 @@
 import { IAuthoringInteractiveMetadata, IRuntimeInteractiveMetadata } from "@concord-consortium/lara-interactive-api";
 
+export const hideableDrawingTools = ["free", "linesPalette", "shapesPalette", "annotation", "text", "strokeColorPalette", "fillColorPalette", "strokeWidthPalette", "clone", "sendToBack", "sendToFront"] as const;
+
+// remove the annotation tool, as it is only used in the labbook
+export const defaultHideableDrawingTools = hideableDrawingTools.filter(b => b !== "annotation");
+
+export type HideableDrawingTools = typeof hideableDrawingTools[number];
+
 export interface StampCollection {
   collection: "molecules" | "ngsaObjects" | "custom";
   name?: string;
@@ -19,6 +26,7 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   imagePosition?: string;
   stampCollections?: StampCollection[];
   allowUploadFromMediaLibrary?: boolean;
+  hideDrawingTools?: HideableDrawingTools[];
 }
 
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
@@ -34,3 +42,10 @@ export type IGenericInteractiveState = Omit<IInteractiveState, "answerType"> & {
 
 export const getAnswerType = (questionType: "image_question" | "iframe_interactive") =>
   questionType === "image_question" ? "image_question_answer" : "interactive_state";
+
+export const DemoAuthoredState: IAuthoredState = {
+  version: 1,
+  questionType: "iframe_interactive",
+  hint: "",
+  predictionFeedback: "",
+};

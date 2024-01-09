@@ -12,6 +12,8 @@ const kToolbarWidth = 40; // Drawing Tool buttons are 40x40
 const kDrawingToolPreferredWidth = 600; // in practice it can be smaller if there's not enough space
 const kDrawingToolHeight = 600;
 
+const kDrawingToolButtons = ["select","free","linesPalette","shapesPalette","text","stamp","strokeColorPalette","fillColorPalette","strokeWidthPalette","clone","sendToBack","sendToFront","undo","redo","trash"];
+
 // Use LARA image proxy to avoid tainting canvas when external image URL is used.
 export const LARA_IMAGE_PROXY = "https://authoring.concord.org/image-proxy?url=";
 
@@ -134,6 +136,13 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
         }
       });
 
+      // optionally hide buttons
+      const finalButtons = (buttons ?? kDrawingToolButtons).slice();
+      const hideButtons = authoredState.hideDrawingTools ?? [];
+      hideButtons.forEach(button => {
+        finalButtons.splice(finalButtons.indexOf(button), 1);
+      });
+
       // window.innerWidth should never be used in practice. It's here just to make TypeScript happy
       // and/or handle some unexpected edge case where containerRef is really undefined.
       const availableWidth = containerRef.current?.clientWidth || window.innerWidth;
@@ -142,7 +151,7 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
         width: width || Math.min(kDrawingToolPreferredWidth, availableWidth - kToolbarWidth),
         height: height || kDrawingToolHeight,
         canvasScale,
-        buttons,
+        buttons: finalButtons,
         onDrawingChanged,
         wideLayout
       };
