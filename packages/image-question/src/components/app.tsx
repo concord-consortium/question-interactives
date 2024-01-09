@@ -35,7 +35,7 @@ const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
   uiSchema: {
     "ui:order": [
       "prompt", "required", "predictionFeedback", "hint", "backgroundSource", "snapshotTarget", "backgroundImageUrl",
-      "imageFit", "imagePosition", "hideDrawingTools", "stampCollections", "answerPrompt", "defaultAnswer", "version", "questionType",
+      "imageFit", "imagePosition", "stampCollections", "answerPrompt", "defaultAnswer", "hideDrawingTools", "version", "questionType",
       ...exportToMediaLibrary.uiOrder
     ],
     answerPrompt: {

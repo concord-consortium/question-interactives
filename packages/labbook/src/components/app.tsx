@@ -61,7 +61,7 @@ if (hideDrawingTools) {
 // This list combines all the fields from drawing-tool app and custom ones specified by Labbook.
 baseAuthoringProps.uiSchema["ui:order"] = [
   "prompt", "required", "predictionFeedback", "hint", "backgroundSource", "showUploadImageButton", "snapshotTarget",
-  "backgroundImageUrl", "imageFit", "imagePosition", "hideDrawingTools", "stampCollections", "maxItems", "showItems", "version", "questionType",
+  "backgroundImageUrl", "imageFit", "imagePosition", "stampCollections", "maxItems", "showItems", "hideDrawingTools", "version", "questionType",
   ...exportToMediaLibrary.uiOrder
 ];
 

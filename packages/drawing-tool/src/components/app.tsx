@@ -260,7 +260,7 @@ export const baseAuthoringProps = {
   uiSchema: {
     "ui:order": [
       "prompt", "required", "predictionFeedback", "hint", "backgroundSource", "snapshotTarget", "backgroundImageUrl",
-      "imageFit", "imagePosition", "hideDrawingTools", "stampCollections", "version", "questionType", ...exportToMediaLibrary.uiOrder
+      "imageFit", "imagePosition", "stampCollections", "hideDrawingTools", "version", "questionType", ...exportToMediaLibrary.uiOrder
     ],
     version: {
       "ui:widget": "hidden"
