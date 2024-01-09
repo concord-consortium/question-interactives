@@ -5,8 +5,10 @@ export const migrateAuthoredState = (authoredState: IAuthoredStateV1 | IAuthored
   if (authoredState.version === 1) {
     // add hide annotation setting to drawing tools to hide
     const {hideAnnotationTool} = authoredState;
-    if (hideAnnotationTool !== undefined) {
+    try {
       delete (authoredState as any).hideAnnotationTool;
+    } catch (e) {
+      // no-op
     }
     const newState: IAuthoredState = {...authoredState, version: 2};
     if (hideAnnotationTool) {
