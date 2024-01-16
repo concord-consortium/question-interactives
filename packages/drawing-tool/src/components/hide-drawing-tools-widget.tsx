@@ -9,7 +9,7 @@ const hideableDrawingToolLabels: Record<HideableDrawingTools, string> = {
   text: "Text tool",
   strokeColorPalette: "Stroke color",
   fillColorPalette: "Fill color",
-  strokeWidthPalette: "Stroke Width",
+  strokeWidthPalette: "Stroke width",
   clone: "Clone tool",
   sendToBack: "Send selected objects to back",
   sendToFront: "Send selected objects to front",
