@@ -162,7 +162,7 @@ export const baseAuthoringProps = {
       hideDrawingTools: {
         type: "array",
         title: "Hide Toolbar Buttons",
-        hint: "Check the boxes below to hide draw tool buttons from the toolbar:",
+        hint: "Check the boxes below to hide draw tool buttons from the toolbar.",
         items: {
           type: "string",
           enum: defaultHideableDrawingTools,
