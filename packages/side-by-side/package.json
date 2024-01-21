@@ -101,7 +101,7 @@
     "webpack-dev-server": "^4.7.4"
   },
   "dependencies": {
-    "@concord-consortium/dynamic-text": "^1.0.6-pre.4",
+    "@concord-consortium/dynamic-text": "^1.0.6",
     "@concord-consortium/lara-interactive-api": "^1.9.4",
     "@concord-consortium/question-interactives-helpers": "^1.16.0",
     "@rjsf/utils": "^5.0.1",
