@@ -77,6 +77,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const scaleForReportLeft = availableWidthLeft < 600 ? availableWidthLeft/600 : 1;
   const scaleForReportRight = availableWidthRight < 600 ? availableWidthRight/600 : 1;
 
+  leftInteractive && console.log("leftInteractiveState", interactiveState?.leftInteractiveState);
+  rightInteractive && console.log("rightInteractiveState", interactiveState?.rightInteractiveState);
+
   return (
     <div>
       { (!report || view === "standalone") && prompt &&
@@ -91,7 +94,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               authoredState={leftInteractive.authoredState}
               interactiveState={interactiveState?.leftInteractiveState}
               // logRequestData={logRequestData}
-              setInteractiveState={handleNewInteractiveState.bind(null, "leftInteractiveState")}
+              setInteractiveState={handleNewInteractiveState.bind("leftInteractiveState", interactiveState?.leftInteractiveState)}
               addLocalLinkedDataListener={handleAddLocalLinkedDataListener}
               report={report}
               scale={report && view !== "standalone" ? scaleForReportLeft : undefined}
@@ -106,7 +109,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               authoredState={rightInteractive.authoredState}
               interactiveState={interactiveState?.rightInteractiveState}
               // logRequestData={logRequestData}
-              setInteractiveState={handleNewInteractiveState.bind(null, "rightInteractiveState")}
+              setInteractiveState={handleNewInteractiveState.bind("rightInteractiveState", interactiveState?.rightInteractiveState)}
               addLocalLinkedDataListener={handleAddLocalLinkedDataListener}
               report={report}
               scale={report && view !== "standalone" ? scaleForReportRight : undefined}
