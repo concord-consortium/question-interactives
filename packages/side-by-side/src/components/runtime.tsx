@@ -64,10 +64,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       if (newInteractiveState?.dataset && dataListeners.length > 0) {
         updateDataListeners(newInteractiveState);
       }
-      return {
+      const newState = {
         ...prevState,
         [interactiveStateSide]: newInteractiveState
       };
+      return newState;
     });
   };
 
@@ -76,9 +77,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const availableWidthRight = availableWidth * (rightDivision * .01);
   const scaleForReportLeft = availableWidthLeft < 600 ? availableWidthLeft/600 : 1;
   const scaleForReportRight = availableWidthRight < 600 ? availableWidthRight/600 : 1;
-
-  leftInteractive && console.log("leftInteractiveState", interactiveState?.leftInteractiveState);
-  rightInteractive && console.log("rightInteractiveState", interactiveState?.rightInteractiveState);
 
   return (
     <div>
@@ -94,7 +92,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               authoredState={leftInteractive.authoredState}
               interactiveState={interactiveState?.leftInteractiveState}
               // logRequestData={logRequestData}
-              setInteractiveState={handleNewInteractiveState.bind("leftInteractiveState", interactiveState?.leftInteractiveState)}
+              setInteractiveState={handleNewInteractiveState.bind(null, "leftInteractiveState")}
+              onUnloadCallback={handleNewInteractiveState.bind(null, "leftInteractiveState")}
               addLocalLinkedDataListener={handleAddLocalLinkedDataListener}
               report={report}
               scale={report && view !== "standalone" ? scaleForReportLeft : undefined}
@@ -109,7 +108,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               authoredState={rightInteractive.authoredState}
               interactiveState={interactiveState?.rightInteractiveState}
               // logRequestData={logRequestData}
-              setInteractiveState={handleNewInteractiveState.bind("rightInteractiveState", interactiveState?.rightInteractiveState)}
+              setInteractiveState={handleNewInteractiveState.bind(null, "rightInteractiveState")}
+              onUnloadCallback={handleNewInteractiveState.bind(null, "rightInteractiveState")}
               addLocalLinkedDataListener={handleAddLocalLinkedDataListener}
               report={report}
               scale={report && view !== "standalone" ? scaleForReportRight : undefined}
