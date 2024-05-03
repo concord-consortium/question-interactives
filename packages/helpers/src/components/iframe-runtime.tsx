@@ -52,7 +52,6 @@ export const IframeRuntime: React.FC<IProps> =
     const setInteractiveStateRef = useRef<((state: any) => void)>(setInteractiveState);
     interactiveStateRef.current = interactiveState;
     setInteractiveStateRef.current = setInteractiveState;
-
     const onUnloadCallbackRef = useRef<((state: any) => void) | undefined>(onUnloadCallback);
     onUnloadCallbackRef.current = onUnloadCallback;
 
@@ -68,7 +67,6 @@ export const IframeRuntime: React.FC<IProps> =
       // Handle proxying the unloading request from Lara/AP through to the wrapped interactive.
       // The promise that is saved is resolved in the subsequent interactiveState listener callback
       setOnUnload((options: IGetInteractiveState) => {
-        console.log("options", options);
         if (options.unloading) {
           return new Promise<any>(resolve => {
             resolveOnUnload.current = resolve;
@@ -87,17 +85,14 @@ export const IframeRuntime: React.FC<IProps> =
         }
 
         if (onUnloadCallbackRef?.current && resolveOnUnload.current) {
-          console.log("onUnloadCallback resolveOnUnload has value");
           // send the interactive state to any parent interactive that has provided an onUnload
           // callback, and then resolve the promise that was saved in the setOnUnload function
           // with undefined so the parent interactive doesn't have its state overwritten.
           onUnloadCallbackRef?.current(newInteractiveState);
           resolveOnUnload.current(undefined);
         } else {
-          console.log("onUnloadCallback resolveOnUnload has no value", resolveOnUnload.current);
           resolveOnUnload.current?.(newInteractiveState);
         }
-
       });
       phone.addListener("height", (newHeight: number) => {
         setIframeHeight(newHeight);
@@ -190,7 +185,6 @@ export const IframeRuntime: React.FC<IProps> =
     };
 
     if (iframeRef.current) {
-      console.log("IframeRuntime: reloading iframe");
       // Reload the iframe.
       iframeRef.current.src = url;
       // Re-init interactive, this time using a new mode (report or runtime).
