@@ -53,6 +53,9 @@ export const IframeRuntime: React.FC<IProps> =
     interactiveStateRef.current = interactiveState;
     setInteractiveStateRef.current = setInteractiveState;
 
+    const onUnloadCallbackRef = useRef<((state: any) => void) | undefined>(onUnloadCallback);
+    onUnloadCallbackRef.current = onUnloadCallback;
+
     const resolveOnUnload = useRef<(value: any | PromiseLike<any>) => void>();
 
   useEffect(() => {
@@ -65,6 +68,7 @@ export const IframeRuntime: React.FC<IProps> =
       // Handle proxying the unloading request from Lara/AP through to the wrapped interactive.
       // The promise that is saved is resolved in the subsequent interactiveState listener callback
       setOnUnload((options: IGetInteractiveState) => {
+        console.log("options", options);
         if (options.unloading) {
           return new Promise<any>(resolve => {
             resolveOnUnload.current = resolve;
@@ -74,21 +78,26 @@ export const IframeRuntime: React.FC<IProps> =
         }
         return Promise.resolve({});
       });
+
       phone.addListener("interactiveState", (newInteractiveState: any) => {
         setInteractiveStateRef.current?.(newInteractiveState);
         if (flushOnSave) {
           // don't wait the default 2000ms timeout before saving
           flushStateUpdates();
         }
-        if (onUnloadCallback && resolveOnUnload.current) {
+
+        if (onUnloadCallbackRef?.current && resolveOnUnload.current) {
+          console.log("onUnloadCallback resolveOnUnload has value");
           // send the interactive state to any parent interactive that has provided an onUnload
           // callback, and then resolve the promise that was saved in the setOnUnload function
           // with undefined so the parent interactive doesn't have its state overwritten.
-          onUnloadCallback(newInteractiveState);
+          onUnloadCallbackRef?.current(newInteractiveState);
           resolveOnUnload.current(undefined);
         } else {
+          console.log("onUnloadCallback resolveOnUnload has no value", resolveOnUnload.current);
           resolveOnUnload.current?.(newInteractiveState);
         }
+
       });
       phone.addListener("height", (newHeight: number) => {
         setIframeHeight(newHeight);
@@ -181,6 +190,7 @@ export const IframeRuntime: React.FC<IProps> =
     };
 
     if (iframeRef.current) {
+      console.log("IframeRuntime: reloading iframe");
       // Reload the iframe.
       iframeRef.current.src = url;
       // Re-init interactive, this time using a new mode (report or runtime).
@@ -192,7 +202,7 @@ export const IframeRuntime: React.FC<IProps> =
         phoneRef.current.disconnect();
       }
     };
-  },[addLocalLinkedDataListener, authoredState, logRequestData, report, setHint, url, initMessage, onUnloadCallback, flushOnSave, accessibility]);
+  },[addLocalLinkedDataListener, authoredState, logRequestData, report, setHint, url, initMessage, flushOnSave, accessibility]);
 
   let scaledIframeStyle = undefined;
   if (scale && report) {
