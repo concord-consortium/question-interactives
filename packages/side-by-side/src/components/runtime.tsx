@@ -73,8 +73,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const availableWidth = window.innerWidth - 40;
-  const availableWidthLeft = availableWidth * (leftDivision * .01);
-  const availableWidthRight = availableWidth * (rightDivision * .01);
+  const availableWidthLeft = availableWidth * (leftDivision * .02);
+  const availableWidthRight = availableWidth * (rightDivision * .02);
   const scaleForReportLeft = availableWidthLeft < 600 ? availableWidthLeft/600 : 1;
   const scaleForReportRight = availableWidthRight < 600 ? availableWidthRight/600 : 1;
 
