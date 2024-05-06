@@ -43,7 +43,7 @@ export const IframeRuntime: React.FC<IProps> =
     const [ internalHint, setInternalHint ] = useState("");
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const phoneRef = useRef<IframePhone>();
-    // Why is interativeState and setInteractiveState kept in refs? So it's not necessary to declare these variables as
+    // Why is interativeState, setInteractiveState, and onUnloadCallback kept in refs? So it's not necessary to declare these variables as
     // useEffect's dependencies. Theoretically this useEffect callback is perfectly fine either way, but since
     // it reloads the iframe each time it's called, it's not a great experience for user when that happens while he is
     // interacting with the iframe (e.g. typing in textarea). And interactiveState is being updated very often,
