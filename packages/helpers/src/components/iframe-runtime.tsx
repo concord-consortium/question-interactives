@@ -84,11 +84,11 @@ export const IframeRuntime: React.FC<IProps> =
           flushStateUpdates();
         }
 
-        if (onUnloadCallbackRef?.current && resolveOnUnload.current) {
+        if (onUnloadCallbackRef.current && resolveOnUnload.current) {
           // send the interactive state to any parent interactive that has provided an onUnload
           // callback, and then resolve the promise that was saved in the setOnUnload function
           // with undefined so the parent interactive doesn't have its state overwritten.
-          onUnloadCallbackRef?.current(newInteractiveState);
+          onUnloadCallbackRef.current(newInteractiveState);
           resolveOnUnload.current(undefined);
         } else {
           resolveOnUnload.current?.(newInteractiveState);
