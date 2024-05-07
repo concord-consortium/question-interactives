@@ -64,10 +64,11 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       if (newInteractiveState?.dataset && dataListeners.length > 0) {
         updateDataListeners(newInteractiveState);
       }
-      return {
+      const newState = {
         ...prevState,
         [interactiveStateSide]: newInteractiveState
       };
+      return newState;
     });
   };
 
@@ -92,6 +93,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               interactiveState={interactiveState?.leftInteractiveState}
               // logRequestData={logRequestData}
               setInteractiveState={handleNewInteractiveState.bind(null, "leftInteractiveState")}
+              onUnloadCallback={handleNewInteractiveState.bind(null, "leftInteractiveState")}
               addLocalLinkedDataListener={handleAddLocalLinkedDataListener}
               report={report}
               scale={report && view !== "standalone" ? scaleForReportLeft : undefined}
@@ -107,6 +109,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
               interactiveState={interactiveState?.rightInteractiveState}
               // logRequestData={logRequestData}
               setInteractiveState={handleNewInteractiveState.bind(null, "rightInteractiveState")}
+              onUnloadCallback={handleNewInteractiveState.bind(null, "rightInteractiveState")}
               addLocalLinkedDataListener={handleAddLocalLinkedDataListener}
               report={report}
               scale={report && view !== "standalone" ? scaleForReportRight : undefined}

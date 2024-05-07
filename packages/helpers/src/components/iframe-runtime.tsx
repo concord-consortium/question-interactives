@@ -43,7 +43,7 @@ export const IframeRuntime: React.FC<IProps> =
     const [ internalHint, setInternalHint ] = useState("");
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const phoneRef = useRef<IframePhone>();
-    // Why is interativeState and setInteractiveState kept in refs? So it's not necessary to declare these variables as
+    // Why is interativeState, setInteractiveState, and onUnloadCallback kept in refs? So it's not necessary to declare these variables as
     // useEffect's dependencies. Theoretically this useEffect callback is perfectly fine either way, but since
     // it reloads the iframe each time it's called, it's not a great experience for user when that happens while he is
     // interacting with the iframe (e.g. typing in textarea). And interactiveState is being updated very often,
@@ -52,6 +52,8 @@ export const IframeRuntime: React.FC<IProps> =
     const setInteractiveStateRef = useRef<((state: any) => void)>(setInteractiveState);
     interactiveStateRef.current = interactiveState;
     setInteractiveStateRef.current = setInteractiveState;
+    const onUnloadCallbackRef = useRef<((state: any) => void) | undefined>(onUnloadCallback);
+    onUnloadCallbackRef.current = onUnloadCallback;
 
     const resolveOnUnload = useRef<(value: any | PromiseLike<any>) => void>();
 
@@ -74,17 +76,19 @@ export const IframeRuntime: React.FC<IProps> =
         }
         return Promise.resolve({});
       });
+
       phone.addListener("interactiveState", (newInteractiveState: any) => {
         setInteractiveStateRef.current?.(newInteractiveState);
         if (flushOnSave) {
           // don't wait the default 2000ms timeout before saving
           flushStateUpdates();
         }
-        if (onUnloadCallback && resolveOnUnload.current) {
+
+        if (onUnloadCallbackRef.current && resolveOnUnload.current) {
           // send the interactive state to any parent interactive that has provided an onUnload
           // callback, and then resolve the promise that was saved in the setOnUnload function
           // with undefined so the parent interactive doesn't have its state overwritten.
-          onUnloadCallback(newInteractiveState);
+          onUnloadCallbackRef.current(newInteractiveState);
           resolveOnUnload.current(undefined);
         } else {
           resolveOnUnload.current?.(newInteractiveState);
@@ -192,7 +196,7 @@ export const IframeRuntime: React.FC<IProps> =
         phoneRef.current.disconnect();
       }
     };
-  },[addLocalLinkedDataListener, authoredState, logRequestData, report, setHint, url, initMessage, onUnloadCallback, flushOnSave, accessibility]);
+  },[addLocalLinkedDataListener, authoredState, logRequestData, report, setHint, url, initMessage, flushOnSave, accessibility]);
 
   let scaledIframeStyle = undefined;
   if (scale && report) {
