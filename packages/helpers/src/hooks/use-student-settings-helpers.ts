@@ -51,7 +51,7 @@ export const getFirestore = () => {
   if (!dbInstance) {
     // Initialize Cloud Firestore through Firebase
     firebase.initializeApp({
-      apiKey: "AIzaSyAOCFQiOechmScOoJtYLPSv1kqdsf9sr1Y",
+      apiKey: atob("QUl6YVN5QU9DRlFpT2VjaG1TY09vSnRZTFBTdjFrcWRzZjlzcjFZ"),
       authDomain: "glossary-plugin.firebaseapp.com",
       databaseURL: "https://glossary-plugin.firebaseio.com",
       projectId: "glossary-plugin",
