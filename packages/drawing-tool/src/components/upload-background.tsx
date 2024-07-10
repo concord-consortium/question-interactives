@@ -43,6 +43,7 @@ export const UploadBackground: React.FC<IProps> = ({ authoredState, setInteracti
         setInteractiveState?.(prevState => ({
           ...prevState,
           userBackgroundImageUrl: url,
+          answerImageUrl: url, // necessary metadata for ImageQuestion
           answerType: getAnswerType(authoredState.questionType)
         }));
         onUploadComplete?.({ success: true });
