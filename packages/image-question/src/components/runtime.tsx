@@ -84,15 +84,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }));
   };
 
-  const handleCancel = () => {
-    setInteractiveState?.((prevState: IInteractiveState) => ({
-      ...prevState,
-      userBackgroundImageUrl: undefined,
-      answerType: "image_question_answer"
-    }));
-    closeModal({});
-    return;
-  };
+  const handleCancel = () => closeModal({});
 
   const handleClose = () => {
     if (!drawingStateUpdated) {
