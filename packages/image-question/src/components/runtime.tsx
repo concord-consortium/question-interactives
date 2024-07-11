@@ -79,6 +79,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     setInteractiveState?.(prevState => ({
       ...prevState,
       userBackgroundImageUrl: url,
+      answerImageUrl: url, // necessary metadata for ImageQuestion
       answerType: "image_question_answer"
     }));
   };
