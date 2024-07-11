@@ -19,12 +19,12 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const {required, backgroundSource, backgroundImageUrl, allowUploadFromMediaLibrary} = authoredState;
   const readOnly = report || (required && interactiveState?.submitted);
   const [ controlsHidden, setControlsHidden ] = useState(false);
-  const [ drawingStateUpdated, setDrawingStateUpdated ] = useState(false);
+  const [ newDrawingState, setNewDrawingState ] = useState<undefined | string>(undefined);
+  const [ newAnswerText, setNewAnswerText ] = useState<undefined | string>(undefined);
   const [ savingAnnotatedImage, setSavingAnnotatedImage ] = useState(false);
-  const [uploadInProgress, setUploadInProgress] = useState(false);
-
+  const [ uploadInProgress, setUploadInProgress ] = useState(false);
   const [ showUploadModal, setShowUploadModal ] = useState(false);
-  const [mediaLibrary, setMediaLibrary] = useState<IMediaLibrary|undefined>(undefined);
+  const [ mediaLibrary, setMediaLibrary ] = useState<IMediaLibrary|undefined>(undefined);
   const initMessage = useInitMessage();
 
   useEffect(() => {
@@ -56,19 +56,14 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   };
 
   const handleDrawingToolSetIntState = (updateFunc: UpdateFunc<IInteractiveState>) => {
-    setInteractiveState?.(updateFunc);
-    const newDrawingState = updateFunc(interactiveState || null).drawingState;
-    if (newDrawingState !== interactiveState?.drawingState) {
-      setDrawingStateUpdated(true);
+    const _newDrawingState = updateFunc(interactiveState || null).drawingState;
+    if (_newDrawingState !== interactiveState?.drawingState) {
+      setNewDrawingState(_newDrawingState);
     }
   };
 
   const handleTextChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setInteractiveState?.((prevState: IInteractiveState) => ({
-      ...prevState,
-      answerText: event.target.value,
-      answerType: "image_question_answer"
-    }));
+    setNewAnswerText(event.target.value);
   };
 
   const handleUploadStart = () => {
@@ -87,7 +82,15 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const handleCancel = () => closeModal({});
 
   const handleClose = () => {
-    if (!drawingStateUpdated) {
+    if (newAnswerText !== undefined || newDrawingState !== undefined) {
+      setInteractiveState?.((prevState: IInteractiveState) => ({
+        ...prevState,
+        answerText: newAnswerText !== undefined ? newAnswerText : prevState.answerText,
+        drawingState: newDrawingState !== undefined ? newDrawingState : prevState.drawingState,
+        answerType: "image_question_answer"
+      }));
+    }
+    if (!newDrawingState) {
       // Just close the modal, there's no need to take a new PNG copy of the drawing tool.
       closeModal({});
       return;
@@ -136,6 +139,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
           <DrawingToolDialog
             authoredState={authoredState}
             interactiveState={interactiveState}
+            answerText={newAnswerText !== undefined ? newAnswerText : interactiveState?.answerText}
             handleDrawingToolSetIntState={handleDrawingToolSetIntState}
             handleCancel={handleCancel}
             handleClose={handleClose}
