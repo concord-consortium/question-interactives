@@ -12,7 +12,8 @@ import css from "./drawing-tool-dialog.scss";
 
 interface IProps {
   authoredState: IAuthoredState;
-  interactiveState?: IInteractiveState|null;
+  interactiveState?: IInteractiveState | null;
+  answerText?: string;
   handleDrawingToolSetIntState: (updateFunc: UpdateFunc<IInteractiveState>) => void;
   handleTextChange: (event: React.ChangeEvent<HTMLTextAreaElement>) => void;
   savingAnnotatedImage: boolean;
@@ -22,8 +23,8 @@ interface IProps {
 
 const kGlobalDefaultAnswer = "Please type your answer here.";
 
-export const DrawingToolDialog: React.FC<IProps> = ({authoredState, interactiveState, handleDrawingToolSetIntState,
-  handleTextChange, savingAnnotatedImage, handleCancel, handleClose}) => {
+export const DrawingToolDialog: React.FC<IProps> = ({authoredState, interactiveState, answerText,
+  handleDrawingToolSetIntState, handleTextChange, savingAnnotatedImage, handleCancel, handleClose}) => {
   const {prompt, answerPrompt, defaultAnswer} = authoredState;
   const bodyWidth = document.getElementsByTagName("body").item(0)?.clientWidth || window.innerWidth;
   const onIPad = bodyWidth <= 960;
@@ -44,10 +45,10 @@ export const DrawingToolDialog: React.FC<IProps> = ({authoredState, interactiveS
           <hr />
           <div className={css.answerPrompt}><DynamicText>{renderHTML(answerPrompt)}</DynamicText></div>
           <textarea
-            value={interactiveState?.answerText || ""}
+            value={answerText || ""}
             onChange={handleTextChange}
             rows={8}
-            className={interactiveState?.answerText ? css.hasAnswer : css.default}
+            className={answerText ? css.hasAnswer : css.default}
             placeholder={defaultAnswer || kGlobalDefaultAnswer}
           />
         </> }
