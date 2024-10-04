@@ -85,8 +85,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     if (newAnswerText !== undefined || newDrawingState !== undefined) {
       setInteractiveState?.((prevState: IInteractiveState) => ({
         ...prevState,
-        answerText: newAnswerText !== undefined ? newAnswerText : prevState.answerText,
-        drawingState: newDrawingState !== undefined ? newDrawingState : prevState.drawingState,
+        answerText: newAnswerText !== undefined ? newAnswerText : prevState?.answerText,
+        drawingState: newDrawingState !== undefined ? newDrawingState : prevState?.drawingState,
         answerType: "image_question_answer"
       }));
     }
