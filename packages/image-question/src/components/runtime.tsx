@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { IRuntimeQuestionComponentProps } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
 import { IMediaLibrary, closeModal, showModal, useInitMessage } from "@concord-consortium/lara-interactive-api";
-import { getURLParam } from "@concord-consortium/question-interactives-helpers/src/utilities/get-url-param";
 import { drawingToolCanvasSelector } from "drawing-tool-interactive/src/components/drawing-tool";
 import { UpdateFunc } from "@concord-consortium/question-interactives-helpers/src/components/base-app";
 import Shutterbug from "shutterbug";
@@ -10,10 +9,9 @@ import { UploadFromMediaLibraryDialog } from "../../../helpers/src/components/me
 import { DrawingToolDialog } from "./drawing-tool-dialog";
 import { InlineContent } from "./inline-content";
 import { IAuthoredState, IInteractiveState } from "./types";
+import { hasDrawingToolDialogUrlParam, urlWithDrawingToolDialogUrlParam } from "../utils/url-param";
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
-
-const drawingToolDialogUrlParam = "drawingToolDialog";
 
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const {required, backgroundSource, backgroundImageUrl, allowUploadFromMediaLibrary} = authoredState;
@@ -33,7 +31,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
   }, [initMessage]);
 
-  const drawingToolDialog = getURLParam(drawingToolDialogUrlParam);
   const authoredBgCorsError = useCorsImageErrorCheck({
     performTest: backgroundSource === "url" && !!backgroundImageUrl,
     imgSrc: backgroundImageUrl
@@ -50,9 +47,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   const openDrawingToolDialog = () => {
     // notCloseable: true disabled click-to-close backdrop and X icon in the corner.
     // Dialog can be closed only via closeModal API.
-    const url = new URL(window.location.href);
-    url.searchParams.append(drawingToolDialogUrlParam, "true");
-    showModal({ type: "dialog", url: url.toString(), notCloseable: true });
+    const url = urlWithDrawingToolDialogUrlParam();
+    showModal({ type: "dialog", url, notCloseable: true });
   };
 
   const handleDrawingToolSetIntState = (updateFunc: UpdateFunc<IInteractiveState>) => {
@@ -135,7 +131,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             handleCloseModal={() => setShowUploadModal(false)}
           />
         </> :
-        drawingToolDialog ?
+        hasDrawingToolDialogUrlParam() ?
           <DrawingToolDialog
             authoredState={authoredState}
             interactiveState={interactiveState}
