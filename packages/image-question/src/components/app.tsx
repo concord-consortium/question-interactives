@@ -5,6 +5,7 @@ import { Runtime } from "./runtime";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { baseAuthoringProps as drawingToolBaseAuthoringProps, exportToMediaLibrary } from "drawing-tool-interactive/src/components/app";
 import deepmerge from "deepmerge";
+import { hasDrawingToolDialogUrlParam } from "../utils/url-param";
 
 const baseAuthoringProps = deepmerge(drawingToolBaseAuthoringProps, {
   schema: {
@@ -64,5 +65,6 @@ export const App = () => (
     baseAuthoringProps={baseAuthoringProps}
     isAnswered={isAnswered}
     linkedInteractiveProps={[{ label: "snapshotTarget", supportsSnapshots: true }]}
+    disableSubmitBtnRendering={hasDrawingToolDialogUrlParam()}
   />
 );
