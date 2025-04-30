@@ -87,6 +87,8 @@ jobs:
           prefix: ${{ github.event.repository.name }} # 'question-interactives'
           awsAccessKeyId: ${{ secrets.AWS_ACCESS_KEY_ID }}
           awsSecretAccessKey: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          githubToken: ${{ secrets.GITHUB_TOKEN }}
+          deployRunUrl: https://models-resources.concord.org/question-interactives/__deployPath__/
           # Add the default branch as a top branch
           topBranches: |-
             [
