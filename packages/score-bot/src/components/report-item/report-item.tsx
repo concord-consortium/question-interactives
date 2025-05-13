@@ -28,7 +28,7 @@ export const reportItemHandler: IGetReportItemAnswerHandler<IInteractiveState, I
       const isOutdated = isFeedbackOutdated(interactiveState);
       const feedbackHtml = renderStyledComponentToString(
         <DynamicTextContext.Provider value={fakeDynamicTextContext}>
-          <FeedbackReport score={score} maxScore={maxScore} attempts={attempts} feedback={feedback} outdated={isOutdated} />,
+          <FeedbackReport score={score} maxScore={maxScore} attempts={attempts} feedback={feedback} outdated={isOutdated} />
         </DynamicTextContext.Provider>
       );
       items.push({ type: "html", html: feedbackHtml });
