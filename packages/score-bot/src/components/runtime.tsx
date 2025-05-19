@@ -7,7 +7,7 @@ import { DynamicText } from "@concord-consortium/dynamic-text";
 
 import { Feedback } from "./feedback";
 import { IAuthoredState, IInteractiveState } from "./types";
-import { getLastAttemptAnswerText, getLastFeedback, getLastScore, getMaxScore, getValidScoreMapping, isFeedbackOutdated } from "../utils";
+import { getLastFeedback, getLastScore, getMaxScore, getValidScoreMapping, isFeedbackOutdated } from "../utils";
 
 import css from "./runtime.scss";
 
@@ -41,8 +41,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       ...prevState,
       answerType: "interactive_state",
       answerText: value,
-      // If user typed something and then reverted to the previously submitted answer, there's no need to resubmit.
-      submitted: value === getLastAttemptAnswerText(interactiveState)
+      submitted: true
     }));
   };
 
