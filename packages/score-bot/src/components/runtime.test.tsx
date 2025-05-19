@@ -50,7 +50,7 @@ describe("Runtime", () => {
     render(<DynamicTextTester><Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setState} /></DynamicTextTester>);
     fireEvent.change(screen.getByTestId("response-textarea"), { target: { value: "new answer" } });
     const newState = setState.mock.calls[0][0](interactiveState);
-    expect(newState).toEqual({answerType: "interactive_state", answerText: "new answer", score: undefined, submitted: false});
+    expect(newState).toEqual({answerType: "interactive_state", answerText: "new answer", score: undefined, submitted: true});
   });
 
   describe("report mode", () => {
