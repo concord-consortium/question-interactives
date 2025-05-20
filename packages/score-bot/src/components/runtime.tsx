@@ -37,9 +37,14 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const handleChange = (event: React.ChangeEvent<HTMLTextAreaElement>) => {
     const { value } = event.target;
+
+    // fake a score to show in the feedback for demo
+    const attempt = { score: 3, answerText: value };
+
     setInteractiveState?.(prevState => ({
       ...prevState,
       answerType: "interactive_state",
+      attempts: [ attempt ],
       answerText: value,
       submitted: true
     }));
