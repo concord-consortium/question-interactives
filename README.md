@@ -84,12 +84,15 @@ When updating a dependency that is shared by multiple interactives, e.g. Webpack
 
 Because of this hoisted dependency setup, it makes it possible to import dependencies in your code without declaring one in the subfolder's package.json file. That could happen if the top-level package.json or some other subfolder package.json added this dependency. In those two cases the dependency is now in the top-level node_modules folder. To prevent this 'undeclared dependency' problem the eslint-plugin-import module is added. It is configured to force all imports in your code to be declared in the code's package.json.
 
-### Adding a new interactive or shared package
+### Adding a new interactive
 
 Use the following steps to add a new interactive:
-- make a copy of the similar interactive folder (eg `open-response`) and rename it with the name of the interactive in kebab-case.
+- make a copy of the `starter` folder under `packages` and rename it with the name of the interactive in kebab-case.
   For example, if the new interactive is named "New interactive", then the folder will be named "new-interactive".
-- search your newly created folder for instances of the string `open-response` and replace it with the name of your interactive. For example, this string might appear in `readme.md`, and `package.json`.
+- search your newly created folder for instances of the string `starter` and replace it with the name of your interactive. For example, this string might appear in `readme.md`, and `package.json`.
+- cd into your new interactive folder and run `npm start`.  DO NOT RUN `npm start` from the root folder as that just starts a http server for everything in `dist`.
+- load http://localhost:8080/new-interactive/demo.html to see the default starter authoring, runtime and report-item html.  Note: the default port is 8080 and you will need to change `new-interactive` to the name you picked.  The demo will show you some example authored and interactive state and point you where to start customizing the interactive.
+
 
 ## Deployment
 
