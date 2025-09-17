@@ -4,9 +4,9 @@ import { IAuthoringInteractiveMetadata, IRuntimeInteractiveMetadata } from "@con
 // TS interfaces are not available in runtime in contrast to JSON schema.
 
 export interface IAuthoredState extends IAuthoringInteractiveMetadata {
-  version: number;
   hint?: string;
-  config: string;
+  version: number;
+  toolbox: string;
 }
 
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
@@ -14,16 +14,16 @@ export interface IInteractiveState extends IRuntimeInteractiveMetadata {
 }
 
 export const DefaultAuthoredState: Omit<Required<IAuthoredState>, "questionSubType"|"required"|"prompt"> = {
-  version: 1,
-  questionType: "iframe_interactive",
   hint: "",
-  config: "",
+  questionType: "iframe_interactive",
+  toolbox: "",
+  version: 1
 };
 
 export const DemoAuthoredState: IAuthoredState = {
-  version: 1,
-  questionType: "iframe_interactive",
-  prompt: "<p>TODO: Add the final real prompt here later</p>",
   hint: "TODO: Add the final real hint here later",
-  config: ""
+  prompt: "<p>TODO: Add the final real prompt here later</p>",
+  questionType: "iframe_interactive",
+  toolbox: "",
+  version: 1
 };
