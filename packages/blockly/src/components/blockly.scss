@@ -2,5 +2,16 @@
 
 .blockly {
   font-family: monospace;
+  height: 500px;
   white-space: pre-wrap;
+  width: 100%;
+
+  .blocklyDiv {
+    height: 480px;
+    width: 100%;
+  }
+  .error {
+    color: red;
+    margin-bottom: 10px;
+  }
 }
