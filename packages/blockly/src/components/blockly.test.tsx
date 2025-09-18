@@ -70,7 +70,7 @@ const defaultInteractiveState: IInteractiveState = {
 
 const savedInteractiveState: IInteractiveState = {
   answerType: "interactive_state",
-  json: "{\"blocks\":{\"languageVersion\":0,\"blocks\":[{\"type\":\"controls_if\",\"id\":\"q`Ro8GQ~afGcY*z`U?%,\",\"x\":30,\"y\":11}]}}"
+  blocklyState: "{\"blocks\":{\"languageVersion\":0,\"blocks\":[{\"type\":\"controls_if\",\"id\":\"q`Ro8GQ~afGcY*z`U?%,\",\"x\":30,\"y\":11}]}}"
 };
 
 describe("BlocklyComponent", () => {

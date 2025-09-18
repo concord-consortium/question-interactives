@@ -13,7 +13,7 @@ const saveEvents: string[] = [Events.BLOCK_CREATE, Events.BLOCK_DELETE, Events.B
 
 export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const { toolbox } = authoredState;
-  const { json } = interactiveState ?? {};
+  const { blocklyState } = interactiveState ?? {};
   const [error, setError] = useState<Error | null>(null);
   const blocklyDivRef = useRef<HTMLDivElement>(null);
   const [workspace, setWorkspace] = useState<WorkspaceSvg | null>(null);
@@ -38,7 +38,7 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
             setInteractiveState?.((prevState: IInteractiveState) => {
               const newState = {
                 ...prevState,
-                json: JSON.stringify(state)
+                blocklyState: JSON.stringify(state)
               };
               return newState;
             });
@@ -58,8 +58,8 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
     if (hasLoaded || !workspace) return;
     setHasLoaded(true);
 
-    if (json) serialization.workspaces.load(JSON.parse(json), workspace);
-  }, [hasLoaded, json, workspace]);
+    if (blocklyState) serialization.workspaces.load(JSON.parse(blocklyState), workspace);
+  }, [blocklyState, hasLoaded, workspace]);
 
   return (
     <div className={css.blockly}>
