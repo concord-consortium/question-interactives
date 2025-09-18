@@ -1,6 +1,7 @@
-import React, { useEffect } from "react";
-
 import { IRuntimeQuestionComponentProps } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
+import { inject } from "blockly";
+import React, { useEffect, useRef, useState } from "react";
+
 import { IAuthoredState, IInteractiveState } from "./types";
 
 import css from "./blockly.scss";
@@ -8,15 +9,30 @@ import css from "./blockly.scss";
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
 
 export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
-  const { config } = authoredState;
+  const { toolbox } = authoredState;
+  const [error, setError] = useState<Error | null>(null);
+  const blocklyDivRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    // TODO: update blockly based on config changes
-  }, [config]);
+    if (!toolbox) {
+      setError(new Error("Enter a toolbox configuration to see Blockly."));
+      return;
+    }
+
+    if (blocklyDivRef.current) {
+      try {
+        inject(blocklyDivRef.current, {toolbox: JSON.parse(toolbox)});
+        setError(null);
+      } catch (e) {
+        setError(e);
+      }
+    }
+  }, [toolbox]);
 
   return (
     <div className={css.blockly}>
-      {JSON.stringify(config, null, 2)}
+      {error && <div className={css.error}>Error loading Blockly: {error.message}</div>}
+      <div className={css.blocklyDiv} ref={blocklyDivRef}></div>
     </div>
   );
 };

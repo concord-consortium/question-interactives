@@ -14,7 +14,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   authoredState = {...DefaultAuthoredState, ...authoredState};
 
   return (
-    <div className={css.barGraph}>
+    <div className={css.blockly}>
       {authoredState.prompt && <div><DynamicText>{renderHTML(authoredState.prompt)}</DynamicText></div>}
       <BlocklyComponent
         authoredState={authoredState}

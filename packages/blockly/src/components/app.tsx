@@ -1,8 +1,9 @@
 import React from "react";
 import { RJSFSchema } from "@rjsf/utils";
+
 import { BaseQuestionApp } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
-import { IAuthoredState, IInteractiveState } from "./types";
 import { Runtime } from "./runtime";
+import { IAuthoredState, IInteractiveState } from "./types";
 
 const baseAuthoringProps = {
   schema: {
@@ -28,8 +29,8 @@ const baseAuthoringProps = {
         title: "Hint",
         type: "string"
       },
-      config: {
-        title: "Config",
+      toolbox: {
+        title: "Toolbox",
         type: "string"
       }
     }
@@ -53,7 +54,7 @@ const baseAuthoringProps = {
     hint: {
       "ui:widget": "richtext"
     },
-    config: {
+    toolbox: {
       "ui:widget": "textarea",
       "ui:options": {
         "rows": 15
