@@ -17,7 +17,7 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
   const [error, setError] = useState<Error | null>(null);
   const blocklyDivRef = useRef<HTMLDivElement>(null);
   const [workspace, setWorkspace] = useState<WorkspaceSvg | null>(null);
-  const [hasLoaded, setHasLoaded] = useState(false);
+  const hasLoadedRef = useRef(false);
 
   useEffect(() => {
     if (!toolbox) {
@@ -55,11 +55,11 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
 
   // Load saved state on initial load
   useEffect(() => {
-    if (hasLoaded || !workspace) return;
-    setHasLoaded(true);
+    if (hasLoadedRef.current || !workspace) return;
+    hasLoadedRef.current = true;
 
     if (blocklyState) serialization.workspaces.load(JSON.parse(blocklyState), workspace);
-  }, [blocklyState, hasLoaded, workspace]);
+  }, [blocklyState, workspace]);
 
   return (
     <div className={css.blockly}>
