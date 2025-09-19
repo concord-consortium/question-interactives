@@ -27,7 +27,7 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
 
     if (blocklyDivRef.current) {
       try {
-        const newWorkspace = inject(blocklyDivRef.current, { toolbox: JSON.parse(toolbox) });
+        const newWorkspace = inject(blocklyDivRef.current, { readOnly: report, toolbox: JSON.parse(toolbox) });
         setWorkspace(newWorkspace);
         setError(null);
 
@@ -51,7 +51,7 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
         setError(e);
       }
     }
-  }, [setInteractiveState, toolbox]);
+  }, [report, setInteractiveState, toolbox]);
 
   // Load saved state on initial load
   useEffect(() => {

@@ -22,9 +22,33 @@ export const DefaultAuthoredState: Omit<Required<IAuthoredState>, "questionSubTy
 };
 
 export const DemoAuthoredState: IAuthoredState = {
-  hint: "TODO: Add the final real hint here later",
-  prompt: "<p>TODO: Add the final real prompt here later</p>",
+  hint: "",
+  prompt: "",
   questionType: "iframe_interactive",
-  toolbox: "",
+  toolbox: `{
+    "kind": "categoryToolbox",
+    "name": "General",
+    "contents": [
+      {
+        "kind": "category",
+        "name": "General",
+        "colour": "#00836B",
+        "contents": [
+          {
+            "kind": "block",
+            "type": "controls_if"
+          },
+          {
+            "kind": "block",
+            "type": "logic_operation"
+          },
+          {
+            "kind": "block",
+            "type": "logic_negate"
+          }
+        ]
+      }
+    ]
+  }`,
   version: 1
 };
