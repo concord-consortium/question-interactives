@@ -1,5 +1,5 @@
 import { IRuntimeQuestionComponentProps } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
-import { inject } from "blockly";
+import { Events, inject, serialization, WorkspaceSvg } from "blockly";
 import React, { useEffect, useRef, useState } from "react";
 
 import { IAuthoredState, IInteractiveState } from "./types";
@@ -8,10 +8,16 @@ import css from "./blockly.scss";
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
 
+// Save when any of these events occur
+const saveEvents: string[] = [Events.BLOCK_CREATE, Events.BLOCK_DELETE, Events.BLOCK_CHANGE, Events.BLOCK_MOVE];
+
 export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const { toolbox } = authoredState;
+  const { blocklyState } = interactiveState ?? {};
   const [error, setError] = useState<Error | null>(null);
   const blocklyDivRef = useRef<HTMLDivElement>(null);
+  const [workspace, setWorkspace] = useState<WorkspaceSvg | null>(null);
+  const hasLoadedRef = useRef(false);
 
   useEffect(() => {
     if (!toolbox) {
@@ -21,13 +27,39 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
 
     if (blocklyDivRef.current) {
       try {
-        inject(blocklyDivRef.current, {toolbox: JSON.parse(toolbox)});
+        const newWorkspace = inject(blocklyDivRef.current, { toolbox: JSON.parse(toolbox) });
+        setWorkspace(newWorkspace);
         setError(null);
+
+        // Set up automatic saving
+        const saveState = (event: Events.Abstract) => {
+          if (saveEvents.includes(event.type)) {
+            const state = serialization.workspaces.save(newWorkspace);
+            setInteractiveState?.((prevState: IInteractiveState) => {
+              const newState = {
+                ...prevState,
+                blocklyState: JSON.stringify(state)
+              };
+              return newState;
+            });
+          }
+        };
+        newWorkspace.addChangeListener(saveState);
+
+        return () => newWorkspace.removeChangeListener(saveState);
       } catch (e) {
         setError(e);
       }
     }
-  }, [toolbox]);
+  }, [setInteractiveState, toolbox]);
+
+  // Load saved state on initial load
+  useEffect(() => {
+    if (hasLoadedRef.current || !workspace) return;
+    hasLoadedRef.current = true;
+
+    if (blocklyState) serialization.workspaces.load(JSON.parse(blocklyState), workspace);
+  }, [blocklyState, workspace]);
 
   return (
     <div className={css.blockly}>

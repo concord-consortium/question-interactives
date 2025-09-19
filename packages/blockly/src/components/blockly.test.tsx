@@ -28,6 +28,36 @@ const validToolboxAuthoredState: IAuthoredState = {
   }`
 };
 
+const generalToolboxAuthoredState: IAuthoredState = {
+  questionType: "iframe_interactive",
+  version: 1,
+  toolbox: `{
+    "kind": "categoryToolbox",
+    "name": "General",
+    "contents": [
+      {
+        "kind": "category",
+        "name": "General",
+        "colour": "#00836B",
+        "contents": [
+          {
+            "kind": "block",
+            "type": "controls_if"
+          },
+          {
+            "kind": "block",
+            "type": "logic_operation"
+          },
+          {
+            "kind": "block",
+            "type": "logic_negate"
+          }
+        ]
+      }
+    ]
+  }`
+};
+
 const invalidToolboxAuthoredState: IAuthoredState = {
   questionType: "iframe_interactive",
   version: 1,
@@ -36,6 +66,11 @@ const invalidToolboxAuthoredState: IAuthoredState = {
 
 const defaultInteractiveState: IInteractiveState = {
   answerType: "interactive_state"
+};
+
+const savedInteractiveState: IInteractiveState = {
+  answerType: "interactive_state",
+  blocklyState: "{\"blocks\":{\"languageVersion\":0,\"blocks\":[{\"type\":\"controls_if\",\"id\":\"q`Ro8GQ~afGcY*z`U?%,\",\"x\":30,\"y\":11}]}}"
 };
 
 describe("BlocklyComponent", () => {
@@ -79,5 +114,31 @@ describe("BlocklyComponent", () => {
     expect(screen.getByText(/Error loading Blockly:/)).toBeInTheDocument();
     expect(screen.queryByText(/Enter a toolbox configuration to see Blockly./)).not.toBeInTheDocument();
     expect(document.querySelector(".injectionDiv")).not.toBeInTheDocument();
+  });
+
+  it("loads saved state on initial load", () => {
+    // Make sure the block is not present if it's not in the saved state
+    const { container: noStateContainer } = render(<BlocklyComponent
+      authoredState={generalToolboxAuthoredState}
+      interactiveState={defaultInteractiveState}
+      setInteractiveState={() => {
+        // mock implementation
+      }}
+      report={false}
+    />);
+    const noStateIfBlock = noStateContainer.querySelector('g.controls_if');
+    expect(noStateIfBlock).not.toBeInTheDocument();
+
+    // But the block is present if it is in the saved state
+    const { container } = render(<BlocklyComponent
+      authoredState={generalToolboxAuthoredState}
+      interactiveState={savedInteractiveState}
+      setInteractiveState={() => {
+        // mock implementation
+      }}
+      report={false}
+    />);
+    const ifBlockElement = container.querySelector('g.controls_if');
+    expect(ifBlockElement).toBeInTheDocument();
   });
 });
