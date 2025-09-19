@@ -5,7 +5,7 @@ import {
   defaultInteractiveState,
   savedInteractiveState,
   validToolboxAuthoredState
-} from "../__mocks__/fixures";
+} from "../__mocks__/fixtures";
 import { reportItemHandler } from "./report-item";
 
 jest.mock("@concord-consortium/lara-interactive-api", () => ({

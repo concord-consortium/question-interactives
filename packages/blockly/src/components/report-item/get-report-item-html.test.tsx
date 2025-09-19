@@ -3,7 +3,7 @@ import {
   defaultInteractiveState,
   savedInteractiveState,
   validToolboxAuthoredState
-} from "../__mocks__/fixures";
+} from "../__mocks__/fixtures";
 import { getReportItemHtml } from "./get-report-item-html";
 
 describe("getReportItemHtml", () => {

@@ -8,7 +8,7 @@ import {
   invalidToolboxAuthoredState,
   savedInteractiveState,
   validToolboxAuthoredState
-} from "./__mocks__/fixures";
+} from "./__mocks__/fixtures";
 import { BlocklyComponent } from "./blockly";
 
 describe("BlocklyComponent", () => {

@@ -31,7 +31,7 @@ export const getReportItemHtml = ({ interactiveState, authoredState }: IProps) =
       toolbox: JSON.parse(toolbox),
       trashcan: false,
       scrollbars: false,
-      zoom: { controls: false, wheel: false, startScale: .4, minScale: .4, maxScale: .4, scaleSpeed: 1 },
+      zoom: { controls: false, wheel: false, startScale: 0.4, minScale: 0.4, maxScale: 0.4, scaleSpeed: 1 },
       media: "https://unpkg.com/blockly/media/",
     });
 
@@ -47,18 +47,18 @@ export const getReportItemHtml = ({ interactiveState, authoredState }: IProps) =
     return normalizedHtml;
   }
 
-  try {
-    const H = 200;
-    const TALL_W = 368;
-    const WIDE_W = 300;
+  const HEIGHT = 200;
+  const TALL_WIDTH = 368;
+  const WIDE_WIDTH = 300;
 
-    const tallHtml = buildStaticHtml("tall", TALL_W, H);
-    const wideHtml = buildStaticHtml("wide", WIDE_W, H);
+  try {
+    const tallHtml = buildStaticHtml("tall", TALL_WIDTH, HEIGHT);
+    const wideHtml = buildStaticHtml("wide", WIDE_WIDTH, HEIGHT);
 
     const result = `
       <style>
-        .tall { border: 1px solid #ccc; height: ${H}px; width: ${TALL_W}px; }
-        .wide { border: 1px solid #ccc; height: ${H}px; margin-top: 12px; width: ${WIDE_W}px; }
+        .tall { border: 1px solid #ccc; height: ${HEIGHT}px; width: ${TALL_WIDTH}px; }
+        .wide { border: 1px solid #ccc; height: ${HEIGHT}px; margin-top: 12px; width: ${WIDE_WIDTH}px; }
       </style>
       <div class="tall">${tallHtml}</div>
       <div class="wide">${wideHtml}</div>
@@ -71,12 +71,16 @@ export const getReportItemHtml = ({ interactiveState, authoredState }: IProps) =
   }
 };
 
+// FNV-1a 32-bit hash constants
+const FNV_OFFSET_BASIS = 2166136261 >>> 0;
+const FNV_PRIME = 16777619;
+
 // Generates a stable hash for cache keys.
 function stableHash(s: string) {
-  let h = 2166136261 >>> 0;
+  let h = FNV_OFFSET_BASIS;
   for (let i = 0; i < s.length; i++) {
     h ^= s.charCodeAt(i);
-    h = Math.imul(h, 16777619) >>> 0;
+    h = Math.imul(h, FNV_PRIME) >>> 0;
   }
   return h.toString(36);
 }
