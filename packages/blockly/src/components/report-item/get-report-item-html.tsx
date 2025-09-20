@@ -14,7 +14,10 @@ export const getReportItemHtml = ({ interactiveState, authoredState }: IProps) =
   const { toolbox } = authoredState;
   if (!blocklyState || !toolbox) return "";
 
-  const cacheKey = stableHash(`v1|${blocklyState}|${toolbox}|600x400|300x400`);
+  const HEIGHT = 200;
+  const TALL_WIDTH = 368;
+  const WIDE_WIDTH = 400;
+  const cacheKey = stableHash(`v1|${blocklyState}|${toolbox}|${WIDE_WIDTH}x${HEIGHT}|${TALL_WIDTH}x${HEIGHT}`);
   const cached = htmlCache.get(cacheKey);
   if (cached) return cached;
 
@@ -46,10 +49,6 @@ export const getReportItemHtml = ({ interactiveState, authoredState }: IProps) =
 
     return normalizedHtml;
   }
-
-  const HEIGHT = 200;
-  const TALL_WIDTH = 368;
-  const WIDE_WIDTH = 300;
 
   try {
     const tallHtml = buildStaticHtml("tall", TALL_WIDTH, HEIGHT);
