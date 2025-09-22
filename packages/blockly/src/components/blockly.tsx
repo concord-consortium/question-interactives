@@ -2,6 +2,7 @@ import { IRuntimeQuestionComponentProps } from "@concord-consortium/question-int
 import { Events, inject, serialization, WorkspaceSvg } from "blockly";
 import React, { useEffect, useRef, useState } from "react";
 
+import "../blocks/block-registration";
 import { IAuthoredState, IInteractiveState } from "./types";
 
 import css from "./blockly.scss";
@@ -26,8 +27,30 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
     }
 
     if (blocklyDivRef.current) {
+      const setupBlock = {
+        deletable: false,
+        type: "setup",
+        x: 10,
+        y: 10
+      };
+      const goBlock = {
+        deletable: false,
+        type: "go",
+        x: 10,
+        y: 80
+      };
+      const onclickBlock = {
+        deletable: false,
+        type: "onclick",
+        x: 10,
+        y: 150
+      };
+
       try {
         const newWorkspace = inject(blocklyDivRef.current, { readOnly: report, toolbox: JSON.parse(toolbox) });
+        serialization.blocks.append(setupBlock, newWorkspace);
+        serialization.blocks.append(goBlock, newWorkspace);
+        serialization.blocks.append(onclickBlock, newWorkspace);
         setWorkspace(newWorkspace);
         setError(null);
 

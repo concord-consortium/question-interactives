@@ -1,6 +1,8 @@
 import { IAuthoredState, IInteractiveState } from "../types";
 import { inject, serialization } from "blockly";
 
+import "../../blocks/block-registration";
+
 interface IProps {
   authoredState: IAuthoredState;
   interactiveState: IInteractiveState;
