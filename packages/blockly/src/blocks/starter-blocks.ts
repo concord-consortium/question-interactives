@@ -16,7 +16,7 @@ Blocks.setup = {
       "*" // alt text (shown if image missing)
     ));
     this.appendStatementInput("statements");
-    this.setColour("#f26522"); // border color #f69364
+    this.setColour("#f26522");
   }
 };
 
