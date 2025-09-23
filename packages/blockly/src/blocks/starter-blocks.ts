@@ -5,18 +5,25 @@ import GoIcon from "../assets/go-icon.png";
 import OnclickIcon from "../assets/onclick-icon.png";
 import Setup from "../assets/setup-icon.png";
 
+const BG_COLOR = "#f26522";
+const ICON_WIDTH = 15;
+const ICON_HEIGHT = 15;
+const GO_ICON_WIDTH = 10;
+const GO_ICON_HEIGHT = 10;
+const ICON_ALT_TEXT = ""; // empty string since the icons are purely decorative
+
 Blocks.setup = {
   init() {
     this.appendDummyInput()
       .appendField("setup")
       .setAlign(inputs.Align.RIGHT).appendField(new FieldImage(
       Setup,
-      15, // width in px
-      15, // height in px
-      "*" // alt text (shown if image missing)
+      ICON_WIDTH,
+      ICON_HEIGHT,
+      ICON_ALT_TEXT
     ));
     this.appendStatementInput("statements");
-    this.setColour("#f26522");
+    this.setColour(BG_COLOR);
   }
 };
 
@@ -26,12 +33,12 @@ Blocks.go = {
       .appendField("go")
       .setAlign(inputs.Align.RIGHT).appendField(new FieldImage(
       GoIcon,
-      10, // width in px
-      10, // height in px
-      "*" // alt text (shown if image missing)
+      GO_ICON_WIDTH,
+      GO_ICON_HEIGHT,
+      ICON_ALT_TEXT
     ));
     this.appendStatementInput("statements");
-    this.setColour("#f26522");
+    this.setColour(BG_COLOR);
   }
 };
 
@@ -41,12 +48,12 @@ Blocks.onclick = {
       .appendField("on mouse click")
       .setAlign(inputs.Align.RIGHT).appendField(new FieldImage(
       OnclickIcon,
-      10, // width in px
-      10, // height in px
-      "*" // alt text (shown if image missing)
+      ICON_WIDTH,
+      ICON_HEIGHT,
+      ICON_ALT_TEXT
     ));
     this.appendStatementInput("statements");
-    this.setColour("#f26522");
+    this.setColour(BG_COLOR);
   }
 };
 
