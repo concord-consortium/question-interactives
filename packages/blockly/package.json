@@ -106,6 +106,7 @@
     "webpack-dev-server": "^4.7.4"
   },
   "dependencies": {
+    "@blockly/field-slider": "^8.0.2",
     "@concord-consortium/dynamic-text": "^1.0.6",
     "@concord-consortium/lara-interactive-api": "^1.9.4",
     "@concord-consortium/question-interactives-helpers": "^1.16.0",

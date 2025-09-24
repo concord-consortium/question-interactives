@@ -47,6 +47,25 @@ export const DemoAuthoredState: IAuthoredState = {
             "type": "logic_negate"
           }
         ]
+      },
+      {
+        "kind": "category",
+        "name": "Properties",
+        "colour": "#312b84",
+        "contents": [
+          {
+            "kind": "block",
+            "type": "create"
+          },
+          {
+            "kind": "block",
+            "type": "set_speed"
+          },
+          {
+            "kind": "block",
+            "type": "set_type"
+          }
+        ]
       }
     ]
   }`,
