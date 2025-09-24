@@ -6,22 +6,28 @@ import { MenuOption } from "blockly";
 
 export type CustomBlockType = "creator" | "setter";
 
-export interface ICustomBlockCreate {
-  defaultCount: number;
-  maxCount: number;
-  minCount: number;
-  typeLabel: string;
-  typeOptions: MenuOption[];
+interface IBlockConfigBase {
+  generatorTemplate?: string;
+  inputsInline?: boolean;
+  previousStatement?: boolean;
+  nextStatement?: boolean;
+  typeLabel?: string;
 }
 
-export interface ICustomBlockSet {
-  typeLabel: string;
-  typeOptions: MenuOption[];
+export interface ICreateBlockConfig extends IBlockConfigBase {
+  defaultCount?: number;
+  maxCount?: number;
+  minCount?: number;
+  typeOptions?: MenuOption[];
+}
+
+export interface ISetBlockConfig extends IBlockConfigBase {
+  typeOptions?: MenuOption[];
 }
 
 export interface ICustomBlock {
   color: string;
-  config: ICustomBlockCreate | ICustomBlockSet;
+  config: ICreateBlockConfig | ISetBlockConfig;
   id: string;
   name: string;
   type: CustomBlockType;
@@ -29,56 +35,56 @@ export interface ICustomBlock {
 
 // Predefined custom blocks
 // TODO: Determine if it's actually useful to have these.
-export const PREDEFINED_BLOCKS: ICustomBlock[] = [
-  {
-    id: "diffusion-create",
-    type: "creator",
-    name: "Create Diffusion Particles",
-    color: "#312b84",
-    config: {
-      defaultCount: 100,
-      minCount: 0,
-      maxCount: 500,
-      typeLabel: "particles",
-      typeOptions: [
-        ["water", "WATER"],
-        ["ink", "INK"]
-      ]
-    }
-  },
-  {
-    id: "diffusion-set-speed",
-    type: "setter",
-    name: "Set Diffusion Speed",
-    color: "#312b84",
-    config: {
-      typeLabel: "speed",
-      typeOptions: [
-        ["zero", "ZERO"],
-        ["low", "LOW"],
-        ["medium", "MEDIUM"],
-        ["high", "HIGH"],
-        ["initial temperature", "TEMP"]
-      ]
-    }
-  },
-  {
-    id: "photosynthesis-create",
-    type: "creator",
-    name: "Create Photosynthesis Molecules",
-    color: "#4CAF50",
-    config: {
-      defaultCount: 50,
-      minCount: 0,
-      maxCount: 100,
-      typeLabel: "molecules",
-      typeOptions: [
-        ["co2", "CO2"],
-        ["h2o", "H2O"]
-      ]
-    }
-  }
-];
+// export const PREDEFINED_BLOCKS: ICustomBlock[] = [
+//   {
+//     id: "diffusion-create",
+//     type: "creator",
+//     name: "Create Diffusion Particles",
+//     color: "#312b84",
+//     config: {
+//       defaultCount: 100,
+//       minCount: 0,
+//       maxCount: 500,
+//       typeLabel: "particles",
+//       typeOptions: [
+//         ["water", "WATER"],
+//         ["ink", "INK"]
+//       ]
+//     }
+//   },
+//   {
+//     id: "diffusion-set-speed",
+//     type: "setter",
+//     name: "Set Diffusion Speed",
+//     color: "#312b84",
+//     config: {
+//       typeLabel: "speed",
+//       typeOptions: [
+//         ["zero", "ZERO"],
+//         ["low", "LOW"],
+//         ["medium", "MEDIUM"],
+//         ["high", "HIGH"],
+//         ["initial temperature", "TEMP"]
+//       ]
+//     }
+//   },
+//   {
+//     id: "photosynthesis-create",
+//     type: "creator",
+//     name: "Create Photosynthesis Molecules",
+//     color: "#4CAF50",
+//     config: {
+//       defaultCount: 50,
+//       minCount: 0,
+//       maxCount: 100,
+//       typeLabel: "molecules",
+//       typeOptions: [
+//         ["co2", "CO2"],
+//         ["h2o", "H2O"]
+//       ]
+//     }
+//   }
+// ];
 
 export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   customBlocks?: ICustomBlock[];

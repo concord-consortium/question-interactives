@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import { CustomBlockType, ICustomBlock, ICustomBlockCreate, ICustomBlockSet, PREDEFINED_BLOCKS } from "./types";
+import { CustomBlockType, ICustomBlock, ICreateBlockConfig, ISetBlockConfig } from "./types";
 
 interface IProps {
   value: ICustomBlock[];
@@ -22,19 +22,19 @@ const handleCopyToClipboard = (block: ICustomBlock) => {
 };
 
 export const CustomBlockEditor: React.FC<IProps> = ({ value, onChange }) => {
-  const [selectedPredefined, setSelectedPredefined] = useState<string>("");
+  // const [selectedPredefined, setSelectedPredefined] = useState<string>("");
   const [showCustomForm, setShowCustomForm] = useState(false);
 
   // TODO: Determine if it's actually useful to have predefined blocks.
-  const addPredefinedBlock = () => {
-    if (selectedPredefined) {
-      const predefined = PREDEFINED_BLOCKS.find(b => b.id === selectedPredefined);
-      if (predefined) {
-        onChange([...value, { ...predefined, id: `${predefined.id}_${Date.now()}` }]);
-        setSelectedPredefined("");
-      }
-    }
-  };
+  // const addPredefinedBlock = () => {
+  //   if (selectedPredefined) {
+  //     const predefined = PREDEFINED_BLOCKS.find(b => b.id === selectedPredefined);
+  //     if (predefined) {
+  //       onChange([...value, { ...predefined, id: `${predefined.id}_${Date.now()}` }]);
+  //       setSelectedPredefined("");
+  //     }
+  //   }
+  // };
 
   const addCustomBlock = (block: ICustomBlock) => {
     onChange([...value, { ...block, id: `custom_${Date.now()}` }]);
@@ -48,7 +48,7 @@ export const CustomBlockEditor: React.FC<IProps> = ({ value, onChange }) => {
   return (
     <div className="custom-blocks">
       <h4>Custom Blocks</h4>
-      <div className="custom-blocks__predefined" style={{ marginBottom: "20px" }}>
+      {/* <div className="custom-blocks__predefined" style={{ marginBottom: "20px" }}>
         <label>Add Predefined Block:</label>
         <select 
           value={selectedPredefined} 
@@ -64,7 +64,7 @@ export const CustomBlockEditor: React.FC<IProps> = ({ value, onChange }) => {
         <button onClick={addPredefinedBlock} disabled={!selectedPredefined}>
           Add
         </button>
-      </div>
+      </div> */}
 
       <div className="custom-blocks__new" style={{ marginBottom: "20px" }}>
         <button onClick={() => setShowCustomForm(!showCustomForm)}>
@@ -113,13 +113,28 @@ export const CustomBlockEditor: React.FC<IProps> = ({ value, onChange }) => {
 const CustomBlockForm: React.FC<{ onSubmit: (block: ICustomBlock) => void }> = ({ onSubmit }) => {
   const [formData, setFormData] = useState({
     color: "#312b84",
-    defaultCount: 100,
-    maxCount: 500,
-    minCount: 0,
     name: "",
+    type: "creator" as CustomBlockType,
+
+    // layout / connections
+    inputsInline: true,
+    previousStatement: true,
+    nextStatement: true,
+
+    // generator
+    generatorTemplate: "",
+
+    // label
+    typeLabel: "",
+
+    // optional dropdown options
     options: [{ label: "", value: "" }],
-    type: "creator",
-    typeLabel: ""
+
+    // optional slider toggle + fields
+    includeCount: true,
+    defaultCount: 100,
+    minCount: 0,
+    maxCount: 500
   });
 
   const addOption = () => {
@@ -146,60 +161,65 @@ const CustomBlockForm: React.FC<{ onSubmit: (block: ICustomBlock) => void }> = (
   };
 
   const handleSubmit = () => {
-    if (!formData.name || !formData.typeLabel) {
-      alert("Please fill in all required fields.");
-      return;
-    }
-
-    if (formData.options.every(opt => !opt.label || !opt.value)) {
-      alert("Please add at least one option.");
+    if (!formData.name) {
+      alert("Please provide the block name.");
       return;
     }
 
     const typeOptions = formData.options
       .filter(opt => opt.label && opt.value)
       .map(opt => [opt.label, opt.value] as [string, string]);
-    
-    const config = formData.type === "creator"
-      ? {
-          defaultCount: formData.defaultCount,
-          minCount: formData.minCount,
-          maxCount: formData.maxCount,
-          typeOptions,
-          typeLabel: formData.typeLabel
-        } as ICustomBlockCreate
-      : {
-          typeOptions,
-          typeLabel: formData.typeLabel
-        } as ICustomBlockSet;
+
+    const base = {
+      generatorTemplate: formData.generatorTemplate || undefined,
+      inputsInline: formData.inputsInline,
+      nextStatement: formData.nextStatement,
+      previousStatement: formData.previousStatement,
+      typeLabel: formData.typeLabel || undefined
+    };
+
+    const config =
+      formData.type === "creator"
+        ? {
+            ...base,
+            typeOptions: typeOptions.length ? typeOptions : undefined,
+            ...(formData.includeCount
+              ? {
+                  defaultCount: formData.defaultCount,
+                  minCount: formData.minCount,
+                  maxCount: formData.maxCount
+                }
+              : {})
+          } as ICreateBlockConfig
+        : {
+            ...base,
+            typeOptions: typeOptions.length ? typeOptions : undefined
+          } as ISetBlockConfig;
 
     onSubmit({
       color: formData.color,
       config,
       id: "",
       name: formData.name,
-      type: formData.type as CustomBlockType // TODO: validate instead of casting?
+      type: formData.type
     });
 
-    // Reset form after submission
-    setFormData({
-      color: "#312b84",
-      defaultCount: 100,
-      maxCount: 500,
-      minCount: 0,
+    // reset (keep sensible defaults)
+    setFormData(prev => ({
+      ...prev,
       name: "",
-      options: [{ label: "", value: "" }],
-      type: "creator",
-      typeLabel: ""
-    });
+      typeLabel: "",
+      generatorTemplate: "",
+      options: [{ label: "", value: "" }]
+    }));
   };
 
   return (
     <>
       <div>
         <label>Block Name:</label>
-        <input 
-          type="text" 
+        <input
+          type="text"
           value={formData.name}
           onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
           required
@@ -208,7 +228,7 @@ const CustomBlockForm: React.FC<{ onSubmit: (block: ICustomBlock) => void }> = (
 
       <div>
         <label>Block Type:</label>
-        <select 
+        <select
           value={formData.type}
           onChange={(e) => setFormData(prev => ({ ...prev, type: e.target.value as CustomBlockType }))}
         >
@@ -219,20 +239,59 @@ const CustomBlockForm: React.FC<{ onSubmit: (block: ICustomBlock) => void }> = (
 
       <div>
         <label>Color:</label>
-        <input 
-          type="color" 
+        <input
+          type="color"
           value={formData.color}
           onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
         />
       </div>
 
       <div>
-        <label>Type Label:</label>
-        <input 
-          placeholder="e.g., particles, speed" 
-          required 
-          type="text" 
-          value={formData.typeLabel} 
+        <label>
+          <input
+            type="checkbox"
+            checked={formData.inputsInline}
+            onChange={(e) => setFormData(prev => ({ ...prev, inputsInline: e.target.checked }))}
+          />
+          inputsInline
+        </label>
+        <label style={{ marginLeft: 8 }}>
+          <input
+            type="checkbox"
+            checked={formData.previousStatement}
+            onChange={(e) => setFormData(prev => ({ ...prev, previousStatement: e.target.checked }))}
+          />
+          previousStatement
+        </label>
+        <label style={{ marginLeft: 8 }}>
+          <input
+            type="checkbox"
+            checked={formData.nextStatement}
+            onChange={(e) => setFormData(prev => ({ ...prev, nextStatement: e.target.checked }))}
+          />
+          nextStatement
+        </label>
+      </div>
+
+      <div>
+        <label>Generator Template (optional):</label><br />
+        <textarea
+          placeholder={'e.g.\nconst v = "${value}";\nawait sim.setColor(v);'}
+          rows={2}
+          value={formData.generatorTemplate}
+          onChange={(e) => setFormData(prev => ({ ...prev, generatorTemplate: e.target.value }))}
+        />
+        <div style={{ fontSize: "12px", color: "#666" }}>
+          Available placeholders: ${"{name}"}, ${"{label}"}, ${"{count}"}, ${"{type}"}, ${"{value}"}.
+        </div>
+      </div>
+
+      <div>
+        <label>Type Label (optional):</label>
+        <input
+          placeholder="e.g., particles, speed"
+          type="text"
+          value={formData.typeLabel}
           onChange={(e) => setFormData(prev => ({ ...prev, typeLabel: e.target.value }))}
         />
       </div>
@@ -240,44 +299,58 @@ const CustomBlockForm: React.FC<{ onSubmit: (block: ICustomBlock) => void }> = (
       {formData.type === "creator" && (
         <>
           <div>
-            <label>Default Count:</label>
-            <input 
-              type="number" 
-              value={formData.defaultCount}
-              onChange={(e) => setFormData(prev => ({ ...prev, defaultCount: parseInt(e.target.value) }))}
-            />
+            <label>
+              <input
+                type="checkbox"
+                checked={formData.includeCount}
+                onChange={(e) => setFormData(prev => ({ ...prev, includeCount: e.target.checked }))}
+              />
+              Include Count Slider
+            </label>
           </div>
-          <div>
-            <label>Min Count:</label>
-            <input 
-              type="number" 
-              value={formData.minCount}
-              onChange={(e) => setFormData(prev => ({ ...prev, minCount: parseInt(e.target.value) }))}
-            />
-          </div>
-          <div>
-            <label>Max Count:</label>
-            <input 
-              type="number" 
-              value={formData.maxCount}
-              onChange={(e) => setFormData(prev => ({ ...prev, maxCount: parseInt(e.target.value) }))}
-            />
-          </div>
+          {formData.includeCount && (
+            <>
+              <div>
+                <label>Default Count:</label>
+                <input
+                  type="number"
+                  value={formData.defaultCount}
+                  onChange={(e) => setFormData(prev => ({ ...prev, defaultCount: parseInt(e.target.value) }))}
+                />
+              </div>
+              <div>
+                <label>Min Count:</label>
+                <input
+                  type="number"
+                  value={formData.minCount}
+                  onChange={(e) => setFormData(prev => ({ ...prev, minCount: parseInt(e.target.value) }))}
+                />
+              </div>
+              <div>
+                <label>Max Count:</label>
+                <input
+                  type="number"
+                  value={formData.maxCount}
+                  onChange={(e) => setFormData(prev => ({ ...prev, maxCount: parseInt(e.target.value) }))}
+                />
+              </div>
+            </>
+          )}
         </>
       )}
 
       <div>
-        <label>Options:</label>
+        <label>Options (dropdown, optional):</label>
         {formData.options.map((option, index) => (
           <div key={index} style={{ display: "flex", gap: "5px", marginBottom: "5px" }}>
-            <input 
-              type="text" 
+            <input
+              type="text"
               placeholder="Label"
               value={option.label}
               onChange={(e) => updateOption(index, "label", e.target.value)}
             />
-            <input 
-              type="text" 
+            <input
+              type="text"
               placeholder="Value"
               value={option.value}
               onChange={(e) => updateOption(index, "value", e.target.value)}

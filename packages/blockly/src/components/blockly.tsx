@@ -21,6 +21,9 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
   const [workspace, setWorkspace] = useState<WorkspaceSvg | null>(null);
   const hasLoadedRef = useRef(false);
 
+  console.log("authoredState", authoredState);
+  console.log("customBlocks", customBlocks);
+
   useEffect(() => {
     if (!toolbox) {
       setError(new Error("Enter a toolbox configuration to see Blockly."));
