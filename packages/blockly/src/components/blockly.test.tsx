@@ -24,9 +24,12 @@ describe("BlocklyComponent", () => {
 
     expect(screen.getByText(/Enter a toolbox configuration to see Blockly./)).toBeInTheDocument();
     expect(document.querySelector(".injectionDiv")).not.toBeInTheDocument();
+    expect(document.querySelector(".go.blocklyNotDeletable")).not.toBeInTheDocument();
+    expect(document.querySelector(".setup.blocklyNotDeletable")).not.toBeInTheDocument();
+    expect(document.querySelector(".onclick.blocklyNotDeletable")).not.toBeInTheDocument();
   });
 
-  it("renders Blockly when a valid toolbox is provided", () => {
+  it("renders Blockly with default, not-deletable blocks when a valid toolbox is provided", () => {
     render(<BlocklyComponent
       authoredState={validToolboxAuthoredState}
       interactiveState={defaultInteractiveState}
@@ -38,6 +41,9 @@ describe("BlocklyComponent", () => {
     expect(screen.queryByText(/Enter a toolbox configuration to see Blockly./)).not.toBeInTheDocument();
     expect(screen.queryByText(/Error loading Blockly:/)).not.toBeInTheDocument();
     expect(document.querySelector(".injectionDiv")).toBeInTheDocument();
+    expect(document.querySelector(".go.blocklyNotDeletable")).toBeInTheDocument();
+    expect(document.querySelector(".setup.blocklyNotDeletable")).toBeInTheDocument();
+    expect(document.querySelector(".onclick.blocklyNotDeletable")).toBeInTheDocument();
   });
 
   it("shows error message when an invalid toolbox is provided", () => {
