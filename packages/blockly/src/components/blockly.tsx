@@ -2,6 +2,7 @@ import { IRuntimeQuestionComponentProps } from "@concord-consortium/question-int
 import { Events, inject, serialization, WorkspaceSvg } from "blockly";
 import React, { useEffect, useRef, useState } from "react";
 
+import { registerCustomBlocks } from "../blocks/block-factory";
 import "../blocks/block-registration";
 import { IAuthoredState, IInteractiveState } from "./types";
 
@@ -13,7 +14,7 @@ interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInterac
 const saveEvents: string[] = [Events.BLOCK_CREATE, Events.BLOCK_DELETE, Events.BLOCK_CHANGE, Events.BLOCK_MOVE];
 
 export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
-  const { toolbox } = authoredState;
+  const { customBlocks = [], toolbox } = authoredState;
   const { blocklyState } = interactiveState ?? {};
   const [error, setError] = useState<Error | null>(null);
   const blocklyDivRef = useRef<HTMLDivElement>(null);
@@ -27,6 +28,11 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
     }
 
     if (blocklyDivRef.current) {
+      // Empty existing container before creating a new workspace to avoid duplication.
+      // TODO: Find a better way to do this?
+      blocklyDivRef.current.innerHTML = "";
+
+      registerCustomBlocks(customBlocks);
 
       const initialBlocks = [
         { deletable: false, type: "setup", x: 10, y: 10 },
@@ -62,7 +68,7 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
         setError(e);
       }
     }
-  }, [report, setInteractiveState, toolbox]);
+  }, [customBlocks, report, setInteractiveState, toolbox]);
 
   // Load saved state on initial load
   useEffect(() => {
