@@ -1,0 +1,13 @@
+@import "../../../helpers/src/styles/px-to-rem.scss";
+
+.agentSimulationComponent {
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+
+  .example {
+    font-family: monospace;
+    white-space: pre-wrap;
+    margin: 10px 0;
+  }
+}
