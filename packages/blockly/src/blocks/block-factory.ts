@@ -1,5 +1,5 @@
 import { FieldSlider } from "@blockly/field-slider";
-import Blockly, { Blocks, FieldDropdown } from "blockly/core";
+import Blockly, { Blocks, FieldDropdown, FieldNumber } from "blockly/core";
 import type { BlockSvg } from "blockly";
 
 import { ICustomBlock, ICreateBlockConfig, ISetBlockConfig } from "../components/types";
@@ -124,6 +124,14 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
           const dropdownFieldName = blockDef.type === "creator" ? "type" : "value";
           input.appendField(new FieldDropdown(typeOptions), dropdownFieldName);
         }
+
+        // Optional number input for setter blocks
+        if (blockDef.type === "setter") {
+          const setterConfig = cfg as ISetBlockConfig;
+          if (setterConfig.includeNumberInput) {
+            input.appendField(new FieldNumber(1), "value");
+          }
+        }
     
         // Optional trailing label
         if (cfg.typeLabel) {
@@ -160,7 +168,17 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
       if (blockDef.type === "setter") {
         // This is probably close to what we want.
         const attributeName = blockDef.name.toLowerCase().replace(/\s+/g, "_");
-        const attributeValue = block.getFieldValue("value");
+        const setterConfig = cfg as ISetBlockConfig;
+        
+        // Get the value from either dropdown or number input
+        let attributeValue;
+        if (setterConfig.typeOptions && setterConfig.typeOptions.length > 0) {
+          attributeValue = block.getFieldValue("value");
+        } else if (setterConfig.includeNumberInput) {
+          attributeValue = block.getFieldValue("value");
+        } else {
+          attributeValue = "1"; // default value
+        }
 
         return `set ${attributeName} ${attributeValue}\n`;
       } else if (blockDef.type === "creator") {

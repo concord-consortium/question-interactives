@@ -27,6 +27,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ existingBlocks, onSubmit, bl
     defaultCount: number;
     minCount: number;
     maxCount: number;
+    includeNumberInput: boolean;
   }>({
     childBlocks: [],
     color: "#312b84",
@@ -51,7 +52,8 @@ export const CustomBlockForm: React.FC<IProps> = ({ existingBlocks, onSubmit, bl
     includeCount: true,
     defaultCount: 100,
     minCount: 0,
-    maxCount: 500
+    maxCount: 500,
+    includeNumberInput: false
   });
 
   // Populate form when editing
@@ -72,7 +74,9 @@ export const CustomBlockForm: React.FC<IProps> = ({ existingBlocks, onSubmit, bl
           (config as ICreateBlockConfig).defaultCount !== undefined : true,
         defaultCount: (config as ICreateBlockConfig).defaultCount ?? 100,
         minCount: (config as ICreateBlockConfig).minCount ?? 0,
-        maxCount: (config as ICreateBlockConfig).maxCount ?? 500
+        maxCount: (config as ICreateBlockConfig).maxCount ?? 500,
+        includeNumberInput: editingBlock.type === "setter" ? 
+          (config as ISetBlockConfig).includeNumberInput ?? false : false
       });
     }
   }, [editingBlock]);
@@ -134,20 +138,14 @@ export const CustomBlockForm: React.FC<IProps> = ({ existingBlocks, onSubmit, bl
           } as ICreateBlockConfig
         : {
             ...base,
-            typeOptions: typeOptions.length ? typeOptions : undefined
+            typeOptions: typeOptions.length ? typeOptions : undefined,
+            includeNumberInput: formData.includeNumberInput
           } as ISetBlockConfig;
 
     onSubmit({
       color: formData.color,
       config,
       id: "",
-      name: formData.name,
-      type: formData.type
-    });
-
-    console.log("Submitted", {
-      color: formData.color,
-      config,
       name: formData.name,
       type: formData.type
     });
@@ -235,6 +233,19 @@ export const CustomBlockForm: React.FC<IProps> = ({ existingBlocks, onSubmit, bl
           onChange={(e) => setFormData(prev => ({ ...prev, typeLabel: e.target.value }))}
         />
       </div>
+
+      {formData.type === "setter" && (
+        <div className={css.customBlockForm_includeNumberInput}>
+          <label>
+            <input
+              type="checkbox"
+              checked={formData.includeNumberInput}
+              onChange={(e) => setFormData(prev => ({ ...prev, includeNumberInput: e.target.checked }))}
+            />
+            Include Number Input (math_number)
+          </label>
+        </div>
+      )}
 
       {formData.type === "creator" && (
         <>

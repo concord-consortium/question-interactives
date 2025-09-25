@@ -109,6 +109,21 @@
     }
   }
 
+  // Include number input checkbox (for setter blocks)
+  .customBlockForm_includeNumberInput {
+    align-items: center;
+    display: flex;
+    gap: 8px;
+    
+    label {
+      align-items: center;
+      display: flex;
+      font-weight: normal;
+      gap: 6px;
+      margin: 0;
+    }
+  }
+
   // Options section
   .customBlockForm_options {
     display: flex;

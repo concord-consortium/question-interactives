@@ -24,6 +24,7 @@ export interface ICreateBlockConfig extends IBlockConfigBase {
 
 export interface ISetBlockConfig extends IBlockConfigBase {
   typeOptions?: MenuOption[];
+  includeNumberInput?: boolean;
 }
 
 export interface ICustomBlock {
