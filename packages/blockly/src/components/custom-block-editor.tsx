@@ -31,6 +31,7 @@ export const CustomBlockEditor: React.FC<IProps> = ({ formData, value, onChange,
   // const [selectedPredefined, setSelectedPredefined] = useState<string>("");
   const [showSetterForm, setShowSetterForm] = useState(false);
   const [showCreatorForm, setShowCreatorForm] = useState(false);
+  const [editingBlock, setEditingBlock] = useState<ICustomBlock | null>(null);
 
   // TODO: Determine if it's actually useful to have predefined blocks.
   // const addPredefinedBlock = () => {
@@ -60,6 +61,41 @@ export const CustomBlockEditor: React.FC<IProps> = ({ formData, value, onChange,
     
     setShowSetterForm(false);
     setShowCreatorForm(false);
+    setEditingBlock(null);
+  };
+
+  const editCustomBlock = (block: ICustomBlock) => {
+    setEditingBlock(block);
+    if (block.type === "setter") {
+      setShowSetterForm(true);
+    } else {
+      setShowCreatorForm(true);
+    }
+  };
+
+  const updateCustomBlock = (updatedBlock: ICustomBlock) => {
+    const updatedBlocks = value.map(b => b.id === editingBlock?.id ? updatedBlock : b);
+    
+    onChange(updatedBlocks);
+    
+    if (formData && onChangeFormData) {
+      onChangeFormData({
+        ...formData,
+        customBlocks: updatedBlocks
+      });
+    }
+    
+    setShowSetterForm(false);
+    setShowCreatorForm(false);
+    setEditingBlock(null);
+  };
+
+  const handleFormSubmit = (block: ICustomBlock) => {
+    if (editingBlock) {
+      updateCustomBlock({ ...block, id: editingBlock.id });
+    } else {
+      addCustomBlock(block);
+    }
   };
 
   const removeBlock = (id: string) => {
@@ -90,11 +126,19 @@ export const CustomBlockEditor: React.FC<IProps> = ({ formData, value, onChange,
       <div className={css.customBlocksSetter} style={{ marginBottom: "30px" }}>
         <h5>Setter Blocks</h5>
         <div className={css.customBlocksNew} style={{ marginBottom: "20px" }}>
-          <button onClick={() => setShowSetterForm(!showSetterForm)}>
+          <button onClick={() => {
+            setEditingBlock(null);
+            setShowSetterForm(!showSetterForm);
+          }}>
             {showSetterForm ? "Cancel" : "Add Setter Block"}
           </button>
           {showSetterForm && (
-            <CustomBlockForm existingBlocks={value} onSubmit={addCustomBlock} blockType="setter" />
+            <CustomBlockForm 
+              existingBlocks={value} 
+              onSubmit={handleFormSubmit} 
+              blockType="setter"
+              editingBlock={editingBlock}
+            />
           )}
         </div>
 
@@ -103,9 +147,14 @@ export const CustomBlockEditor: React.FC<IProps> = ({ formData, value, onChange,
             value.filter(b => b.type === "setter").map(block => (
               <div className={css.customBlocksCurrentBlock} key={block.id} style={{ border: "1px solid #ccc", padding: "10px", margin: "5px 0" }}>
                 <strong>{block.name}</strong> ({block.type})
-                <button onClick={() => removeBlock(block.id)} style={{ float: "right" }}>
-                  Remove
-                </button>
+                <div style={{ float: "right" }}>
+                  <button onClick={() => editCustomBlock(block)} style={{ marginRight: "5px" }}>
+                    Edit
+                  </button>
+                  <button onClick={() => removeBlock(block.id)}>
+                    Remove
+                  </button>
+                </div>
 
                 <div className={css.customBlocksCurrentBlockJson} style={{ marginTop: "10px", fontSize: "12px" }}>
                   <strong>Toolbox JSON:</strong>
@@ -137,11 +186,19 @@ export const CustomBlockEditor: React.FC<IProps> = ({ formData, value, onChange,
       <div className={css.customBlocksCreator}>
         <h5>Creator Blocks</h5>
         <div className={css.customBlocksNew} style={{ marginBottom: "20px" }}>
-          <button onClick={() => setShowCreatorForm(!showCreatorForm)}>
+          <button onClick={() => {
+            setEditingBlock(null);
+            setShowCreatorForm(!showCreatorForm);
+          }}>
             {showCreatorForm ? "Cancel" : "Add Creator Block"}
           </button>
           {showCreatorForm && (
-            <CustomBlockForm existingBlocks={value} onSubmit={addCustomBlock} blockType="creator" />
+            <CustomBlockForm 
+              existingBlocks={value} 
+              onSubmit={handleFormSubmit} 
+              blockType="creator"
+              editingBlock={editingBlock}
+            />
           )}
         </div>
 
@@ -150,9 +207,14 @@ export const CustomBlockEditor: React.FC<IProps> = ({ formData, value, onChange,
             value.filter(b => b.type === "creator").map(block => (
               <div className={css.customBlocksCurrentBlock} key={block.id} style={{ border: "1px solid #ccc", padding: "10px", margin: "5px 0" }}>
                 <strong>{block.name}</strong> ({block.type})
-                <button onClick={() => removeBlock(block.id)} style={{ float: "right" }}>
-                  Remove
-                </button>
+                <div style={{ float: "right" }}>
+                  <button onClick={() => editCustomBlock(block)} style={{ marginRight: "5px" }}>
+                    Edit
+                  </button>
+                  <button onClick={() => removeBlock(block.id)}>
+                    Remove
+                  </button>
+                </div>
 
                 <div className={css.customBlocksCurrentBlockJson} style={{ marginTop: "10px", fontSize: "12px" }}>
                   <strong>Toolbox JSON:</strong>

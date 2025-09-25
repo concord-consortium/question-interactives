@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 
 import { CustomBlockType, ICustomBlock, ICreateBlockConfig, ISetBlockConfig } from "./types";
 
@@ -8,9 +8,10 @@ interface IProps {
   blockType: CustomBlockType;
   existingBlocks?: ICustomBlock[];
   onSubmit: (block: ICustomBlock) => void;
+  editingBlock?: ICustomBlock | null;
 }
 
-export const CustomBlockForm: React.FC<IProps> = ({ existingBlocks, onSubmit, blockType }) => {
+export const CustomBlockForm: React.FC<IProps> = ({ existingBlocks, onSubmit, blockType, editingBlock }) => {
   const [formData, setFormData] = useState<{
     childBlocks: string[];
     color: string;
@@ -52,6 +53,29 @@ export const CustomBlockForm: React.FC<IProps> = ({ existingBlocks, onSubmit, bl
     minCount: 0,
     maxCount: 500
   });
+
+  // Populate form when editing
+  useEffect(() => {
+    if (editingBlock) {
+      const config = editingBlock.config as ICreateBlockConfig | ISetBlockConfig;
+      setFormData({
+        childBlocks: (config as ICreateBlockConfig).childBlocks || [],
+        color: editingBlock.color,
+        name: editingBlock.name,
+        type: editingBlock.type,
+        inputsInline: config.inputsInline ?? true,
+        previousStatement: config.previousStatement ?? true,
+        nextStatement: config.nextStatement ?? true,
+        typeLabel: config.typeLabel || "",
+        options: config.typeOptions ? config.typeOptions.map((option: any) => ({ label: option[0], value: option[1] })) : [{ label: "", value: "" }],
+        includeCount: editingBlock.type === "creator" ? 
+          (config as ICreateBlockConfig).defaultCount !== undefined : true,
+        defaultCount: (config as ICreateBlockConfig).defaultCount ?? 100,
+        minCount: (config as ICreateBlockConfig).minCount ?? 0,
+        maxCount: (config as ICreateBlockConfig).maxCount ?? 500
+      });
+    }
+  }, [editingBlock]);
 
   const addOption = () => {
     setFormData(prev => ({
@@ -292,7 +316,9 @@ export const CustomBlockForm: React.FC<IProps> = ({ existingBlocks, onSubmit, bl
         </div>
       )}
 
-      <button type="button" onClick={handleSubmit}>Add Block</button>
+      <button type="button" onClick={handleSubmit}>
+        {editingBlock ? "Update Block" : "Add Block"}
+      </button>
     </div>
   );
 };
