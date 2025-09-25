@@ -48,11 +48,10 @@ export const CustomBlockEditor: React.FC<IProps> = ({ formData, value, onChange,
   const addCustomBlock = (block: ICustomBlock) => {
     const newBlock = { ...block, id: `custom_${Date.now()}` };
     const updatedBlocks = [...value, newBlock];
-    
-    // Update the customBlocks field
+
     onChange(updatedBlocks);
     
-    // Also update the full form data to ensure proper re-rendering
+    // Update the full form data to ensure proper re-rendering. Should we just do this and not also call `onChange`?
     if (onChangeFormData) {
       onChangeFormData({
         ...formData,
@@ -79,6 +78,7 @@ export const CustomBlockEditor: React.FC<IProps> = ({ formData, value, onChange,
     
     onChange(updatedBlocks);
     
+    // Update the full form data to ensure proper re-rendering. Should we just do this and not also call `onChange`?
     if (onChangeFormData) {
       onChangeFormData({
         ...formData,
@@ -103,6 +103,7 @@ export const CustomBlockEditor: React.FC<IProps> = ({ formData, value, onChange,
     const updatedBlocks = value.filter(b => b.id !== id);
     onChange(updatedBlocks);
     
+    // Update the full form data to ensure proper re-rendering. Should we just do this and not also call `onChange`?
     if (onChangeFormData) {
       onChangeFormData({
         ...formData,
@@ -181,7 +182,7 @@ export const CustomBlockEditor: React.FC<IProps> = ({ formData, value, onChange,
               </div>
             ))
           ) : (
-            <div style={{ color: "#666", fontStyle: "italic" }}>No setter blocks created yet</div>
+            <div className={css.noBlocksMessage}>No setter blocks created yet</div>
           )}
         </div>
       </div>
@@ -235,7 +236,7 @@ export const CustomBlockEditor: React.FC<IProps> = ({ formData, value, onChange,
               </div>
             ))
           ) : (
-            <div style={{ color: "#666", fontStyle: "italic" }}>No creator blocks created yet</div>
+            <div className={css.noBlocksMessage}>No creator blocks created yet</div>
           )}
         </div>
       </div>

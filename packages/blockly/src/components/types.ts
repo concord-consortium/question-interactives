@@ -146,24 +146,3 @@ export const DemoAuthoredState: IAuthoredState = {
   }`,
   version: 1
 };
-
-// ,
-//       {
-//         "kind": "category",
-//         "name": "Properties",
-//         "colour": "#312b84",
-//         "contents": [
-//           {
-//             "kind": "block",
-//             "type": "create"
-//           },
-//           {
-//             "kind": "block",
-//             "type": "set_speed"
-//           },
-//           {
-//             "kind": "block",
-//             "type": "set_type"
-//           }
-//         ]
-//       }

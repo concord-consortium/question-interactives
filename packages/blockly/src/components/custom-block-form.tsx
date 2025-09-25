@@ -6,12 +6,12 @@ import css from "./custom-block-form.scss";
 
 interface IProps {
   blockType: CustomBlockType;
+  editingBlock?: ICustomBlock | null;
   existingBlocks?: ICustomBlock[];
   onSubmit: (block: ICustomBlock) => void;
-  editingBlock?: ICustomBlock | null;
 }
 
-export const CustomBlockForm: React.FC<IProps> = ({ existingBlocks, onSubmit, blockType, editingBlock }) => {
+export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, existingBlocks, onSubmit }) => {
   const [formData, setFormData] = useState<{
     childBlocks: string[];
     color: string;
@@ -145,7 +145,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ existingBlocks, onSubmit, bl
     onSubmit({
       color: formData.color,
       config,
-      id: "",
+      id: editingBlock?.id ?? "",
       name: formData.name,
       type: formData.type
     });
@@ -155,7 +155,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ existingBlocks, onSubmit, bl
       ...prev,
       name: "",
       typeLabel: "",
-      generatorTemplate: "",
+      // generatorTemplate: "",
       options: [{ label: "", value: "" }]
     }));
   };
@@ -312,7 +312,6 @@ export const CustomBlockForm: React.FC<IProps> = ({ existingBlocks, onSubmit, bl
         <button type="button" className={css.addOptionButton} onClick={addOption}>Add Option</button>
       </div>
 
-      {/* For Creator blocks, we display a multi-select menu listing all the created Setter blocks. A selected Setter block's ID will be added to the Creator block's `childBlocks` property array */}
       {formData.type === "creator" && (
         <div className={css.customBlockForm_childBlocks}>
           <label>Child Setter Blocks</label>

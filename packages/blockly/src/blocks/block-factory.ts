@@ -73,7 +73,7 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         if (blockDef.type === "creator") {
           const c: ICreateBlockConfig = cfg;
 
-          // Optional count slider for creator
+          // Optional count slider
           if (c.defaultCount !== undefined && c.minCount !== undefined && c.maxCount !== undefined) {
             input.appendField(new FieldSlider(c.defaultCount, c.minCount, c.maxCount), "count");
           }
@@ -112,13 +112,13 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
                 }
                 (this as any).__childrenSeeded = true;
               } catch {
-                // If any child type is missing or connection fails, do nothing.
+                console.warn("Failed to auto-seed child blocks for", blockDef.id);
               }
             });
           }
         }
     
-        // Optional dropdown for creator or setter
+        // Optional type or value dropdown for creator or setter
         const typeOptions = (cfg as ICreateBlockConfig | ISetBlockConfig).typeOptions;
         if (typeOptions && typeOptions.length > 0) {
           const dropdownFieldName = blockDef.type === "creator" ? "type" : "value";
@@ -133,7 +133,7 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
           }
         }
     
-        // Optional trailing label
+        // Optional trailing label for type or value
         if (cfg.typeLabel) {
           input.appendField(cfg.typeLabel);
         }
@@ -166,7 +166,7 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
     // Generator: include available values
     netlogoGenerator.forBlock[blockType] = function(block) {
       if (blockDef.type === "setter") {
-        // This is probably close to what we want.
+        // This is probably at least close to what we want.
         const attributeName = blockDef.name.toLowerCase().replace(/\s+/g, "_");
         const setterConfig = cfg as ISetBlockConfig;
         
@@ -191,6 +191,7 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
 
         return `create-${type} ${count}\n${statements}`;
       }
+
       return "";
     };
   });
