@@ -33,6 +33,7 @@ const baseAuthoringProps = {
       customBlocks: {
         title: "Custom Blocks",
         type: "array",
+        default: [],
         items: {
           type: "object",
           properties: {
@@ -96,19 +97,26 @@ export const App = () => (
       uiSchema: baseAuthoringProps.uiSchema,
       fields: {
         customBlockEditor: (props: FieldProps<any, RJSFSchema, any>) => {
-          // Extract the actual customBlocks array from the nested structure
-          const customBlocks = props.formData?.customBlocks?.customBlocks || props.formData?.customBlocks || [];
-          
           // Get the full form data from formContext
           const fullFormData = props.registry?.formContext?.authoredState || {};
+          const customBlocks = fullFormData.customBlocks;
+          const safeCustomBlocks = Array.isArray(customBlocks) ? customBlocks : [];
+
+          const handleChange = (newFormData: any) => {
+            props.onChange(newFormData.customBlocks || []);
+
+            if (props.registry?.formContext?.onChange) {
+              props.registry.formContext.onChange(newFormData);
+            }
+          };
           
           return (
             <CustomBlockEditor 
               {...props} 
-              value={Array.isArray(customBlocks) ? customBlocks : []} 
+              value={safeCustomBlocks} 
               formData={fullFormData}
               onChange={props.onChange}
-              onChangeFormData={props.onChange}
+              onChangeFormData={handleChange}
             />
           );
         }

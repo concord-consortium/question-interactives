@@ -164,28 +164,30 @@ export const CustomBlockForm: React.FC<IProps> = ({ existingBlocks, onSubmit, bl
 
   return (
     <div className={css.customBlockForm}>
-      <div className={css.customBlockForm_name}>
-        <label htmlFor="block-name">Block Name:</label>
-        <input
-          id="block-name"
-          type="text"
-          value={formData.name}
-          onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
-          required
-        />
-      </div>
+      <div className={css.customBlockForm_basicFields}>
+        <div className={css.customBlockForm_name}>
+          <label htmlFor="block-name">Block Name<span className={css.required}>*</span></label>
+          <input
+            id="block-name"
+            type="text"
+            value={formData.name}
+            onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+            required
+          />
+        </div>
 
-      <div className={css.customBlockForm_color}>
-        <label>Color:</label>
-        <input
-          type="color"
-          value={formData.color}
-          onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
-        />
+        <div className={css.customBlockForm_color}>
+          <label>Color<span className={css.required}>*</span></label>
+          <input
+            type="color"
+            value={formData.color}
+            onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
+          />
+        </div>
       </div>
 
       <div className={css.customBlockForm_inputs}>
-        <label>
+        <label className={css.inlineLabel}>
           <input
             type="checkbox"
             checked={formData.inputsInline}
@@ -193,7 +195,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ existingBlocks, onSubmit, bl
           />
           inputsInline
         </label>
-        <label>
+        <label className={css.inlineLabel}>
           <input
             type="checkbox"
             checked={formData.previousStatement}
@@ -201,7 +203,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ existingBlocks, onSubmit, bl
           />
           previousStatement
         </label>
-        <label>
+        <label className={css.inlineLabel}>
           <input
             type="checkbox"
             checked={formData.nextStatement}
@@ -225,7 +227,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ existingBlocks, onSubmit, bl
       </div> */}
 
       <div className={css.customBlockForm_typeLabel}>
-        <label>Type Label (optional):</label>
+        <label>Type Label</label>
         <input
           placeholder="e.g., particles, speed"
           type="text"
@@ -236,7 +238,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ existingBlocks, onSubmit, bl
 
       {formData.type === "creator" && (
         <>
-          <div>
+          <div className={css.customBlockForm_includeCount}>
             <label>
               <input
                 type="checkbox"
@@ -247,17 +249,9 @@ export const CustomBlockForm: React.FC<IProps> = ({ existingBlocks, onSubmit, bl
             </label>
           </div>
           {formData.includeCount && (
-            <>
+            <div className={css.customBlockForm_countFields}>
               <div>
-                <label>Default Count:</label>
-                <input
-                  type="number"
-                  value={formData.defaultCount}
-                  onChange={(e) => setFormData(prev => ({ ...prev, defaultCount: parseInt(e.target.value) }))}
-                />
-              </div>
-              <div>
-                <label>Min Count:</label>
+                <label>Min Count</label>
                 <input
                   type="number"
                   value={formData.minCount}
@@ -265,22 +259,30 @@ export const CustomBlockForm: React.FC<IProps> = ({ existingBlocks, onSubmit, bl
                 />
               </div>
               <div>
-                <label>Max Count:</label>
+                <label>Max Count</label>
                 <input
                   type="number"
                   value={formData.maxCount}
                   onChange={(e) => setFormData(prev => ({ ...prev, maxCount: parseInt(e.target.value) }))}
                 />
               </div>
-            </>
+              <div>
+                <label>Default Count</label>
+                <input
+                  type="number"
+                  value={formData.defaultCount}
+                  onChange={(e) => setFormData(prev => ({ ...prev, defaultCount: parseInt(e.target.value) }))}
+                />
+              </div>
+            </div>
           )}
         </>
       )}
 
       <div className={css.customBlockForm_options}>
-        <label>Options (dropdown, optional):</label>
+        <label>Options</label>
         {formData.options.map((option, index) => (
-          <div key={index}>
+          <div key={index} className={css.optionRow}>
             <input
               type="text"
               placeholder="Label"
@@ -296,13 +298,13 @@ export const CustomBlockForm: React.FC<IProps> = ({ existingBlocks, onSubmit, bl
             <button type="button" onClick={() => removeOption(index)}>Remove</button>
           </div>
         ))}
-        <button type="button" onClick={addOption}>Add Option</button>
+        <button type="button" className={css.addOptionButton} onClick={addOption}>Add Option</button>
       </div>
 
       {/* For Creator blocks, we display a multi-select menu listing all the created Setter blocks. A selected Setter block's ID will be added to the Creator block's `childBlocks` property array */}
       {formData.type === "creator" && (
         <div className={css.customBlockForm_childBlocks}>
-          <label>Child Setter Blocks (optional):</label>
+          <label>Child Setter Blocks</label>
           <select multiple size={3} value={formData.childBlocks} onChange={(e) => {
             const selectedOptions = Array.from(e.target.selectedOptions).map(opt => opt.value);
             setFormData(prev => ({ ...prev, childBlocks: selectedOptions }));

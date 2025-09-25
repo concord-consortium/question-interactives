@@ -20,11 +20,11 @@ const generateBlockJson = (block: ICustomBlock) => {
 };
 
 
-const handleCopyToClipboard = (block: ICustomBlock) => {
+const handleCopyToClipboard = (block: ICustomBlock, setCopiedBlockId: (id: string | null) => void) => {
   const blockJson = generateBlockJson(block);
   navigator.clipboard.writeText(blockJson);
-  // TODO: Feedback but something better than an alert.
-  alert("Block JSON copied to clipboard. Paste it into your toolbox configuration.");
+  setCopiedBlockId(block.id);
+  setTimeout(() => setCopiedBlockId(null), 2000);
 };
 
 export const CustomBlockEditor: React.FC<IProps> = ({ formData, value, onChange, onChangeFormData }) => {
@@ -32,6 +32,7 @@ export const CustomBlockEditor: React.FC<IProps> = ({ formData, value, onChange,
   const [showSetterForm, setShowSetterForm] = useState(false);
   const [showCreatorForm, setShowCreatorForm] = useState(false);
   const [editingBlock, setEditingBlock] = useState<ICustomBlock | null>(null);
+  const [copiedBlockId, setCopiedBlockId] = useState<string | null>(null);
 
   // TODO: Determine if it's actually useful to have predefined blocks.
   // const addPredefinedBlock = () => {
@@ -52,7 +53,7 @@ export const CustomBlockEditor: React.FC<IProps> = ({ formData, value, onChange,
     onChange(updatedBlocks);
     
     // Also update the full form data to ensure proper re-rendering
-    if (formData && onChangeFormData) {
+    if (onChangeFormData) {
       onChangeFormData({
         ...formData,
         customBlocks: updatedBlocks
@@ -78,7 +79,7 @@ export const CustomBlockEditor: React.FC<IProps> = ({ formData, value, onChange,
     
     onChange(updatedBlocks);
     
-    if (formData && onChangeFormData) {
+    if (onChangeFormData) {
       onChangeFormData({
         ...formData,
         customBlocks: updatedBlocks
@@ -99,7 +100,15 @@ export const CustomBlockEditor: React.FC<IProps> = ({ formData, value, onChange,
   };
 
   const removeBlock = (id: string) => {
-    onChange(value.filter(b => b.id !== id));
+    const updatedBlocks = value.filter(b => b.id !== id);
+    onChange(updatedBlocks);
+    
+    if (onChangeFormData) {
+      onChangeFormData({
+        ...formData,
+        customBlocks: updatedBlocks
+      });
+    }
   };
 
   return (
@@ -123,15 +132,17 @@ export const CustomBlockEditor: React.FC<IProps> = ({ formData, value, onChange,
         </button>
       </div> */}
 
-      <div className={css.customBlocksSetter} style={{ marginBottom: "30px" }}>
-        <h5>Setter Blocks</h5>
-        <div className={css.customBlocksNew} style={{ marginBottom: "20px" }}>
-          <button onClick={() => {
-            setEditingBlock(null);
-            setShowSetterForm(!showSetterForm);
-          }}>
-            {showSetterForm ? "Cancel" : "Add Setter Block"}
-          </button>
+      <div className={css.customBlocksSetter}>
+        <div className={css.customBlocksNew}>
+          <div className={css.customBlocksNewHeading}>
+            <h5>Setter Blocks</h5>
+            <button onClick={() => {
+              setEditingBlock(null);
+              setShowSetterForm(!showSetterForm);
+            }}>
+              {showSetterForm ? "Cancel" : "Add Block"}
+            </button>
+          </div>
           {showSetterForm && (
             <CustomBlockForm 
               existingBlocks={value} 
@@ -146,33 +157,25 @@ export const CustomBlockEditor: React.FC<IProps> = ({ formData, value, onChange,
           {value.filter(b => b.type === "setter").length > 0 ? (
             value.filter(b => b.type === "setter").map(block => (
               <div className={css.customBlocksCurrentBlock} key={block.id} style={{ border: "1px solid #ccc", padding: "10px", margin: "5px 0" }}>
-                <strong>{block.name}</strong> ({block.type})
-                <div style={{ float: "right" }}>
-                  <button onClick={() => editCustomBlock(block)} style={{ marginRight: "5px" }}>
+                <div className={css.customBlocksCurrentBlockInfo}>
+                  <strong>{block.name}</strong> ({block.type})
+                </div>
+                <div className={css.customBlocksCurrentBlockActions}>
+                  <div className={css.copyButtonContainer}>
+                    <button onClick={() => handleCopyToClipboard(block, setCopiedBlockId)}>
+                      Copy JSON
+                    </button>
+                    {copiedBlockId === block.id && (
+                      <div className={css.copyTooltip}>
+                        Copied!
+                      </div>
+                    )}
+                  </div>
+                  <button onClick={() => editCustomBlock(block)}>
                     Edit
                   </button>
                   <button onClick={() => removeBlock(block.id)}>
                     Remove
-                  </button>
-                </div>
-
-                <div className={css.customBlocksCurrentBlockJson} style={{ marginTop: "10px", fontSize: "12px" }}>
-                  <strong>Toolbox JSON:</strong>
-                  <pre style={{ 
-                    background: "#f5f5f5", 
-                    padding: "8px", 
-                    border: "1px solid #ddd",
-                    margin: "5px 0",
-                    fontSize: "11px",
-                    overflow: "auto"
-                  }}>
-                   {generateBlockJson(block)}
-                  </pre>
-                  <button 
-                    onClick={() => handleCopyToClipboard(block)}
-                    style={{ fontSize: "11px", padding: "2px 6px" }}
-                  >
-                    Copy JSON
                   </button>
                 </div>
               </div>
@@ -184,14 +187,16 @@ export const CustomBlockEditor: React.FC<IProps> = ({ formData, value, onChange,
       </div>
 
       <div className={css.customBlocksCreator}>
-        <h5>Creator Blocks</h5>
-        <div className={css.customBlocksNew} style={{ marginBottom: "20px" }}>
-          <button onClick={() => {
-            setEditingBlock(null);
-            setShowCreatorForm(!showCreatorForm);
-          }}>
-            {showCreatorForm ? "Cancel" : "Add Creator Block"}
-          </button>
+        <div className={css.customBlocksNew}>
+          <div className={css.customBlocksNewHeading}>
+            <h5>Creator Blocks</h5>
+            <button onClick={() => {
+              setEditingBlock(null);
+              setShowCreatorForm(!showCreatorForm);
+            }}>
+              {showCreatorForm ? "Cancel" : "Add Block"}
+            </button>
+          </div>
           {showCreatorForm && (
             <CustomBlockForm 
               existingBlocks={value} 
@@ -206,33 +211,25 @@ export const CustomBlockEditor: React.FC<IProps> = ({ formData, value, onChange,
           {value.filter(b => b.type === "creator").length > 0 ? (
             value.filter(b => b.type === "creator").map(block => (
               <div className={css.customBlocksCurrentBlock} key={block.id} style={{ border: "1px solid #ccc", padding: "10px", margin: "5px 0" }}>
-                <strong>{block.name}</strong> ({block.type})
-                <div style={{ float: "right" }}>
-                  <button onClick={() => editCustomBlock(block)} style={{ marginRight: "5px" }}>
+                <div className={css.customBlocksCurrentBlockInfo}>
+                  <strong>{block.name}</strong> ({block.type})
+                </div>
+                <div className={css.customBlocksCurrentBlockActions}>
+                  <div className={css.copyButtonContainer}>
+                    <button onClick={() => handleCopyToClipboard(block, setCopiedBlockId)}>
+                      Copy JSON
+                    </button>
+                    {copiedBlockId === block.id && (
+                      <div className={css.copyTooltip}>
+                        Copied!
+                      </div>
+                    )}
+                  </div>
+                  <button onClick={() => editCustomBlock(block)}>
                     Edit
                   </button>
                   <button onClick={() => removeBlock(block.id)}>
                     Remove
-                  </button>
-                </div>
-
-                <div className={css.customBlocksCurrentBlockJson} style={{ marginTop: "10px", fontSize: "12px" }}>
-                  <strong>Toolbox JSON:</strong>
-                  <pre style={{ 
-                    background: "#f5f5f5", 
-                    padding: "8px", 
-                    border: "1px solid #ddd",
-                    margin: "5px 0",
-                    fontSize: "11px",
-                    overflow: "auto"
-                  }}>
-                   {generateBlockJson(block)}
-                  </pre>
-                  <button 
-                    onClick={() => handleCopyToClipboard(block)}
-                    style={{ fontSize: "11px", padding: "2px 6px" }}
-                  >
-                    Copy JSON
                   </button>
                 </div>
               </div>
