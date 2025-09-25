@@ -3,8 +3,8 @@ import { IRuntimeQuestionComponentProps } from "@concord-consortium/question-int
 import { renderHTML } from "@concord-consortium/question-interactives-helpers/src/utilities/render-html";
 import { DynamicText } from "@concord-consortium/dynamic-text";
 
-import { DefaultAuthoredState, IAuthoredState, IInteractiveState } from "./types";
 import { BlocklyComponent } from "./blockly";
+import { DefaultAuthoredState, IAuthoredState, IInteractiveState } from "./types";
 
 import css from "./runtime.scss";
 

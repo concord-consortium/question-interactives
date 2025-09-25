@@ -5,9 +5,10 @@
   gap: 10px;
   flex-direction: column;
 
-  .example {
+  .blocklyCode {
+    background-color: #eee;
+    border: 1px solid #ccc;
     font-family: monospace;
-    white-space: pre-wrap;
-    margin: 10px 0;
+    padding: 5px;
   }
 }

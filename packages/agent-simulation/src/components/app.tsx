@@ -31,6 +31,23 @@ const baseAuthoringProps = {
       exampleAuthoredState: {
         title: "Example Authored State",
         type: "string"
+      },
+      dataSourceInteractive: {
+        title: "Data Source Interactive",
+        type: "string",
+        enum: ["none"],
+        enumNames: ["No linked interactives available"]
+      }
+    },
+    // This odd structure is based on the graph interactive.
+    dependencies: {
+      dataSourceInteractive: {
+        properties: {
+          dataSourceInteractiveName: {
+            title: "Data Source Interactive Name",
+            type: "string"
+          }
+        }
       }
     }
   } as RJSFSchema,
@@ -71,5 +88,6 @@ export const App = () => (
     Runtime={Runtime}
     baseAuthoringProps={baseAuthoringProps}
     isAnswered={isAnswered}
+    linkedInteractiveProps={[{ label: "dataSourceInteractive" }]}
   />
 );

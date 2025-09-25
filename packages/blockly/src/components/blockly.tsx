@@ -38,7 +38,9 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
       ];
 
       try {
-        const newWorkspace = inject(blocklyDivRef.current, { readOnly: report, toolbox: JSON.parse(toolbox) });
+        const newWorkspace = inject(blocklyDivRef.current, {
+          readOnly: report, toolbox: JSON.parse(toolbox), trashcan: true
+        });
         initialBlocks.forEach(block => {
           serialization.blocks.append(block, newWorkspace);
         });
