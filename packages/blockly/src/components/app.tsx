@@ -95,9 +95,23 @@ export const App = () => (
       schema: baseAuthoringProps.schema,
       uiSchema: baseAuthoringProps.uiSchema,
       fields: {
-        customBlockEditor: (props: FieldProps<any, RJSFSchema, any>) => (
-          <CustomBlockEditor {...props} value={props.formData} />
-        )
+        customBlockEditor: (props: FieldProps<any, RJSFSchema, any>) => {
+          // Extract the actual customBlocks array from the nested structure
+          const customBlocks = props.formData?.customBlocks?.customBlocks || props.formData?.customBlocks || [];
+          
+          // Get the full form data from formContext
+          const fullFormData = props.registry?.formContext?.authoredState || {};
+          
+          return (
+            <CustomBlockEditor 
+              {...props} 
+              value={Array.isArray(customBlocks) ? customBlocks : []} 
+              formData={fullFormData}
+              onChange={props.onChange}
+              onChangeFormData={props.onChange}
+            />
+          );
+        }
       }
     }}
     isAnswered={isAnswered}

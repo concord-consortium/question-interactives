@@ -1,6 +1,6 @@
 import { IRuntimeQuestionComponentProps } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
 import { Events, inject, serialization, WorkspaceSvg } from "blockly";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { registerCustomBlocks } from "../blocks/block-factory";
 import "../blocks/block-registration";
@@ -15,6 +15,18 @@ const saveEvents: string[] = [Events.BLOCK_CREATE, Events.BLOCK_DELETE, Events.B
 
 export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const { customBlocks = [], toolbox } = authoredState;
+  
+  // Ensure customBlocks is always an array
+  // Handle both direct array and nested object structure
+  const safeCustomBlocks = useMemo(() => {
+    if (Array.isArray(customBlocks)) {
+      return customBlocks;
+    }
+    if (customBlocks && typeof customBlocks === 'object' && 'customBlocks' in customBlocks && Array.isArray((customBlocks as any).customBlocks)) {
+      return (customBlocks as any).customBlocks;
+    }
+    return [];
+  }, [customBlocks]);
   const { blocklyState } = interactiveState ?? {};
   const [error, setError] = useState<Error | null>(null);
   const blocklyDivRef = useRef<HTMLDivElement>(null);
@@ -35,7 +47,7 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
       // TODO: Find a better way to do this?
       blocklyDivRef.current.innerHTML = "";
 
-      registerCustomBlocks(customBlocks);
+      registerCustomBlocks(safeCustomBlocks);
 
       const initialBlocks = [
         { deletable: false, type: "setup", x: 10, y: 10 },
@@ -71,7 +83,7 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
         setError(e);
       }
     }
-  }, [customBlocks, report, setInteractiveState, toolbox]);
+  }, [safeCustomBlocks, report, setInteractiveState, toolbox]);
 
   // Load saved state on initial load
   useEffect(() => {

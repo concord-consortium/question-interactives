@@ -4,16 +4,21 @@ import { Blocks, FieldDropdown } from "blockly/core";
 import { ICustomBlock, ICreateBlockConfig, ISetBlockConfig } from "../components/types";
 import { netlogoGenerator } from "../utils/netlogo-generator";
 
-function renderTemplate(tpl: string, context: Record<string, unknown>) {
-  return tpl.replace(/\$\{(\w+)\}/g, (_m, key) => {
-    const v = context[key];
-    return v === undefined || v === null ? "" : String(v);
-  });
-}
+// function renderTemplate(tpl: string, context: Record<string, unknown>) {
+//   return tpl.replace(/\$\{(\w+)\}/g, (_m, key) => {
+//     const v = context[key];
+//     return v === undefined || v === null ? "" : String(v);
+//   });
+// }
 
 export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
+  if (!Array.isArray(customBlocks)) {
+    console.warn("registerCustomBlocks: customBlocks is not an array:", customBlocks);
+    return;
+  }
+  
   customBlocks.forEach(blockDef => {
-    const blockType = `custom_${blockDef.id}`;
+    const blockType = blockDef.id;
     const cfg = blockDef.config as (ICreateBlockConfig | ISetBlockConfig);
 
     const applyCommonFlags = (block: any) => {
@@ -59,30 +64,46 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
 
     // Generator: include available values
     netlogoGenerator.forBlock[blockType] = function(block) {
-      const fn = blockDef.name.toLowerCase().replace(/\s+/g, "_");
+      if (blockDef.type === "setter") {
+        // This is probably close to what we want.
+        const attributeName = blockDef.name.toLowerCase().replace(/\s+/g, "_");
+        const attributeValue = block.getFieldValue("value");
 
-      // Collect fields that may exist
-      const data: Record<string, unknown> = {
-        count: block.getFieldValue("count"),
-        label: cfg.typeLabel,
-        name: blockDef.name,
-        type: block.getFieldValue("type"),
-        value: block.getFieldValue("value")
-      };
+        return `set ${attributeName} ${attributeValue}\n`;
+      } else if (blockDef.type === "creator") {
+        // This is probaly NOT close to what we want. There can be other parameters
+        // to take into consideration, e.g. child setter blocks.
+        // For now, though, we just return a simple create command.
+        const count = block.getFieldValue("count");
+        const type = block.getFieldValue("type").toLowerCase().replace(/\s+/g, "_");
 
-      if (cfg.generatorTemplate && cfg.generatorTemplate.trim()) {
-        // Use authored template, wrapped in a function body
-        const body = renderTemplate(cfg.generatorTemplate, data);
-        return `async function ${fn}() {\n${body}\n}\n`;
-      } else {
-        // Default fallback
-        const parts: string[] = [];
-        if (data.count !== undefined && data.count !== null) parts.push(`count: ${data.count}`);
-        if (data.type) parts.push(`type: ${data.type}`);
-        if (data.value) parts.push(`${cfg.typeLabel || "value"}: ${data.value}`);
-        const comment = parts.length ? `  // ${parts.join(", ")}\n` : "";
-        return `async function ${fn}() {\n${comment}}\n`;
+        return `create-${type} ${count}\n`;
       }
+      return "";
     };
+
+    //   // Collect fields that may exist
+    //   const data: Record<string, unknown> = {
+    //     count: block.getFieldValue("count"),
+    //     label: cfg.typeLabel,
+    //     name: blockDef.name,
+    //     type: block.getFieldValue("type"),
+    //     value: block.getFieldValue("value")
+    //   };
+
+    //   if (cfg.generatorTemplate && cfg.generatorTemplate.trim()) {
+    //     // Use authored template, wrapped in a function body
+    //     const body = renderTemplate(cfg.generatorTemplate, data);
+    //     return `async function ${fn}() {\n${body}\n}\n`;
+    //   } else {
+    //     // Default fallback
+    //     const parts: string[] = [];
+    //     if (data.count !== undefined && data.count !== null) parts.push(`count: ${data.count}`);
+    //     if (data.type) parts.push(`type: ${data.type}`);
+    //     if (data.value) parts.push(`${cfg.typeLabel || "value"}: ${data.value}`);
+    //     const comment = parts.length ? `  // ${parts.join(", ")}\n` : "";
+    //     return `async function ${fn}() {\n${comment}}\n`;
+    //   }
+    // };
   });
 }

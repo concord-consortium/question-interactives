@@ -15,6 +15,7 @@ interface IBlockConfigBase {
 }
 
 export interface ICreateBlockConfig extends IBlockConfigBase {
+  childBlocks?: string[];
   defaultCount?: number;
   maxCount?: number;
   minCount?: number;
