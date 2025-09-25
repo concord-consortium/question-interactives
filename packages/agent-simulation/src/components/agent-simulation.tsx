@@ -42,21 +42,6 @@ export const AgentSimulationComponent = ({
     };
   }, [dataSourceInteractive]);
 
-  useEffect(() => {
-    const update = () => {
-      setInteractiveState?.((prev: IInteractiveState) => {
-        return {
-          ...prev,
-          exampleInteractiveState: new Date().toISOString()
-        };
-      });
-    };
-
-    update();
-    const timer = setInterval(update, 1000);
-    return () => clearTimeout(timer);
-  }, [setInteractiveState]);
-
   return (
     <div className={css.agentSimulationComponent}>
       <h4>Blockly Code</h4>

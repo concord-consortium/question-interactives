@@ -28,10 +28,6 @@ const baseAuthoringProps = {
         title: "Hint",
         type: "string"
       },
-      exampleAuthoredState: {
-        title: "Example Authored State",
-        type: "string"
-      },
       dataSourceInteractive: {
         title: "Data Source Interactive",
         type: "string",
@@ -68,19 +64,11 @@ const baseAuthoringProps = {
     },
     hint: {
       "ui:widget": "richtext"
-    },
-    exampleAuthoredState: {
-      "ui:widget": "textarea",
-      "ui:options": {
-        "rows": 15
-      }
     }
   }
 };
 
-const isAnswered = (interactiveState: IInteractiveState | null) => {
-  return true;
-};
+const isAnswered = (interactiveState: IInteractiveState | null) => true;
 
 export const App = () => (
   <BaseQuestionApp<IAuthoredState, IInteractiveState>
