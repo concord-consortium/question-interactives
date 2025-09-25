@@ -39,7 +39,6 @@ const baseAuthoringProps = {
         enumNames: ["No linked interactives available"]
       }
     },
-    // This odd structure is based on the graph interactive.
     dependencies: {
       dataSourceInteractive: {
         properties: {
