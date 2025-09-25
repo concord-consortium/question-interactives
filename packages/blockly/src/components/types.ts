@@ -10,6 +10,7 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
 }
 
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
+  blocklyCode?: string;
   blocklyState?: string;
   submitted?: boolean;
 }
