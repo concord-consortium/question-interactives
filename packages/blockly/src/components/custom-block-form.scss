@@ -180,6 +180,7 @@
         background: $background-lighter;
         border: 1px solid $border-light;
         border-radius: $border-radius-sm;
+        color: $text-medium;
         cursor: pointer;
         padding: 6px $spacing-lg;
         
@@ -194,7 +195,7 @@
       background: $primary-blue;
       border: none;
       border-radius: $border-radius-sm;
-      color: $tooltip-text;
+      color: white;
       cursor: pointer;
       padding: 6px $spacing-lg;
       
@@ -230,7 +231,7 @@
     background: $success-green;
     border: none;
     border-radius: $border-radius-sm;
-    color: $tooltip-text;
+    color: white;
     cursor: pointer;
     font-weight: $font-weight-medium;
     padding: 10px $spacing-xxl;

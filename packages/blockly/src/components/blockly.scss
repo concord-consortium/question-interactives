@@ -14,20 +14,5 @@
   .error {
     color: $danger-red;
     margin-bottom: 10px;
-    
-    .refreshButton {
-      background: $primary-blue;
-      border: none;
-      border-radius: $border-radius-sm;
-      color: $tooltip-text;
-      cursor: pointer;
-      font-size: $font-size-sm;
-      margin-top: $spacing-md;
-      padding: 6px $spacing-lg;
-      
-      &:hover {
-        background: $primary-blue-hover;
-      }
-    }
   }
 }

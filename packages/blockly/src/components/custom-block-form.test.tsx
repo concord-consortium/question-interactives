@@ -68,7 +68,7 @@ describe("CustomBlockForm", () => {
 
     it("shows category selector with available categories", () => {
       render(<CustomBlockForm {...defaultProps} />);
-      expect(screen.getByText("Category")).toBeInTheDocument();
+      expect(screen.getByText("Toolbox Category")).toBeInTheDocument();
       expect(screen.getByText("Properties")).toBeInTheDocument();
       expect(screen.getByText("General")).toBeInTheDocument();
     });

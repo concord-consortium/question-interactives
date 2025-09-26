@@ -212,7 +212,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       </div>
 
       <div className={css.customBlockForm_category}>
-        <label>Category<span className={css.required}>*</span></label>
+        <label>Toolbox Category<span className={css.required}>*</span></label>
         <select
           value={formData.category}
           onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}

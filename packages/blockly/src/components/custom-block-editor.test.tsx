@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 
@@ -6,14 +6,6 @@ import { CustomBlockEditor } from "./custom-block-editor";
 import { ICustomBlock } from "./types";
 
 jest.mock("./custom-block-editor.scss", () => ({}));
-
-// Mock clipboard API
-const mockWriteText = jest.fn(() => Promise.resolve());
-Object.assign(navigator, {
-  clipboard: {
-    writeText: mockWriteText,
-  },
-});
 
 describe("CustomBlockEditor", () => {
   const mockOnChange = jest.fn();
@@ -67,7 +59,6 @@ describe("CustomBlockEditor", () => {
 
   beforeEach(() => {
     mockOnChange.mockClear();
-    mockWriteText.mockClear();
   });
 
   describe("Rendering", () => {
@@ -101,38 +92,14 @@ describe("CustomBlockEditor", () => {
       expect(screen.getAllByText("Add Block")).toHaveLength(2);
     });
 
-    it("shows copy, edit, and delete buttons for each block", () => {
+    it("shows edit and delete buttons for each block", () => {
       render(<CustomBlockEditor {...defaultProps} />);
       
-      const copyButtons = screen.getAllByText("Copy JSON");
       const editButtons = screen.getAllByText("Edit");
       const deleteButtons = screen.getAllByText("Delete");
       
-      expect(copyButtons).toHaveLength(2);
       expect(editButtons).toHaveLength(2);
       expect(deleteButtons).toHaveLength(2);
-    });
-
-    it("shows copy buttons for blocks", () => {
-      render(<CustomBlockEditor {...defaultProps} />);
-      
-      const copyButtons = screen.getAllByText("Copy JSON");
-      expect(copyButtons).toHaveLength(2);
-    });
-
-    it("shows copied tooltip after copying", async () => {
-      const user = userEvent.setup();
-      render(<CustomBlockEditor {...defaultProps} />);
-      
-      const copyButtons = screen.getAllByText("Copy JSON");
-      await user.click(copyButtons[0]);
-      
-      expect(screen.getByText("Copied!")).toBeInTheDocument();
-      
-      // Wait for tooltip to disappear
-      await waitFor(() => {
-        expect(screen.queryByText("Copied!")).not.toBeInTheDocument();
-      }, { timeout: 3000 });
     });
 
     it("deletes block when delete button is clicked", async () => {

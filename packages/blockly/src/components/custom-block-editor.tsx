@@ -11,24 +11,10 @@ interface IProps {
   onChange: (blocks: ICustomBlock[]) => void;
 }
 
-const generateBlockJson = (block: ICustomBlock) => {
-  return `{
-    "kind": "block",
-    "type": "${block.id}"
-  }`;
-};
-
 const generateBlockId = (block: ICustomBlock) => {
   const sanitizedName = block.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
   const timestamp = Date.now();
   return `custom_${block.type}_${sanitizedName}_${timestamp}`;
-};
-
-const handleCopyToClipboard = (block: ICustomBlock, setCopiedBlockId: (id: string | null) => void) => {
-  const blockJson = generateBlockJson(block);
-  navigator.clipboard.writeText(blockJson);
-  setCopiedBlockId(block.id);
-  setTimeout(() => setCopiedBlockId(null), 2000);
 };
 
 export const CustomBlockEditor: React.FC<IProps> = ({ value, onChange, toolbox }) => {
@@ -36,7 +22,6 @@ export const CustomBlockEditor: React.FC<IProps> = ({ value, onChange, toolbox }
   const [showSetterForm, setShowSetterForm] = useState(false);
   const [showCreatorForm, setShowCreatorForm] = useState(false);
   const [editingBlock, setEditingBlock] = useState<ICustomBlock | null>(null);
-  const [copiedBlockId, setCopiedBlockId] = useState<string | null>(null);
 
   const addCustomBlock = (block: ICustomBlock) => {
     const newBlock = { ...block, id: generateBlockId(block) };
@@ -116,16 +101,6 @@ export const CustomBlockEditor: React.FC<IProps> = ({ value, onChange, toolbox }
                   <strong>{block.name}</strong> ({block.type}) - {block.category}
                 </div>
                 <div className={css.customBlocksCurrentBlockActions}>
-                  <div className={css.copyButtonContainer}>
-                    <button onClick={() => handleCopyToClipboard(block, setCopiedBlockId)}>
-                      Copy JSON
-                    </button>
-                    {copiedBlockId === block.id && (
-                      <div className={css.copyTooltip}>
-                        Copied!
-                      </div>
-                    )}
-                  </div>
                   <button onClick={() => editCustomBlock(block)}>
                     Edit
                   </button>
@@ -172,16 +147,6 @@ export const CustomBlockEditor: React.FC<IProps> = ({ value, onChange, toolbox }
                   <strong>{block.name}</strong> ({block.type}) - {block.category}
                 </div>
                 <div className={css.customBlocksCurrentBlockActions}>
-                  <div className={css.copyButtonContainer}>
-                    <button onClick={() => handleCopyToClipboard(block, setCopiedBlockId)}>
-                      Copy JSON
-                    </button>
-                    {copiedBlockId === block.id && (
-                      <div className={css.copyTooltip}>
-                        Copied!
-                      </div>
-                    )}
-                  </div>
                   <button onClick={() => editCustomBlock(block)}>
                     Edit
                   </button>
