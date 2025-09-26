@@ -41,7 +41,7 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
       init() {
         // Display block name with appropriate prefix based on block type
         const displayName = blockDef.type === "setter" ? `set ${blockDef.name}` : 
-                           blockDef.type === "creator" ? `create ${blockDef.name}` : 
+                           blockDef.type === "creator" ? "create" : 
                            blockDef.name;
         const input = this.appendDummyInput().appendField(displayName);
     
@@ -123,10 +123,10 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
             input.appendField(new FieldNumber(1), "value");
           }
         }
-    
-        // Optional trailing label for type or value
-        if (cfg.typeLabel) {
-          input.appendField(cfg.typeLabel);
+
+        // Add object name at the end for creator blocks
+        if (blockDef.type === "creator") {
+          input.appendField(blockDef.name);
         }
     
         // Default connections if not specified

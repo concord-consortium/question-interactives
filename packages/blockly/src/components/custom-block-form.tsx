@@ -23,7 +23,6 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
     inputsInline: boolean;
     previousStatement: boolean;
     nextStatement: boolean;
-    typeLabel: string;
     options: { label: string; value: string }[];
     includeCount: boolean;
     defaultCount: number;
@@ -41,9 +40,6 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
     inputsInline: true,
     previousStatement: true,
     nextStatement: true,
-
-    // label
-    typeLabel: "",
 
     // optional dropdown options
     options: [{ label: "", value: "" }],
@@ -71,7 +67,6 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         inputsInline: config.inputsInline ?? true,
         previousStatement: config.previousStatement ?? true,
         nextStatement: config.nextStatement ?? true,
-        typeLabel: config.typeLabel || "",
         options: config.typeOptions ? config.typeOptions.map((option: any) => ({ label: option[0], value: option[1] })) : [{ label: "", value: "" }],
         includeCount: editingBlock.type === "creator" ? 
           (config as ICreateBlockConfig).defaultCount !== undefined : true,
@@ -93,7 +88,6 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         inputsInline: true,
         previousStatement: true,
         nextStatement: true,
-        typeLabel: "",
         options: [{ label: "", value: "" }],
         includeCount: true,
         defaultCount: 100,
@@ -148,8 +142,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
     const base = {
       inputsInline: formData.inputsInline,
       nextStatement: formData.nextStatement,
-      previousStatement: formData.previousStatement,
-      typeLabel: formData.typeLabel || undefined
+      previousStatement: formData.previousStatement
     };
 
     const config =
@@ -185,7 +178,6 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
     setFormData(prev => ({
       ...prev,
       name: "",
-      typeLabel: "",
       options: [{ label: "", value: "" }],
       childBlocks: []
     }));
@@ -195,12 +187,16 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
     <div className={css.customBlockForm}>
       <div className={css.customBlockForm_basicFields}>
         <div className={css.customBlockForm_name}>
-          <label htmlFor="block-name">Block Name<span className={css.required}>*</span></label>
+          <label htmlFor="block-name">
+            {blockType === "setter" ? "Property Name" : "Object Name"}
+            <span className={css.required}>*</span>
+          </label>
           <input
             id="block-name"
             type="text"
             value={formData.name}
             onChange={(e) => setFormData(prev => ({ ...prev, name: e.target.value }))}
+            placeholder={blockType === "setter" ? "e.g., color, speed" : "e.g., molecules, people"}
             required
           />
         </div>
@@ -231,6 +227,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         </select>
       </div>
 
+      {/* TODO: Determine if authors will need access to these options. For now, they are hidden by CSS. */}
       <div className={css.customBlockForm_inputs}>
         <label className={css.inlineLabel}>
           <input
@@ -256,16 +253,6 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
           />
           nextStatement
         </label>
-      </div>
-
-      <div className={css.customBlockForm_typeLabel}>
-        <label>Type Label</label>
-        <input
-          placeholder="e.g., particles, speed"
-          type="text"
-          value={formData.typeLabel}
-          onChange={(e) => setFormData(prev => ({ ...prev, typeLabel: e.target.value }))}
-        />
       </div>
 
       {formData.type === "setter" && (

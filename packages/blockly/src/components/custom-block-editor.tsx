@@ -18,6 +18,12 @@ const generateBlockJson = (block: ICustomBlock) => {
   }`;
 };
 
+const generateBlockId = (block: ICustomBlock) => {
+  const sanitizedName = block.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+  const timestamp = Date.now();
+  return `custom_${block.type}_${sanitizedName}_${timestamp}`;
+};
+
 const handleCopyToClipboard = (block: ICustomBlock, setCopiedBlockId: (id: string | null) => void) => {
   const blockJson = generateBlockJson(block);
   navigator.clipboard.writeText(blockJson);
@@ -33,7 +39,7 @@ export const CustomBlockEditor: React.FC<IProps> = ({ value, onChange, toolbox }
   const [copiedBlockId, setCopiedBlockId] = useState<string | null>(null);
 
   const addCustomBlock = (block: ICustomBlock) => {
-    const newBlock = { ...block, id: `custom_${Date.now()}` };
+    const newBlock = { ...block, id: generateBlockId(block) };
     const updatedBlocks = [...customBlocks, newBlock];
     onChange(updatedBlocks);
     

@@ -11,7 +11,6 @@ interface IBlockConfigBase {
   inputsInline?: boolean;
   previousStatement?: boolean;
   nextStatement?: boolean;
-  typeLabel?: string;
 }
 
 export interface ICreateBlockConfig extends IBlockConfigBase {
@@ -23,8 +22,8 @@ export interface ICreateBlockConfig extends IBlockConfigBase {
 }
 
 export interface ISetBlockConfig extends IBlockConfigBase {
-  typeOptions?: MenuOption[];
   includeNumberInput?: boolean;
+  typeOptions?: MenuOption[];
 }
 
 export interface ICustomBlock {
