@@ -1,12 +1,14 @@
+@import "./variables.scss";
+
 .customBlockForm {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: $spacing-xl;
 
   // Block Name and Color on same line
   .customBlockForm_basicFields {
     display: flex;
-    gap: 20px;
+    gap: $spacing-xxl;
     align-items: flex-start;
     
     .customBlockForm_name,
@@ -17,7 +19,7 @@
       flex: 1;
       
       label {
-        font-weight: 500;
+        font-weight: $font-weight-medium;
         display: block;
         margin: 0;
       }
@@ -37,19 +39,19 @@
     
     label {
       display: block;
-      font-weight: 500;
+      font-weight: $font-weight-medium;
       margin: 0;
     }
     
     select {
-      border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 14px;
+      border: 1px solid $border-light;
+      border-radius: $border-radius-sm;
+      font-size: $font-size-sm;
       max-width: 200px;
-      padding: 6px 8px;
+      padding: 6px $spacing-md;
       
       &:focus {
-        border-color: #007bff;
+        border-color: $primary-blue;
         box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
         outline: none;
       }
@@ -61,12 +63,12 @@
     align-items: center;
     display: none; // flex; // see TODO comment in custom-block-form.tsx
     flex-wrap: wrap;
-    gap: 20px;
+    gap: $spacing-xxl;
     
     .inlineLabel {
       align-items: center;
       display: flex;
-      font-weight: normal;
+      font-weight: $font-weight-normal;
       gap: 6px;
       margin: 0;
       white-space: nowrap;
@@ -85,7 +87,7 @@
     
     label {
       display: block;
-      font-weight: 500;
+      font-weight: $font-weight-medium;
       margin: 0;
     }
     
@@ -98,7 +100,7 @@
   // Count fields in a grid
   .customBlockForm_countFields {
     display: grid;
-    gap: 16px;
+    gap: $spacing-xl;
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     
     > div {
@@ -108,15 +110,15 @@
       
       label {
         display: block;
-        font-weight: 500;
-        font-size: 14px;
+        font-weight: $font-weight-medium;
+        font-size: $font-size-sm;
         margin: 0;
       }
       
       input {
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        padding: 6px 8px;
+        border: 1px solid $border-light;
+        border-radius: $border-radius-sm;
+        padding: 6px $spacing-md;
       }
     }
   }
@@ -125,12 +127,12 @@
   .customBlockForm_includeCount {
     align-items: center;
     display: flex;
-    gap: 8px;
+    gap: $spacing-md;
     
     label {
       align-items: center;
       display: flex;
-      font-weight: normal;
+      font-weight: $font-weight-normal;
       gap: 6px;
       margin: 0;
     }
@@ -140,12 +142,12 @@
   .customBlockForm_includeNumberInput {
     align-items: center;
     display: flex;
-    gap: 8px;
+    gap: $spacing-md;
     
     label {
       align-items: center;
       display: flex;
-      font-weight: normal;
+      font-weight: $font-weight-normal;
       gap: 6px;
       margin: 0;
     }
@@ -155,49 +157,49 @@
   .customBlockForm_options {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: $spacing-md;
     
     label {
-      font-weight: 500;
+      font-weight: $font-weight-medium;
       margin-bottom: 2px;
     }
     
     .optionRow {
       align-items: center;
       display: flex;
-      gap: 8px;
+      gap: $spacing-md;
       
       input {
-        border: 1px solid #ccc;
-        border-radius: 4px;
+        border: 1px solid $border-light;
+        border-radius: $border-radius-sm;
         flex: 1;
-        padding: 6px 8px;
+        padding: 6px $spacing-md;
       }
       
       button {
-        background: #f5f5f5;
-        border: 1px solid #ccc;
-        border-radius: 4px;
+        background: $background-lighter;
+        border: 1px solid $border-light;
+        border-radius: $border-radius-sm;
         cursor: pointer;
-        padding: 6px 12px;
+        padding: 6px $spacing-lg;
         
         &:hover {
-          background: #e5e5e5;
+          background: $background-light;
         }
       }
     }
     
     .addOptionButton {
       align-self: flex-start;
-      background: #007bff;
+      background: $primary-blue;
       border: none;
-      border-radius: 4px;
-      color: white;
+      border-radius: $border-radius-sm;
+      color: $tooltip-text;
       cursor: pointer;
-      padding: 6px 12px;
+      padding: 6px $spacing-lg;
       
       &:hover {
-        background: #0056b3;
+        background: $primary-blue-hover;
       }
     }
   }
@@ -206,41 +208,41 @@
   .customBlockForm_childBlocks {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: $spacing-md;
     
     label {
       display: block;
-      font-weight: 500;
+      font-weight: $font-weight-medium;
       margin: 0;
     }
     
     select {
-      border: 1px solid #ccc;
-      border-radius: 4px;
+      border: 1px solid $border-light;
+      border-radius: $border-radius-sm;
       min-height: 80px;
-      padding: 6px 8px;
+      padding: 6px $spacing-md;
     }
   }
 
   // Submit button
   button[type="button"] {
     align-self: center;
-    background: #28a745;
+    background: $success-green;
     border: none;
-    border-radius: 4px;
-    color: white;
+    border-radius: $border-radius-sm;
+    color: $tooltip-text;
     cursor: pointer;
-    font-weight: 500;
-    padding: 10px 20px;
+    font-weight: $font-weight-medium;
+    padding: 10px $spacing-xxl;
     
     &:hover {
-      background: #218838;
+      background: $success-green-hover;
     }
   }
 
   // Required field indicator
   span.required {
-    color: #dc3545;
+    color: $danger-red;
     margin-left: 2px;
   }
 
@@ -248,13 +250,13 @@
   input[type="text"],
   input[type="number"],
   input[type="color"] {
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    font-size: 14px;
-    padding: 6px 8px;
+    border: 1px solid $border-light;
+    border-radius: $border-radius-sm;
+    font-size: $font-size-sm;
+    padding: 6px $spacing-md;
     
     &:focus {
-      border-color: #007bff;
+      border-color: $primary-blue;
       box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
       outline: none;
     }

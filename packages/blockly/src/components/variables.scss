@@ -1,0 +1,50 @@
+@import "../../../helpers/src/styles/helpers.scss";
+
+$primary-blue: var(--cc-teal);
+$primary-blue-hover: var(--cc-teal-dark-1);
+$primary-blue-light: var(--cc-teal-light-1);
+
+// Success colors (custom green palette)
+$success-green: #28a745;
+$success-green-hover: #218838;
+
+// Danger colors (custom red palette)  
+$danger-red: #dc3545;
+
+$text-dark: var(--cc-charcoal);
+$text-medium: var(--cc-charcoal-hint);
+$text-light: var(--cc-charcoal-light-1);
+$border-light: var(--cc-charcoal-light-1);
+$border-medium: var(--cc-charcoal-light-2);
+$background-light: var(--cc-charcoal-light-2);
+$background-lighter: var(--cc-teal-light-7);
+
+$tooltip-bg: var(--cc-charcoal);
+$tooltip-text: var(--white);
+
+$spacing-xs: 2px;
+$spacing-sm: 4px;
+$spacing-md: 8px;
+$spacing-lg: 12px;
+$spacing-xl: 16px;
+$spacing-xxl: 20px;
+$spacing-xxxl: 24px;
+
+$border-radius-sm: 4px;
+$border-radius-md: 6px;
+$border-radius-lg: 8px;
+
+$font-size-xs: 12px;
+$font-size-sm: 14px;
+$font-size-md: 16px;
+
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-bold: 700;
+
+$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
+$shadow-md: 0 2px 6px rgba(0, 0, 0, 0.15);
+$shadow-lg: 0 2px 8px rgba(0, 0, 0, 0.2);
+
+$transition-fast: 0.2s ease;
+$transition-medium: 0.3s ease;
