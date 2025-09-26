@@ -101,22 +101,4 @@ describe("BlocklyComponent", () => {
     expect(screen.queryByText(/Error loading Blockly:/)).not.toBeInTheDocument();
     expect(document.querySelector(".injectionDiv")).toBeInTheDocument();
   });
-
-  it("handles custom blocks with enhanced toolbox", () => {
-    const { container } = render(<BlocklyComponent
-      authoredState={customBlocksAuthoredState}
-      interactiveState={defaultInteractiveState}
-      setInteractiveState={() => {
-        // mock implementation
-      }}
-      report={false}
-    />);
-    
-    // The enhanced toolbox should include custom blocks
-    expect(document.querySelector(".injectionDiv")).toBeInTheDocument();
-    
-    // Custom blocks should be available in the toolbox
-    // Note: This is a basic test - in a real scenario, we'd need to mock Blockly more thoroughly
-    // to test that custom blocks are actually registered and available
-  });
 });

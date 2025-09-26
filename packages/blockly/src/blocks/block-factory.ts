@@ -5,13 +5,6 @@ import type { BlockSvg } from "blockly";
 import { ICustomBlock, ICreateBlockConfig, ISetBlockConfig } from "../components/types";
 import { netlogoGenerator } from "../utils/netlogo-generator";
 
-// function renderTemplate(tpl: string, context: Record<string, unknown>) {
-//   return tpl.replace(/\$\{(\w+)\}/g, (_m, key) => {
-//     const v = context[key];
-//     return v === undefined || v === null ? "" : String(v);
-//   });
-// }
-
 const PLUS_ICON  = "data:image/svg+xml;utf8," +
   "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>" +
   "<text fill='white' x='8' y='12' text-anchor='middle' font-size='14'>+</text></svg>";

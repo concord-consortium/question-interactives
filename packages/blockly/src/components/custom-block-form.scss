@@ -5,7 +5,6 @@
   flex-direction: column;
   gap: $spacing-xl;
 
-  // Block Name and Color on same line
   .customBlockForm_basicFields {
     display: flex;
     gap: $spacing-xxl;
@@ -31,7 +30,6 @@
     }
   }
 
-  // Category selector
   .customBlockForm_category {
     display: flex;
     flex-direction: column;
@@ -58,7 +56,6 @@
     }
   }
 
-  // Inline checkboxes for connection options
   .customBlockForm_inputs {
     align-items: center;
     display: none; // flex; // see TODO comment in custom-block-form.tsx
@@ -79,7 +76,6 @@
     }
   }
 
-  // Type label on its own line
   .customBlockForm_typeLabel {
     display: flex;
     flex-direction: column;
@@ -97,7 +93,6 @@
     }
   }
 
-  // Count fields in a grid
   .customBlockForm_countFields {
     display: grid;
     gap: $spacing-xl;
@@ -123,7 +118,6 @@
     }
   }
 
-  // Include count checkbox
   .customBlockForm_includeCount {
     align-items: center;
     display: flex;
@@ -138,7 +132,6 @@
     }
   }
 
-  // Include number input checkbox (for setter blocks)
   .customBlockForm_includeNumberInput {
     align-items: center;
     display: flex;
@@ -153,7 +146,6 @@
     }
   }
 
-  // Options section
   .customBlockForm_options {
     display: flex;
     flex-direction: column;
@@ -205,7 +197,6 @@
     }
   }
 
-  // Child blocks section
   .customBlockForm_childBlocks {
     display: flex;
     flex-direction: column;
@@ -225,7 +216,6 @@
     }
   }
 
-  // Submit button
   button[type="button"] {
     align-self: center;
     background: $success-green;
@@ -241,13 +231,11 @@
     }
   }
 
-  // Required field indicator
   span.required {
     color: $danger-red;
     margin-left: 2px;
   }
 
-  // General input styling
   input[type="text"],
   input[type="number"],
   input[type="color"] {

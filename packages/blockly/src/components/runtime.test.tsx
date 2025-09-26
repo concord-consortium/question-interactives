@@ -49,12 +49,10 @@ describe("Blockly runtime", () => {
     );
     expect(wrapper.find(BlocklyComponent).length).toEqual(1);
     
-    // The BlocklyComponent should receive the custom blocks in authoredState
-    // Note: Runtime merges with DefaultAuthoredState, so we expect the merged result
     const blocklyComponent = wrapper.find(BlocklyComponent);
     const expectedAuthoredState = {
       ...customBlocksAuthoredState,
-      hint: "" // DefaultAuthoredState adds this property
+      hint: ""
     };
     expect(blocklyComponent.prop("authoredState")).toEqual(expectedAuthoredState);
   });

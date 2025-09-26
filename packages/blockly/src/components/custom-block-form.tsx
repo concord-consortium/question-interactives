@@ -35,16 +35,10 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
     color: "#312b84",
     name: "",
     type: blockType,
-
-    // layout / connections
     inputsInline: true,
     previousStatement: true,
     nextStatement: true,
-
-    // optional dropdown options
     options: [{ label: "", value: "" }],
-
-    // optional slider toggle + fields
     includeCount: true,
     defaultCount: 100,
     minCount: 0,
@@ -54,7 +48,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
 
   const availableCategories = useMemo(() => extractCategoriesFromToolbox(toolbox), [toolbox]);
 
-  // Populate form when editing
+  // Populate form when editing.
   useEffect(() => {
     if (editingBlock) {
       const config = editingBlock.config as ICreateBlockConfig | ISetBlockConfig;
@@ -77,7 +71,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
           (config as ISetBlockConfig).includeNumberInput ?? false : false
       });
     } else {
-      // Reset form when not editing - set default category
+      // Reset form when not editing.
       setFormData(prev => ({
         ...prev,
         category: "",
@@ -174,7 +168,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       type: formData.type
     });
 
-    // reset (keep sensible defaults)
+    // Reset.
     setFormData(prev => ({
       ...prev,
       name: "",

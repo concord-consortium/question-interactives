@@ -16,26 +16,14 @@ const saveEvents: string[] = [Events.BLOCK_CREATE, Events.BLOCK_DELETE, Events.B
 
 export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const { customBlocks = [], toolbox } = authoredState;
-  
-  // Ensure customBlocks is always an array
-  // Handle both direct array and nested object structure
   const safeCustomBlocks = useMemo(() => {
-    if (Array.isArray(customBlocks)) {
-      return customBlocks;
-    }
-    if (customBlocks && typeof customBlocks === 'object' && 'customBlocks' in customBlocks && Array.isArray((customBlocks as any).customBlocks)) {
-      return (customBlocks as any).customBlocks;
-    }
-    return [];
+    return Array.isArray(customBlocks) ? customBlocks : [];
   }, [customBlocks]);
   const { blocklyState } = interactiveState ?? {};
   const [error, setError] = useState<Error | null>(null);
   const blocklyDivRef = useRef<HTMLDivElement>(null);
   const [workspace, setWorkspace] = useState<WorkspaceSvg | null>(null);
   const hasLoadedRef = useRef(false);
-
-  console.log("authoredState", authoredState);
-  console.log("customBlocks", customBlocks);
 
   useEffect(() => {
     if (!toolbox) {
@@ -45,7 +33,6 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
 
     if (blocklyDivRef.current) {
       // Empty existing container before creating a new workspace to avoid duplication.
-      // TODO: Find a better way to do this?
       blocklyDivRef.current.innerHTML = "";
 
       registerCustomBlocks(safeCustomBlocks);
