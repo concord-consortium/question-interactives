@@ -13,41 +13,12 @@ import { netlogoGenerator } from "../utils/netlogo-generator";
 // }
 
 const PLUS_ICON  = "data:image/svg+xml;utf8," +
-  "<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14'>" +
-  "<text fill='white' x='7' y='10' text-anchor='middle' font-size='12'>+</text></svg>";
+  "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>" +
+  "<text fill='white' x='8' y='12' text-anchor='middle' font-size='14'>+</text></svg>";
 
 const MINUS_ICON = "data:image/svg+xml;utf8," +
-  "<svg xmlns='http://www.w3.org/2000/svg' width='14' height='14'>" +
-  "<text fill='white' x='7' y='10' text-anchor='middle' font-size='12'>−</text></svg>";
-
-/**
- * Adds a small +/– image button to a block.
- * Clicking it toggles visibility of the statement input named `inputName`.
- */
-function attachDisclosureButton(block: Blockly.Block, inputName = "statements", startOpen = false) {
-  const stmt = block.getInput(inputName);
-  if (!stmt) return;
-
-  const b = block as BlockSvg;
-  const row = b.appendDummyInput("__disclosure_button");
-  const icon = new Blockly.FieldImage(startOpen ? MINUS_ICON : PLUS_ICON, 14, 14, "+/-");
-
-  (icon as any).setOnClickHandler?.(() => {
-    const open = !(b as any).__disclosureOpen;
-    (b as any).__disclosureOpen = open;
-    stmt.setVisible(open);
-    icon.setValue(open ? MINUS_ICON : PLUS_ICON);
-    b.render();
-  });
-
-  row.appendField(icon, "__disclosure_icon");
-
-  const open0 = (b as any).__disclosureOpen ?? startOpen;
-  (b as any).__disclosureOpen = open0;
-  stmt.setVisible(open0);
-
-  b.render();
-}
+  "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>" +
+  "<text fill='white' x='8' y='12' text-anchor='middle' font-size='14'>−</text></svg>";
 
 export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
   if (!Array.isArray(customBlocks)) {
@@ -68,22 +39,42 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
     
     Blocks[blockType] = {
       init() {
-        const input = this.appendDummyInput().appendField(blockDef.name);
+        // Display block name with appropriate prefix based on block type
+        const displayName = blockDef.type === "setter" ? `set ${blockDef.name}` : 
+                           blockDef.type === "creator" ? `create ${blockDef.name}` : 
+                           blockDef.name;
+        const input = this.appendDummyInput().appendField(displayName);
     
         if (blockDef.type === "creator") {
           const c: ICreateBlockConfig = cfg;
+
+          const statementsInput = this.appendStatementInput("statements");
+          if (Array.isArray(c.childBlocks) && c.childBlocks.length > 0) {
+            statementsInput.setCheck(c.childBlocks);
+          }
+          
+          // Add open/close toggle button
+          const icon = new Blockly.FieldImage(PLUS_ICON, 16, 16, "+/-");
+          (icon as any).setOnClickHandler?.(() => {
+            const open = !(this as any).__disclosureOpen;
+            (this as any).__disclosureOpen = open;
+            statementsInput.setVisible(open);
+            icon.setValue(open ? MINUS_ICON : PLUS_ICON);
+            (this as BlockSvg).render();
+          });
+          input.insertFieldAt(0, icon, "__disclosure_icon");
+          
+          // Initialize as closed
+          (this as any).__disclosureOpen = false;
+          statementsInput.setVisible(false);
 
           // Optional count slider
           if (c.defaultCount !== undefined && c.minCount !== undefined && c.maxCount !== undefined) {
             input.appendField(new FieldSlider(c.defaultCount, c.minCount, c.maxCount), "count");
           }
           
-          // Optional child setter blocks
+          // One-time seeding of child setter blocks on first creation/attach.
           if (Array.isArray(c.childBlocks) && c.childBlocks.length > 0) {
-            this.appendStatementInput("statements").setCheck(c.childBlocks);
-            attachDisclosureButton(this, "statements"); // adds the +/- toggle button
-    
-            // One-time seeding of child setter blocks on first creation/attach.
             (this as any).__childrenSeeded = false;
             this.setOnChange(() => {
               if ((this as any).__childrenSeeded || !this.workspace || this.isInFlyout) return;
@@ -150,7 +141,7 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
       // Persist open/closed state
       mutationToDom() {
         const el = document.createElement("mutation");
-        el.setAttribute("open", String((this as any).__disclosureOpen ?? true));
+        el.setAttribute("open", String((this as any).__disclosureOpen ?? false));
         return el;
       },
       domToMutation(el: Element) {
@@ -159,6 +150,12 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         (b as any).__disclosureOpen = open;
         const stmt = b.getInput("statements");
         if (stmt) stmt.setVisible(open);
+
+        const iconField = b.getField("__disclosure_icon");
+        if (iconField) {
+          iconField.setValue(open ? MINUS_ICON : PLUS_ICON);
+        }
+        
         b.render();
       }
     };
