@@ -2,6 +2,7 @@ import React from "react";
 import { mount } from "enzyme";
 import { Runtime } from "./runtime";
 import { DemoAuthoredState } from "./types";
+import { customBlocksAuthoredState } from "./__mocks__/fixtures";
 import { InitMessageContext } from "@concord-consortium/question-interactives-helpers/src/hooks/use-context-init-message";
 import { useInitMessage } from "@concord-consortium/lara-interactive-api";
 import { DynamicTextTester } from "@concord-consortium/question-interactives-helpers/src/utilities/dynamic-text-tester";
@@ -36,5 +37,25 @@ describe("Blockly runtime", () => {
       </InitMessageContext.Provider>
     );
     expect(wrapper.find(BlocklyComponent).length).toEqual(1);
+  });
+
+  it("renders a blockly component with custom blocks", () => {
+    const wrapper = mount(
+      <InitMessageContext.Provider value={initMessage as any}>
+        <DynamicTextTester>
+          <Runtime authoredState={customBlocksAuthoredState} />
+        </DynamicTextTester>
+      </InitMessageContext.Provider>
+    );
+    expect(wrapper.find(BlocklyComponent).length).toEqual(1);
+    
+    // The BlocklyComponent should receive the custom blocks in authoredState
+    // Note: Runtime merges with DefaultAuthoredState, so we expect the merged result
+    const blocklyComponent = wrapper.find(BlocklyComponent);
+    const expectedAuthoredState = {
+      ...customBlocksAuthoredState,
+      hint: "" // DefaultAuthoredState adds this property
+    };
+    expect(blocklyComponent.prop("authoredState")).toEqual(expectedAuthoredState);
   });
 });

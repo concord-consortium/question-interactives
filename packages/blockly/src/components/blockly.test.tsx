@@ -1,7 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import React from "react";
 
-import { 
+import {
+  customBlocksAuthoredState,
   defaultAuthoredState,
   defaultInteractiveState,
   generalToolboxAuthoredState,
@@ -84,5 +85,38 @@ describe("BlocklyComponent", () => {
     />);
     const ifBlockElement = container.querySelector('g.controls_if');
     expect(ifBlockElement).toBeInTheDocument();
+  });
+
+  it("renders with custom blocks in toolbox", () => {
+    render(<BlocklyComponent
+      authoredState={customBlocksAuthoredState}
+      interactiveState={defaultInteractiveState}
+      setInteractiveState={() => {
+        // mock implementation
+      }}
+      report={false}
+    />);
+    
+    expect(screen.queryByText(/Enter a toolbox configuration to see Blockly./)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Error loading Blockly:/)).not.toBeInTheDocument();
+    expect(document.querySelector(".injectionDiv")).toBeInTheDocument();
+  });
+
+  it("handles custom blocks with enhanced toolbox", () => {
+    const { container } = render(<BlocklyComponent
+      authoredState={customBlocksAuthoredState}
+      interactiveState={defaultInteractiveState}
+      setInteractiveState={() => {
+        // mock implementation
+      }}
+      report={false}
+    />);
+    
+    // The enhanced toolbox should include custom blocks
+    expect(document.querySelector(".injectionDiv")).toBeInTheDocument();
+    
+    // Custom blocks should be available in the toolbox
+    // Note: This is a basic test - in a real scenario, we'd need to mock Blockly more thoroughly
+    // to test that custom blocks are actually registered and available
   });
 });

@@ -1,3 +1,6 @@
+// This file is not currently used but may be helpful in the future if we decide
+// to pre-define some custom blocks for specific use cases.
+
 import { Blocks, FieldDropdown, MenuOption } from "blockly/core";
 import { javascriptGenerator } from "blockly/javascript";
 
