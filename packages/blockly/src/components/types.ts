@@ -28,65 +28,13 @@ export interface ISetBlockConfig extends IBlockConfigBase {
 }
 
 export interface ICustomBlock {
+  category: string; // Toolbox category name
   color: string;
   config: ICreateBlockConfig | ISetBlockConfig;
   id: string;
   name: string;
   type: CustomBlockType;
 }
-
-// Predefined custom blocks
-// TODO: Determine if it's actually useful to have these.
-// export const PREDEFINED_BLOCKS: ICustomBlock[] = [
-//   {
-//     id: "diffusion-create",
-//     type: "creator",
-//     name: "Create Diffusion Particles",
-//     color: "#312b84",
-//     config: {
-//       defaultCount: 100,
-//       minCount: 0,
-//       maxCount: 500,
-//       typeLabel: "particles",
-//       typeOptions: [
-//         ["water", "WATER"],
-//         ["ink", "INK"]
-//       ]
-//     }
-//   },
-//   {
-//     id: "diffusion-set-speed",
-//     type: "setter",
-//     name: "Set Diffusion Speed",
-//     color: "#312b84",
-//     config: {
-//       typeLabel: "speed",
-//       typeOptions: [
-//         ["zero", "ZERO"],
-//         ["low", "LOW"],
-//         ["medium", "MEDIUM"],
-//         ["high", "HIGH"],
-//         ["initial temperature", "TEMP"]
-//       ]
-//     }
-//   },
-//   {
-//     id: "photosynthesis-create",
-//     type: "creator",
-//     name: "Create Photosynthesis Molecules",
-//     color: "#4CAF50",
-//     config: {
-//       defaultCount: 50,
-//       minCount: 0,
-//       maxCount: 100,
-//       typeLabel: "molecules",
-//       typeOptions: [
-//         ["co2", "CO2"],
-//         ["h2o", "H2O"]
-//       ]
-//     }
-//   }
-// ];
 
 export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   customBlocks?: ICustomBlock[];

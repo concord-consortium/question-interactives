@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 
+import { extractCategoriesFromToolbox } from "../utils/toolbox-utils";
 import { CustomBlockType, ICustomBlock, ICreateBlockConfig, ISetBlockConfig } from "./types";
 
 import css from "./custom-block-form.scss";
@@ -8,11 +9,13 @@ interface IProps {
   blockType: CustomBlockType;
   editingBlock?: ICustomBlock | null;
   existingBlocks?: ICustomBlock[];
+  toolbox: string;
   onSubmit: (block: ICustomBlock) => void;
 }
 
-export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, existingBlocks, onSubmit }) => {
+export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, existingBlocks, onSubmit, toolbox }) => {
   const [formData, setFormData] = useState<{
+    category: string;
     childBlocks: string[];
     color: string;
     name: string;
@@ -20,7 +23,6 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
     inputsInline: boolean;
     previousStatement: boolean;
     nextStatement: boolean;
-    // generatorTemplate?: string;
     typeLabel: string;
     options: { label: string; value: string }[];
     includeCount: boolean;
@@ -29,6 +31,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
     maxCount: number;
     includeNumberInput: boolean;
   }>({
+    category: "",
     childBlocks: [],
     color: "#312b84",
     name: "",
@@ -38,9 +41,6 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
     inputsInline: true,
     previousStatement: true,
     nextStatement: true,
-
-    // generator
-    // generatorTemplate: "",
 
     // label
     typeLabel: "",
@@ -56,11 +56,14 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
     includeNumberInput: false
   });
 
+  const availableCategories = useMemo(() => extractCategoriesFromToolbox(toolbox), [toolbox]);
+
   // Populate form when editing
   useEffect(() => {
     if (editingBlock) {
       const config = editingBlock.config as ICreateBlockConfig | ISetBlockConfig;
       setFormData({
+        category: editingBlock.category || (availableCategories[0] || ""),
         childBlocks: (config as ICreateBlockConfig).childBlocks || [],
         color: editingBlock.color,
         name: editingBlock.name,
@@ -78,8 +81,28 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         includeNumberInput: editingBlock.type === "setter" ? 
           (config as ISetBlockConfig).includeNumberInput ?? false : false
       });
+    } else {
+      // Reset form when not editing - set default category
+      setFormData(prev => ({
+        ...prev,
+        category: "",
+        childBlocks: [],
+        color: "#312b84",
+        name: "",
+        type: blockType,
+        inputsInline: true,
+        previousStatement: true,
+        nextStatement: true,
+        typeLabel: "",
+        options: [{ label: "", value: "" }],
+        includeCount: true,
+        defaultCount: 100,
+        minCount: 0,
+        maxCount: 500,
+        includeNumberInput: false
+      }));
     }
-  }, [editingBlock]);
+  }, [editingBlock, blockType, availableCategories]);
 
   const addOption = () => {
     setFormData(prev => ({
@@ -109,13 +132,20 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       alert("Please provide the block name.");
       return;
     }
+    if (!formData.color) {
+      alert("Please provide the block color.");
+      return;
+    }
+    if (!formData.category) {
+      alert("Please select a category.");
+      return;
+    }
 
     const typeOptions = formData.options
       .filter(opt => opt.label && opt.value)
       .map(opt => [opt.label, opt.value] as [string, string]);
 
     const base = {
-      // generatorTemplate: formData.generatorTemplate || undefined,
       inputsInline: formData.inputsInline,
       nextStatement: formData.nextStatement,
       previousStatement: formData.previousStatement,
@@ -143,6 +173,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
           } as ISetBlockConfig;
 
     onSubmit({
+      category: formData.category,
       color: formData.color,
       config,
       id: editingBlock?.id ?? "",
@@ -155,8 +186,8 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       ...prev,
       name: "",
       typeLabel: "",
-      // generatorTemplate: "",
-      options: [{ label: "", value: "" }]
+      options: [{ label: "", value: "" }],
+      childBlocks: []
     }));
   };
 
@@ -182,6 +213,22 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
             onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
           />
         </div>
+      </div>
+
+      <div className={css.customBlockForm_category}>
+        <label>Category<span className={css.required}>*</span></label>
+        <select
+          value={formData.category}
+          onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
+          required
+        >
+          <option value="">Select a category...</option>
+          {availableCategories.map(category => (
+            <option key={category} value={category}>
+              {category}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className={css.customBlockForm_inputs}>
@@ -210,19 +257,6 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
           nextStatement
         </label>
       </div>
-
-      {/* <div>
-        <label>Generator Template (optional):</label><br />
-        <textarea
-          placeholder={'e.g.\nconst v = "${value}";\nawait sim.setColor(v);'}
-          rows={2}
-          value={formData.generatorTemplate}
-          onChange={(e) => setFormData(prev => ({ ...prev, generatorTemplate: e.target.value }))}
-        />
-        <div style={{ fontSize: "12px", color: "#666" }}>
-          Available placeholders: ${"{name}"}, ${"{label}"}, ${"{count}"}, ${"{type}"}, ${"{value}"}.
-        </div>
-      </div> */}
 
       <div className={css.customBlockForm_typeLabel}>
         <label>Type Label</label>

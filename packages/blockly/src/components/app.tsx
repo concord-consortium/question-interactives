@@ -41,6 +41,7 @@ const baseAuthoringProps = {
             type: { type: "string", enum: ["creator", "setter"] },
             name: { type: "string" },
             color: { type: "string" },
+            category: { type: "string" },
             config: { type: "object" }
           }
         }
@@ -79,9 +80,6 @@ const baseAuthoringProps = {
         "rows": 15
       }
     }
-  },
-  fields: {
-    customBlockEditor: CustomBlockEditor
   }
 };
 
@@ -97,26 +95,15 @@ export const App = () => (
       uiSchema: baseAuthoringProps.uiSchema,
       fields: {
         customBlockEditor: (props: FieldProps<any, RJSFSchema, any>) => {
-          // Get the full form data from formContext
-          const fullFormData = props.registry?.formContext?.authoredState || {};
-          const customBlocks = fullFormData.customBlocks;
-          const safeCustomBlocks = Array.isArray(customBlocks) ? customBlocks : [];
-
-          const handleChange = (newFormData: any) => {
-            props.onChange(newFormData.customBlocks || []);
-
-            if (props.registry?.formContext?.onChange) {
-              props.registry.formContext.onChange(newFormData);
-            }
-          };
+          const value = Array.isArray(props.formData) ? props.formData : [];
+          const authoredState = props.registry?.formContext?.authoredState || {};
+          const toolbox = authoredState.toolbox || "";
           
           return (
-            <CustomBlockEditor 
-              {...props} 
-              value={safeCustomBlocks} 
-              formData={fullFormData}
+            <CustomBlockEditor
+              value={value}
               onChange={props.onChange}
-              onChangeFormData={handleChange}
+              toolbox={toolbox}
             />
           );
         }

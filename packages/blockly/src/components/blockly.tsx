@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { registerCustomBlocks } from "../blocks/block-factory";
 import "../blocks/block-registration";
+import { injectCustomBlocksIntoToolbox } from "../utils/toolbox-utils";
 import { IAuthoredState, IInteractiveState } from "./types";
 
 import css from "./blockly.scss";
@@ -56,7 +57,9 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
       ];
 
       try {
-        const newWorkspace = inject(blocklyDivRef.current, { readOnly: report, toolbox: JSON.parse(toolbox) });
+        // Inject custom blocks into toolbox based on their assigned categories
+        const enhancedToolbox = injectCustomBlocksIntoToolbox(toolbox, safeCustomBlocks);
+        const newWorkspace = inject(blocklyDivRef.current, { readOnly: report, toolbox: JSON.parse(enhancedToolbox) });
         initialBlocks.forEach(block => {
           serialization.blocks.append(block, newWorkspace);
         });
@@ -90,7 +93,18 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
     if (hasLoadedRef.current || !workspace) return;
     hasLoadedRef.current = true;
 
-    if (blocklyState) serialization.workspaces.load(JSON.parse(blocklyState), workspace);
+    if (blocklyState) {
+      try {
+        serialization.workspaces.load(JSON.parse(blocklyState), workspace);
+      } catch (loadError) {
+        if (loadError instanceof Error && loadError.message.includes("Invalid block definition")) {
+          console.warn("Invalid block definition error - likely due to deleted custom blocks:", loadError);
+          setError(new Error("Some blocks in your saved work are no longer available."));
+        } else {
+          throw loadError;
+        }
+      }
+    }
   }, [blocklyState, workspace]);
 
   return (
