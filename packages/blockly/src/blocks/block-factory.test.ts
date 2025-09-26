@@ -1,5 +1,4 @@
 import { Blocks, FieldDropdown, FieldNumber } from "blockly/core";
-// import { FieldSlider } from "@blockly/field-slider";
 import { registerCustomBlocks } from "./block-factory";
 import { ICustomBlock } from "../components/types";
 import { netlogoGenerator } from "../utils/netlogo-generator";
@@ -120,8 +119,7 @@ describe("block-factory", () => {
         color: "#FF0000",
         category: "Properties",
         config: {
-          typeOptions: [["red", "RED"], ["blue", "BLUE"]],
-          includeNumberInput: false
+          typeOptions: [["red", "RED"], ["blue", "BLUE"]]
         }
       };
 
@@ -161,7 +159,10 @@ describe("block-factory", () => {
           name: "speed",
           color: "#FF0000",
           category: "Properties",
-          config: { includeNumberInput: true }
+          config: {
+            canHaveChildren: false,
+            includeNumberInput: true
+          }
         },
         {
           id: "block2",
@@ -193,8 +194,7 @@ describe("block-factory", () => {
         color: "#FF0000",
         category: "Properties",
         config: {
-          typeOptions: [["red", "RED"], ["blue", "BLUE"]],
-          includeNumberInput: false
+          typeOptions: [["red", "RED"], ["blue", "BLUE"]]
         }
       };
 
@@ -216,12 +216,15 @@ describe("block-factory", () => {
     });
 
     it("adds number input when includeNumberInput is true", () => {
-      setterBlock.config = { includeNumberInput: true };
+      setterBlock.config = {
+        canHaveChildren: false,
+        includeNumberInput: true
+      };
       registerCustomBlocks([setterBlock]);
 
       Blocks["custom_set_color_123"].init.call(mockBlock);
 
-      expect(FieldNumber).toHaveBeenCalledWith(1);
+      expect(FieldNumber).toHaveBeenCalledWith(0);
       expect(mockInput.appendField).toHaveBeenCalledWith(expect.any(Object), "value");
     });
 
@@ -276,6 +279,314 @@ describe("block-factory", () => {
 
       expect(mockInput.insertFieldAt).toHaveBeenCalledWith(0, expect.any(Object), "__disclosure_icon");
       expect(mockInput.appendField).toHaveBeenCalledWith(expect.any(Object), "count");
+    });
+  });
+
+  describe("Action Block Initialization", () => {
+    let actionBlock: ICustomBlock;
+
+    beforeEach(() => {
+      actionBlock = {
+        category: "Actions",
+        color: "#004696",
+        config: {
+          canHaveChildren: true,
+          childBlocks: ["custom_set_color_123"],
+          generatorTemplate: "${ACTION} ${DIRECTION}",
+          parameters: [
+            {
+              kind: "select",
+              labelPosition: "prefix",
+              labelText: "Move",
+              name: "DIRECTION",
+              options: [["forward", "FORWARD"], ["backward", "BACKWARD"]]
+            },
+            {
+              defaultValue: 1,
+              kind: "number",
+              labelPosition: "suffix",
+              labelText: "at speed",
+              name: "SPEED"
+            }
+          ]
+        },
+        id: "custom_action_move_789",
+        name: "move",
+        type: "action"
+      };
+
+      registerCustomBlocks([actionBlock]);
+    });
+
+    it("initializes action block with correct display name", () => {
+      Blocks["custom_action_move_789"].init.call(mockBlock);
+
+      expect(mockBlock.appendDummyInput).toHaveBeenCalled();
+      expect(mockInput.appendField).toHaveBeenCalledWith("Move");
+    });
+
+    it("adds select parameter fields", () => {
+      Blocks["custom_action_move_789"].init.call(mockBlock);
+
+      expect(FieldDropdown).toHaveBeenCalledWith([["forward", "FORWARD"], ["backward", "BACKWARD"]]);
+      expect(mockInput.appendField).toHaveBeenCalledWith(expect.any(Object), "DIRECTION");
+    });
+
+    it("adds number parameter fields", () => {
+      Blocks["custom_action_move_789"].init.call(mockBlock);
+
+      expect(FieldNumber).toHaveBeenCalledWith(1);
+      expect(mockInput.appendField).toHaveBeenCalledWith(expect.any(Object), "SPEED");
+    });
+
+    it("adds statement input for child blocks when `canHaveChildren` is true", () => {
+      Blocks["custom_action_move_789"].init.call(mockBlock);
+
+      expect(mockBlock.appendStatementInput).toHaveBeenCalledWith("statements");
+      expect(mockStatementsInput.setCheck).toHaveBeenCalledWith(["custom_set_color_123"]);
+    });
+
+    it("sets block color and connections", () => {
+      Blocks["custom_action_move_789"].init.call(mockBlock);
+
+      expect(mockBlock.setColour).toHaveBeenCalledWith("#004696");
+      expect(mockBlock.setPreviousStatement).toHaveBeenCalledWith(true);
+      expect(mockBlock.setNextStatement).toHaveBeenCalledWith(true);
+    });
+
+    it("handles action block without child blocks", () => {
+      actionBlock.config.canHaveChildren = false;
+      actionBlock.config.childBlocks = [];
+      registerCustomBlocks([actionBlock]);
+
+      Blocks["custom_action_move_789"].init.call(mockBlock);
+
+      expect(mockBlock.appendStatementInput).not.toHaveBeenCalled();
+    });
+
+    it("handles action block without parameters", () => {
+      (actionBlock.config as any).parameters = [];
+      registerCustomBlocks([actionBlock]);
+
+      Blocks["custom_action_move_789"].init.call(mockBlock);
+
+      expect(FieldDropdown).not.toHaveBeenCalled();
+      expect(FieldNumber).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Code Generation", () => {
+    beforeEach(() => {
+      mockBlock.getFieldValue = jest.fn().mockImplementation((fieldName) => {
+        const values: { [key: string]: any } = {
+          "DIRECTION": "FORWARD",
+          "SPEED": 2,
+          "value": "RED"
+        };
+        return values[fieldName] || "";
+      });
+    });
+
+    it("generates code for setter block with options", () => {
+      const setterBlock: ICustomBlock = {
+        category: "Properties",
+        color: "#ff0000",
+        config: {
+          canHaveChildren: false,
+          typeOptions: [["red", "RED"], ["blue", "BLUE"]]
+        },
+        id: "custom_set_color_123",
+        name: "color",
+        type: "setter"
+      };
+
+      registerCustomBlocks([setterBlock]);
+
+      mockBlock.getFieldValue = jest.fn().mockReturnValue("RED");
+      const code = netlogoGenerator.forBlock["custom_set_color_123"].call(mockBlock, mockBlock);
+      expect(code).toBe("set color RED\n");
+    });
+
+    it("generates code for setter block with number input", () => {
+      const setterBlock: ICustomBlock = {
+        category: "Properties",
+        color: "#ff0000",
+        config: {
+          canHaveChildren: false,
+          includeNumberInput: true
+        },
+        id: "custom_set_speed_123",
+        name: "speed",
+        type: "setter"
+      };
+
+      registerCustomBlocks([setterBlock]);
+
+      mockBlock.getFieldValue = jest.fn().mockReturnValue(5);
+
+      const code = netlogoGenerator.forBlock["custom_set_speed_123"].call(mockBlock, mockBlock);
+      expect(code).toBe("set speed 5\n");
+    });
+
+    it("generates code for creator block", () => {
+      const creatorBlock: ICustomBlock = {
+        category: "General",
+        color: "#00ff00",
+        config: {
+          canHaveChildren: true,
+          defaultCount: 100,
+          typeOptions: [["water", "WATER"], ["air", "AIR"]]
+        },
+        id: "custom_create_molecules_456",
+        name: "molecules",
+        type: "creator"
+      };
+
+      registerCustomBlocks([creatorBlock]);
+
+      mockBlock.getFieldValue = jest.fn().mockImplementation((fieldName) => {
+        const values: { [key: string]: any } = {
+          "type": "WATER",
+          "count": 50
+        };
+        return values[fieldName] || "";
+      });
+
+      const code = netlogoGenerator.forBlock["custom_create_molecules_456"].call(mockBlock, mockBlock);
+      expect(code).toBe("create-water 50\n// statement code");
+    });
+
+    it("generates code for action block with generator template", () => {
+      const actionBlock: ICustomBlock = {
+        category: "Actions",
+        color: "#004696",
+        config: {
+          canHaveChildren: false,
+          generatorTemplate: "${ACTION} ${DIRECTION}\nset speed ${SPEED}",
+          parameters: [
+            {
+              kind: "select",
+              labelPosition: "prefix",
+              name: "DIRECTION",
+              options: [["forward", "FORWARD"], ["backward", "BACKWARD"]]
+            },
+            { 
+              kind: "number",
+              labelPosition: "prefix",
+              name: "SPEED"
+            }
+          ]
+        },
+        id: "custom_action_move_789",
+        name: "move",
+        type: "action"
+      };
+
+      registerCustomBlocks([actionBlock]);
+
+      mockBlock.getFieldValue = jest.fn().mockImplementation((fieldName) => {
+        const values: { [key: string]: any } = {
+          "DIRECTION": "FORWARD",
+          "SPEED": 2
+        };
+        return values[fieldName] || "";
+      });
+
+      const code = netlogoGenerator.forBlock["custom_action_move_789"].call(mockBlock, mockBlock);
+      expect(code).toBe("move FORWARD\nset speed 2\n");
+    });
+
+    it("handles action block without generator template", () => {
+      const actionBlock: ICustomBlock = {
+        category: "Actions",
+        color: "#004696",
+        config: {
+          canHaveChildren: false
+        },
+        id: "custom_action_move_789",
+        name: "move",
+        type: "action"
+      };
+
+      registerCustomBlocks([actionBlock]);
+
+      const code = netlogoGenerator.forBlock["custom_action_move_789"].call(mockBlock, mockBlock);
+      expect(code).toBe("move\n");
+    });
+
+    it("replaces ACTION placeholder with kebab-cased name", () => {
+      const actionBlock: ICustomBlock = {
+        category: "Actions",
+        color: "#004696",
+        config: {
+          canHaveChildren: false,
+          generatorTemplate: "${ACTION} ${DIRECTION}",
+          parameters: [
+            {
+              kind: "select",
+              labelPosition: "prefix",
+              name: "DIRECTION",
+              options: [["forward", "FORWARD"], ["backward", "BACKWARD"]]
+            }
+          ]
+        },
+        id: "custom_action_bounce_off_789",
+        name: "bounce off",
+        type: "action"
+      };
+
+      registerCustomBlocks([actionBlock]);
+
+      mockBlock.getFieldValue = jest.fn().mockReturnValue("FORWARD");
+
+      const code = netlogoGenerator.forBlock["custom_action_bounce_off_789"].call(mockBlock, mockBlock);
+      expect(code).toBe("bounce_off FORWARD\n");
+    });
+
+    it("handles multiple parameter replacements", () => {
+      const actionBlock: ICustomBlock = {
+        category: "Actions",
+        color: "#004696",
+        config: {
+          canHaveChildren: false,
+          generatorTemplate: "${ACTION} ${DIRECTION} ${MAGNITUDE} ${SPEED}",
+          parameters: [
+        {
+          kind: "select",
+          labelPosition: "prefix",
+          name: "DIRECTION",
+          options: [["forward", "FORWARD"], ["backward", "BACKWARD"]]
+        },
+        {
+          kind: "number",
+          labelPosition: "prefix",
+          name: "MAGNITUDE"
+        },
+        {
+          kind: "number",
+          labelPosition: "prefix",
+          name: "SPEED"
+        }
+          ]
+        },
+        id: "custom_action_move_789",
+        name: "move",
+        type: "action"
+      };
+
+      registerCustomBlocks([actionBlock]);
+
+      mockBlock.getFieldValue = jest.fn().mockImplementation((fieldName) => {
+        const values: { [key: string]: any } = {
+          "DIRECTION": "FORWARD",
+          "MAGNITUDE": 5,
+          "SPEED": 2
+        };
+        return values[fieldName] || "";
+      });
+
+      const code = netlogoGenerator.forBlock["custom_action_move_789"].call(mockBlock, mockBlock);
+      expect(code).toBe("move FORWARD 5 2\n");
     });
   });
 });

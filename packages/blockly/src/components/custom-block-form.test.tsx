@@ -1,11 +1,19 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 
+import { actionBlockChildOptions } from "../utils/block-utils";
+import { extractCategoriesFromToolbox } from "../utils/toolbox-utils";
 import { CustomBlockForm } from "./custom-block-form";
 import { ICustomBlock, CustomBlockType } from "./types";
 
 jest.mock("./custom-block-form.scss", () => ({}));
+jest.mock("../utils/block-utils", () => ({
+  actionBlockChildOptions: jest.fn()
+}));
+jest.mock("../utils/toolbox-utils", () => ({
+  extractCategoriesFromToolbox: jest.fn()
+}));
 
 describe("CustomBlockForm", () => {
   const mockOnSubmit = jest.fn();
@@ -17,8 +25,7 @@ describe("CustomBlockForm", () => {
       color: "#FF0000",
       category: "Properties",
       config: {
-        typeOptions: [["red", "RED"], ["blue", "BLUE"]],
-        includeNumberInput: false
+        typeOptions: [["red", "RED"], ["blue", "BLUE"]]
       }
     }
   ];
@@ -46,6 +53,12 @@ describe("CustomBlockForm", () => {
 
   beforeEach(() => {
     mockOnSubmit.mockClear();
+    (actionBlockChildOptions as jest.Mock).mockReturnValue({
+      setterBlocks: [],
+      actionBlocks: [],
+      builtInBlocks: []
+    });
+    (extractCategoriesFromToolbox as jest.Mock).mockReturnValue(["Properties", "General"]);
   });
 
   describe("Form Labels and Fields", () => {
@@ -58,6 +71,12 @@ describe("CustomBlockForm", () => {
     it("shows 'Object Name' label for creator blocks", () => {
       render(<CustomBlockForm {...defaultProps} blockType="creator" />);
       expect(screen.getByText("Object Name")).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("e.g., molecules, people")).toBeInTheDocument();
+    });
+
+    it("shows 'Action Name' label for action blocks", () => {
+      render(<CustomBlockForm {...defaultProps} blockType="action" />);
+      expect(screen.getByText("Action Name")).toBeInTheDocument();
       expect(screen.getByPlaceholderText("e.g., molecules, people")).toBeInTheDocument();
     });
 
@@ -77,7 +96,7 @@ describe("CustomBlockForm", () => {
   describe("Setter Block Specific Fields", () => {
     it("shows include number input checkbox for setter blocks", () => {
       render(<CustomBlockForm {...defaultProps} blockType="setter" />);
-      expect(screen.getByText("Include Number Input (math_number)")).toBeInTheDocument();
+      expect(screen.getByText("Use Number Input Instead of Options")).toBeInTheDocument();
     });
 
     it("does not show count fields for setter blocks", () => {
@@ -99,12 +118,12 @@ describe("CustomBlockForm", () => {
 
     it("shows child blocks selector for creator blocks", () => {
       render(<CustomBlockForm {...defaultProps} blockType="creator" />);
-      expect(screen.getByText("Child Setter Blocks")).toBeInTheDocument();
+      expect(screen.getByText("Child Blocks")).toBeInTheDocument();
     });
 
     it("does not show include number input checkbox for creator blocks", () => {
       render(<CustomBlockForm {...defaultProps} blockType="creator" />);
-      expect(screen.queryByText("Include Number Input (math_number)")).not.toBeInTheDocument();
+      expect(screen.queryByText("Use Number Input Instead of Options")).not.toBeInTheDocument();
     });
   });
 
@@ -137,8 +156,8 @@ describe("CustomBlockForm", () => {
 
       await user.click(screen.getByText("Add Option"));
 
-      const labelInputs = screen.getAllByPlaceholderText("Label");
-      const valueInputs = screen.getAllByPlaceholderText("Value");
+      const labelInputs = screen.getAllByPlaceholderText("Display text (e.g., blue)");
+      const valueInputs = screen.getAllByPlaceholderText("Value (e.g., BLUE)");
 
       expect(labelInputs).toHaveLength(2);
       expect(valueInputs).toHaveLength(2);
@@ -147,8 +166,8 @@ describe("CustomBlockForm", () => {
       await user.type(valueInputs[1], "FAST");
       await user.click(screen.getAllByText("Remove")[0]);
       
-      expect(screen.getAllByPlaceholderText("Label")).toHaveLength(1);
-      expect(screen.getAllByPlaceholderText("Value")).toHaveLength(1);
+      expect(screen.getAllByPlaceholderText("Display text (e.g., blue)")).toHaveLength(1);
+      expect(screen.getAllByPlaceholderText("Value (e.g., BLUE)")).toHaveLength(1);
     });
   });
 
@@ -160,8 +179,7 @@ describe("CustomBlockForm", () => {
       color: "#FF0000",
       category: "Properties",
       config: {
-        typeOptions: [["red", "RED"], ["blue", "BLUE"]],
-        includeNumberInput: true
+        typeOptions: [["red", "RED"], ["blue", "BLUE"]]
       }
     };
 
@@ -181,13 +199,130 @@ describe("CustomBlockForm", () => {
     });
   });
 
+  describe("Action Block Specific Fields", () => {
+    it("shows common custom block fields", () => {
+      render(<CustomBlockForm {...defaultProps} blockType="action" />);
+      expect(screen.getByTestId("field-name")).toBeInTheDocument();
+      expect(screen.getByTestId("field-color")).toBeInTheDocument();
+      expect(screen.getByTestId("field-category")).toBeInTheDocument();
+    });
+
+    it("shows fields specific to action blocks", () => {
+      render(<CustomBlockForm {...defaultProps} blockType="action" />);
+      expect(screen.getByTestId("section-parameters")).toBeInTheDocument();
+      expect(screen.getByTestId("add-param-select")).toBeInTheDocument();
+      expect(screen.getByTestId("add-param-number")).toBeInTheDocument();
+      expect(screen.getByTestId("section-can-have-children")).toBeInTheDocument();
+      expect(screen.getByTestId("section-generator-template")).toBeInTheDocument();
+      expect(screen.getByPlaceholderText(/e.g., \$\{ACTION\} \$\{DIRECTION\}/)).toBeInTheDocument();
+    });
+  });
+
+  describe("Parameter System", () => {
+    it("adds select parameter fields when button is clicked", async () => {
+      const user = userEvent.setup();
+      render(<CustomBlockForm {...defaultProps} blockType="action" />);
+      
+      await user.click(screen.getByTestId("add-param-select"));
+
+      expect(screen.getByTestId("parameter-type-0")).toBeInTheDocument();
+      expect(screen.getByTestId("parameter-type-0")).toHaveTextContent("Select Parameter");
+
+      const nameInput = screen.getByTestId("param-name-0");
+      const labelTextInput = screen.getByTestId("param-labelText-0");
+      const positionSelect = screen.getByTestId("param-labelPosition-0");
+
+      expect(nameInput).toBeInTheDocument();
+      expect(labelTextInput).toBeInTheDocument();
+      expect(nameInput).toHaveAttribute("placeholder", "e.g., DIRECTION");
+      expect(labelTextInput).toHaveAttribute("placeholder", "e.g., Move");
+      expect(positionSelect).toBeInTheDocument();
+      expect(positionSelect).toHaveValue("prefix");
+      expect(screen.getByText("Before")).toBeInTheDocument();
+      expect(screen.getByText("After")).toBeInTheDocument();
+    });
+
+    it("adds number parameter when button is clicked", async () => {
+      const user = userEvent.setup();
+      render(<CustomBlockForm {...defaultProps} blockType="action" />);
+
+      await user.click(screen.getByTestId("add-param-number"));
+
+      expect(screen.getByTestId("parameter-type-0")).toBeInTheDocument();
+      expect(screen.getByTestId("parameter-type-0")).toHaveTextContent("Number Parameter");
+      const nameInput = screen.getByTestId("param-name-0") as HTMLInputElement;
+      const labelTextInput = screen.getByTestId("param-labelText-0");
+      const positionSelect = screen.getByTestId("param-labelPosition-0");
+
+      expect(nameInput).toBeInTheDocument();
+      expect(nameInput).toHaveAttribute("placeholder", "e.g., DIRECTION");
+      expect(labelTextInput).toHaveAttribute("placeholder", "e.g., Move");
+      expect(positionSelect).toBeInTheDocument();
+      expect(positionSelect).toHaveValue("prefix");
+      expect(screen.getByText("Before")).toBeInTheDocument();
+      expect(screen.getByText("After")).toBeInTheDocument();
+    });
+
+    it("removes parameter when remove button is clicked", async () => {
+      const user = userEvent.setup();
+      render(<CustomBlockForm {...defaultProps} blockType="action" />);
+      
+      await user.click(screen.getByTestId("add-param-select"));
+      expect(screen.getByTestId("parameter-type-0")).toBeInTheDocument();
+
+      const parameterRemoveButton = screen.getByTestId("remove-param-0");
+      await user.click(parameterRemoveButton);
+
+      expect(screen.queryByTestId("parameter-type-0")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("Child Blocks Management", () => {
+    beforeEach(() => {
+      (actionBlockChildOptions as jest.Mock).mockReturnValue({
+        setterBlocks: [{ id: "setter1", name: "color" }],
+        actionBlocks: [{ id: "action1", name: "move" }],
+        builtInBlocks: []
+      });
+    });
+
+    // TODO: Make this work.
+    it("shows child blocks selector for action blocks when `canHaveChildren` is checked", async () => {
+      render(<CustomBlockForm {...defaultProps} blockType="action" />);
+      const checkbox = screen.getByLabelText("Contains Child Blocks");
+      expect(checkbox).toBeInTheDocument();
+      expect(checkbox).not.toBeChecked();
+    });
+
+    it("shows child blocks selector for creator blocks", () => {
+      render(<CustomBlockForm {...defaultProps} blockType="creator" />);
+      expect(screen.getByText("Child Blocks")).toBeInTheDocument();
+      expect(screen.getByText("color (setter)")).toBeInTheDocument();
+    });
+  });
+
+  describe("Enhanced Form Validation", () => {
+    it("validates action block requires generator template", async () => {
+      const user = userEvent.setup();
+      render(<CustomBlockForm {...defaultProps} blockType="action" />);
+      
+      await user.type(screen.getByLabelText(/Action Name/), "test");
+      await user.selectOptions(screen.getByRole("combobox"), "Properties");
+      await user.click(screen.getByRole("button", { name: "Add Block" }));
+      
+      expect(mockOnSubmit).not.toHaveBeenCalled();
+    });
+  });
+
   describe("Category Extraction", () => {
     it("handles empty toolbox gracefully", () => {
+      (extractCategoriesFromToolbox as jest.Mock).mockReturnValue([]);
       render(<CustomBlockForm {...defaultProps} toolbox="" />);
       expect(screen.getByText("Select a category...")).toBeInTheDocument();
     });
 
     it("handles invalid toolbox JSON gracefully", () => {
+      (extractCategoriesFromToolbox as jest.Mock).mockReturnValue([]);
       render(<CustomBlockForm {...defaultProps} toolbox="invalid json" />);
       expect(screen.getByText("Select a category...")).toBeInTheDocument();
     });

@@ -91,8 +91,7 @@ export const customBlocksAuthoredState: IAuthoredState = {
       color: "#FF0000",
       category: "Properties",
       config: {
-        typeOptions: [["red", "RED"], ["blue", "BLUE"]],
-        includeNumberInput: false
+        typeOptions: [["red", "RED"], ["blue", "BLUE"]]
       }
     },
     {

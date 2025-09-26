@@ -6,6 +6,9 @@ import { CustomBlockEditor } from "./custom-block-editor";
 import { ICustomBlock } from "./types";
 
 jest.mock("./custom-block-editor.scss", () => ({}));
+jest.mock("../utils/block-utils", () => ({
+  validateBlocksJson: jest.fn()
+}));
 
 describe("CustomBlockEditor", () => {
   const mockOnChange = jest.fn();
@@ -17,8 +20,8 @@ describe("CustomBlockEditor", () => {
       color: "#FF0000",
       category: "Properties",
       config: {
-        typeOptions: [["red", "RED"], ["blue", "BLUE"]],
-        includeNumberInput: false
+        canHaveChildren: false,
+        typeOptions: [["red", "RED"], ["blue", "BLUE"]]
       }
     },
     {
@@ -28,6 +31,7 @@ describe("CustomBlockEditor", () => {
       color: "#00FF00",
       category: "General",
       config: {
+        canHaveChildren: true,
         childBlocks: ["custom_set_color_1234567890"],
         defaultCount: 100,
         minCount: 0,
@@ -67,10 +71,11 @@ describe("CustomBlockEditor", () => {
       expect(screen.getByText("Custom Blocks")).toBeInTheDocument();
     });
 
-    it("shows setter and creator block sections", () => {
+    it("shows setter, creator, and action block sections", () => {
       render(<CustomBlockEditor {...defaultProps} />);
-      expect(screen.getByText("Setter Blocks")).toBeInTheDocument();
-      expect(screen.getByText("Creator Blocks")).toBeInTheDocument();
+      expect(screen.getByText("Set Properties Blocks")).toBeInTheDocument();
+      expect(screen.getByText("Create Things Blocks")).toBeInTheDocument();
+      expect(screen.getByText("Action Blocks")).toBeInTheDocument();
     });
 
     it("shows existing custom blocks", () => {
@@ -83,13 +88,14 @@ describe("CustomBlockEditor", () => {
       render(<CustomBlockEditor {...defaultProps} value={[]} />);
       expect(screen.getByText("No setter blocks created yet")).toBeInTheDocument();
       expect(screen.getByText("No creator blocks created yet")).toBeInTheDocument();
+      expect(screen.getByText("No action blocks created yet")).toBeInTheDocument();
     });
   });
 
   describe("Block Management", () => {
-    it("shows add buttons for both block types", () => {
+    it("shows add buttons for all block types", () => {
       render(<CustomBlockEditor {...defaultProps} />);
-      expect(screen.getAllByText("Add Block")).toHaveLength(2);
+      expect(screen.getAllByText("Add Block")).toHaveLength(3);
     });
 
     it("shows edit and delete buttons for each block", () => {
@@ -126,11 +132,13 @@ describe("CustomBlockEditor", () => {
         name: "speed limit",
         color: "#FF0000",
         category: "Properties",
-        config: {}
+        config: {
+          canHaveChildren: false,
+        }
       };
 
       const generateBlockId = (block: ICustomBlock) => {
-        const sanitizedName = block.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+        const sanitizedName = block.name.toLowerCase().replace(/[^a-z0-9]/g, "_");
         const timestamp = Date.now();
         return `custom_${block.type}_${sanitizedName}_${timestamp}`;
       };
@@ -146,11 +154,13 @@ describe("CustomBlockEditor", () => {
         name: "water particles",
         color: "#00FF00",
         category: "General",
-        config: {}
+        config: {
+          canHaveChildren: true,
+        }
       };
 
       const generateBlockId = (block: ICustomBlock) => {
-        const sanitizedName = block.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
+        const sanitizedName = block.name.toLowerCase().replace(/[^a-z0-9]/g, "_");
         const timestamp = Date.now();
         return `custom_${block.type}_${sanitizedName}_${timestamp}`;
       };
@@ -171,6 +181,49 @@ describe("CustomBlockEditor", () => {
       render(<CustomBlockEditor {...defaultProps} value={undefined as any} />);
       expect(screen.getByText("No setter blocks created yet")).toBeInTheDocument();
       expect(screen.getByText("No creator blocks created yet")).toBeInTheDocument();
+    });
+  });
+
+  describe("Code Preview Functionality", () => {
+    it("shows code preview section", () => {
+      render(<CustomBlockEditor {...defaultProps} />);
+      expect(screen.getByText("Custom Blocks Code")).toBeInTheDocument();
+      expect(screen.getByText("Show")).toBeInTheDocument();
+    });
+
+    it("toggles visibility", async () => {
+      const user = userEvent.setup();
+      render(<CustomBlockEditor {...defaultProps} />);
+      const showButton = screen.getByTestId("code-toggle");
+
+      await user.click(showButton);
+      
+      expect(screen.getByText("Hide")).toBeInTheDocument();
+      const textarea = screen.getByTestId("code-textarea");
+      expect(textarea).toBeInTheDocument();
+      const jsonValue = (textarea as HTMLTextAreaElement).value;
+      expect(jsonValue).toContain("setter");
+      expect(jsonValue).toContain("color");
+      expect(screen.getByTestId("code-reset")).toBeInTheDocument();
+      expect(screen.getByTestId("code-update")).toBeInTheDocument();
+
+      await user.click(showButton);
+  
+      expect(screen.getByText("Show")).toBeInTheDocument();
+      expect(textarea).not.toBeInTheDocument();
+    });
+
+    it("displays JSON representation of custom blocks", async () => {
+      const user = userEvent.setup();
+      render(<CustomBlockEditor {...defaultProps} />);
+      
+      await user.click(screen.getByTestId("code-toggle"));
+      
+      const textarea = screen.getByTestId("code-textarea");
+      expect(textarea).toBeInTheDocument();
+      const jsonValue = (textarea as HTMLTextAreaElement).value;
+      expect(jsonValue).toContain("setter");
+      expect(jsonValue).toContain("color");
     });
   });
 });
