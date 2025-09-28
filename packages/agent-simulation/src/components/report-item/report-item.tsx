@@ -9,7 +9,7 @@ export const reportItemHandler: IGetReportItemAnswerHandler<IInteractiveState, I
   if (!version) {
     // for hosts sending older, unversioned requests
     // tslint:disable-next-line:no-console
-    console.error("Open Response Report Item Interactive: Missing version in getReportItemAnswer request.");
+    console.error("Agent Simulation Report Item Interactive: Missing version in getReportItemAnswer request.");
   }
   else if (semver.satisfies(version, "2.x")) {
     const items: IReportItemAnswerItem[] = [
@@ -26,7 +26,7 @@ export const reportItemHandler: IGetReportItemAnswerHandler<IInteractiveState, I
   } else {
     // tslint:disable-next-line:no-console
     console.error(
-      "Open Response Report Item Interactive: Unsupported version in getReportItemAnswer request:",
+      "Agent Simulation Report Item Interactive: Unsupported version in getReportItemAnswer request:",
       version
     );
   }
