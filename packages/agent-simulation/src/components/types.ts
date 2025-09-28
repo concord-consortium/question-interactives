@@ -4,52 +4,27 @@ import { IAuthoringInteractiveMetadata, IRuntimeInteractiveMetadata } from "@con
 // TS interfaces are not available in runtime in contrast to JSON schema.
 
 export interface IAuthoredState extends IAuthoringInteractiveMetadata {
-  hint?: string;
   version: number;
-  toolbox: string;
+  hint?: string;
+  dataSourceInteractive?: string;
 }
 
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
-  blocklyCode?: string;
-  blocklyState?: string;
   submitted?: boolean;
+  exampleInteractiveState?: string;
 }
 
 export const DefaultAuthoredState: Omit<Required<IAuthoredState>, "questionSubType"|"required"|"prompt"> = {
-  hint: "",
+  version: 1,
   questionType: "iframe_interactive",
-  toolbox: "",
-  version: 1
+  hint: "",
+  dataSourceInteractive: "",
 };
 
 export const DemoAuthoredState: IAuthoredState = {
-  hint: "",
-  prompt: "",
+  version: 1,
   questionType: "iframe_interactive",
-  toolbox: `{
-    "kind": "categoryToolbox",
-    "name": "General",
-    "contents": [
-      {
-        "kind": "category",
-        "name": "General",
-        "colour": "#00836B",
-        "contents": [
-          {
-            "kind": "block",
-            "type": "controls_if"
-          },
-          {
-            "kind": "block",
-            "type": "logic_operation"
-          },
-          {
-            "kind": "block",
-            "type": "logic_negate"
-          }
-        ]
-      }
-    ]
-  }`,
-  version: 1
+  prompt: "<p>TODO: Add the final real prompt in types.ts</p>",
+  hint: "TODO: Add the final real hint in types.ts",
+  dataSourceInteractive: "",
 };

@@ -1,0 +1,14 @@
+@import "../../../helpers/src/styles/px-to-rem.scss";
+
+.agentSimulationComponent {
+  display: flex;
+  gap: 10px;
+  flex-direction: column;
+
+  .blocklyCode {
+    background-color: #eee;
+    border: 1px solid #ccc;
+    font-family: monospace;
+    padding: 5px;
+  }
+}
