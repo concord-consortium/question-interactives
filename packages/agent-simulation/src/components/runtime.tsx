@@ -1,9 +1,11 @@
 import React from "react";
-import { IRuntimeQuestionComponentProps } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
-import { renderHTML } from "@concord-consortium/question-interactives-helpers/src/utilities/render-html";
 import { DynamicText } from "@concord-consortium/dynamic-text";
+import {
+  IRuntimeQuestionComponentProps
+} from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
+import { renderHTML } from "@concord-consortium/question-interactives-helpers/src/utilities/render-html";
 
-import { BlocklyComponent } from "./blockly";
+import { AgentSimulationComponent } from "./agent-simulation";
 import { DefaultAuthoredState, IAuthoredState, IInteractiveState } from "./types";
 
 import css from "./runtime.scss";
@@ -14,9 +16,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   authoredState = {...DefaultAuthoredState, ...authoredState};
 
   return (
-    <div className={css.blockly}>
+    <div className={css.agentSimulation}>
       {authoredState.prompt && <div><DynamicText>{renderHTML(authoredState.prompt)}</DynamicText></div>}
-      <BlocklyComponent
+      <AgentSimulationComponent
         authoredState={authoredState}
         interactiveState={interactiveState}
         setInteractiveState={setInteractiveState}

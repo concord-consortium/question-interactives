@@ -1,5 +1,8 @@
-import { IRuntimeQuestionComponentProps } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
+import {
+  IRuntimeQuestionComponentProps
+} from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
 import { Events, inject, serialization, WorkspaceSvg } from "blockly";
+import { javascriptGenerator } from "blockly/javascript";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { registerCustomBlocks } from "../blocks/block-factory";
@@ -46,7 +49,9 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
       try {
         // Inject custom blocks into toolbox based on their assigned categories
         const enhancedToolbox = injectCustomBlocksIntoToolbox(toolbox, safeCustomBlocks);
-        const newWorkspace = inject(blocklyDivRef.current, { readOnly: report, toolbox: JSON.parse(enhancedToolbox) });
+        const newWorkspace = inject(blocklyDivRef.current, {
+          readOnly: report, toolbox: JSON.parse(enhancedToolbox), trashcan: true
+        });
         initialBlocks.forEach(block => {
           serialization.blocks.append(block, newWorkspace);
         });
@@ -57,9 +62,11 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
         const saveState = (event: Events.Abstract) => {
           if (saveEvents.includes(event.type)) {
             const state = serialization.workspaces.save(newWorkspace);
+            const blocklyCode = javascriptGenerator.workspaceToCode(newWorkspace);
             setInteractiveState?.((prevState: IInteractiveState) => {
               const newState = {
                 ...prevState,
+                blocklyCode,
                 blocklyState: JSON.stringify(state)
               };
               return newState;
