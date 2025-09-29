@@ -2,11 +2,11 @@ import {
   IRuntimeQuestionComponentProps
 } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
 import { Events, inject, serialization, WorkspaceSvg } from "blockly";
-import { javascriptGenerator } from "blockly/javascript";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { registerCustomBlocks } from "../blocks/block-factory";
 import "../blocks/block-registration";
+import { netlogoGenerator } from "../utils/netlogo-generator";
 import { injectCustomBlocksIntoToolbox } from "../utils/toolbox-utils";
 import { IAuthoredState, IInteractiveState } from "./types";
 
@@ -62,7 +62,7 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
         const saveState = (event: Events.Abstract) => {
           if (saveEvents.includes(event.type)) {
             const state = serialization.workspaces.save(newWorkspace);
-            const blocklyCode = javascriptGenerator.workspaceToCode(newWorkspace);
+            const blocklyCode = netlogoGenerator.workspaceToCode(newWorkspace);
             setInteractiveState?.((prevState: IInteractiveState) => {
               const newState = {
                 ...prevState,
