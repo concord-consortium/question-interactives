@@ -1,9 +1,10 @@
 import React from "react";
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { useAuthoredState, useInitMessage, useInteractiveState
         } from "@concord-consortium/lara-interactive-api";
 import { App } from "./app";
 import { IInteractiveState, DemoAuthoredState } from "./types";
+import { customBlocksAuthoredState } from "./__mocks__/fixtures";
 
 jest.unmock("react-jsonschema-form");
 
@@ -28,16 +29,35 @@ const interactiveState: IInteractiveState = {
 };
 
 describe("Blockly question", () => {
-  useInitMessageMock.mockReturnValue({
-    version: 1,
-    mode: "authoring",
-    DemoAuthoredState
+  beforeEach(() => {
+    useInitMessageMock.mockClear();
+    useAuthoredStateMock.mockClear();
+    useInteractiveStateMock.mockClear();
   });
-  useAuthoredStateMock.mockReturnValue(DemoAuthoredState);
-  useInteractiveStateMock.mockReturnValue(interactiveState);
 
   it("renders in authoring mode", async () => {
+    useInitMessageMock.mockReturnValue({
+      version: 1,
+      mode: "authoring",
+      DemoAuthoredState
+    });
+    useAuthoredStateMock.mockReturnValue(DemoAuthoredState);
+    useInteractiveStateMock.mockReturnValue(interactiveState);
+
     const { container } = render(<App />);
     expect(container).toBeDefined();
+  });
+
+  it("renders custom blocks section in authoring mode", async () => {
+    useInitMessageMock.mockReturnValue({
+      version: 1,
+      mode: "authoring",
+      DemoAuthoredState
+    });
+    useAuthoredStateMock.mockReturnValue(customBlocksAuthoredState);
+    useInteractiveStateMock.mockReturnValue(interactiveState);
+
+    render(<App />);
+    expect(screen.getByText("Custom Blocks")).toBeInTheDocument();
   });
 });
