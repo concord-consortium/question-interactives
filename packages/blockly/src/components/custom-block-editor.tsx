@@ -22,6 +22,7 @@ export const CustomBlockEditor: React.FC<IProps> = ({ value, onChange, toolbox }
   const [showSetterForm, setShowSetterForm] = useState(false);
   const [showCreatorForm, setShowCreatorForm] = useState(false);
   const [editingBlock, setEditingBlock] = useState<ICustomBlock | null>(null);
+  const [showCodePreview, setShowCodePreview] = useState(false);
 
   const addCustomBlock = (block: ICustomBlock) => {
     const newBlock = { ...block, id: generateBlockId(block) };
@@ -69,6 +70,24 @@ export const CustomBlockEditor: React.FC<IProps> = ({ value, onChange, toolbox }
   return (
     <div className={css.customBlockEditor}>
       <h4>Custom Blocks</h4>
+
+      <div className={css.codePreview}>
+        <div className={css.codePreviewHeader}>
+          <h5>Code Preview (read-only)</h5>
+          <div className={css.customBlocksActions}>
+            <button type="button" onClick={() => setShowCodePreview(prev => !prev)}>
+              {showCodePreview ? "Hide" : "Show"}
+            </button>
+          </div>
+        </div>
+        {showCodePreview && (
+          <div className={css.codePreviewBody}>
+            <pre>
+              <code>{JSON.stringify(customBlocks, null, 2)}</code>
+            </pre>
+          </div>
+        )}
+      </div>
 
       <div className={css.customBlocksSetter}>
         <div className={css.customBlocksNew}>
