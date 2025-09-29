@@ -3,13 +3,14 @@
 .customBlockEditor {
   display: flex;
   flex-direction: column;
-  gap: $spacing-xxxl;
+  gap: $spacing-lg;
 
   h4 {
+    font-size: $font-size-md;
     margin: 0;
   }
   h5 {
-    font-size: $font-size-md;
+    font-size: $font-size-sm;
     margin: 0;
   }
 
@@ -105,7 +106,7 @@
     }
   }
 
-    .customBlocksActions {
+  .customBlocksActions {
     align-items: center;
     display: flex;
     gap: $spacing-md;
@@ -148,5 +149,11 @@
         overflow: auto;
       }
     }
+  }
+
+  .divider {
+    border: none;
+    border-top: solid 1px $border-medium;
+    margin: 0 0 10px;
   }
 }
