@@ -1,5 +1,5 @@
 import * as AV from "@gjmcn/atomic-agents-vis";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import {
   addLinkedInteractiveStateListener, removeLinkedInteractiveStateListener
@@ -22,6 +22,8 @@ export const AgentSimulationComponent = ({
 }: IProps) => {
   const [blocklyCode, setBlocklyCode] = useState<string>("");
   const dataSourceInteractive = useLinkedInteractiveId("dataSourceInteractive");
+  const containerRef = useRef<HTMLDivElement>(null);
+  const pausedRef = useRef<boolean>(false);
 
   // Keep the blockly code updated with the linked interactive
   useEffect(() => {
@@ -45,8 +47,13 @@ export const AgentSimulationComponent = ({
   }, [dataSourceInteractive]);
 
   useEffect(() => {
-    AV.vis(sim);
+    AV.vis(sim, { target: containerRef.current });
   }, []);
+
+  const handlePauseClick = () => {
+    sim.pause(!pausedRef.current);
+    pausedRef.current = !pausedRef.current;
+  };
 
   return (
     <div className={css.agentSimulationComponent}>
@@ -54,6 +61,10 @@ export const AgentSimulationComponent = ({
       <div className={css.blocklyCode}>
         {blocklyCode}
       </div>
+      <button onClick={handlePauseClick}>
+        {pausedRef.current ? "Resume" : "Pause"}
+      </button>
+      <div ref={containerRef} className={css.simContainer} />
     </div>
   );
 };
