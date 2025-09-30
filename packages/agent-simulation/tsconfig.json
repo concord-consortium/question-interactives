@@ -1,4 +1,10 @@
 {
+  "compilerOptions": {
+    "module": "ESNext",
+    "moduleResolution": "bundler",
+    "target": "ES2020",
+    "skipLibCheck": true
+  },
   "extends": "../../shared/tsconfig",
   "include": [
     "./src/**/*"

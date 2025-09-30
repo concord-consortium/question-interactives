@@ -1,0 +1,96 @@
+// src/types/atomic-agents-vis.d.ts
+declare module "@gjmcn/atomic-agents-vis" {
+  // Pull the Simulation type if you’ve declared it already; otherwise it falls back to any in practice.
+  // (If you don't have a declaration for "@gjmcn/atomic-agents", just replace Simulation with any.)
+  import type { Simulation } from "@gjmcn/atomic-agents";
+
+  /** Options for the visualizer. This is intentionally permissive. */
+  export interface VisOptions {
+    /** URLs for images/bitmap-fonts to preload (e.g., sprite sheets or BMFont XML). */
+    images?: string[];
+    /** Called after the PIXI app is created and sprites/assets are ready. */
+    afterSetup?: (sim: Simulation, app: any) => void;
+    /** Called once per frame before the scene renders. */
+    beforeUpdate?: (sim: Simulation, app: any) => void;
+    /** Called once per frame after the scene renders. */
+    afterUpdate?: (sim: Simulation, app: any) => void;
+    /** Width/height of the canvas (if different from sim). */
+    width?: number;
+    height?: number;
+    /** DOM container to mount into (element or CSS selector). */
+    container?: HTMLElement | string;
+    /** Any other library options. */
+    [key: string]: any;
+  }
+
+  /** Handle returned by `vis` for imperative control. */
+  export interface VisHandle {
+    /** The root container element (wrapper div). */
+    root: HTMLElement;
+    /** The PIXI Application (PIXI v7/v8). */
+    app: any;
+    /** Convenience: the canvas element used by PIXI. */
+    canvas: HTMLCanvasElement;
+    /** Clean up textures, listeners, DOM, etc. */
+    destroy(): void;
+    /** Recompute size/layout, if supported. */
+    resize?(w?: number, h?: number): void;
+    /** Start/stop a render loop, if exposed by your setup. */
+    start?(): void;
+    stop?(): void;
+  }
+
+  /** Main visualization function: mounts a PixiJS scene for a Simulation. */
+  export function vis(sim: Simulation, options?: VisOptions): VisHandle;
+
+  /**
+   * Observable-friendly wrapper: returns a DOM node (a <div>) you can return
+   * from a cell/component to display the visualization.
+   */
+  export function visObs(sim: Simulation, options?: VisOptions): HTMLElement;
+
+  /** Small helpers commonly used in examples. */
+  export interface LineOptions {
+    width?: number;
+    alpha?: number;
+    color?: number;  // hex integer (0xRRGGBB)
+  }
+  export function line(
+    points: Array<[number, number] | { x: number; y: number }>,
+    options?: LineOptions
+  ): any; // PIXI.Graphics or DisplayObject
+
+  export interface TextOptions {
+    fontName?: string;     // e.g., 'Swansea' (bitmap font)
+    fontSize?: number;     // pixel size
+    maxWidth?: number;
+    align?: "left" | "center" | "right";
+    yAnchor?: number;      // 0..1
+    tint?: number;         // 0xRRGGBB
+  }
+  export function text(
+    content: string,
+    x: number,
+    y: number,
+    options?: TextOptions
+  ): any; // PIXI.BitmapText or DisplayObject
+
+  /** Categorical color palette; also exposes some named colors (e.g., blue, red, orange). */
+  export type ColorPalette = (number[] & { [name: string]: number | undefined });
+  export const colors: ColorPalette;
+
+  /** Re-export the PixiJS namespace for convenience. */
+  export const PIXI: any;
+
+  /** Namespace-style default to make `import * as AV ...` ergonomic. */
+  const AV: {
+    vis: typeof vis;
+    visObs: typeof visObs;
+    colors: typeof colors;
+    PIXI: typeof PIXI;
+    line: typeof line;
+    text: typeof text;
+    [k: string]: any;
+  };
+  export default AV;
+}
