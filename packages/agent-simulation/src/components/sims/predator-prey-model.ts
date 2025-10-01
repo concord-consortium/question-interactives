@@ -4,8 +4,8 @@ const sheepEnergy = 6;
 const sheepEnergyFromGrass = 4;
 const sheepReproduceChance = 0.002;
 
-const wolfEnergy = 10;
-const wolfEnergyFromSheep = 5;
+const wolfEnergy = 20;
+// const wolfEnergyFromSheep = 5;
 const wolfReproduceChance = 0.0005;
 
 const maxGrassLevel = 10;
@@ -32,6 +32,7 @@ sim.afterTick = () => {
       s.remove();
     }
 
+    // Reproduce
     if (Math.random() < sheepReproduceChance) {
       addSheep({ color: "0xcccccc", energy: s.state.energy / 2, x: s.x, y: s.y });
       s.state.energy = s.state.energy / 2;
@@ -39,11 +40,20 @@ sim.afterTick = () => {
   });
 
   wolves.forEach((w: any) => {
-    w.state.energy = w.state.energy - 0.01;
+    const s = w.overlapping("actor").find((a: any) => a?.label("sheep"));
+    if (s) {
+      // wolf eats sheep
+      w.state.energy = w.state.energy + s.state.energy / 2;
+      s.remove();
+    }
+
+    // Lose energy and possibly die
+    w.state.energy = w.state.energy - 0.1;
     if (w.state.energy <= 0) {
       w.remove();
     }
 
+    // Reproduce
     if (Math.random() < wolfReproduceChance) {
       addWolf({ color: "0x666666", energy: w.state.energy / 2, x: w.x, y: w.y });
       w.state.energy = w.state.energy / 2;
@@ -131,18 +141,6 @@ for (let i = 0; i < 10; i++) {
   addWolf();
 }
 const wolves = sim.withLabel("wolf");
-
-sim.interaction.set("wolf-eats-sheep", {
-  group1: wolves,
-  group2: sheep,
-  behavior: "custom",
-  force: (w: any, s: any) => {
-    // wolf eats sheep
-    w.state.energy = w.state.energy + wolfEnergyFromSheep;
-    s.remove();
-    return AA.Vector.randomAngle(1.5);
-  }
-});
 
 // circles bounce off the simulation boundary
 sim.interaction.set("boundary-bounce", {
