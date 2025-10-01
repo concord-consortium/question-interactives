@@ -23,7 +23,7 @@ export const AgentSimulationComponent = ({
   const [blocklyCode, setBlocklyCode] = useState<string>("");
   const dataSourceInteractive = useLinkedInteractiveId("dataSourceInteractive");
   const containerRef = useRef<HTMLDivElement>(null);
-  const pausedRef = useRef<boolean>(false);
+  const [paused, setPaused] = useState(true);
 
   // Keep the blockly code updated with the linked interactive
   useEffect(() => {
@@ -48,11 +48,12 @@ export const AgentSimulationComponent = ({
 
   useEffect(() => {
     AV.vis(sim, { target: containerRef.current });
+    sim.pause(true);
   }, []);
 
   const handlePauseClick = () => {
-    sim.pause(!pausedRef.current);
-    pausedRef.current = !pausedRef.current;
+    sim.pause(!paused);
+    setPaused(!paused);
   };
 
   return (
@@ -62,7 +63,7 @@ export const AgentSimulationComponent = ({
         {blocklyCode}
       </div>
       <button onClick={handlePauseClick}>
-        {pausedRef.current ? "Resume" : "Pause"}
+        {paused ? "Play" : "Pause"}
       </button>
       <div ref={containerRef} className={css.simContainer} />
     </div>
