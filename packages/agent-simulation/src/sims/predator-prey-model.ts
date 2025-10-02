@@ -1,16 +1,21 @@
 import * as AA from "@gjmcn/atomic-agents";
 
+import { sheepSvg, wolfSvg } from "../assets/images";
+import { encodeSvg } from "../utils/image-utils";
+
+const wolfImage = encodeSvg(wolfSvg);
+const sheepImage = encodeSvg(sheepSvg);
+
 const sheepEnergy = 6;
 const sheepEnergyFromGrass = 3;
 const sheepReproduceChance = 0.002;
 const sheepEnergyLoss = 0.01;
-const sheepColor = "0xffffff";
+// const sheepColor = "0xffffff";
 
 const wolfEnergy = 20;
-// const wolfEnergyFromSheep = 5;
 const wolfReproduceChance = 0.0005;
 const wolfEnergyLoss = 0.1;
-const wolfColor = "0x333333";
+// const wolfColor = "0x333333";
 
 const maxGrassLevel = 10;
 const grassGrowthRate = 0.01;
@@ -46,8 +51,8 @@ sim.afterTick = () => {
     const reproduceChance = a.label("sheep") ? sheepReproduceChance : wolfReproduceChance;
     if (Math.random() < reproduceChance) {
       const addFunction = a.label("sheep") ? addSheep : addWolf;
-      const color = a.label("sheep") ? sheepColor : wolfColor;
-      addFunction({ color, energy: a.state.energy / 2, x: a.x, y: a.y });
+      // const color = a.label("sheep") ? sheepColor : wolfColor;
+      addFunction({ energy: a.state.energy / 2, x: a.x, y: a.y });
       a.state.energy = a.state.energy / 2;
     }
   });
@@ -99,8 +104,9 @@ for (let x = 0; x < sim.width / sim.gridStep; x++) {
 }
 
 interface IActorDefaults {
-  color: string;
+  color?: string;
   energy: number;
+  image?: string;
   label: string;
   radius: number;
   velocity: number;
@@ -117,7 +123,7 @@ function getAddActorFunction(defaults: IActorDefaults) {
     const a = new AA.Actor();
     a.radius = defaults.radius;
     a.vel = AA.Vector.randomAngle(defaults.velocity);
-    a.vis({ tint: color ?? defaults.color });
+    a.vis({ image: defaults.image, tint: color ?? defaults.color });
     a.label(defaults.label, true);
     a.state = { energy: energy ?? defaults.energy };
     a.x = x ?? Math.random() * sim.width;
@@ -130,10 +136,11 @@ function getAddActorFunction(defaults: IActorDefaults) {
 
 // sheep
 const addSheep = getAddActorFunction({
-  color: "0xffffff",
+  // color: "0xffffff",
   energy: sheepEnergy,
+  image: sheepImage,
   label: "sheep",
-  radius: 3,
+  radius: 10,
   velocity: 1
 });
 function addMultipleSheep(num: number) {
@@ -146,8 +153,9 @@ function addMultipleSheep(num: number) {
 const addWolf = getAddActorFunction({
   color: "0x333333",
   energy: wolfEnergy,
+  image: wolfImage,
   label: "wolf",
-  radius: 4,
+  radius: 10,
   velocity: 1.5
 });
 function addWolves(num: number) {

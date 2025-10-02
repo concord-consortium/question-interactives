@@ -10,7 +10,7 @@ import {
 import {
   useLinkedInteractiveId
 } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
-import { sim } from "./sims/predator-prey-model";
+import { sim } from "../sims/predator-prey-model";
 import { IAuthoredState, IInteractiveState } from "./types";
 
 import css from "./agent-simulation.scss";
