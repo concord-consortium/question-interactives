@@ -1,12 +1,16 @@
 import * as AA from "@gjmcn/atomic-agents";
 
 const sheepEnergy = 6;
-const sheepEnergyFromGrass = 4;
+const sheepEnergyFromGrass = 3;
 const sheepReproduceChance = 0.002;
+const sheepEnergyLoss = 0.01;
+const sheepColor = "0xffffff";
 
 const wolfEnergy = 20;
 // const wolfEnergyFromSheep = 5;
 const wolfReproduceChance = 0.0005;
+const wolfEnergyLoss = 0.1;
+const wolfColor = "0x333333";
 
 const maxGrassLevel = 10;
 const grassGrowthRate = 0.01;
@@ -16,49 +20,57 @@ export const sim = new AA.Simulation({
   height: 450,
   gridStep: 10
 });
+
+function setup() {
+  /*** From setup block */
+  addMultipleSheep(50);
+  addWolves(10);
+  /*** End setup block */
+}
+
 sim.afterTick = () => {
+  /*** From go block */
+  sim.actors?.forEach((a: any) => {
+    // Lose energy and possibly die
+    const energyLoss = a.label("sheep") ? sheepEnergyLoss : wolfEnergyLoss;
+    a.state.energy = a.state.energy - energyLoss;
+    if (a.state.energy <= 0) {
+      a.remove();
+      return;
+    }
+
+    // Turn
+    a.vel.turn(Math.random() * Math.PI / 4 - Math.PI / 8);
+
+    // Reproduce
+    const reproduceChance = a.label("sheep") ? sheepReproduceChance : wolfReproduceChance;
+    if (Math.random() < reproduceChance) {
+      const addFunction = a.label("sheep") ? addSheep : addWolf;
+      const color = a.label("sheep") ? sheepColor : wolfColor;
+      addFunction({ color, energy: a.state.energy / 2, x: a.x, y: a.y });
+      a.state.energy = a.state.energy / 2;
+    }
+  });
+
   sheep.forEach((s: any) => {
     // Eat grass
     const sq = s.squareOfCentroid();
     if (sq.state.grassLevel >= maxGrassLevel) {
-      // sheep eats grass
       s.state.energy = s.state.energy + sheepEnergyFromGrass;
       sq.state.grassLevel = 0;
-    }
-
-    // Lose energy and possibly die
-    s.state.energy = s.state.energy - 0.01;
-    if (s.state.energy <= 0) {
-      s.remove();
-    }
-
-    // Reproduce
-    if (Math.random() < sheepReproduceChance) {
-      addSheep({ color: "0xcccccc", energy: s.state.energy / 2, x: s.x, y: s.y });
-      s.state.energy = s.state.energy / 2;
     }
   });
 
   wolves.forEach((w: any) => {
+    // Eat sheep
     const s = w.overlapping("actor").find((a: any) => a?.label("sheep"));
     if (s) {
-      // wolf eats sheep
       w.state.energy = w.state.energy + s.state.energy / 2;
       s.remove();
     }
-
-    // Lose energy and possibly die
-    w.state.energy = w.state.energy - 0.1;
-    if (w.state.energy <= 0) {
-      w.remove();
-    }
-
-    // Reproduce
-    if (Math.random() < wolfReproduceChance) {
-      addWolf({ color: "0x666666", energy: w.state.energy / 2, x: w.x, y: w.y });
-      w.state.energy = w.state.energy / 2;
-    }
   });
+  /*** End go block */
+
   console.log(`sheep: ${Array.from(sim.withLabel("sheep")).length}, wolves: ${Array.from(sim.withLabel("wolf")).length}`);
 };
 
@@ -124,10 +136,11 @@ const addSheep = getAddActorFunction({
   radius: 3,
   velocity: 1
 });
-for (let i = 0; i < 50; i++) {
-  addSheep();
+function addMultipleSheep(num: number) {
+  for (let i = 0; i < num; i++) {
+    addSheep();
+  }
 }
-const sheep = sim.withLabel("sheep");
 
 // wolves
 const addWolf = getAddActorFunction({
@@ -137,10 +150,11 @@ const addWolf = getAddActorFunction({
   radius: 4,
   velocity: 1.5
 });
-for (let i = 0; i < 10; i++) {
-  addWolf();
+function addWolves(num: number) {
+  for (let i = 0; i < num; i++) {
+    addWolf();
+  }
 }
-const wolves = sim.withLabel("wolf");
 
 // circles bounce off the simulation boundary
 sim.interaction.set("boundary-bounce", {
@@ -148,3 +162,7 @@ sim.interaction.set("boundary-bounce", {
   group2: sim.actors,
   behavior: "bounce"
 });
+
+setup();
+const sheep = sim.withLabel("sheep");
+const wolves = sim.withLabel("wolf");
