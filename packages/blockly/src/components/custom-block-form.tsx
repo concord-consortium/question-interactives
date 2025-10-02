@@ -21,6 +21,33 @@ interface IProps {
   onSubmit: (block: ICustomBlock) => void;
 }
 
+const updateParameterOptions = (
+  prev: IParameter[],
+  paramIdx: number,
+  optionIdx: number,
+  update: (old: [string, string]) => [string, string]
+): IParameter[] => {
+  return prev.map((pp, idx) => {
+    if (idx !== paramIdx) return pp;
+    const opts = [ ...((pp as any).options || []) ];
+    opts[optionIdx] = update(opts[optionIdx]);
+    return ({ ...(pp as any), options: opts }) as IParameter;
+  });
+};
+
+const removeParameterOption = (
+  prev: IParameter[],
+  paramIdx: number,
+  optionIdx: number
+): IParameter[] => {
+  return prev.map((pp, idx) => {
+    if (idx !== paramIdx) return pp;
+    const opts = [ ...((pp as any).options || []) ];
+    opts.splice(optionIdx, 1);
+    return ({ ...(pp as any), options: opts }) as IParameter;
+  });
+};
+
 export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, existingBlocks, onSubmit, toolbox }) => {
   const [formData, setFormData] = useState<{
     canHaveChildren?: boolean;
@@ -340,7 +367,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
                     className={css.removeParamButton}
                     data-testid={`remove-param-${i}`}
                     type="button"
-                    onClick={() => setParameters(prev => prev.filter((_, idx) => idx!==i))}
+                    onClick={() => setParameters(prev => prev.filter((_, idx) => idx !== i))}
                   >
                     Remove
                   </button>
@@ -356,7 +383,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
                         placeholder="e.g., DIRECTION"
                         type="text"
                         value={p.name}
-                        onChange={(e) => setParameters(prev => prev.map((pp, idx) => idx===i ? ({ ...pp, name: e.target.value }) as IParameter : pp))}
+                        onChange={(e) => setParameters(prev => prev.map((pp, idx) => idx === i ? ({ ...pp, name: e.target.value }) as IParameter : pp))}
                       />
                     </div>
                     
@@ -392,15 +419,28 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
                       <div id="options" className={css.optionsList}>
                         {(p as any).options?.map((opt: [string,string], oi: number) => (
                           <div key={oi} className={css.optionRow} data-testid={`param-option-row-${i}-${oi}`}>
-                            <input data-testid={`param-option-display-${i}-${oi}`} placeholder="Display text (e.g., forward)" type="text" value={opt[0]} onChange={(e) => setParameters(prev => prev.map((pp, idx) => {
-                              if (idx!==i) return pp; const opts = [ ...((pp as any).options||[]) ]; opts[oi] = [e.target.value, opts[oi][1]]; return ({ ...(pp as any), options: opts }) as IParameter;
-                            }))} />
-                            <input data-testid={`param-option-value-${i}-${oi}`} placeholder="Value (e.g., FORWARD)" type="text" value={opt[1]} onChange={(e) => setParameters(prev => prev.map((pp, idx) => {
-                              if (idx!==i) return pp; const opts = [ ...((pp as any).options||[]) ]; opts[oi] = [opts[oi][0], e.target.value]; return ({ ...(pp as any), options: opts }) as IParameter;
-                            }))} />
-                            <button className={css.removeOptionButton} data-testid={`remove-param-option-${i}-${oi}`} type="button" onClick={() => setParameters(prev => prev.map((pp, idx) => {
-                              if (idx!==i) return pp; const opts = [ ...((pp as any).options||[]) ]; opts.splice(oi, 1); return ({ ...(pp as any), options: opts }) as IParameter;
-                            }))}>Remove</button>
+                            <input
+                              data-testid={`param-option-display-${i}-${oi}`}
+                              placeholder="Display text (e.g., forward)"
+                              type="text"
+                              value={opt[0]}
+                              onChange={e => setParameters(prev => updateParameterOptions(prev, i, oi, old => [e.target.value, old[1]]))}
+                            />
+                            <input
+                              data-testid={`param-option-value-${i}-${oi}`}
+                              placeholder="Value (e.g., FORWARD)"
+                              type="text"
+                              value={opt[1]}
+                              onChange={e => setParameters(prev => updateParameterOptions(prev, i, oi, old => [old[0], e.target.value]))}
+                            />
+                            <button
+                              className={css.removeOptionButton}
+                              data-testid={`remove-param-option-${i}-${oi}`}
+                              type="button"
+                              onClick={() => setParameters(prev => removeParameterOption(prev, i, oi))}
+                            >
+                              Remove
+                            </button>
                           </div>
                         ))}
                       </div>

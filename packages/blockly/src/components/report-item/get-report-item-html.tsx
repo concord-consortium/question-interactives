@@ -56,7 +56,6 @@ export const getReportItemHtml = ({ interactiveState, authoredState }: IProps) =
 
     serialization.workspaces.load(blocklyStateJson, workspace);
     workspace.render();
-    
 
     const rawHtml = tempDiv.innerHTML;
     workspace.dispose();

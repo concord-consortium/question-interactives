@@ -60,7 +60,7 @@ export const CustomBlockEditor: React.FC<IProps> = ({ value, onChange, toolbox }
       setIsDirty(false);
       setCodeError("");
     } catch (e) {
-      setCodeError(e?.message || "Unable to parse JSON");
+      setCodeError(e instanceof Error ? e.message : "Unable to parse JSON");
     }
   };
 

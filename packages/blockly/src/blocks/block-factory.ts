@@ -13,7 +13,6 @@ const MINUS_ICON = "data:image/svg+xml;utf8," +
   "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>" +
   "<text fill='white' x='8' y='12' text-anchor='middle' font-size='14'>−</text></svg>";
 
-
 export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
   if (!Array.isArray(customBlocks)) {
     console.warn("registerCustomBlocks: customBlocks is not an array:", customBlocks);
@@ -171,7 +170,6 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
             input.appendField(new FieldDropdown(setterCfg.typeOptions), "value");
           }
         }
-
 
         // Add object name at the end for creator blocks
         if (blockDef.type === "creator") {
