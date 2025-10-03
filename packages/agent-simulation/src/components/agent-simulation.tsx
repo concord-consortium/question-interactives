@@ -1,3 +1,4 @@
+import * as AA from "@gjmcn/atomic-agents";
 import * as AV from "@gjmcn/atomic-agents-vis";
 import React, { useEffect, useRef, useState } from "react";
 
@@ -10,7 +11,6 @@ import {
 import {
   useLinkedInteractiveId
 } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
-import { sim } from "../sims/predator-prey-model";
 import { IAuthoredState, IInteractiveState } from "./types";
 
 import css from "./agent-simulation.scss";
@@ -20,10 +20,12 @@ interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInterac
 export const AgentSimulationComponent = ({
   authoredState, interactiveState, setInteractiveState, report
 }: IProps) => {
+  const { code } = authoredState;
   const [blocklyCode, setBlocklyCode] = useState<string>("");
   const dataSourceInteractive = useLinkedInteractiveId("dataSourceInteractive");
   const containerRef = useRef<HTMLDivElement>(null);
   const [paused, setPaused] = useState(true);
+  const simRef = useRef<AA.Simulation | null>(null);
 
   // Keep the blockly code updated with the linked interactive
   useEffect(() => {
@@ -46,20 +48,37 @@ export const AgentSimulationComponent = ({
     };
   }, [dataSourceInteractive]);
 
+  // Setup and display the simulation
   useEffect(() => {
-    AV.vis(sim, { target: containerRef.current });
-    sim.pause(true);
-  }, []);
+    // Set up the simulation
+    simRef.current = new AA.Simulation({
+      width: 450,
+      height: 450,
+      gridStep: 10
+    });
+
+    // Run the simulation setup code
+    const functionCode = `(sim, AA) => { ${code} }`;
+    // Indirect eval (with ?.) is supposed to be safer and faster than direct eval
+    const simFunction = eval?.(functionCode);
+    simFunction?.(simRef.current, AA);
+
+    // Visualize and start the simulation
+    AV.vis(simRef.current, { target: containerRef.current });
+    simRef.current.pause(true);
+  }, [code]);
 
   const handlePauseClick = () => {
-    sim.pause(!paused);
-    setPaused(!paused);
+    if (simRef.current) {
+      simRef.current.pause(!paused);
+      setPaused(!paused);
+    }
   };
 
   return (
     <div className={css.agentSimulationComponent}>
       <h4>Blockly Code</h4>
-      <div className={css.blocklyCode}>
+      <div className={css.code}>
         {blocklyCode}
       </div>
       <button onClick={handlePauseClick}>

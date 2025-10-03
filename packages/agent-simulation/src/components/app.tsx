@@ -28,6 +28,10 @@ const baseAuthoringProps = {
         title: "Hint",
         type: "string"
       },
+      code: {
+        title: "Simulation Code",
+        type: "string",
+      },
       dataSourceInteractive: {
         title: "Data Source Interactive",
         type: "string",
@@ -64,6 +68,12 @@ const baseAuthoringProps = {
     },
     hint: {
       "ui:widget": "richtext"
+    },
+    code: {
+      "ui:widget": "textarea",
+      "ui:options": {
+        "rows": 15
+      }
     }
   }
 };
