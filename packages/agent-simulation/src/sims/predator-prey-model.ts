@@ -3,6 +3,53 @@ import * as AA from "@gjmcn/atomic-agents";
 import { sheepSvg, wolfSvg } from "../assets/images";
 import { encodeSvg } from "../utils/image-utils";
 
+const blocklySetup = `
+  addMultipleSheep(50);
+  addWolves(10);
+`;
+
+const blocklyGo = `
+  simActors().forEach(a => {
+    // Lose energy and possibly die
+    const energyLoss = a.label("sheep") ? sheepEnergyLoss : wolfEnergyLoss;
+    a.state.energy = a.state.energy - energyLoss;
+    if (a.state.energy <= 0) {
+      a.remove();
+      return;
+    }
+
+    // Turn
+    a.vel.turn(Math.random() * Math.PI / 4 - Math.PI / 8);
+
+    // Reproduce
+    const reproduceChance = a.label("sheep") ? sheepReproduceChance : wolfReproduceChance;
+    if (Math.random() < reproduceChance) {
+      const addFunction = a.label("sheep") ? addSheep : addWolf;
+      // const color = a.label("sheep") ? sheepColor : wolfColor;
+      addFunction({ energy: a.state.energy / 2, x: a.x, y: a.y });
+      a.state.energy = a.state.energy / 2;
+    }
+  });
+
+  sheep.forEach(s => {
+    // Eat grass
+    const sq = s.squareOfCentroid();
+    if (sq.state.grassLevel >= maxGrassLevel) {
+      s.state.energy = s.state.energy + sheepEnergyFromGrass;
+      sq.state.grassLevel = 0;
+    }
+  });
+
+  wolves.forEach(w => {
+    // Eat sheep
+    const s = w.overlapping("actor").find(a => a?.label("sheep"));
+    if (s) {
+      w.state.energy = w.state.energy + s.state.energy / 2;
+      s.remove();
+    }
+  });
+`;
+
 const wolfImage = encodeSvg(wolfSvg);
 const sheepImage = encodeSvg(sheepSvg);
 
@@ -25,55 +72,60 @@ export const sim = new AA.Simulation({
   height: 450,
   gridStep: 10
 });
+function simActors() {
+  return sim.actors;
+}
 
 function setup() {
   /*** From setup block */
-  addMultipleSheep(50);
-  addWolves(10);
+  eval(blocklySetup);
+  // addMultipleSheep(50);
+  // addWolves(10);
   /*** End setup block */
 }
 
 sim.afterTick = () => {
   /*** From go block */
-  sim.actors?.forEach((a: any) => {
-    // Lose energy and possibly die
-    const energyLoss = a.label("sheep") ? sheepEnergyLoss : wolfEnergyLoss;
-    a.state.energy = a.state.energy - energyLoss;
-    if (a.state.energy <= 0) {
-      a.remove();
-      return;
-    }
+  eval(blocklyGo);
+  // sim.actors?.forEach((a: any) => {
+  //   // Lose energy and possibly die
+  //   const energyLoss = a.label("sheep") ? sheepEnergyLoss : wolfEnergyLoss;
+  //   a.state.energy = a.state.energy - energyLoss;
+  //   if (a.state.energy <= 0) {
+  //     a.remove();
+  //     return;
+  //   }
 
-    // Turn
-    a.vel.turn(Math.random() * Math.PI / 4 - Math.PI / 8);
+  //   // Turn
+  //   a.vel.turn(Math.random() * Math.PI / 4 - Math.PI / 8);
 
-    // Reproduce
-    const reproduceChance = a.label("sheep") ? sheepReproduceChance : wolfReproduceChance;
-    if (Math.random() < reproduceChance) {
-      const addFunction = a.label("sheep") ? addSheep : addWolf;
-      // const color = a.label("sheep") ? sheepColor : wolfColor;
-      addFunction({ energy: a.state.energy / 2, x: a.x, y: a.y });
-      a.state.energy = a.state.energy / 2;
-    }
-  });
+  //   // Reproduce
+  //   const reproduceChance = a.label("sheep") ? sheepReproduceChance : wolfReproduceChance;
+  //   if (Math.random() < reproduceChance) {
+  //     const addFunction = a.label("sheep") ? addSheep : addWolf;
+  //     // const color = a.label("sheep") ? sheepColor : wolfColor;
+  //     addFunction({ energy: a.state.energy / 2, x: a.x, y: a.y });
+  //     a.state.energy = a.state.energy / 2;
+  //   }
+  // });
 
-  sheep.forEach((s: any) => {
-    // Eat grass
-    const sq = s.squareOfCentroid();
-    if (sq.state.grassLevel >= maxGrassLevel) {
-      s.state.energy = s.state.energy + sheepEnergyFromGrass;
-      sq.state.grassLevel = 0;
-    }
-  });
+  // sheep.forEach((s: any) => {
+  //   // Eat grass
+  //   const sq = s.squareOfCentroid();
+  //   if (sq.state.grassLevel >= maxGrassLevel) {
+  //     s.state.energy = s.state.energy + sheepEnergyFromGrass;
+  //     sq.state.grassLevel = 0;
+  //   }
+  // });
 
-  wolves.forEach((w: any) => {
-    // Eat sheep
-    const s = w.overlapping("actor").find((a: any) => a?.label("sheep"));
-    if (s) {
-      w.state.energy = w.state.energy + s.state.energy / 2;
-      s.remove();
-    }
-  });
+  // wolves.forEach((w: any) => {
+  //   // Eat sheep
+  //   const s = w.overlapping("actor").find((a: any) => a?.label("sheep"));
+  //   if (s) {
+  //     w.state.energy = w.state.energy + s.state.energy / 2;
+  //     s.remove();
+  //   }
+  // });
   /*** End go block */
 
   console.log(`sheep: ${Array.from(sim.withLabel("sheep")).length}, wolves: ${Array.from(sim.withLabel("wolf")).length}`);
