@@ -7,18 +7,17 @@ import { MenuOption } from "blockly";
 export type CustomBlockType = "action" | "creator" | "setter";
 export type ParameterKind = "select" | "number";
 export interface IParameterBase {
+  defaultValue?: string | number;
   kind: ParameterKind;
   labelPosition?: "prefix" | "suffix";
   labelText?: string;
   name: string;
 }
 export interface IParameterSelect extends IParameterBase {
-  defaultValue?: string;
   kind: "select";
   options: MenuOption[];
 }
 export interface IParameterNumber extends IParameterBase {
-  defaultValue?: number;
   kind: "number";
 }
 export type IParameter = IParameterSelect | IParameterNumber;
@@ -140,7 +139,8 @@ export const DemoAuthoredState: IAuthoredState = {
         "nextStatement": true,
         "previousStatement": true,
         "canHaveChildren": false,
-        "childBlocks": []
+        "childBlocks": [],
+        "generatorTemplate": "${ACTION}\n",
       },
       "id": "custom_action_bounce_off_1759180886334",
       "name": "bounce off",
@@ -148,13 +148,14 @@ export const DemoAuthoredState: IAuthoredState = {
     },
     {
       "category": "Action",
-      "color": "#312b84",
+      "color": "#004696",
       "config": {
         "inputsInline": true,
         "nextStatement": true,
         "previousStatement": true,
         "canHaveChildren": false,
         "childBlocks": [],
+        "generatorTemplate": "${ACTION} ${DIRECTION}\nspeed=${MAGNITUDE}\n",
         "parameters": [
           {
             "kind": "select",
@@ -194,13 +195,14 @@ export const DemoAuthoredState: IAuthoredState = {
     },
     {
       "category": "Action",
-      "color": "#312b84",
+      "color": "#004696",
       "config": {
         "inputsInline": true,
         "nextStatement": true,
         "previousStatement": true,
         "canHaveChildren": false,
         "childBlocks": [],
+        "generatorTemplate": "${ACTION} ${MOLECULE}\n",
         "parameters": [
           {
             "kind": "select",
@@ -226,13 +228,14 @@ export const DemoAuthoredState: IAuthoredState = {
     },
     {
       "category": "Action",
-      "color": "#312b84",
+      "color": "#004696",
       "config": {
         "inputsInline": true,
         "nextStatement": true,
         "previousStatement": true,
         "canHaveChildren": false,
         "childBlocks": [],
+        "generatorTemplate": "${ACTION}\n",
         "parameters": [
           {
             "kind": "number",
@@ -249,23 +252,24 @@ export const DemoAuthoredState: IAuthoredState = {
     },
     {
       "category": "Action",
-      "color": "#312b84",
+      "color": "#004696",
       "config": {
         "inputsInline": true,
         "nextStatement": true,
         "previousStatement": true,
         "canHaveChildren": false,
         "childBlocks": [],
+        "generatorTemplate": "${ACTION} ${X} ${Y}\n",
         "parameters": [
           {
             "kind": "number",
-            "name": "x",
+            "name": "X",
             "labelPosition": "prefix",
             "labelText": "x:"
           },
           {
             "kind": "number",
-            "name": "y",
+            "name": "Y",
             "labelPosition": "prefix",
             "labelText": "y:"
           }

@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 
 import { validateBlocksJson } from "../utils/block-utils";
 import { CustomBlockForm } from "./custom-block-form";
-import { ICustomBlock } from "./types";
+import { CustomBlockType, ICustomBlock } from "./types";
 
 import css from "./custom-block-editor.scss";
 
@@ -20,7 +20,7 @@ const generateBlockId = (block: ICustomBlock) => {
 
 export const CustomBlockEditor: React.FC<IProps> = ({ value, onChange, toolbox }) => {
   const customBlocks = Array.isArray(value) ? value : [];
-  const [showForm, setShowForm] = useState<"setter" | "creator" | "action" | null>(null);
+  const [showForm, setShowForm] = useState<CustomBlockType | null>(null);
   const [editingBlock, setEditingBlock] = useState<ICustomBlock | null>(null);
   const [showCodePreview, setShowCodePreview] = useState(false);
   const [codeText, setCodeText] = useState<string>(JSON.stringify(customBlocks, null, 2));
@@ -98,6 +98,10 @@ export const CustomBlockEditor: React.FC<IProps> = ({ value, onChange, toolbox }
     onChange(updatedBlocks);
   };
 
+  const setterBlocks = customBlocks.filter(b => b.type === "setter");
+  const creatorBlocks = customBlocks.filter(b => b.type === "creator");
+  const actionBlocks = customBlocks.filter(b => b.type === "action");
+
   return (
     <div className={css.customBlockEditor} data-testid="custom-block-editor">
       <h4>Custom Blocks</h4>
@@ -125,8 +129,8 @@ export const CustomBlockEditor: React.FC<IProps> = ({ value, onChange, toolbox }
           )}
         </div>
         <div className={css.customBlocks_current} data-testid="current-setter">
-          {customBlocks.filter(b => b.type === "setter").length > 0 ? (
-            customBlocks.filter(b => b.type === "setter").map(block => (
+          {setterBlocks.length > 0 ? (
+            setterBlocks.map(block => (
               <div className={css.customBlocks_currentBlock} key={block.id} data-testid="current-block">
                 <div className={css.customBlocks_currentBlockInfo}>
                   <strong>{block.name}</strong> ({block.type}) - {block.category}
@@ -166,8 +170,8 @@ export const CustomBlockEditor: React.FC<IProps> = ({ value, onChange, toolbox }
           )}
         </div>
         <div className={css.customBlocks_current} data-testid="current-creator">
-          {customBlocks.filter(b => b.type === "creator").length > 0 ? (
-            customBlocks.filter(b => b.type === "creator").map(block => (
+          {creatorBlocks.length > 0 ? (
+            creatorBlocks.map(block => (
               <div className={css.customBlocks_currentBlock} key={block.id} data-testid="current-block">
                 <div className={css.customBlocks_currentBlockInfo}>
                   <strong>{block.name}</strong> ({block.type}) - {block.category}
@@ -207,8 +211,8 @@ export const CustomBlockEditor: React.FC<IProps> = ({ value, onChange, toolbox }
           )}
         </div>
         <div className={css.customBlocks_current} data-testid="current-action">
-          {customBlocks.filter(b => b.type === "action").length > 0 ? (
-            customBlocks.filter(b => b.type === "action").map(block => (
+          {actionBlocks.length > 0 ? (
+            actionBlocks.map(block => (
               <div className={css.customBlocks_currentBlock} key={block.id} data-testid="current-block">
                 <div className={css.customBlocks_currentBlockInfo}>
                   <strong>{block.name}</strong> ({block.type}) - {block.category}

@@ -7,12 +7,6 @@ import { CustomBlockType, IActionBlockConfig, ICustomBlock, ICreateBlockConfig, 
 
 import css from "./custom-block-form.scss";
 
-const categoryColors = {
-  "action": "#004696",
-  "creator": "#312b84",
-  "setter": "#312b84"
-};
-
 interface IProps {
   blockType: CustomBlockType;
   editingBlock?: ICustomBlock | null;
@@ -20,6 +14,31 @@ interface IProps {
   toolbox: string;
   onSubmit: (block: ICustomBlock) => void;
 }
+
+interface ICustomBlockFormState {
+  canHaveChildren?: boolean;
+  category: string;
+  childBlocks: string[];
+  color: string;
+  defaultCount: number;
+  generatorTemplate?: string;
+  includeCount: boolean;
+  includeNumberInput: boolean;
+  inputsInline: boolean;
+  maxCount: number;
+  minCount: number;
+  name: string;
+  nextStatement: boolean;
+  options: { label: string; value: string }[];
+  previousStatement: boolean;
+  type: CustomBlockType;
+}
+
+const categoryColors = {
+  "action": "#004696",
+  "creator": "#312b84",
+  "setter": "#312b84"
+};
 
 const updateParameterOptions = (
   prev: IParameter[],
@@ -31,7 +50,7 @@ const updateParameterOptions = (
     if (idx !== paramIdx) return pp;
     const opts = [ ...((pp as any).options || []) ];
     opts[optionIdx] = update(opts[optionIdx]);
-    return ({ ...(pp as any), options: opts }) as IParameter;
+    return ({ ...pp, options: opts });
   });
 };
 
@@ -44,29 +63,12 @@ const removeParameterOption = (
     if (idx !== paramIdx) return pp;
     const opts = [ ...((pp as any).options || []) ];
     opts.splice(optionIdx, 1);
-    return ({ ...(pp as any), options: opts }) as IParameter;
+    return ({ ...pp, options: opts });
   });
 };
 
 export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, existingBlocks, onSubmit, toolbox }) => {
-  const [formData, setFormData] = useState<{
-    canHaveChildren?: boolean;
-    category: string;
-    childBlocks: string[];
-    color: string;
-    defaultCount: number;
-    generatorTemplate?: string;
-    includeCount: boolean;
-    includeNumberInput: boolean;
-    inputsInline: boolean;
-    maxCount: number;
-    minCount: number;
-    name: string;
-    nextStatement: boolean;
-    options: { label: string; value: string }[];
-    previousStatement: boolean;
-    type: CustomBlockType;
-  }>({
+  const [formData, setFormData] = useState<ICustomBlockFormState>({
     canHaveChildren: false,
     category: "",
     childBlocks: [],
@@ -448,7 +450,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
                         className={css.addOptionButton}
                         data-testid={`add-param-option-${i}`}
                         type="button"
-                        onClick={() => setParameters(prev => prev.map((pp, idx) => idx===i ? ({ ...(pp as any), options: [ ...((pp as any).options||[]), ["", ""] ] }) as IParameter : pp))}
+                        onClick={() => setParameters(prev => prev.map((pp, idx) => idx===i ? ({ ...pp, options: [ ...((pp as any).options||[]), ["", ""] ] }) : pp))}
                       >
                         Add Option
                       </button>
@@ -463,7 +465,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
                           placeholder="0"
                           type="number"
                           value={(p as any).defaultValue ?? ""}
-                          onChange={(e) => setParameters(prev => prev.map((pp, idx) => idx===i ? ({ ...(pp as any), defaultValue: Number(e.target.value) }) as IParameter : pp))}
+                          onChange={(e) => setParameters(prev => prev.map((pp, idx) => idx===i ? ({ ...pp, defaultValue: Number(e.target.value) }) : pp))}
                         />
                       </div>
                     </div>

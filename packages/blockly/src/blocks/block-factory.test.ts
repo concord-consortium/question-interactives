@@ -514,7 +514,7 @@ describe("block-factory", () => {
       expect(code).toBe("move\n");
     });
 
-    it("replaces ACTION placeholder with kebab-cased name", () => {
+    it("replaces ACTION placeholder with snake-cases name", () => {
       const actionBlock: ICustomBlock = {
         category: "Actions",
         color: "#004696",

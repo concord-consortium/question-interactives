@@ -2,7 +2,7 @@ import { FieldSlider } from "@blockly/field-slider";
 import type { BlockSvg } from "blockly";
 import Blockly, { Blocks, FieldDropdown, FieldNumber } from "blockly/core";
 
-import { IActionBlockConfig, ICustomBlock, ICreateBlockConfig, ISetBlockConfig, IParameter } from "../components/types";
+import { IActionBlockConfig, ICustomBlock, ICreateBlockConfig, ISetBlockConfig, IParameter, isCreateBlockConfig } from "../components/types";
 import { netlogoGenerator } from "../utils/netlogo-generator";
 
 const PLUS_ICON  = "data:image/svg+xml;utf8," +
@@ -61,17 +61,10 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
           (this as any).__disclosureOpen = false;
           statementsInput.setVisible(false);
 
-          // Optional count slider
-          const creatorConfig = c as ICreateBlockConfig;
-          if (
-            typeof creatorConfig.defaultCount !== "undefined" &&
-            typeof creatorConfig.minCount !== "undefined" &&
-            typeof creatorConfig.maxCount !== "undefined"
-          ) {
-            input.appendField(
-              new FieldSlider(creatorConfig.defaultCount, creatorConfig.minCount, creatorConfig.maxCount),
-              "count"
-            );
+          if (blockDef.type === "creator" && isCreateBlockConfig(c)) {
+            if (c.defaultCount !== undefined && c.minCount !== undefined && c.maxCount !== undefined) {
+              input.appendField(new FieldSlider(c.defaultCount, c.minCount, c.maxCount), "count");
+            }
           }
           
           // One-time seeding of child blocks on first creation/attach.
@@ -112,14 +105,9 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
                   for (const childType of c.childBlocks) {
                     const child = this.workspace.newBlock(childType);
                     child.initSvg();
-                    if (!previousChild) {
-                      if (stmt.connection && child.previousConnection) {
-                        stmt.connection.connect(child.previousConnection);
-                      }
-                    } else {
-                      if (previousChild.nextConnection && child.previousConnection) {
-                        previousChild.nextConnection.connect(child.previousConnection);
-                      }
+                    const nextConnection = previousChild ? previousChild.nextConnection : stmt.connection;
+                    if (nextConnection && child.previousConnection) {
+                      nextConnection.connect(child.previousConnection);
                     }
                     child.render();
                     previousChild = child;
@@ -220,7 +208,7 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
           const params = Array.isArray(actionConfig.parameters) ? actionConfig.parameters : [];
           params.forEach((p: IParameter) => {
             const val = block.getFieldValue(p.name);
-            const safe = val !== undefined && val !== null ? String(val) : "";
+            const safe = val != null ? String(val) : "";
             const re = new RegExp(`\\$\\{${p.name}\\}`, "g");
             code = code.replace(re, safe);
           });
@@ -237,7 +225,7 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
               parts.push(String(param.labelText));
             }
             const v = block.getFieldValue(param.name);
-            if (v !== undefined && v !== null && v !== "") parts.push(String(v));
+            if (v != null && v !== "") parts.push(String(v));
             if (param.labelText && (param.labelPosition ?? "prefix") === "suffix") {
               parts.push(String(param.labelText));
             }

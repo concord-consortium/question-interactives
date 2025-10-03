@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 
@@ -286,7 +286,7 @@ describe("CustomBlockForm", () => {
       });
     });
 
-    // TODO: Make this work.
+    // TODO: Extend this to toggle the checkbox and verify behavior.
     it("shows child blocks selector for action blocks when `canHaveChildren` is checked", async () => {
       render(<CustomBlockForm {...defaultProps} blockType="action" />);
       const checkbox = screen.getByLabelText("Contains Child Blocks");

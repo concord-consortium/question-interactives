@@ -35,15 +35,13 @@ export const getReportItemHtml = ({ interactiveState, authoredState }: IProps) =
     tempDiv.style.height = `${height}px`;
     tempDiv.style.position = "relative";
 
-    // Ensure custom blocks are registered before workspace injection/loading
     try {
-      const safeCustomBlocks = Array.isArray(customBlocks) ? customBlocks : [];
-      registerCustomBlocks(safeCustomBlocks);
+      registerCustomBlocks(customBlocks);
     } catch (e) {
       // noop - registration failure will be handled by load try/catch below
     }
 
-    const enhancedToolbox = injectCustomBlocksIntoToolbox(toolbox, Array.isArray(customBlocks) ? customBlocks : []);
+    const enhancedToolbox = injectCustomBlocksIntoToolbox(toolbox, customBlocks);
 
     const workspace = inject(tempDiv, {
       readOnly: true,
