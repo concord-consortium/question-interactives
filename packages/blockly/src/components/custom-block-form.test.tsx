@@ -2,14 +2,14 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 
-import { actionBlockChildOptions } from "../utils/block-utils";
+import { availableChildBlocks } from "../utils/block-utils";
 import { extractCategoriesFromToolbox } from "../utils/toolbox-utils";
 import { CustomBlockForm } from "./custom-block-form";
 import { ICustomBlock, CustomBlockType } from "./types";
 
 jest.mock("./custom-block-form.scss", () => ({}));
 jest.mock("../utils/block-utils", () => ({
-  actionBlockChildOptions: jest.fn()
+  availableChildBlocks: jest.fn()
 }));
 jest.mock("../utils/toolbox-utils", () => ({
   extractCategoriesFromToolbox: jest.fn()
@@ -53,11 +53,7 @@ describe("CustomBlockForm", () => {
 
   beforeEach(() => {
     mockOnSubmit.mockClear();
-    (actionBlockChildOptions as jest.Mock).mockReturnValue({
-      setterBlocks: [],
-      actionBlocks: [],
-      builtInBlocks: []
-    });
+    (availableChildBlocks as jest.Mock).mockReturnValue([]);
     (extractCategoriesFromToolbox as jest.Mock).mockReturnValue(["Properties", "General"]);
   });
 

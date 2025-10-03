@@ -5,18 +5,19 @@ const validateString = (value: unknown): boolean => {
   return typeof value === "string" && value.length > 0;
 };
 
-// Return all child blocks that can be contained within action blocks
-export const actionBlockChildOptions = (existingCustomBlocks: ICustomBlock[] = [], excludeBlockId?: string) => {
+// Return all blocks available to be contained as children.
+export const availableChildBlocks = (existingCustomBlocks: ICustomBlock[] = [], excludeBlockId?: string) => {
+  const creatorBlocks = existingCustomBlocks.filter(b => b.type === "creator" && b.id !== excludeBlockId);
   const setterBlocks = existingCustomBlocks.filter(b => b.type === "setter" && b.id !== excludeBlockId);
   const actionBlocks = existingCustomBlocks.filter(b => b.type === "action" && b.id !== excludeBlockId);
   const builtInBlocks = BUILT_IN_BLOCKS;
   
-  return {
-    setterBlocks,
-    actionBlocks, 
-    builtInBlocks,
-    allBlocks: [...setterBlocks, ...actionBlocks, ...builtInBlocks]
-  };
+  return [
+    ...creatorBlocks.map(b => ({ id: b.id, name: `${b.name} (creator)`, type: 'creator' })),
+    ...setterBlocks.map(b => ({ id: b.id, name: `${b.name} (setter)`, type: 'setter' })),
+    ...actionBlocks.map(b => ({ id: b.id, name: `${b.name} (action)`, type: 'action' })),
+    ...builtInBlocks
+  ];
 };
 
 // Validate JSON representing an array of custom blocks.

@@ -1,30 +1,24 @@
 import { BUILT_IN_BLOCKS } from "../blocks/built-in-blocks-registry";
 import { ICustomBlock } from "../components/types";
-import { actionBlockChildOptions, validateBlocksJson } from "./block-utils";
+import { availableChildBlocks, validateBlocksJson } from "./block-utils";
 
 describe("block-utils", () => {
-  describe("actionBlockChildOptions", () => {
+  describe("availableChildBlocks", () => {
     it("should return built-in blocks for action blocks", () => {
-      const result = actionBlockChildOptions([]);
-      
-      expect(result.builtInBlocks).toEqual(BUILT_IN_BLOCKS);
-      BUILT_IN_BLOCKS.forEach(block => {
-        expect(result.allBlocks).toContain(block);
-      });
+      const result = availableChildBlocks([]);
+      expect(result).toEqual(BUILT_IN_BLOCKS);
     });
 
     it("should include custom blocks when provided", () => {
       const customBlocks = [
         { id: "custom_set_color", type: "setter", name: "color" } as ICustomBlock,
-        { id: "custom_action_test", type: "action", name: "test" } as ICustomBlock
+        { id: "custom_action_test", type: "action", name: "test" } as ICustomBlock,
+        { id: "custom_create_test", type: "creator", name: "create test" } as ICustomBlock
       ];
       
-      const result = actionBlockChildOptions(customBlocks);
-      
-      expect(result.setterBlocks).toHaveLength(1);
-      expect(result.actionBlocks).toHaveLength(1);
-      expect(result.builtInBlocks).toEqual(BUILT_IN_BLOCKS);
-      expect(result.allBlocks).toHaveLength(5); // 1 setter + 1 action + 3 built-in
+      const result = availableChildBlocks(customBlocks);
+
+      expect(result).toHaveLength(6); // 1 creator + 1 setter + 1 action + 3 built-in
     });
 
     it("should exclude the block currently being edited from results", () => {
@@ -32,12 +26,10 @@ describe("block-utils", () => {
         { id: "custom_set_color", type: "setter", name: "color" } as ICustomBlock,
         { id: "custom_action_test", type: "action", name: "test" } as ICustomBlock
       ];
-      
-      const result = actionBlockChildOptions(customBlocks, "custom_action_test");
-      
-      expect(result.setterBlocks).toHaveLength(1);
-      expect(result.actionBlocks).toHaveLength(0);
-      expect(result.allBlocks).toHaveLength(4); // 1 setter + 0 action + 3 built-in
+
+      const result = availableChildBlocks(customBlocks, "custom_action_test");
+
+      expect(result).toHaveLength(4); // 1 setter + 0 action + 3 built-in
     });
 
     it("should categorize blocks by type correctly", () => {
@@ -48,13 +40,10 @@ describe("block-utils", () => {
         { id: "custom_action_turn", type: "action", name: "turn" } as ICustomBlock,
         { id: "custom_create_particles", type: "creator", name: "particles" } as ICustomBlock
       ];
-      
-      const result = actionBlockChildOptions(customBlocks);
-      
-      expect(result.setterBlocks).toHaveLength(2);
-      expect(result.actionBlocks).toHaveLength(2);
-      expect(result.builtInBlocks).toEqual(BUILT_IN_BLOCKS);
-      expect(result.allBlocks).toHaveLength(7); // 2 setter + 2 action + 3 built-in
+
+      const result = availableChildBlocks(customBlocks);
+
+      expect(result).toHaveLength(8); // 1 creator + 2 setter + 2 action + 3 built-in
     });
   });
 

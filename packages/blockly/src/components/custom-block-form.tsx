@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useMemo } from "react";
 
-import { actionBlockChildOptions } from "../utils/block-utils";
+import { availableChildBlocks } from "../utils/block-utils";
 import { extractCategoriesFromToolbox } from "../utils/toolbox-utils";
 import { CustomBlockFormOptionList } from "./custom-block-form-option-list";
 import { CustomBlockType, IActionBlockConfig, ICustomBlock, ICreateBlockConfig, ISetBlockConfig,
@@ -64,24 +64,12 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
   });
 
   const availableCategories = useMemo(() => extractCategoriesFromToolbox(toolbox), [toolbox]);
-  const childSources = useMemo(() => {
-    const { setterBlocks, actionBlocks, builtInBlocks } = actionBlockChildOptions(existingBlocks, editingBlock?.id);
-    return { setterBlocks, actionBlocks, builtInBlocks };
-  }, [existingBlocks, editingBlock]);
-
-  const availableChildOptions = useMemo(() => {
-    if (formData.type === "action") {
-      return [
-        ...(childSources.actionBlocks || []).map(b => ({ id: b.id, name: `${b.name} (action)` })),
-        ...(childSources.setterBlocks || []).map(b => ({ id: b.id, name: `${b.name} (setter)` }))
-      ];
-    } else if (formData.type === "creator") {
-      return [
-        ...(childSources.setterBlocks || []).map(b => ({ id: b.id, name: `${b.name} (setter)` }))
-      ];
+  const childOptions = useMemo(() => {
+    if (formData.type === "action" || formData.type === "creator") {
+      return availableChildBlocks(existingBlocks, editingBlock?.id);
     }
     return [];
-  }, [formData.type, childSources]);
+  }, [formData.type, existingBlocks, editingBlock?.id]);
 
   const handleChildBlocksMultiSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selected: string[] = Array.from(e.target.selectedOptions).map(o => o.value);
@@ -527,7 +515,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       {((formData.type === "creator") || (formData.type === "action" && formData.canHaveChildren)) && (
         <CustomBlockFormChildBlocks
           childBlocks={formData.childBlocks}
-          availableChildOptions={availableChildOptions}
+          availableChildOptions={childOptions}
           onChange={handleChildBlocksMultiSelect}
         />
       )}

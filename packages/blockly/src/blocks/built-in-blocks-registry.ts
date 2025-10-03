@@ -7,7 +7,7 @@ export interface IBuiltInBlockInfo {
   hasStatements: boolean;
   id: string;
   name: string;
-  type: "builtin";
+  type: "built-in";
 }
 
 // Registry of available built-in Blockly blocks
@@ -18,7 +18,7 @@ export const BUILT_IN_BLOCKS: IBuiltInBlockInfo[] = [
     hasStatements: true,
     id: "controls_if",
     name: "if",
-    type: "builtin"
+    type: "built-in"
   },
   {
     color: "#5ba55b",
@@ -26,7 +26,7 @@ export const BUILT_IN_BLOCKS: IBuiltInBlockInfo[] = [
     hasStatements: false,
     id: "logic_operation",
     name: "and/or", 
-    type: "builtin"
+    type: "built-in"
   },
   {
     color: "#5ba55b", 
@@ -34,6 +34,6 @@ export const BUILT_IN_BLOCKS: IBuiltInBlockInfo[] = [
     hasStatements: false,
     id: "logic_negate",
     name: "not",
-    type: "builtin",
+    type: "built-in",
   }
 ];

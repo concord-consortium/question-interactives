@@ -18,7 +18,7 @@ describe("built-in-blocks-registry", () => {
 
     it("should have correct types and properties", () => {
       BUILT_IN_BLOCKS.forEach(block => {
-        expect(block.type).toBe("builtin");
+        expect(block.type).toBe("built-in");
         expect(block.id).toBeTruthy();
         expect(block.name).toBeTruthy();
         expect(block.description).toBeTruthy();
