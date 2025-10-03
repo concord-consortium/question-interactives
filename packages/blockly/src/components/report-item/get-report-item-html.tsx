@@ -1,5 +1,7 @@
 import { IAuthoredState, IInteractiveState } from "../types";
 import { inject, serialization } from "blockly";
+import { registerCustomBlocks } from "../../blocks/block-factory";
+import { injectCustomBlocksIntoToolbox } from "../../utils/toolbox-utils";
 
 import "../../blocks/block-registration";
 
@@ -13,13 +15,15 @@ const htmlCache = new Map<string, string>();
 
 export const getReportItemHtml = ({ interactiveState, authoredState }: IProps) => {
   const { blocklyState } = interactiveState;
-  const { toolbox } = authoredState;
+  const { toolbox, customBlocks = [] } = authoredState;
   if (!blocklyState || !toolbox) return "";
 
   const HEIGHT = 200;
   const TALL_WIDTH = 368;
   const WIDE_WIDTH = 400;
-  const cacheKey = stableHash(`v1|${blocklyState}|${toolbox}|${WIDE_WIDTH}x${HEIGHT}|${TALL_WIDTH}x${HEIGHT}`);
+  const cacheKey = stableHash(
+    `v2|${blocklyState}|${toolbox}|${JSON.stringify(customBlocks)}|${WIDE_WIDTH}x${HEIGHT}|${TALL_WIDTH}x${HEIGHT}`
+  );
   const cached = htmlCache.get(cacheKey);
   if (cached) return cached;
 
@@ -31,9 +35,17 @@ export const getReportItemHtml = ({ interactiveState, authoredState }: IProps) =
     tempDiv.style.height = `${height}px`;
     tempDiv.style.position = "relative";
 
+    try {
+      registerCustomBlocks(customBlocks);
+    } catch (e) {
+      // noop - registration failure will be handled by load try/catch below
+    }
+
+    const enhancedToolbox = injectCustomBlocksIntoToolbox(toolbox, customBlocks);
+
     const workspace = inject(tempDiv, {
       readOnly: true,
-      toolbox: JSON.parse(toolbox),
+      toolbox: JSON.parse(enhancedToolbox),
       trashcan: false,
       scrollbars: false,
       zoom: { controls: false, wheel: false, startScale: 0.4, minScale: 0.4, maxScale: 0.4, scaleSpeed: 1 },

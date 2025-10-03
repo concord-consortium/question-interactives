@@ -1,0 +1,30 @@
+@import "./variables.scss";
+
+.customBlockForm_childBlocks {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  
+  label {
+    display: block;
+    font-weight: $font-weight-medium;
+    margin: 0;
+  }
+  
+  select {
+    border: 1px solid $border-light;
+    border-radius: $border-radius-sm;
+    min-height: 80px;
+    padding: 4px $spacing-sm;
+  }
+
+  .customBlockForm_advancedToggle {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+  }
+
+  .customBlockForm_childrenTree {
+    margin-top: $spacing-md;
+  }
+}

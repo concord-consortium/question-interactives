@@ -13,23 +13,24 @@
     font-size: $font-size-sm;
     margin: 0;
   }
-
   label {
     display: block;
   }
 
-  .customBlocksCreator, 
-  .customBlocksSetter {
+  .customBlocks_section {
     background: $background-lighter;
     border: 1px solid $border-medium;
     border-radius: $border-radius-lg;
     padding: 15px;
   }
 
-  .customBlocksNew {
+  .customBlocks_new {
+    border: solid 1px $border-medium;
+    border-radius: $border-radius-md;
     margin-bottom: 10px;
+    padding: $spacing-md;
 
-    .customBlocksNewHeading {
+    .customBlocks_newHeading {
       align-items: center;
       display: flex;
       justify-content: space-between;
@@ -42,7 +43,7 @@
         color: white;
         cursor: pointer;
         font-weight: $font-weight-medium;
-        padding: $spacing-md $spacing-xl;
+        padding: $spacing-sm $spacing-md;
         transition: background-color $transition-fast;
 
         &:hover {
@@ -52,19 +53,19 @@
     }
   }
 
-  .customBlocksCurrent {
+  .customBlocks_current {
     display: flex;
     flex-direction: column;
     gap: $spacing-lg;
 
-    .customBlocksCurrentBlock {
+    .customBlocks_currentBlock {
       align-items: center;
       background: var(--white);
       border: 1px solid $border-light;
       border-radius: $border-radius-md;
       box-shadow: $shadow-sm;
       display: flex;
-      padding: $spacing-xl;
+      padding: $spacing-md;
       justify-content: space-between;
       transition: box-shadow $transition-fast;
 
@@ -72,13 +73,13 @@
         box-shadow: $shadow-md;
       }
 
-      .customBlocksCurrentBlockInfo {
+      .customBlocks_currentBlockInfo {
         align-items: center;
         display: flex;
         gap: $spacing-sm;
       }
 
-      .customBlocksCurrentBlockActions {
+      .customBlocks_currentBlockActions {
         align-items: center;
         display: flex;
         gap: $spacing-md;
@@ -90,7 +91,7 @@
           cursor: pointer;
           font-size: $font-size-xs;
           font-weight: $font-weight-medium;
-          padding: 6px $spacing-lg;
+          padding: 4px $spacing-md;
           transition: all $transition-fast;
 
             
@@ -100,13 +101,13 @@
         }
       }
     }
-    .noBlocksMessage {
+    .noBlocks_message {
       color: $text-medium;
       font-style: italic;
     }
   }
 
-  .customBlocksActions {
+  .codePreview_actions {
     align-items: center;
     display: flex;
     gap: $spacing-md;
@@ -132,21 +133,43 @@
     border-radius: $border-radius-sm;
     padding: 12px;
 
-    .codePreviewHeader {
+    .codePreview_header {
       align-items: center;
       display: flex;
 
-      .customBlocksActions {
+      .codePreview_actions {
         margin-left: auto;
       }
     }
 
-    .codePreviewBody {
+    .codePreview_body {
       margin-top: 8px;
 
       pre {
         max-height: 240px;
         overflow: auto;
+      }
+
+      .codeTextarea {
+        background: var(--white);
+        border: 1px solid $border-light;
+        border-radius: $border-radius-sm;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+        font-size: $font-size-xs;
+        line-height: 1.4;
+        min-height: 200px;
+        padding: $spacing-md;
+        resize: vertical;
+        width: 100%;
+      }
+
+      .codeError {
+        background: #fff8f8;
+        border: 1px solid #f2c8c8;
+        border-radius: $border-radius-sm;
+        color: $danger-red;
+        margin-top: $spacing-md;
+        padding: $spacing-md;
       }
     }
   }

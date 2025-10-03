@@ -5,27 +5,51 @@
   flex-direction: column;
   gap: $spacing-xl;
 
+  *, *::before, *::after {
+    box-sizing: border-box;
+  }
+
+  input, select, textarea, button {
+    max-width: 100%;
+  }
+
+  // In flex layouts, allow items to shrink within container
+  .fieldRow, .customBlockForm_basicFields, .customBlockForm_countFields {
+    min-width: 0;
+  }
+
   .customBlockForm_basicFields {
-    display: flex;
-    gap: $spacing-xxl;
     align-items: flex-start;
+    display: flex;
+    gap: $spacing-xl;
     
     .customBlockForm_name,
     .customBlockForm_color {
       display: flex;
+      flex: 1;
       flex-direction: column;
       gap: 3px;
-      flex: 1;
+      min-width: 0;
       
       label {
-        font-weight: $font-weight-medium;
         display: block;
+        font-weight: $font-weight-medium;
         margin: 0;
       }
       
       input {
+        max-width: 100%;
         width: 100%;
-        max-width: 200px;
+      }
+
+      &.customBlockForm_color {
+        input[type="color"] {
+          cursor: pointer;
+          height: 32px;
+          max-width: 32px;
+          padding: 2px;
+          width: 32px;
+        }
       }
     }
   }
@@ -34,6 +58,7 @@
     display: flex;
     flex-direction: column;
     gap: 3px;
+    min-width: 0;
     
     label {
       display: block;
@@ -42,11 +67,11 @@
     }
     
     select {
-      border: 1px solid $border-light;
+      border: solid 1px $border-light;
       border-radius: $border-radius-sm;
       font-size: $font-size-sm;
-      max-width: 200px;
-      padding: 6px $spacing-md;
+      max-width: 100%;
+      padding: 4px $spacing-sm;
       
       &:focus {
         border-color: $primary-blue;
@@ -113,7 +138,22 @@
       input {
         border: 1px solid $border-light;
         border-radius: $border-radius-sm;
-        padding: 6px $spacing-md;
+        padding: 4px $spacing-sm;
+      }
+    }
+  }
+
+  .customBlockForm_canHaveChildren {
+    label {
+      align-items: center;
+      display: flex;
+      font-weight: $font-weight-normal;
+      gap: 6px;
+      margin: 0;
+      
+      input[type="checkbox"] {
+        margin: 0;
+        vertical-align: middle;
       }
     }
   }
@@ -150,69 +190,11 @@
     display: flex;
     flex-direction: column;
     gap: $spacing-md;
+    min-width: 0;
     
     label {
       font-weight: $font-weight-medium;
       margin-bottom: 2px;
-    }
-    
-    .optionRow {
-      align-items: center;
-      display: flex;
-      gap: $spacing-md;
-      
-      input {
-        border: 1px solid $border-light;
-        border-radius: $border-radius-sm;
-        flex: 1;
-        padding: 6px $spacing-md;
-      }
-      
-      button {
-        background: $background-lighter;
-        border: 1px solid $border-light;
-        border-radius: $border-radius-sm;
-        color: $text-medium;
-        cursor: pointer;
-        padding: 6px $spacing-lg;
-        
-        &:hover {
-          background: $background-light;
-        }
-      }
-    }
-    
-    .addOptionButton {
-      align-self: flex-start;
-      background: $primary-blue;
-      border: none;
-      border-radius: $border-radius-sm;
-      color: white;
-      cursor: pointer;
-      padding: 6px $spacing-lg;
-      
-      &:hover {
-        background: $primary-blue-hover;
-      }
-    }
-  }
-
-  .customBlockForm_childBlocks {
-    display: flex;
-    flex-direction: column;
-    gap: $spacing-md;
-    
-    label {
-      display: block;
-      font-weight: $font-weight-medium;
-      margin: 0;
-    }
-    
-    select {
-      border: 1px solid $border-light;
-      border-radius: $border-radius-sm;
-      min-height: 80px;
-      padding: 6px $spacing-md;
     }
   }
 
@@ -242,7 +224,7 @@
     border: 1px solid $border-light;
     border-radius: $border-radius-sm;
     font-size: $font-size-sm;
-    padding: 6px $spacing-md;
+    padding: 4px $spacing-md;
     
     &:focus {
       border-color: $primary-blue;
@@ -250,11 +232,152 @@
       outline: none;
     }
   }
-  
-  input[type="color"] {
-    cursor: pointer;
-    height: 32px;
-    padding: 2px;
-    width: 40px;
+
+  .customBlockForm_parameters {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+    min-width: 0;
+    
+    label {
+      display: block;
+      font-weight: $font-weight-medium;
+      margin: 0;
+    }
+    
+    .paramToolbar {
+      display: flex;
+      gap: $spacing-md;
+      
+      .addParamButton {
+        background: white;
+        border: solid 1px $border-light;
+        border-radius: $border-radius-sm;
+        color: $text-medium;
+        cursor: pointer;
+        font-size: $font-size-sm;
+        padding: 4px $spacing-md;
+        
+        &:hover {
+          background: $background-light;
+        }
+      }
+    }
+    
+    .paramRow {
+      background: $background-light;
+      border: solid 1px $border-light;
+      border-radius: $border-radius-sm;
+      margin-bottom: $spacing-sm;
+      padding: $spacing-md;
+      min-width: 0;
+      
+      .paramHeader {
+        align-items: center;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: $spacing-md;
+        min-width: 0;
+        
+        .paramType {
+          color: $text-dark;
+          font-weight: $font-weight-medium;
+        }
+        
+        .removeParamButton {
+          background: white;
+          border: solid 1px $border-light;
+          border-radius: $border-radius-sm;
+          color: $text-medium;
+          cursor: pointer;
+          padding: 2px $spacing-sm;
+          font-size: $font-size-xs;
+          
+          &:hover {
+            background: $background-light;
+          }
+        }
+      }
+      
+      .paramFields {
+        min-width: 0;
+
+        .fieldRow {
+          display: flex;
+          gap: $spacing-md;
+          margin-bottom: $spacing-md;
+          min-width: 0;
+          
+          .fieldGroup {
+            display: flex;
+            flex: 1;
+            flex-direction: column;
+            gap: 3px;
+            min-width: 0;
+            
+            label {
+              color: $text-dark;
+              font-size: $font-size-sm;
+              font-weight: $font-weight-medium;
+            }
+            
+            input, select {
+              border: solid 1px $border-light;
+              border-radius: $border-radius-sm;
+              font-size: $font-size-sm;
+              padding: 4px $spacing-sm;
+              max-width: 100%;
+              width: 100%;
+            }
+          }
+        }
+        
+        .selectOptions {
+          display: flex;
+          flex-direction: column;
+          gap: $spacing-sm;
+          min-width: 0;
+          
+          label {
+            color: $text-dark;
+            font-size: $font-size-sm;
+            font-weight: $font-weight-medium;
+          }
+          
+        }
+        
+        .numberOptions {
+          .fieldGroup {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            
+            label {
+              color: $text-dark;
+              font-size: $font-size-sm;
+              font-weight: $font-weight-medium;
+            }
+            
+            input {
+              border: solid 1px $border-light;
+              border-radius: $border-radius-sm;
+              font-size: $font-size-sm;
+              max-width: 120px;
+              padding: 4px $spacing-sm;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  .customBlockForm_generatorTemplate {
+    textarea {
+      border: solid 1px $border-light;
+      border-radius: $border-radius-sm;
+      font-size: $font-size-sm;
+      padding: 4px $spacing-sm;
+      width: 100%;
+    }
   }
 }

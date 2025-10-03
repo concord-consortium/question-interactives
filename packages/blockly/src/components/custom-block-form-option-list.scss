@@ -1,0 +1,61 @@
+@import "./variables";
+
+.optionList {
+  .optionRow {
+    align-items: center;
+    display: flex;
+    gap: $spacing-sm;
+    margin-bottom: $spacing-sm;
+
+    input {
+      border: solid 1px $border-light;
+      border-radius: $border-radius-sm;
+      flex: 1;
+      font-size: $font-size-sm;
+      min-width: 0;
+      padding: $spacing-xs $spacing-sm;
+
+      &:focus {
+        border-color: $primary-blue;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        outline: none;
+      }
+    }
+
+    button.removeOptionButton {
+      background: white;
+      border: solid 1px $border-light;
+      border-radius: $border-radius-sm;
+      color: $text-medium;
+      cursor: pointer;
+      flex: 0 0 auto;
+      font-size: $font-size-xs;
+      padding: 5px $spacing-sm;
+      white-space: nowrap;
+
+      &:hover {
+        background: $background-light;
+        border-color: $border-light;
+        color: $text-medium;
+      }
+    }
+  }
+
+  .addOptionButton {
+    align-self: flex-start !important;
+    background: $primary-blue !important;
+    border: none !important;
+    border-radius: $border-radius-sm !important;
+    color: white !important;
+    cursor: pointer;
+    font-size: $font-size-sm !important;
+    margin-top: $spacing-sm;
+    padding: 4px $spacing-md !important;
+
+    &:hover {
+      background: $primary-blue-hover !important;
+      border: none !important;
+      color: white !important;
+    }
+  }
+}

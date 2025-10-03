@@ -6,6 +6,9 @@ import "@testing-library/jest-dom";
 
 enzyme.configure({ adapter: new Adapter() });
 
+// Mock window.alert
+global.alert = jest.fn();
+
 // https://www.benmvp.com/blog/quick-trick-jest-asynchronous-tests/
 beforeEach(() => {
   // ensure there's at least one assertion run for every test case

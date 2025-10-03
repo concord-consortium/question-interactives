@@ -1,8 +1,8 @@
 import { FieldSlider } from "@blockly/field-slider";
-import Blockly, { Blocks, FieldDropdown, FieldNumber } from "blockly/core";
 import type { BlockSvg } from "blockly";
+import Blockly, { Blocks, FieldDropdown, FieldNumber } from "blockly/core";
 
-import { ICustomBlock, ICreateBlockConfig, ISetBlockConfig } from "../components/types";
+import { IActionBlockConfig, ICustomBlock, ICreateBlockConfig, ISetBlockConfig, IParameter, isCreateBlockConfig } from "../components/types";
 import { netlogoGenerator } from "../utils/netlogo-generator";
 
 const PLUS_ICON  = "data:image/svg+xml;utf8," +
@@ -21,7 +21,7 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
   
   customBlocks.forEach(blockDef => {
     const blockType = blockDef.id;
-    const cfg = blockDef.config as (ICreateBlockConfig | ISetBlockConfig);
+    const cfg = blockDef.config as (IActionBlockConfig | ICreateBlockConfig | ISetBlockConfig);
 
     const applyCommonFlags = (block: any) => {
       if (cfg.inputsInline !== undefined) block.setInputsInline(!!cfg.inputsInline);
@@ -29,17 +29,17 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
       if (cfg.nextStatement !== undefined) block.setNextStatement(!!cfg.nextStatement);
     };
 
-    
     Blocks[blockType] = {
       init() {
         // Display block name with appropriate prefix based on block type
-        const displayName = blockDef.type === "setter" ? `set ${blockDef.name}` : 
-                           blockDef.type === "creator" ? "create" : 
-                           blockDef.name;
+        const displayName = blockDef.type === "action" ? blockDef.name : 
+                            blockDef.type === "creator" ? "create" : 
+                            blockDef.type === "setter" ? `set ${blockDef.name}` :
+                            blockDef.name;
         const input = this.appendDummyInput().appendField(displayName);
     
-        if (blockDef.type === "creator") {
-          const c: ICreateBlockConfig = cfg;
+        if ((blockDef.type === "action" && cfg.canHaveChildren) || blockDef.type === "creator") {
+          const c: IActionBlockConfig | ICreateBlockConfig = cfg;
 
           const statementsInput = this.appendStatementInput("statements");
           if (Array.isArray(c.childBlocks) && c.childBlocks.length > 0) {
@@ -61,59 +61,101 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
           (this as any).__disclosureOpen = false;
           statementsInput.setVisible(false);
 
-          // Optional count slider
-          if (c.defaultCount !== undefined && c.minCount !== undefined && c.maxCount !== undefined) {
-            input.appendField(new FieldSlider(c.defaultCount, c.minCount, c.maxCount), "count");
+          if (blockDef.type === "creator" && isCreateBlockConfig(c)) {
+            if (c.defaultCount !== undefined && c.minCount !== undefined && c.maxCount !== undefined) {
+              input.appendField(new FieldSlider(c.defaultCount, c.minCount, c.maxCount), "count");
+            }
           }
           
-          // One-time seeding of child setter blocks on first creation/attach.
-          if (Array.isArray(c.childBlocks) && c.childBlocks.length > 0) {
+          // One-time seeding of child blocks on first creation/attach.
+          const hasChildren = Array.isArray(c.childBlocks) && c.childBlocks.length > 0;
+          
+          if (hasChildren) {
             (this as any).__childrenSeeded = false;
             this.setOnChange(() => {
               if ((this as any).__childrenSeeded || !this.workspace || this.isInFlyout) return;
     
               const stmt = this.getInput("statements");
-              if (!stmt || stmt.connection.targetBlock()) return;
+              if (!stmt) return;
     
               try {
-                let previousChild: any = null;
-                if (!c.childBlocks) return;
-
-                for (const childType of c.childBlocks) {
-                  const child = this.workspace.newBlock(childType);
-                  child.initSvg();
-                  if (!previousChild) {
-                    if (stmt.connection && child.previousConnection) {
-                      stmt.connection.connect(child.previousConnection);
-                    }
-                  } else {
-                    if (previousChild.nextConnection && child.previousConnection) {
-                      previousChild.nextConnection.connect(child.previousConnection);
-                    }
+                // Clean up existing child blocks first to avoid connection conflicts
+                const existingBlock = stmt.connection.targetBlock();
+                if (existingBlock) {
+                  // Dispose of existing child blocks and their connections
+                  const blocksToDispose: any[] = [];
+                  let currentBlock = existingBlock;
+                  while (currentBlock) {
+                    blocksToDispose.push(currentBlock);
+                    currentBlock = currentBlock.getNextBlock();
                   }
-                  child.render();
-                  previousChild = child;
+                  
+                  // Dispose blocks in reverse order to avoid connection issues
+                  blocksToDispose.reverse().forEach(block => {
+                    try {
+                      block.dispose();
+                    } catch (error) {
+                      console.warn("Error disposing block:", error);
+                    }
+                  });
+                }
+    
+                if (Array.isArray(c.childBlocks) && c.childBlocks.length > 0) {
+                  let previousChild: any = null;
+                  for (const childType of c.childBlocks) {
+                    const child = this.workspace.newBlock(childType);
+                    child.initSvg();
+                    const nextConnection = previousChild ? previousChild.nextConnection : stmt.connection;
+                    if (nextConnection && child.previousConnection) {
+                      nextConnection.connect(child.previousConnection);
+                    }
+                    child.render();
+                    previousChild = child;
+                  }
                 }
                 (this as any).__childrenSeeded = true;
-              } catch {
-                console.warn("Failed to auto-seed child blocks for", blockDef.id);
+              } catch (error) {
+                console.warn("Failed to auto-seed child blocks for", blockDef.id, error);
               }
             });
           }
         }
     
-        // Optional type or value dropdown for creator or setter
-        const typeOptions = (cfg as ICreateBlockConfig | ISetBlockConfig).typeOptions;
-        if (typeOptions && typeOptions.length > 0) {
-          const dropdownFieldName = blockDef.type === "creator" ? "type" : "value";
-          input.appendField(new FieldDropdown(typeOptions), dropdownFieldName);
-        }
-
-        // Optional number input for setter blocks
-        if (blockDef.type === "setter") {
-          const setterConfig = cfg as ISetBlockConfig;
-          if (setterConfig.includeNumberInput) {
-            input.appendField(new FieldNumber(1), "value");
+      if (blockDef.type === "action") {
+          const actionCfg = cfg as IActionBlockConfig;
+          if (Array.isArray(actionCfg.parameters) && actionCfg.parameters.length > 0) {
+            actionCfg.parameters.forEach((param: IParameter) => {
+              if (param.labelText && (param.labelPosition ?? "prefix") === "prefix") {
+                input.appendField(param.labelText);
+              }
+              if (param.kind === "select") {
+                const opts = (param as any).options || [];
+                input.appendField(new FieldDropdown(opts), param.name);
+                if ((param as any).defaultValue) {
+                  try { (this as any).setFieldValue((param as any).defaultValue, param.name); } catch (e) {
+                    console.warn("Failed to set default value for parameter", param.name, e);
+                  }
+                }
+              } else if (param.kind === "number") {
+                const p: any = param;
+                input.appendField(new FieldNumber(p.defaultValue ?? 0), param.name);
+              }
+              if (param.labelText && (param.labelPosition ?? "prefix") === "suffix") {
+                input.appendField(param.labelText);
+              }
+            });
+          }
+        } else if (blockDef.type === "creator") {
+          const creatorCfg = cfg as ICreateBlockConfig;
+          if (Array.isArray(creatorCfg.typeOptions) && creatorCfg.typeOptions.length > 0) {
+            input.appendField(new FieldDropdown(creatorCfg.typeOptions), "type");
+          }
+        } else if (blockDef.type === "setter") {
+          const setterCfg = cfg as ISetBlockConfig;
+          if (setterCfg.includeNumberInput) {
+            input.appendField(new FieldNumber(0), "value");
+          } else if (Array.isArray(setterCfg.typeOptions) && setterCfg.typeOptions.length > 0) {
+            input.appendField(new FieldDropdown(setterCfg.typeOptions), "value");
           }
         }
 
@@ -155,22 +197,48 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
 
     // Generator: include available values
     netlogoGenerator.forBlock[blockType] = function(block) {
-      if (blockDef.type === "setter") {
-        // This is probably at least close to what we want.
-        const attributeName = blockDef.name.toLowerCase().replace(/\s+/g, "_");
-        const setterConfig = cfg as ISetBlockConfig;
-        
-        // Get the value from either dropdown or number input
-        let attributeValue;
-        if (setterConfig.typeOptions && setterConfig.typeOptions.length > 0) {
-          attributeValue = block.getFieldValue("value");
-        } else if (setterConfig.includeNumberInput) {
-          attributeValue = block.getFieldValue("value");
-        } else {
-          attributeValue = "1"; // default value
+      if (blockDef.type === "action") {
+        // If a generatorTemplate is provided, interpolate parameter fields
+        const actionName = blockDef.name.toLowerCase().replace(/\s+/g, "_");
+        const actionConfig: IActionBlockConfig = cfg;
+
+        if (actionConfig.generatorTemplate && typeof actionConfig.generatorTemplate === "string") {
+          let code = String(actionConfig.generatorTemplate);
+          // Replace ${PARAM} placeholders with field values
+          const params = Array.isArray(actionConfig.parameters) ? actionConfig.parameters : [];
+          params.forEach((p: IParameter) => {
+            const val = block.getFieldValue(p.name);
+            const safe = val != null ? String(val) : "";
+            const re = new RegExp(`\\$\\{${p.name}\\}`, "g");
+            code = code.replace(re, safe);
+          });
+          // Also allow ${ACTION} for the action name
+          code = code.replace(/\$\{ACTION\}/g, actionName);
+          return code.endsWith("\n") ? code : code + "\n";
         }
 
-        return `set ${attributeName} ${attributeValue}\n`;
+        // Fallback: build from parameters
+        const parts: string[] = [actionName];
+        if (Array.isArray(actionConfig.parameters) && actionConfig.parameters.length > 0) {
+          actionConfig.parameters.forEach((param: IParameter) => {
+            if (param.labelText && (param.labelPosition ?? "prefix") === "prefix") {
+              parts.push(String(param.labelText));
+            }
+            const v = block.getFieldValue(param.name);
+            if (v) parts.push(String(v));
+            if (param.labelText && (param.labelPosition ?? "prefix") === "suffix") {
+              parts.push(String(param.labelText));
+            }
+          });
+        }
+
+        return parts.join(" ") + "\n";
+      } else if (blockDef.type === "setter") {
+        // This is probably at least close to what we want.
+        const attributeName = blockDef.name.toLowerCase().replace(/\s+/g, "_");
+        const value = block.getFieldValue("value");
+
+        return `set ${attributeName} ${value}\n`;
       } else if (blockDef.type === "creator") {
         // This is probaly NOT close to what we want. There can be other parameters
         // to take into consideration and statements to process, e.g. child setter blocks.
