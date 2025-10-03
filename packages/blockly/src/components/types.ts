@@ -4,7 +4,17 @@ import { MenuOption } from "blockly";
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
 
-export type CustomBlockType = "action" | "creator" | "setter";
+export const VALID_BLOCK_TYPES = ["action", "creator", "setter"] as const;
+export const REQUIRED_BLOCK_FIELDS = [
+  "category",
+  "color",
+  "config",
+  "id",
+  "name",
+  "type"
+] as const;
+
+export type CustomBlockType = typeof VALID_BLOCK_TYPES[number];
 export type ParameterKind = "select" | "number";
 export interface IParameterBase {
   defaultValue?: string | number;

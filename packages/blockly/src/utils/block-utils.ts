@@ -1,5 +1,9 @@
 import { BUILT_IN_BLOCKS } from "../blocks/built-in-blocks-registry";
-import { ICustomBlock } from "../components/types";
+import { ICustomBlock, REQUIRED_BLOCK_FIELDS, VALID_BLOCK_TYPES } from "../components/types";
+
+const validateString = (value: unknown): boolean => {
+  return typeof value === "string" && value.length > 0;
+};
 
 // Return all child blocks that can be contained within action blocks
 export const actionBlockChildOptions = (existingCustomBlocks: ICustomBlock[] = [], excludeBlockId?: string) => {
@@ -20,8 +24,6 @@ export const validateBlocksJson = (blocks: unknown): { valid: boolean; error?: s
   if (!Array.isArray(blocks)) {
     return { valid: false, error: "JSON must be an array of blocks" };
   }
-
-  const required = ["id", "type", "name", "color", "category", "config"];
   const seenIds = new Set<string>();
 
   for (let i = 0; i < blocks.length; i++) {
@@ -31,7 +33,7 @@ export const validateBlocksJson = (blocks: unknown): { valid: boolean; error?: s
       return { valid: false, error: `Item ${i + 1} is not an object` };
     }
 
-    for (const key of required) {
+    for (const key of REQUIRED_BLOCK_FIELDS) {
       if (!(key in b)) {
         return { valid: false, error: `Item ${i + 1} is missing required field: ${key}` };
       }
@@ -47,19 +49,19 @@ export const validateBlocksJson = (blocks: unknown): { valid: boolean; error?: s
 
     seenIds.add(b.id);
 
-    if (!["creator", "setter", "action"].includes(b.type)) {
+    if (!VALID_BLOCK_TYPES.includes(b.type)) {
       return { valid: false, error: `Item ${i + 1} has invalid type: ${String(b.type)}` };
     }
 
-    if (typeof b.name !== "string" || b.name.length === 0) {
+    if (!validateString(b.name)) {
       return { valid: false, error: `Item ${i + 1} has invalid name` };
     }
 
-    if (typeof b.category !== "string" || b.category.length === 0) {
+    if (!validateString(b.category)) {
       return { valid: false, error: `Item ${i + 1} has invalid category` };
     }
 
-    if (typeof b.color !== "string") {
+    if (!validateString(b.color)) {
       return { valid: false, error: `Item ${i + 1} has invalid color` };
     }
 

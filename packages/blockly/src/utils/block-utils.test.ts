@@ -27,17 +27,17 @@ describe("block-utils", () => {
       expect(result.allBlocks).toHaveLength(5); // 1 setter + 1 action + 3 built-in
     });
 
-    it("should exclude editing block from results", () => {
+    it("should exclude the block currently being edited from results", () => {
       const customBlocks = [
         { id: "custom_set_color", type: "setter", name: "color" } as ICustomBlock,
         { id: "custom_action_test", type: "action", name: "test" } as ICustomBlock
       ];
       
-      const result = actionBlockChildOptions(customBlocks, "custom_set_color");
+      const result = actionBlockChildOptions(customBlocks, "custom_action_test");
       
-      expect(result.setterBlocks).toHaveLength(0);
-      expect(result.actionBlocks).toHaveLength(1);
-      expect(result.allBlocks).toHaveLength(4); // 0 setter + 1 action + 3 built-in
+      expect(result.setterBlocks).toHaveLength(1);
+      expect(result.actionBlocks).toHaveLength(0);
+      expect(result.allBlocks).toHaveLength(4); // 1 setter + 0 action + 3 built-in
     });
 
     it("should categorize blocks by type correctly", () => {
@@ -109,18 +109,49 @@ describe("block-utils", () => {
       expect(result.error).toBe("Item 1 is not an object");
     });
 
-    it("should reject blocks missing required fields", () => {
+    it("should reject blocks missing required category field", () => {
       const invalidBlocks = [
         {
           id: "test1",
           type: "setter",
-          name: "color"
-          // missing color, category, config
+          name: "color",
+          color: "#ff0000",
+          config: {}
+        }
+      ];
+      const result = validateBlocksJson(invalidBlocks);
+      expect(result.valid).toBe(false);
+      expect(result.error).toBe("Item 1 is missing required field: category");
+    });
+
+        it("should reject blocks missing required color field", () => {
+      const invalidBlocks = [
+        {
+          id: "test1",
+          type: "setter",
+          name: "color",
+          config: {},
+          category: "Properties"
         }
       ];
       const result = validateBlocksJson(invalidBlocks);
       expect(result.valid).toBe(false);
       expect(result.error).toBe("Item 1 is missing required field: color");
+    });
+
+        it("should reject blocks missing required config field", () => {
+      const invalidBlocks = [
+        {
+          id: "test1",
+          type: "setter",
+          name: "color",
+          color: "#ff0000",
+          category: "Properties"
+        }
+      ];
+      const result = validateBlocksJson(invalidBlocks);
+      expect(result.valid).toBe(false);
+      expect(result.error).toBe("Item 1 is missing required field: config");
     });
 
     it("should reject blocks with invalid id", () => {
