@@ -1,6 +1,6 @@
 import { Blocks, FieldDropdown, FieldNumber } from "blockly/core";
 import { registerCustomBlocks } from "./block-factory";
-import { ICustomBlock } from "../components/types";
+import { IBlockConfig, ICustomBlock } from "../components/types";
 import { netlogoGenerator } from "../utils/netlogo-generator";
 
 // Mock Blockly and its components
@@ -120,7 +120,7 @@ describe("block-factory", () => {
         category: "Properties",
         config: {
           typeOptions: [["red", "RED"], ["blue", "BLUE"]]
-        }
+        } as IBlockConfig
       };
 
       registerCustomBlocks([setterBlock]);
@@ -142,7 +142,7 @@ describe("block-factory", () => {
           minCount: 0,
           maxCount: 500,
           typeOptions: [["water", "WATER"], ["air", "AIR"]]
-        }
+        } as IBlockConfig
       };
 
       registerCustomBlocks([creatorBlock]);
@@ -170,7 +170,7 @@ describe("block-factory", () => {
           name: "particles",
           color: "#00FF00",
           category: "General",
-          config: {}
+          config: {} as IBlockConfig
         }
       ];
 
@@ -195,7 +195,7 @@ describe("block-factory", () => {
         category: "Properties",
         config: {
           typeOptions: [["red", "RED"], ["blue", "BLUE"]]
-        }
+        } as IBlockConfig
       };
 
       registerCustomBlocks([setterBlock]);
@@ -253,7 +253,7 @@ describe("block-factory", () => {
           minCount: 0,
           maxCount: 500,
           typeOptions: [["water", "WATER"], ["air", "AIR"]]
-        }
+        } as IBlockConfig
       };
 
       registerCustomBlocks([creatorBlock]);

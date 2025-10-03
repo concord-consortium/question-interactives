@@ -5,7 +5,7 @@ import React from "react";
 import { availableChildBlocks } from "../utils/block-utils";
 import { extractCategoriesFromToolbox } from "../utils/toolbox-utils";
 import { CustomBlockForm } from "./custom-block-form";
-import { ICustomBlock, CustomBlockType } from "./types";
+import { ICustomBlock, CustomBlockType, IBlockConfig } from "./types";
 
 jest.mock("./custom-block-form.scss", () => ({}));
 jest.mock("../utils/block-utils", () => ({
@@ -26,7 +26,7 @@ describe("CustomBlockForm", () => {
       category: "Properties",
       config: {
         typeOptions: [["red", "RED"], ["blue", "BLUE"]]
-      }
+      } as IBlockConfig
     }
   ];
 
@@ -73,7 +73,7 @@ describe("CustomBlockForm", () => {
     it("shows 'Action Name' label for action blocks", () => {
       render(<CustomBlockForm {...defaultProps} blockType="action" />);
       expect(screen.getByText("Action Name")).toBeInTheDocument();
-      expect(screen.getByPlaceholderText("e.g., molecules, people")).toBeInTheDocument();
+      expect(screen.getByPlaceholderText("e.g., bounce off, move forward")).toBeInTheDocument();
     });
 
     it("does not show Type Label field", () => {
@@ -155,7 +155,7 @@ describe("CustomBlockForm", () => {
       category: "Properties",
       config: {
         typeOptions: [["red", "RED"], ["blue", "BLUE"]]
-      }
+      } as IBlockConfig
     };
 
     it("populates form with existing block data", () => {

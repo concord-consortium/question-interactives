@@ -4,7 +4,7 @@ import { MenuOption } from "blockly";
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
 
-export const VALID_BLOCK_TYPES = ["action", "creator", "setter"] as const;
+export const VALID_BLOCK_TYPES = ["action", "condition", "creator", "setter", "statement"] as const;
 export const REQUIRED_BLOCK_FIELDS = [
   "category",
   "color",
@@ -32,47 +32,40 @@ export interface IParameterNumber extends IParameterBase {
 }
 export type IParameter = IParameterSelect | IParameterNumber;
 
-interface IBlockConfigBase {
-  canHaveChildren?: boolean;
-  childBlocks?: string[];
-  generatorTemplate?: string;
-  inputsInline?: boolean;
-  nextStatement?: boolean;
-  previousStatement?: boolean;
-}
+export const STATEMENT_KINDS = ["ask", "chance", "custom", "repeat", "when"] as const;
+export type StatementKind = typeof STATEMENT_KINDS[number];
+export const STATEMENT_KIND_LABEL: Record<StatementKind, string> = {
+  ask: "ask",
+  chance: "with a chance of",
+  custom: "custom",
+  repeat: "repeat",
+  when: "when"
+};
 
-export interface IActionBlockConfig extends IBlockConfigBase {
-  parameters?: IParameter[];
-}
-export interface ICreateBlockConfig extends IBlockConfigBase {
+export interface IBlockConfig {
+  canHaveChildren: boolean;
+  childBlocks?: string[];
+  conditionInput?: boolean;
+  statementKind?: StatementKind;
   defaultCount?: number;
+  generatorTemplate?: string;
+  includeNumberInput?: boolean;
+  inputsInline?: boolean;
+  labelPosition?: "prefix" | "suffix";
   maxCount?: number;
   minCount?: number;
+  nextStatement?: boolean;
+  options?: MenuOption[];
+  parameters?: IParameter[];
+  previousStatement?: boolean;
+  targetEntity?: string;
   typeOptions?: MenuOption[];
 }
-
-export interface ISetBlockConfig extends IBlockConfigBase {
-  canHaveChildren: false;
-  includeNumberInput?: boolean;
-  typeOptions?: MenuOption[];
-}
-
-export const isActionBlockConfig = (config: unknown): config is IActionBlockConfig => {
-  return (config as IActionBlockConfig).parameters !== undefined;
-};
-
-export const isCreateBlockConfig = (config: unknown): config is ICreateBlockConfig => {
-  return (config as ICreateBlockConfig).typeOptions !== undefined && (config as ICreateBlockConfig).canHaveChildren !== false;
-};
-
-export const isSetBlockConfig = (config: unknown): config is ISetBlockConfig => {
-  return (config as ISetBlockConfig).includeNumberInput !== undefined;
-};
 
 export interface ICustomBlock {
   category: string; // Toolbox category name
   color: string;
-  config: IActionBlockConfig | ICreateBlockConfig | ISetBlockConfig;
+  config: IBlockConfig;
   id: string;
   name: string;
   type: CustomBlockType;
@@ -101,60 +94,45 @@ export const DefaultAuthoredState: Omit<Required<IAuthoredState>, "questionSubTy
 
 export const DemoAuthoredState: IAuthoredState = {
   customBlocks: [
-     {
-       "category": "Properties",
-       "color": "#312b84",
-       "config": {
-         "canHaveChildren": false,
-         "inputsInline": true,
-         "nextStatement": true,
-         "previousStatement": true,
-         "typeOptions": [
-           ["blue", "BLUE"],
-           ["red", "RED"]
-         ]
-       },
-       "id": "custom_setter_color_1759159837671",
-       "name": "color",
-       "type": "setter"
-     },
-     {
-       "category": "Properties",
-       "color": "#312b84",
-       "config": {
-         "canHaveChildren": true,
-         "inputsInline": true,
-         "nextStatement": true,
-         "previousStatement": true,
-         "childBlocks": [
-           "custom_setter_color_1759159837671"
-         ],
-         "typeOptions": [
-           ["water", "WATER"],
-           ["ink", "INK"]
-         ],
-         "defaultCount": 100,
-         "minCount": 0,
-         "maxCount": 500
-       },
-       "id": "custom_creator_molecules_1759159855002",
-       "name": "molecules",
-       "type": "creator"
-     },
     {
-      "category": "Action",
-      "color": "#004696",
+      "category": "Properties",
+      "color": "#312b84",
       "config": {
+        "canHaveChildren": false,
         "inputsInline": true,
         "nextStatement": true,
         "previousStatement": true,
-        "canHaveChildren": false,
-        "childBlocks": [],
-        "generatorTemplate": "${ACTION}\n",
+        "typeOptions": [
+          ["blue", "BLUE"],
+          ["red", "RED"]
+        ]
       },
-      "id": "custom_action_bounce_off_1759180886334",
-      "name": "bounce off",
-      "type": "action"
+      "id": "custom_setter_color_1759159837671",
+      "name": "color",
+      "type": "setter"
+    },
+    {
+      "category": "Properties",
+      "color": "#312b84",
+      "config": {
+        "canHaveChildren": true,
+        "inputsInline": true,
+        "nextStatement": true,
+        "previousStatement": true,
+        "childBlocks": [
+          "custom_setter_color_1759159837671"
+        ],
+        "typeOptions": [
+          ["water", "WATER"],
+          ["ink", "INK"]
+        ],
+        "defaultCount": 100,
+        "minCount": 0,
+        "maxCount": 500
+      },
+      "id": "custom_creator_molecules_1759159855002",
+      "name": "molecules",
+      "type": "creator"
     },
     {
       "category": "Action",
@@ -204,90 +182,95 @@ export const DemoAuthoredState: IAuthoredState = {
       "type": "action"
     },
     {
-      "category": "Action",
-      "color": "#004696",
+      "category": "Controls",
+      "color": "#0089b8",
       "config": {
         "inputsInline": true,
         "nextStatement": true,
         "previousStatement": true,
-        "canHaveChildren": false,
+        "canHaveChildren": true,
         "childBlocks": [],
-        "generatorTemplate": "${ACTION} ${MOLECULE}\n",
-        "parameters": [
-          {
-            "kind": "select",
-            "name": "MOLECULE",
-            "labelPosition": "suffix",
-            "options": [
-              [
-                "co2",
-                "CO2"
-              ],
-              [
-                "h2o",
-                "H2O"
-              ]
-            ],
-            "labelText": "apart"
-          }
-        ]
+        "statementKind": "ask",
+        "conditionInput": false,
+        "options": [
+          [
+            "water",
+            "WATER"
+          ],
+          [
+            "ink",
+            "INK"
+          ]
+        ],
+        "targetEntity": "molecules"
       },
-      "id": "custom_action_break_1759267395583",
-      "name": "break",
-      "type": "action"
+      "id": "custom_statement_ask_molecules_1759854843519",
+      "name": "ask molecules",
+      "type": "statement"
     },
     {
-      "category": "Action",
-      "color": "#004696",
+      "category": "Controls",
+      "color": "#0089b8",
       "config": {
         "inputsInline": true,
         "nextStatement": true,
         "previousStatement": true,
         "canHaveChildren": false,
-        "childBlocks": [],
-        "generatorTemplate": "${ACTION}\n",
-        "parameters": [
-          {
-            "kind": "number",
-            "name": "LEFT",
-            "labelPosition": "suffix",
-            "labelText": "degrees",
-            "defaultValue": 1
-          }
-        ]
+        "options": [
+          [
+            "high",
+            "HIGH"
+          ],
+          [
+            "low",
+            "low"
+          ]
+        ],
+        "labelPosition": "prefix"
       },
-      "id": "custom_action_turn_left_1759267437081",
-      "name": "turn left",
-      "type": "action"
+      "id": "custom_condition_temperature_is_1759786425875",
+      "name": "temperature is",
+      "type": "condition"
     },
     {
-      "category": "Action",
-      "color": "#004696",
+      "category": "Controls",
+      "color": "#0089b8",
       "config": {
         "inputsInline": true,
         "nextStatement": true,
         "previousStatement": true,
         "canHaveChildren": false,
-        "childBlocks": [],
-        "generatorTemplate": "${ACTION} ${X} ${Y}\n",
-        "parameters": [
-          {
-            "kind": "number",
-            "name": "X",
-            "labelPosition": "prefix",
-            "labelText": "x:"
-          },
-          {
-            "kind": "number",
-            "name": "Y",
-            "labelPosition": "prefix",
-            "labelText": "y:"
-          }
-        ]
+        "options": [],
+        "labelPosition": "prefix"
       },
-      "id": "custom_action_go_to_1759267501416",
-      "name": "go to",
-      "type": "action"
+      "id": "custom_condition_no_more_energy_1759786582708",
+      "name": "no more energy",
+      "type": "condition"
+    },
+    {
+      "category": "Controls",
+      "color": "#0089b8",
+      "config": {
+        "inputsInline": true,
+        "nextStatement": true,
+        "previousStatement": true,
+        "canHaveChildren": false,
+        "options": [
+          [
+            "healthy",
+            "HEALTHY"
+          ],
+          [
+            "sick",
+            "SICK"
+          ]
+        ],
+        "labelPosition": "prefix",
+        "targetEntity": "molecules"
+      },
+      "id": "custom_condition_near_1759786656575",
+      "name": "near",
+      "type": "condition"
     }
   ],
   hint: "",
@@ -326,6 +309,12 @@ export const DemoAuthoredState: IAuthoredState = {
         "kind": "category",
         "name": "Action",
         "colour": "#004696",
+        "contents": []
+      },
+      {
+        "kind": "category",
+        "name": "Controls",
+        "colour": "#0089b8",
         "contents": []
       }
     ]

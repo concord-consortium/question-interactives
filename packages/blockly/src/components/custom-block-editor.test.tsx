@@ -95,7 +95,7 @@ describe("CustomBlockEditor", () => {
   describe("Block Management", () => {
     it("shows add buttons for all block types", () => {
       render(<CustomBlockEditor {...defaultProps} />);
-      expect(screen.getAllByText("Add Block")).toHaveLength(3);
+      expect(screen.getAllByText("Add Block")).toHaveLength(5);
     });
 
     it("shows edit and delete buttons for each block", () => {

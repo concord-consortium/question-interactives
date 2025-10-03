@@ -229,6 +229,88 @@ export const CustomBlockEditor: React.FC<IProps> = ({ value, onChange, toolbox }
         </div>
       </div>
 
+      {/* Statement blocks section */}
+      <div className={css.customBlocks_section} data-testid="section-statement">
+        <div className={css.customBlocks_new}>
+          <div className={css.customBlocks_newHeading}>
+            <h5>Statement Blocks</h5>
+            <button data-testid="add-statement" onClick={() => {
+              setEditingBlock(null);
+              setShowForm(showForm === "statement" ? null : "statement");
+            }}>
+              {showForm === "statement" ? "Cancel" : "Add Block"}
+            </button>
+          </div>
+          {showForm === "statement" && (
+            <CustomBlockForm
+              blockType="statement"
+              editingBlock={editingBlock}
+              existingBlocks={customBlocks}
+              toolbox={toolbox}
+              onSubmit={handleFormSubmit}
+            />
+          )}
+        </div>
+        <div className={css.customBlocks_current} data-testid="current-statement">
+          {customBlocks.filter(b => b.type === "statement").length > 0 ? (
+            customBlocks.filter(b => b.type === "statement").map(block => (
+              <div className={css.customBlocks_currentBlock} key={block.id} data-testid="current-block">
+                <div className={css.customBlocks_currentBlockInfo}>
+                  <strong>{block.name}</strong> ({block.type}) - {block.category}
+                </div>
+                <div className={css.customBlocks_currentBlockActions}>
+                  <button data-testid="block-edit" onClick={() => editCustomBlock(block)}>Edit</button>
+                  <button data-testid="block-delete" onClick={() => deleteBlock(block.id)}>Delete</button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className={css.noBlocks_message}>No statement blocks created yet</div>
+          )}
+        </div>
+      </div>
+
+      {/* Condition blocks section */}
+      <div className={css.customBlocks_section} data-testid="section-condition">
+        <div className={css.customBlocks_new}>
+          <div className={css.customBlocks_newHeading}>
+            <h5>Condition Blocks</h5>
+            <button data-testid="add-condition" onClick={() => {
+              setEditingBlock(null);
+              setShowForm(showForm === "condition" ? null : "condition");
+            }}>
+              {showForm === "condition" ? "Cancel" : "Add Block"}
+            </button>
+          </div>
+          {showForm === "condition" && (
+            <CustomBlockForm
+              blockType="condition"
+              editingBlock={editingBlock}
+              existingBlocks={customBlocks}
+              toolbox={toolbox}
+              onSubmit={handleFormSubmit}
+            />
+          )}
+        </div>
+        <div className={css.customBlocks_current} data-testid="current-condition">
+          {customBlocks.filter(b => b.type === "condition").length > 0 ? (
+            customBlocks.filter(b => b.type === "condition").map(block => (
+              <div className={css.customBlocks_currentBlock} key={block.id} data-testid="current-block">
+                <div className={css.customBlocks_currentBlockInfo}>
+                  <strong>{block.name}</strong> ({block.type}) - {block.category}
+                </div>
+                <div className={css.customBlocks_currentBlockActions}>
+                  <button data-testid="block-edit" onClick={() => editCustomBlock(block)}>Edit</button>
+                  <button data-testid="block-delete" onClick={() => deleteBlock(block.id)}>Delete</button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className={css.noBlocks_message}>No condition blocks created yet</div>
+          )}
+        </div>
+      </div>
+
       {/* Editable code preview for all custom blocks. */}
       <div className={css.codePreview} data-testid="code-preview">
         <div className={css.codePreview_header}>

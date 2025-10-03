@@ -1,4 +1,4 @@
-import { ICustomBlock } from "../components/types";
+import { IBlockConfig, ICustomBlock } from "../components/types";
 import { extractCategoriesFromToolbox, injectCustomBlocksIntoToolbox } from "./toolbox-utils";
 
 describe("toolbox-utils", () => {
@@ -92,7 +92,7 @@ describe("toolbox-utils", () => {
       {
         category: "Properties",
         color: "#ff0000",
-        config: {},
+        config: {} as IBlockConfig,
         id: "custom_set_color_123",
         name: "color",
         type: "setter"
@@ -100,7 +100,7 @@ describe("toolbox-utils", () => {
       {
         category: "Actions",
         color: "#00ff00",
-        config: {},
+        config: {} as IBlockConfig,
         id: "custom_action_move_456",
         name: "move",
         type: "action"
@@ -108,7 +108,7 @@ describe("toolbox-utils", () => {
       {
         category: "General",
         color: "#0000ff",
-        config: {},
+        config: {} as IBlockConfig,
         id: "custom_create_particles_789",
         name: "particles",
         type: "creator"
@@ -263,7 +263,7 @@ describe("toolbox-utils", () => {
         {
           category: "Properties",
           color: "#ff0000",
-          config: {},
+          config: {} as IBlockConfig,
           id: "custom_set_color_123",
           name: "color",
           type: "setter"
@@ -271,7 +271,7 @@ describe("toolbox-utils", () => {
         {
           category: "Properties",
           color: "#ff0000",
-          config: {},
+          config: {} as IBlockConfig,
           id: "custom_set_speed_456",
           name: "speed",
           type: "setter"
