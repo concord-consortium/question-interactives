@@ -1,0 +1,260 @@
+@import "./variables.scss";
+
+.customBlockForm {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-xl;
+
+  .customBlockForm_basicFields {
+    display: flex;
+    gap: $spacing-xxl;
+    align-items: flex-start;
+    
+    .customBlockForm_name,
+    .customBlockForm_color {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      flex: 1;
+      
+      label {
+        font-weight: $font-weight-medium;
+        display: block;
+        margin: 0;
+      }
+      
+      input {
+        width: 100%;
+        max-width: 200px;
+      }
+    }
+  }
+
+  .customBlockForm_category {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    
+    label {
+      display: block;
+      font-weight: $font-weight-medium;
+      margin: 0;
+    }
+    
+    select {
+      border: 1px solid $border-light;
+      border-radius: $border-radius-sm;
+      font-size: $font-size-sm;
+      max-width: 200px;
+      padding: 6px $spacing-md;
+      
+      &:focus {
+        border-color: $primary-blue;
+        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+        outline: none;
+      }
+    }
+  }
+
+  .customBlockForm_inputs {
+    align-items: center;
+    display: none; // flex; // see TODO comment in custom-block-form.tsx
+    flex-wrap: wrap;
+    gap: $spacing-xxl;
+    
+    .inlineLabel {
+      align-items: center;
+      display: flex;
+      font-weight: $font-weight-normal;
+      gap: 6px;
+      margin: 0;
+      white-space: nowrap;
+
+      input {
+        margin: 0;
+      }
+    }
+  }
+
+  .customBlockForm_typeLabel {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    
+    label {
+      display: block;
+      font-weight: $font-weight-medium;
+      margin: 0;
+    }
+    
+    input {
+      flex: 1;
+      max-width: 200px;
+    }
+  }
+
+  .customBlockForm_countFields {
+    display: grid;
+    gap: $spacing-xl;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    
+    > div {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+      
+      label {
+        display: block;
+        font-weight: $font-weight-medium;
+        font-size: $font-size-sm;
+        margin: 0;
+      }
+      
+      input {
+        border: 1px solid $border-light;
+        border-radius: $border-radius-sm;
+        padding: 6px $spacing-md;
+      }
+    }
+  }
+
+  .customBlockForm_includeCount {
+    align-items: center;
+    display: flex;
+    gap: $spacing-md;
+    
+    label {
+      align-items: center;
+      display: flex;
+      font-weight: $font-weight-normal;
+      gap: 6px;
+      margin: 0;
+    }
+  }
+
+  .customBlockForm_includeNumberInput {
+    align-items: center;
+    display: flex;
+    gap: $spacing-md;
+    
+    label {
+      align-items: center;
+      display: flex;
+      font-weight: $font-weight-normal;
+      gap: 6px;
+      margin: 0;
+    }
+  }
+
+  .customBlockForm_options {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+    
+    label {
+      font-weight: $font-weight-medium;
+      margin-bottom: 2px;
+    }
+    
+    .optionRow {
+      align-items: center;
+      display: flex;
+      gap: $spacing-md;
+      
+      input {
+        border: 1px solid $border-light;
+        border-radius: $border-radius-sm;
+        flex: 1;
+        padding: 6px $spacing-md;
+      }
+      
+      button {
+        background: $background-lighter;
+        border: 1px solid $border-light;
+        border-radius: $border-radius-sm;
+        color: $text-medium;
+        cursor: pointer;
+        padding: 6px $spacing-lg;
+        
+        &:hover {
+          background: $background-light;
+        }
+      }
+    }
+    
+    .addOptionButton {
+      align-self: flex-start;
+      background: $primary-blue;
+      border: none;
+      border-radius: $border-radius-sm;
+      color: white;
+      cursor: pointer;
+      padding: 6px $spacing-lg;
+      
+      &:hover {
+        background: $primary-blue-hover;
+      }
+    }
+  }
+
+  .customBlockForm_childBlocks {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-md;
+    
+    label {
+      display: block;
+      font-weight: $font-weight-medium;
+      margin: 0;
+    }
+    
+    select {
+      border: 1px solid $border-light;
+      border-radius: $border-radius-sm;
+      min-height: 80px;
+      padding: 6px $spacing-md;
+    }
+  }
+
+  button[type="button"] {
+    align-self: center;
+    background: $success-green;
+    border: none;
+    border-radius: $border-radius-sm;
+    color: white;
+    cursor: pointer;
+    font-weight: $font-weight-medium;
+    padding: 10px $spacing-xxl;
+    
+    &:hover {
+      background: $success-green-hover;
+    }
+  }
+
+  span.required {
+    color: $danger-red;
+    margin-left: 2px;
+  }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="color"] {
+    border: 1px solid $border-light;
+    border-radius: $border-radius-sm;
+    font-size: $font-size-sm;
+    padding: 6px $spacing-md;
+    
+    &:focus {
+      border-color: $primary-blue;
+      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+      outline: none;
+    }
+  }
+  
+  input[type="color"] {
+    cursor: pointer;
+    height: 32px;
+    padding: 2px;
+    width: 40px;
+  }
+}

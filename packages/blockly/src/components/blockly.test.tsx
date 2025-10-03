@@ -1,7 +1,8 @@
 import { render, screen } from "@testing-library/react";
 import React from "react";
 
-import { 
+import {
+  customBlocksAuthoredState,
   defaultAuthoredState,
   defaultInteractiveState,
   generalToolboxAuthoredState,
@@ -84,5 +85,20 @@ describe("BlocklyComponent", () => {
     />);
     const ifBlockElement = container.querySelector('g.controls_if');
     expect(ifBlockElement).toBeInTheDocument();
+  });
+
+  it("renders with custom blocks in toolbox", () => {
+    render(<BlocklyComponent
+      authoredState={customBlocksAuthoredState}
+      interactiveState={defaultInteractiveState}
+      setInteractiveState={() => {
+        // mock implementation
+      }}
+      report={false}
+    />);
+    
+    expect(screen.queryByText(/Enter a toolbox configuration to see Blockly./)).not.toBeInTheDocument();
+    expect(screen.queryByText(/Error loading Blockly:/)).not.toBeInTheDocument();
+    expect(document.querySelector(".injectionDiv")).toBeInTheDocument();
   });
 });

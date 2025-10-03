@@ -1,0 +1,159 @@
+@import "./variables.scss";
+
+.customBlockEditor {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-lg;
+
+  h4 {
+    font-size: $font-size-md;
+    margin: 0;
+  }
+  h5 {
+    font-size: $font-size-sm;
+    margin: 0;
+  }
+
+  label {
+    display: block;
+  }
+
+  .customBlocksCreator, 
+  .customBlocksSetter {
+    background: $background-lighter;
+    border: 1px solid $border-medium;
+    border-radius: $border-radius-lg;
+    padding: 15px;
+  }
+
+  .customBlocksNew {
+    margin-bottom: 10px;
+
+    .customBlocksNewHeading {
+      align-items: center;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 0;
+
+      button {
+        background: $primary-blue;
+        border: none;
+        border-radius: $border-radius-sm;
+        color: white;
+        cursor: pointer;
+        font-weight: $font-weight-medium;
+        padding: $spacing-md $spacing-xl;
+        transition: background-color $transition-fast;
+
+        &:hover {
+          background: $primary-blue-hover;
+        }
+      }
+    }
+  }
+
+  .customBlocksCurrent {
+    display: flex;
+    flex-direction: column;
+    gap: $spacing-lg;
+
+    .customBlocksCurrentBlock {
+      align-items: center;
+      background: var(--white);
+      border: 1px solid $border-light;
+      border-radius: $border-radius-md;
+      box-shadow: $shadow-sm;
+      display: flex;
+      padding: $spacing-xl;
+      justify-content: space-between;
+      transition: box-shadow $transition-fast;
+
+      &:hover {
+        box-shadow: $shadow-md;
+      }
+
+      .customBlocksCurrentBlockInfo {
+        align-items: center;
+        display: flex;
+        gap: $spacing-sm;
+      }
+
+      .customBlocksCurrentBlockActions {
+        align-items: center;
+        display: flex;
+        gap: $spacing-md;
+
+        button {
+          border: 1px solid $border-light;
+          border-radius: $border-radius-sm;
+          background: var(--white);
+          cursor: pointer;
+          font-size: $font-size-xs;
+          font-weight: $font-weight-medium;
+          padding: 6px $spacing-lg;
+          transition: all $transition-fast;
+
+            
+          &:hover {
+           background: $background-light;
+          } 
+        }
+      }
+    }
+    .noBlocksMessage {
+      color: $text-medium;
+      font-style: italic;
+    }
+  }
+
+  .customBlocksActions {
+    align-items: center;
+    display: flex;
+    gap: $spacing-md;
+
+    button {
+      background: var(--white);
+      border: 1px solid $border-light;
+      border-radius: $border-radius-sm;
+      cursor: pointer;
+      font-size: $font-size-xs;
+      font-weight: $font-weight-medium;
+      padding: 6px $spacing-lg;
+      transition: all $transition-fast;
+
+      &:hover {
+        background: $background-light;
+      }
+    }
+  }
+
+  .codePreview {
+    background: #f5f5f5;
+    border-radius: $border-radius-sm;
+    padding: 12px;
+
+    .codePreviewHeader {
+      align-items: center;
+      display: flex;
+
+      .customBlocksActions {
+        margin-left: auto;
+      }
+    }
+
+    .codePreviewBody {
+      margin-top: 8px;
+
+      pre {
+        max-height: 240px;
+        overflow: auto;
+      }
+    }
+  }
+
+  .divider {
+    border: none;
+    border-top: solid 1px $border-medium;
+    margin: 0 0 10px;
+  }
+}
