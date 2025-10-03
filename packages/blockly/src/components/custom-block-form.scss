@@ -14,7 +14,7 @@
   }
 
   // In flex layouts, allow items to shrink within container
-  .optionRow, .fieldRow, .customBlockForm_basicFields, .customBlockForm_countFields {
+  .fieldRow, .customBlockForm_basicFields, .customBlockForm_countFields {
     min-width: 0;
   }
 
@@ -196,80 +196,6 @@
       font-weight: $font-weight-medium;
       margin-bottom: 2px;
     }
-    
-    .optionRow {
-      align-items: center;
-      display: flex;
-      gap: $spacing-sm;
-      margin-bottom: $spacing-sm;
-      min-width: 0;
-      
-      input {
-        border: 1px solid $border-light;
-        border-radius: $border-radius-sm;
-        flex: 1 1 auto;
-        min-width: 0;
-        padding: 4px $spacing-md;
-      }
-      
-      button {
-        background: $background-lighter;
-        border: 1px solid $border-light;
-        border-radius: $border-radius-sm;
-        color: $text-medium;
-        cursor: pointer;
-        font-size: $font-size-xs;
-        padding: 5px $spacing-md;
-        flex: 0 0 auto;
-        
-        &:hover {
-          background: $background-light;
-        }
-      }
-    }
-    
-    .addOptionButton {
-      align-self: flex-start;
-      background: $primary-blue;
-      border: none;
-      border-radius: $border-radius-sm;
-      color: white;
-      cursor: pointer;
-      padding: 4px $spacing-md;
-      
-      &:hover {
-        background: $primary-blue-hover;
-      }
-    }
-  }
-
-  .customBlockForm_childBlocks {
-    display: flex;
-    flex-direction: column;
-    gap: $spacing-md;
-    
-    label {
-      display: block;
-      font-weight: $font-weight-medium;
-      margin: 0;
-    }
-    
-    select {
-      border: 1px solid $border-light;
-      border-radius: $border-radius-sm;
-      min-height: 80px;
-      padding: 4px $spacing-sm;
-    }
-
-    .customBlockForm_advancedToggle {
-      align-items: center;
-      display: flex;
-      justify-content: space-between;
-    }
-
-    .customBlockForm_childrenTree {
-      margin-top: $spacing-md;
-    }
   }
 
   button[type="button"] {
@@ -418,57 +344,6 @@
             font-weight: $font-weight-medium;
           }
           
-          .optionsList {
-            display: flex;
-            flex-direction: column;
-            gap: $spacing-xs;
-            
-            .optionRow {
-              align-items: center;
-              display: flex;
-              gap: $spacing-sm;
-              min-width: 0;
-              
-              input {
-                border: solid 1px $border-light;
-                border-radius: $border-radius-sm;
-                flex: 1 1 auto;
-                min-width: 0;
-                font-size: $font-size-sm;
-                padding: 4px $spacing-sm;
-              }
-              
-              .removeOptionButton {
-                background: white;
-                border: solid 1px $border-light;
-                border-radius: $border-radius-sm;
-                color: $text-medium;
-                cursor: pointer;
-                font-size: $font-size-xs;
-                padding: 5px $spacing-sm;
-                flex: 0 0 auto;
-                
-                &:hover {
-                  background: $background-light;
-                }
-              }
-            }
-          }
-          
-          .addOptionButton {
-            align-self: flex-start;
-            background: white;
-            border: solid 1px $border-light;
-            border-radius: $border-radius-sm;
-            color: $text-medium;
-            cursor: pointer;
-            padding: 4px $spacing-md;
-            font-size: $font-size-xs;
-            
-            &:hover {
-              background: $background-light;
-            }
-          }
         }
         
         .numberOptions {

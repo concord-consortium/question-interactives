@@ -149,27 +149,6 @@ describe("CustomBlockForm", () => {
     });
   });
 
-  describe("Options Management", () => {
-    it("allows adding and removing options", async () => {
-      const user = userEvent.setup();
-      render(<CustomBlockForm {...defaultProps} blockType="setter" />);
-
-      await user.click(screen.getByText("Add Option"));
-
-      const labelInputs = screen.getAllByPlaceholderText("Display text (e.g., blue)");
-      const valueInputs = screen.getAllByPlaceholderText("Value (e.g., BLUE)");
-
-      expect(labelInputs).toHaveLength(2);
-      expect(valueInputs).toHaveLength(2);
-
-      await user.type(labelInputs[1], "fast");
-      await user.type(valueInputs[1], "FAST");
-      await user.click(screen.getAllByText("Remove")[0]);
-      
-      expect(screen.getAllByPlaceholderText("Display text (e.g., blue)")).toHaveLength(1);
-      expect(screen.getAllByPlaceholderText("Value (e.g., BLUE)")).toHaveLength(1);
-    });
-  });
 
   describe("Editing Existing Blocks", () => {
     const editingBlock: ICustomBlock = {
@@ -277,29 +256,6 @@ describe("CustomBlockForm", () => {
     });
   });
 
-  describe("Child Blocks Management", () => {
-    beforeEach(() => {
-      (actionBlockChildOptions as jest.Mock).mockReturnValue({
-        setterBlocks: [{ id: "setter1", name: "color" }],
-        actionBlocks: [{ id: "action1", name: "move" }],
-        builtInBlocks: []
-      });
-    });
-
-    // TODO: Extend this to toggle the checkbox and verify behavior.
-    it("shows child blocks selector for action blocks when `canHaveChildren` is checked", async () => {
-      render(<CustomBlockForm {...defaultProps} blockType="action" />);
-      const checkbox = screen.getByLabelText("Contains Child Blocks");
-      expect(checkbox).toBeInTheDocument();
-      expect(checkbox).not.toBeChecked();
-    });
-
-    it("shows child blocks selector for creator blocks", () => {
-      render(<CustomBlockForm {...defaultProps} blockType="creator" />);
-      expect(screen.getByText("Child Blocks")).toBeInTheDocument();
-      expect(screen.getByText("color (setter)")).toBeInTheDocument();
-    });
-  });
 
   describe("Enhanced Form Validation", () => {
     it("validates action block requires generator template", async () => {

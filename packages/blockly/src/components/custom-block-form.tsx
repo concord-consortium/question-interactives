@@ -2,10 +2,12 @@ import React, { useState, useEffect, useMemo } from "react";
 
 import { actionBlockChildOptions } from "../utils/block-utils";
 import { extractCategoriesFromToolbox } from "../utils/toolbox-utils";
+import { CustomBlockFormOptionList } from "./custom-block-form-option-list";
 import { CustomBlockType, IActionBlockConfig, ICustomBlock, ICreateBlockConfig, ISetBlockConfig,
   IParameter, isActionBlockConfig, isCreateBlockConfig, isSetBlockConfig } from "./types";
 
 import css from "./custom-block-form.scss";
+import { CustomBlockFormChildBlocks } from "./custom-block-form-child-blocks";
 
 interface IProps {
   blockType: CustomBlockType;
@@ -40,32 +42,6 @@ const categoryColors = {
   "setter": "#312b84"
 };
 
-const updateParameterOptions = (
-  prev: IParameter[],
-  paramIdx: number,
-  optionIdx: number,
-  update: (old: [string, string]) => [string, string]
-): IParameter[] => {
-  return prev.map((pp, idx) => {
-    if (idx !== paramIdx) return pp;
-    const opts = [ ...((pp as any).options || []) ];
-    opts[optionIdx] = update(opts[optionIdx]);
-    return ({ ...pp, options: opts });
-  });
-};
-
-const removeParameterOption = (
-  prev: IParameter[],
-  paramIdx: number,
-  optionIdx: number
-): IParameter[] => {
-  return prev.map((pp, idx) => {
-    if (idx !== paramIdx) return pp;
-    const opts = [ ...((pp as any).options || []) ];
-    opts.splice(optionIdx, 1);
-    return ({ ...pp, options: opts });
-  });
-};
 
 export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, existingBlocks, onSubmit, toolbox }) => {
   const [formData, setFormData] = useState<ICustomBlockFormState>({
@@ -418,42 +394,18 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
                   {p.kind === "select" ? (
                     <div className={css.selectOptions} data-testid={`param-select-options-${i}`}>
                       <label htmlFor="options">Options</label>
-                      <div id="options" className={css.optionsList}>
-                        {(p as any).options?.map((opt: [string,string], oi: number) => (
-                          <div key={oi} className={css.optionRow} data-testid={`param-option-row-${i}-${oi}`}>
-                            <input
-                              data-testid={`param-option-display-${i}-${oi}`}
-                              placeholder="Display text (e.g., forward)"
-                              type="text"
-                              value={opt[0]}
-                              onChange={e => setParameters(prev => updateParameterOptions(prev, i, oi, old => [e.target.value, old[1]]))}
-                            />
-                            <input
-                              data-testid={`param-option-value-${i}-${oi}`}
-                              placeholder="Value (e.g., FORWARD)"
-                              type="text"
-                              value={opt[1]}
-                              onChange={e => setParameters(prev => updateParameterOptions(prev, i, oi, old => [old[0], e.target.value]))}
-                            />
-                            <button
-                              className={css.removeOptionButton}
-                              data-testid={`remove-param-option-${i}-${oi}`}
-                              type="button"
-                              onClick={() => setParameters(prev => removeParameterOption(prev, i, oi))}
-                            >
-                              Remove
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                      <button
-                        className={css.addOptionButton}
-                        data-testid={`add-param-option-${i}`}
-                        type="button"
-                        onClick={() => setParameters(prev => prev.map((pp, idx) => idx===i ? ({ ...pp, options: [ ...((pp as any).options||[]), ["", ""] ] }) : pp))}
-                      >
-                        Add Option
-                      </button>
+                      <CustomBlockFormOptionList
+                        dataTestIdPrefix={`param-option-${i}`}
+                        labelPlaceholder="Display text (e.g., forward)"
+                        options={(p as any).options?.map((opt: [string, string]) => ({ label: opt[0], value: opt[1] })) || []}
+                        valuePlaceholder="Value (e.g., FORWARD)"
+                        onOptionsChange={(newOptions) => {
+                          const newParamOptions = newOptions.map(opt => [opt.label, opt.value] as [string, string]);
+                          setParameters(prev => prev.map((pp, idx) => 
+                            idx === i ? ({ ...pp, options: newParamOptions }) : pp
+                          ));
+                        }}
+                      />
                     </div>
                   ) : (
                     <div className={css.numberOptions} data-testid={`param-number-options-${i}`}>
@@ -480,53 +432,13 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       {(formData.type === "creator" || formData.type === "setter") && (
         <div className={css.customBlockForm_options} data-testid="section-options">
           <label htmlFor="options">Options</label>
-          <div id="options">
-            {formData.options.map((option, index) => (
-              <div key={index} className={css.optionRow} data-testid={`option-row-${index}`}>
-                <input
-                  data-testid={`option-label-${index}`}
-                  placeholder="Display text (e.g., blue)"
-                  type="text"
-                  value={option.label}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    options: prev.options.map((opt, i) => i === index ? { ...opt, label: e.target.value } : opt)
-                  }))}
-                />
-                <input
-                  data-testid={`option-value-${index}`}
-                  placeholder="Value (e.g., BLUE)"
-                  type="text"
-                  value={option.value}
-                  onChange={(e) => setFormData(prev => ({
-                    ...prev,
-                    options: prev.options.map((opt, i) => i === index ? { ...opt, value: e.target.value } : opt)
-                  }))}
-                />
-                <button
-                  data-testid={`remove-option-${index}`}
-                  type="button"
-                  onClick={() => setFormData(prev => ({
-                    ...prev,
-                    options: prev.options.filter((_, i) => i !== index)
-                  }))}
-                >
-                  Remove
-                </button>
-              </div>
-            ))}
-          </div>
-          <button
-            className={css.addOptionButton}
-            data-testid="add-option"
-            type="button"
-            onClick={() => setFormData(prev => ({
-              ...prev,
-              options: [...prev.options, { label: "", value: "" }]
-            }))}
-          >
-            Add Option
-          </button>
+          <CustomBlockFormOptionList
+            dataTestIdPrefix="option"
+            labelPlaceholder="Display text (e.g., blue)"
+            options={formData.options}
+            valuePlaceholder="Value (e.g., BLUE)"
+            onOptionsChange={(newOptions) => setFormData(prev => ({ ...prev, options: newOptions }))}
+          />
         </div>
       )}
 
@@ -612,39 +524,12 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         </div>
       )}   
 
-      {(formData.type === "action" && formData.canHaveChildren) && (
-        <div className={css.customBlockForm_childBlocks} data-testid="section-child-blocks">
-          <label htmlFor="child-blocks">Child Blocks</label>
-          <select
-            data-testid="select-childBlocks"
-            id="child-blocks"
-            multiple
-            size={6}
-            value={formData.childBlocks}
-            onChange={handleChildBlocksMultiSelect}
-          >
-            {availableChildOptions.map(o => (
-              <option key={o.id} value={o.id}>{o.name}</option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      {(formData.type === "creator") && (
-        <div className={css.customBlockForm_childBlocks}>
-          <label htmlFor="child-blocks">Child Blocks</label>
-          <select
-            id="child-blocks"
-            multiple
-            size={6}
-            value={formData.childBlocks}
-            onChange={handleChildBlocksMultiSelect}
-          >
-            {availableChildOptions.map(o => (
-              <option key={o.id} value={o.id}>{o.name}</option>
-            ))}
-          </select>
-        </div>
+      {((formData.type === "creator") || (formData.type === "action" && formData.canHaveChildren)) && (
+        <CustomBlockFormChildBlocks
+          childBlocks={formData.childBlocks}
+          availableChildOptions={availableChildOptions}
+          onChange={handleChildBlocksMultiSelect}
+        />
       )}
 
       {(formData.type === "action") && (
