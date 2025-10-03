@@ -225,7 +225,7 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
               parts.push(String(param.labelText));
             }
             const v = block.getFieldValue(param.name);
-            if (v != null && v !== "") parts.push(String(v));
+            if (v) parts.push(String(v));
             if (param.labelText && (param.labelPosition ?? "prefix") === "suffix") {
               parts.push(String(param.labelText));
             }
