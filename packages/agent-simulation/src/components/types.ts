@@ -6,6 +6,9 @@ import { IAuthoringInteractiveMetadata, IRuntimeInteractiveMetadata } from "@con
 export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   code: string;
   dataSourceInteractive?: string;
+  gridHeight: number;
+  gridStep: number;
+  gridWidth: number;
   hint?: string;
   version: number;
 }
@@ -18,6 +21,9 @@ export interface IInteractiveState extends IRuntimeInteractiveMetadata {
 export const DefaultAuthoredState: Omit<Required<IAuthoredState>, "questionSubType"|"required"|"prompt"> = {
   code: "",
   dataSourceInteractive: "",
+  gridHeight: 450,
+  gridStep: 450,
+  gridWidth: 10,
   hint: "",
   questionType: "iframe_interactive",
   version: 1,
@@ -26,6 +32,9 @@ export const DefaultAuthoredState: Omit<Required<IAuthoredState>, "questionSubTy
 export const DemoAuthoredState: IAuthoredState = {
   code: "",
   dataSourceInteractive: "",
+  gridHeight: 450,
+  gridStep: 450,
+  gridWidth: 10,
   hint: "TODO: Add the final real hint in types.ts",
   prompt: "<p>TODO: Add the final real prompt in types.ts</p>",
   questionType: "iframe_interactive",

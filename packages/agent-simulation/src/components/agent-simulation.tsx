@@ -20,7 +20,7 @@ interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInterac
 export const AgentSimulationComponent = ({
   authoredState, interactiveState, setInteractiveState, report
 }: IProps) => {
-  const { code } = authoredState;
+  const { code, gridHeight, gridStep, gridWidth } = authoredState;
   const [blocklyCode, setBlocklyCode] = useState<string>("");
   const dataSourceInteractive = useLinkedInteractiveId("dataSourceInteractive");
   const containerRef = useRef<HTMLDivElement>(null);
@@ -52,9 +52,9 @@ export const AgentSimulationComponent = ({
   useEffect(() => {
     // Set up the simulation
     simRef.current = new AA.Simulation({
-      width: 450,
-      height: 450,
-      gridStep: 10
+      gridStep: gridStep,
+      height: gridHeight,
+      width: gridWidth
     });
 
     // Run the simulation setup code
@@ -66,7 +66,7 @@ export const AgentSimulationComponent = ({
     // Visualize and start the simulation
     AV.vis(simRef.current, { target: containerRef.current });
     simRef.current.pause(true);
-  }, [code]);
+  }, [code, gridHeight, gridStep, gridWidth]);
 
   const handlePauseClick = () => {
     if (simRef.current) {

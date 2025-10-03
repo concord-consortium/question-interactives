@@ -28,6 +28,21 @@ const baseAuthoringProps = {
         title: "Hint",
         type: "string"
       },
+      gridHeight: {
+        title: "Grid Height",
+        type: "number",
+        default: 450,
+      },
+      gridWidth: {
+        title: "Grid Width",
+        type: "number",
+        default: 450,
+      },
+      gridStep: {
+        title: "Grid Step",
+        type: "number",
+        default: 10,
+      },
       code: {
         title: "Simulation Code",
         type: "string",
@@ -68,6 +83,15 @@ const baseAuthoringProps = {
     },
     hint: {
       "ui:widget": "richtext"
+    },
+    gridHeight: {
+      "ui:widget": "updown"
+    },
+    gridWidth: {
+      "ui:widget": "updown"
+    },
+    gridStep: {
+      "ui:widget": "updown"
     },
     code: {
       "ui:widget": "textarea",
