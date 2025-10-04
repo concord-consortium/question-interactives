@@ -1,6 +1,13 @@
-import * as AA from "@gjmcn/atomic-agents";
+// import * as AA from "@gjmcn/atomic-agents";
 
-export const sheepSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+// export const sim = new AA.Simulation({
+//   width: 450,
+//   height: 450,
+//   gridStep: 10
+// });
+
+export const predatorPreyCode = `
+const sheepSvg = \`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <!-- Circles (color -1 -> #FFFFFF) -->
   <circle cx="247" cy="109" r="44" fill="#FFFFFF" stroke="#FFFFFF" />
   <circle cx="151" cy="146" r="81" fill="#FFFFFF" stroke="#FFFFFF" />
@@ -42,9 +49,9 @@ export const sheepSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 30
     fill="#8D8D8D" stroke="none"
   />
 </svg>
-`;
+\`;
 
-export const wolfSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+const wolfSvg = \`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <!-- Polygon -16777216 true false -->
   <!-- color = #000000 (black), filled, no stroke -->
   <polygon
@@ -73,10 +80,10 @@ export const wolfSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300
     stroke-linejoin="round"
   />
 </svg>
-`;
+\`;
 
 function encodeSvg(svg) {
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  return \`data:image/svg+xml;charset=utf-8,\${encodeURIComponent(svg)}\`;
 }
 
 const wolfImage = encodeSvg(wolfSvg);
@@ -96,11 +103,6 @@ const wolfEnergyLoss = 0.1;
 const maxGrassLevel = 10;
 const grassGrowthRate = 0.01;
 
-export const sim = new AA.Simulation({
-  width: 450,
-  height: 450,
-  gridStep: 10
-});
 // function simActors() {
 //   return sim.actors;
 // }
@@ -157,7 +159,7 @@ sim.afterTick = () => {
   });
   /*** End go block */
 
-  console.log(`sheep: ${Array.from(sim.withLabel("sheep")).length}, wolves: ${Array.from(sim.withLabel("wolf")).length}`);
+  console.log(\`sheep: \${Array.from(sim.withLabel("sheep")).length}, wolves: \${Array.from(sim.withLabel("wolf")).length}\`);
 };
 
 // set up squares (patches)
@@ -255,3 +257,4 @@ sim.interaction.set("boundary-bounce", {
 setup();
 const sheep = sim.withLabel("sheep");
 const wolves = sim.withLabel("wolf");
+`;

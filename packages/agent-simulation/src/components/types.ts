@@ -1,5 +1,7 @@
 import { IAuthoringInteractiveMetadata, IRuntimeInteractiveMetadata } from "@concord-consortium/lara-interactive-api";
 
+import { predatorPreyCode } from "../sims/predator-prey-model";
+
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
 
@@ -23,18 +25,18 @@ export const DefaultAuthoredState: Omit<Required<IAuthoredState>, "questionSubTy
   dataSourceInteractive: "",
   gridHeight: 450,
   gridStep: 450,
-  gridWidth: 10,
+  gridWidth: 15,
   hint: "",
   questionType: "iframe_interactive",
   version: 1,
 };
 
 export const DemoAuthoredState: IAuthoredState = {
-  code: "",
+  code: predatorPreyCode,
   dataSourceInteractive: "",
   gridHeight: 450,
   gridStep: 450,
-  gridWidth: 10,
+  gridWidth: 15,
   hint: "TODO: Add the final real hint in types.ts",
   prompt: "<p>TODO: Add the final real prompt in types.ts</p>",
   questionType: "iframe_interactive",
