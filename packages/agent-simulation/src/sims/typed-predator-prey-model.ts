@@ -1,0 +1,249 @@
+// This file contains a nice, typed version of the predator prey model
+// If you need to make changes, it's probably easier to tweak the model here, then convert it back to javascript
+
+import * as AA from "@gjmcn/atomic-agents";
+
+const sheepSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <!-- Circles (color -1 -> #FFFFFF) -->
+  <circle cx="247" cy="109" r="44" fill="#FFFFFF" stroke="#FFFFFF" />
+  <circle cx="151" cy="146" r="81" fill="#FFFFFF" stroke="#FFFFFF" />
+  <circle cx="210" cy="165" r="60" fill="#FFFFFF" stroke="#FFFFFF" />
+
+  <!-- Polygon (color -7500403 -> #8D8D8D), filled no stroke -->
+  <polygon
+    points="218,120 240,165 255,165 278,120"
+    fill="#8D8D8D" stroke="none"
+  />
+
+  <!-- Circle (ear) -->
+  <circle cx="247.5" cy="105.5" r="33.5" fill="#8D8D8D" stroke="none" />
+
+  <!-- Rectangles (legs) -->
+  <rect x="164" y="223" width="15" height="75" fill="#FFFFFF" stroke="#FFFFFF" />
+  <rect x="65"  y="221" width="15" height="75" fill="#FFFFFF" stroke="#FFFFFF" />
+
+  <!-- Polygons (legs) -->
+  <polygon
+    points="45,285 30,285 30,240 15,195 45,210"
+    fill="#FFFFFF" stroke="#FFFFFF"
+  />
+  <polygon
+    points="195,285 210,285 210,240 240,210 195,210"
+    fill="#FFFFFF" stroke="#FFFFFF"
+  />
+
+  <!-- Large body circle -->
+  <circle cx="78" cy="158" r="75" fill="#FFFFFF" stroke="#FFFFFF" />
+
+  <!-- Small head/ear polygons -->
+  <polygon
+    points="276,85 285,105 302,99 294,83"
+    fill="#8D8D8D" stroke="none"
+  />
+  <polygon
+    points="219,85 210,105 193,99 201,83"
+    fill="#8D8D8D" stroke="none"
+  />
+</svg>
+`;
+
+const wolfSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+  <!-- Polygon -16777216 true false -->
+  <!-- color = #000000 (black), filled, no stroke -->
+  <polygon
+    points="253,133 245,131 245,133"
+    fill="#000000"
+    stroke="none"
+  />
+
+  <!-- Polygon -7500403 true true -->
+  <!-- color = #8D8D8D (gray), filled + stroked -->
+  <polygon
+    points="2,194 13,197 30,191 38,193 38,205 20,226 20,257 27,265 38,266 40,260 31,253 31,230 60,206 68,198 75,209 66,228 65,243 82,261 84,268 100,267 103,261 77,239 79,231 100,207 98,196 119,201 143,202 160,195 166,210 172,213 173,238 167,251 160,248 154,265 169,264 178,247 186,240 198,260 200,271 217,271 219,262 207,258 195,230 192,198 210,184 227,164 242,144 259,145 284,151 277,141 293,140 299,134 297,127 273,119 270,105"
+    fill="#8D8D8D"
+    stroke="#8D8D8D"
+    stroke-width="1"
+    stroke-linejoin="round"
+  />
+
+  <!-- Polygon -7500403 true true -->
+  <!-- color = #8D8D8D (gray), filled + stroked -->
+  <polygon
+    points="-1,195 14,180 36,166 40,153 53,140 82,131 134,133 159,126 188,115 227,108 236,102 238,98 268,86 269,92 281,87 269,103 269,113"
+    fill="#8D8D8D"
+    stroke="#8D8D8D"
+    stroke-width="1"
+    stroke-linejoin="round"
+  />
+</svg>
+`;
+
+const encodeSvg = (svg: string) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+const wolfImage = encodeSvg(wolfSvg);
+const sheepImage = encodeSvg(sheepSvg);
+
+const sheepEnergy = 6;
+const sheepEnergyFromGrass = 3;
+const sheepReproduceChance = 0.002;
+const sheepEnergyLoss = 0.01;
+
+const wolfEnergy = 20;
+const wolfReproduceChance = 0.0005;
+const wolfEnergyLoss = 0.1;
+
+const maxGrassLevel = 10;
+const grassGrowthRate = 0.01;
+
+export const sim = new AA.Simulation({
+  width: 450,
+  height: 450,
+  gridStep: 10
+});
+
+function setup() {
+  /*** From setup block */
+  addMultipleSheep(50);
+  addWolves(10);
+  /*** End setup block */
+}
+
+sim.afterTick = () => {
+  /*** From go block */
+  sim.actors?.forEach((a: any) => {
+    // Lose energy and possibly die
+    const energyLoss = a.label("sheep") ? sheepEnergyLoss : wolfEnergyLoss;
+    a.state.energy = a.state.energy - energyLoss;
+    if (a.state.energy <= 0) {
+      a.remove();
+      return;
+    }
+
+    // Turn
+    a.vel.turn(Math.random() * Math.PI / 4 - Math.PI / 8);
+
+    // Reproduce
+    const reproduceChance = a.label("sheep") ? sheepReproduceChance : wolfReproduceChance;
+    if (Math.random() < reproduceChance) {
+      const addFunction = a.label("sheep") ? addSheep : addWolf;
+      // const color = a.label("sheep") ? sheepColor : wolfColor;
+      addFunction({ energy: a.state.energy / 2, x: a.x, y: a.y });
+      a.state.energy = a.state.energy / 2;
+    }
+  });
+
+  sheep.forEach((s: any) => {
+    // Eat grass
+    const sq = s.squareOfCentroid();
+    if (sq.state.grassLevel >= maxGrassLevel) {
+      s.state.energy = s.state.energy + sheepEnergyFromGrass;
+      sq.state.grassLevel = 0;
+    }
+  });
+
+  wolves.forEach((w: any) => {
+    // Eat sheep
+    const s = w.overlapping("actor").find((a: any) => a?.label("sheep"));
+    if (s) {
+      w.state.energy = w.state.energy + s.state.energy / 2;
+      s.remove();
+    }
+  });
+  /*** End go block */
+
+  console.log(`sheep: ${Array.from(sim.withLabel("sheep")).length}, wolves: ${Array.from(sim.withLabel("wolf")).length}`);
+};
+
+// set up squares (patches)
+for (let x = 0; x < sim.width / sim.gridStep; x++) {
+  for (let y = 0; y < sim.height / sim.gridStep; y++) {
+    const square = sim.squareAt(x, y);
+    square.zIndex = -Infinity;
+
+    // Set initial grass level
+    const grassLevel = Math.random() > .5 ? maxGrassLevel : Math.random() * maxGrassLevel;
+    square.state = { grassLevel };
+
+    // Color squares based on grass level
+    square.vis({
+      tint: (s: any) => s.state.grassLevel === maxGrassLevel ? "0x00cc00" : "0x996600"
+    });
+
+    // Grow grass at every tick
+    square.updateState = () => {
+      if (square.state.grassLevel < maxGrassLevel) {
+        square.state.grassLevel = Math.min(maxGrassLevel, square.state.grassLevel + grassGrowthRate);
+      }
+    };
+  }
+}
+
+interface IActorDefaults {
+  color?: string;
+  energy: number;
+  image?: string;
+  label: string;
+  radius: number;
+  velocity: number;
+}
+interface INewActor {
+  color?: string;
+  energy?: number;
+  x?: number;
+  y?: number;
+}
+function getAddActorFunction(defaults: IActorDefaults) {
+  return (props?: INewActor) => {
+    const { color, energy, x, y } = props ?? {};
+    const a = new AA.Actor();
+    a.radius = defaults.radius;
+    a.vel = AA.Vector.randomAngle(defaults.velocity);
+    a.vis({ image: defaults.image, tint: color ?? defaults.color });
+    a.label(defaults.label, true);
+    a.state = { energy: energy ?? defaults.energy };
+    a.x = x ?? Math.random() * sim.width;
+    a.y = y ?? Math.random() * sim.height;
+
+    a.addTo(sim);
+    return a;
+  };
+}
+
+// sheep
+const addSheep = getAddActorFunction({
+  energy: sheepEnergy,
+  image: sheepImage,
+  label: "sheep",
+  radius: 10,
+  velocity: 1
+});
+function addMultipleSheep(num: number) {
+  for (let i = 0; i < num; i++) {
+    addSheep();
+  }
+}
+
+// wolves
+const addWolf = getAddActorFunction({
+  color: "0x333333",
+  energy: wolfEnergy,
+  image: wolfImage,
+  label: "wolf",
+  radius: 10,
+  velocity: 1.5
+});
+function addWolves(num: number) {
+  for (let i = 0; i < num; i++) {
+    addWolf();
+  }
+}
+
+// actors bounce off the simulation boundary
+sim.interaction.set("boundary-bounce", {
+  group1: sim,
+  group2: sim.actors,
+  behavior: "bounce"
+});
+
+setup();
+const sheep = sim.withLabel("sheep");
+const wolves = sim.withLabel("wolf");

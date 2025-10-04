@@ -109,6 +109,8 @@
     "@concord-consortium/dynamic-text": "^1.0.6",
     "@concord-consortium/lara-interactive-api": "^1.9.4",
     "@concord-consortium/question-interactives-helpers": "^1.16.0",
+    "@gjmcn/atomic-agents": "^0.1.11",
+    "@gjmcn/atomic-agents-vis": "^0.4.5",
     "@rjsf/utils": "^5.0.1",
     "chart.js": "^3.9.1",
     "classnames": "^2.3.1",
