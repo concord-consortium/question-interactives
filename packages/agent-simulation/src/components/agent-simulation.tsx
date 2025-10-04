@@ -25,6 +25,7 @@ export const AgentSimulationComponent = ({
   const dataSourceInteractive = useLinkedInteractiveId("dataSourceInteractive");
   const containerRef = useRef<HTMLDivElement>(null);
   const [paused, setPaused] = useState(true);
+  const [error, setError] = useState("");
   const simRef = useRef<AA.Simulation | null>(null);
 
   // Keep the blockly code updated with the linked interactive
@@ -59,9 +60,14 @@ export const AgentSimulationComponent = ({
 
     // Run the simulation setup code
     const functionCode = `(sim, AA) => { ${code} }`;
-    // Indirect eval (with ?.) is supposed to be safer and faster than direct eval
-    const simFunction = eval?.(functionCode);
-    simFunction?.(simRef.current, AA);
+    try {
+      // Indirect eval (with ?.) is supposed to be safer and faster than direct eval
+      const simFunction = eval?.(functionCode);
+      simFunction?.(simRef.current, AA);
+    } catch (e) {
+      setError(`Error setting up simulation: ${String(e)}`);
+      return;
+    }
 
     // Visualize and start the simulation
     AV.vis(simRef.current, { target: containerRef.current });
@@ -84,6 +90,7 @@ export const AgentSimulationComponent = ({
       <button onClick={handlePauseClick}>
         {paused ? "Play" : "Pause"}
       </button>
+      {error && <div className={css.error}>{error}</div>}
       <div ref={containerRef} className={css.simContainer} />
     </div>
   );
