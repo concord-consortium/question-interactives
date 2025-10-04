@@ -86,12 +86,10 @@ const sheepEnergy = 6;
 const sheepEnergyFromGrass = 3;
 const sheepReproduceChance = 0.002;
 const sheepEnergyLoss = 0.01;
-// const sheepColor = "0xffffff";
 
 const wolfEnergy = 20;
 const wolfReproduceChance = 0.0005;
 const wolfEnergyLoss = 0.1;
-// const wolfColor = "0x333333";
 
 const maxGrassLevel = 10;
 const grassGrowthRate = 0.01;
@@ -212,7 +210,6 @@ function getAddActorFunction(defaults: IActorDefaults) {
 
 // sheep
 const addSheep = getAddActorFunction({
-  // color: "0xffffff",
   energy: sheepEnergy,
   image: sheepImage,
   label: "sheep",
@@ -240,7 +237,7 @@ function addWolves(num: number) {
   }
 }
 
-// circles bounce off the simulation boundary
+// actors bounce off the simulation boundary
 sim.interaction.set("boundary-bounce", {
   group1: sim,
   group2: sim.actors,

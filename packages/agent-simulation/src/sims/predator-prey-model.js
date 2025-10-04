@@ -1,10 +1,5 @@
-// import * as AA from "@gjmcn/atomic-agents";
-
-// export const sim = new AA.Simulation({
-//   width: 450,
-//   height: 450,
-//   gridStep: 10
-// });
+// This file contains vanilla javascript code that runs the predator-prey simulation when pasted into the
+// simulation interactive code area.
 
 export const predatorPreyCode = `
 const sheepSvg = \`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
@@ -82,10 +77,7 @@ const wolfSvg = \`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
 </svg>
 \`;
 
-function encodeSvg(svg) {
-  return \`data:image/svg+xml;charset=utf-8,\${encodeURIComponent(svg)}\`;
-}
-
+const encodeSvg = (svg) => \`data:image/svg+xml;charset=utf-8,\${encodeURIComponent(svg)}\`;
 const wolfImage = encodeSvg(wolfSvg);
 const sheepImage = encodeSvg(sheepSvg);
 
@@ -93,19 +85,13 @@ const sheepEnergy = 6;
 const sheepEnergyFromGrass = 3;
 const sheepReproduceChance = 0.002;
 const sheepEnergyLoss = 0.01;
-// const sheepColor = "0xffffff";
 
 const wolfEnergy = 20;
 const wolfReproduceChance = 0.0005;
 const wolfEnergyLoss = 0.1;
-// const wolfColor = "0x333333";
 
 const maxGrassLevel = 10;
 const grassGrowthRate = 0.01;
-
-// function simActors() {
-//   return sim.actors;
-// }
 
 function setup() {
   /*** From setup block */
@@ -173,9 +159,7 @@ for (let x = 0; x < sim.width / sim.gridStep; x++) {
     square.state = { grassLevel };
 
     // Color squares based on grass level
-    square.vis({
-      tint: s => s.state.grassLevel === maxGrassLevel ? "0x00cc00" : "0x996600"
-    });
+    square.vis({ tint: s => s.state.grassLevel === maxGrassLevel ? "0x00cc00" : "0x996600" });
 
     // Grow grass at every tick
     square.updateState = () => {
@@ -186,20 +170,6 @@ for (let x = 0; x < sim.width / sim.gridStep; x++) {
   }
 }
 
-// interface IActorDefaults {
-//   color?: string;
-//   energy: number;
-//   image?: string;
-//   label: string;
-//   radius: number;
-//   velocity: number;
-// }
-// interface INewActor {
-//   color?: string;
-//   energy?: number;
-//   x?: number;
-//   y?: number;
-// }
 function getAddActorFunction(defaults) {
   return (props) => {
     const { color, energy, x, y } = props ?? {};
@@ -219,7 +189,6 @@ function getAddActorFunction(defaults) {
 
 // sheep
 const addSheep = getAddActorFunction({
-  // color: "0xffffff",
   energy: sheepEnergy,
   image: sheepImage,
   label: "sheep",
@@ -247,7 +216,7 @@ function addWolves(num) {
   }
 }
 
-// circles bounce off the simulation boundary
+// actors bounce off the simulation boundary
 sim.interaction.set("boundary-bounce", {
   group1: sim,
   group2: sim.actors,
