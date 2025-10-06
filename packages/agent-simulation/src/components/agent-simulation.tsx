@@ -72,6 +72,7 @@ export const AgentSimulationComponent = ({
     // Visualize and start the simulation
     AV.vis(simRef.current, { target: containerRef.current });
     simRef.current.pause(true);
+    setPaused(true);
   }, [code, gridHeight, gridStep, gridWidth]);
 
   const handlePauseClick = () => {
