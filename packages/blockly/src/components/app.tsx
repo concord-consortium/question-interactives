@@ -30,6 +30,10 @@ const baseAuthoringProps = {
         title: "Hint",
         type: "string"
       },
+      code: {
+        title: "Simulation Code",
+        type: "string"
+      },
       customBlocks: {
         title: "Custom Blocks",
         type: "array",
@@ -70,6 +74,12 @@ const baseAuthoringProps = {
     },
     hint: {
       "ui:widget": "richtext"
+    },
+    code: {
+      "ui:widget": "textarea",
+      "ui:options": {
+        "rows": 15
+      }
     },
     customBlocks: {
       "ui:field": "customBlockEditor"

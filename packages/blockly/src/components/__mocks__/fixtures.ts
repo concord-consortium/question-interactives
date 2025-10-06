@@ -1,6 +1,7 @@
 import { IAuthoredState, IInteractiveState } from "../types";
 
 export const defaultAuthoredState: IAuthoredState = {
+  code: "",
   questionType: "iframe_interactive",
   toolbox: "",
   version: 1,
@@ -8,6 +9,7 @@ export const defaultAuthoredState: IAuthoredState = {
 };
 
 export const validToolboxAuthoredState: IAuthoredState = {
+  code: "",
   questionType: "iframe_interactive",
   toolbox: `{
     "kind": "flyoutToolbox",
@@ -27,6 +29,7 @@ export const validToolboxAuthoredState: IAuthoredState = {
 };
 
 export const generalToolboxAuthoredState: IAuthoredState = {
+  code: "",
   questionType: "iframe_interactive",
   toolbox: `{
     "kind": "categoryToolbox",
@@ -64,6 +67,7 @@ export const generalToolboxAuthoredState: IAuthoredState = {
 };
 
 export const customBlocksAuthoredState: IAuthoredState = {
+  code: "",
   questionType: "iframe_interactive",
   toolbox: `{
     "kind": "categoryToolbox",
@@ -112,6 +116,7 @@ export const customBlocksAuthoredState: IAuthoredState = {
 };
 
 export const invalidToolboxAuthoredState: IAuthoredState = {
+  code: "",
   questionType: "iframe_interactive",
   toolbox: `{ invalid json }`,
   version: 1,
