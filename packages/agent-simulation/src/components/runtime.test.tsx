@@ -9,6 +9,11 @@ import { AgentSimulationComponent } from "./agent-simulation";
 
 const useInitMessageMock = useInitMessage as jest.Mock;
 
+// TODO: It would be better to not mock these libraries.
+// When you figure out how to do that, make sure you remove the __mocks__/@gjmcn directory.
+jest.mock("@gjmcn/atomic-agents");
+jest.mock("@gjmcn/atomic-agents-vis");
+
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
   useInitMessage: jest.fn(),
   log: jest.fn(),

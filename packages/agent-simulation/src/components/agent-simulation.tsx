@@ -1,4 +1,6 @@
-import React, { useEffect, useState } from "react";
+import * as AA from "@gjmcn/atomic-agents";
+import * as AV from "@gjmcn/atomic-agents-vis";
+import React, { useEffect, useRef, useState } from "react";
 
 import {
   addLinkedInteractiveStateListener, removeLinkedInteractiveStateListener
@@ -18,8 +20,13 @@ interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInterac
 export const AgentSimulationComponent = ({
   authoredState, interactiveState, setInteractiveState, report
 }: IProps) => {
+  const { code, gridHeight, gridStep, gridWidth } = authoredState;
   const [blocklyCode, setBlocklyCode] = useState<string>("");
   const dataSourceInteractive = useLinkedInteractiveId("dataSourceInteractive");
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [paused, setPaused] = useState(true);
+  const [error, setError] = useState("");
+  const simRef = useRef<AA.Simulation | null>(null);
 
   // Keep the blockly code updated with the linked interactive
   useEffect(() => {
@@ -42,12 +49,71 @@ export const AgentSimulationComponent = ({
     };
   }, [dataSourceInteractive]);
 
+  // Setup and display the simulation
+  useEffect(() => {
+    if (
+      gridHeight <= 0 || !Number.isInteger(gridHeight) ||
+      gridWidth <= 0 || !Number.isInteger(gridWidth) ||
+      gridStep <= 0 || !Number.isInteger(gridStep)
+    ) {
+      setError("Grid height, width, and step must be positive integers.");
+      return;
+    }
+    if (gridHeight % gridStep !== 0 || gridWidth % gridStep !== 0) {
+      setError("Grid height and width must be divisible by the grid step.");
+      return;
+    }
+
+    // Set up the simulation
+    simRef.current = new AA.Simulation({
+      gridStep: gridStep,
+      height: gridHeight,
+      width: gridWidth
+    });
+
+    // Run the simulation setup code
+    const functionCode = `(sim, AA) => { ${code} }`;
+    try {
+      // Indirect eval (with ?.) is supposed to be safer and faster than direct eval
+      // - eval executes in the local scope, so has to check every containing scope for variable references
+      // - eval interferes with minification and conversion to machine code
+      // - eval executes with whatever permissions the containing code has, giving more opportunity for malicious code
+      // For more info, see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval
+      const simFunction = eval?.(functionCode);
+      simFunction?.(simRef.current, AA);
+    } catch (e) {
+      setError(`Error setting up simulation: ${String(e)}`);
+      return;
+    }
+
+    // Visualize and start the simulation
+    AV.vis(simRef.current, { target: containerRef.current });
+    simRef.current.pause(true);
+    setPaused(true);
+  }, [code, gridHeight, gridStep, gridWidth]);
+
+  const handlePauseClick = () => {
+    if (simRef.current) {
+      simRef.current.pause(!paused);
+      setPaused(!paused);
+    }
+  };
+
   return (
     <div className={css.agentSimulationComponent}>
-      <h4>Blockly Code</h4>
-      <div className={css.blocklyCode}>
-        {blocklyCode}
-      </div>
+      { blocklyCode && (
+        <>
+          <h4>Blockly Code</h4>
+          <div className={css.code}>
+            {blocklyCode}
+          </div>
+        </>
+      )}
+      <button onClick={handlePauseClick}>
+        {paused ? "Play" : "Pause"}
+      </button>
+      {error && <div className={css.error}>{error}</div>}
+      <div ref={containerRef} className={css.simContainer} />
     </div>
   );
 };

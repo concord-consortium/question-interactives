@@ -5,10 +5,16 @@
   gap: 10px;
   flex-direction: column;
 
-  .blocklyCode {
+  .code {
     background-color: #eee;
     border: 1px solid #ccc;
     font-family: monospace;
+    padding: 5px;
+  }
+
+  .error {
+    background-color: #fee;
+    border: 1px solid #fcc;
     padding: 5px;
   }
 }
