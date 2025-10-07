@@ -51,6 +51,11 @@ export const AgentSimulationComponent = ({
 
   // Setup and display the simulation
   useEffect(() => {
+    if (gridHeight % gridStep !== 0 || gridWidth % gridStep !== 0) {
+      setError("Grid height and width must be divisible by the grid step.");
+      return;
+    }
+
     // Set up the simulation
     simRef.current = new AA.Simulation({
       gridStep: gridStep,
@@ -88,10 +93,14 @@ export const AgentSimulationComponent = ({
 
   return (
     <div className={css.agentSimulationComponent}>
-      <h4>Blockly Code</h4>
-      <div className={css.code}>
-        {blocklyCode}
-      </div>
+      { blocklyCode && (
+        <>
+          <h4>Blockly Code</h4>
+          <div className={css.code}>
+            {blocklyCode}
+          </div>
+        </>
+      )}
       <button onClick={handlePauseClick}>
         {paused ? "Play" : "Pause"}
       </button>
