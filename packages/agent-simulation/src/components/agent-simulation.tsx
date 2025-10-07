@@ -51,6 +51,14 @@ export const AgentSimulationComponent = ({
 
   // Setup and display the simulation
   useEffect(() => {
+    if (
+      gridHeight <= 0 || !Number.isInteger(gridHeight) ||
+      gridWidth <= 0 || !Number.isInteger(gridWidth) ||
+      gridStep <= 0 || !Number.isInteger(gridStep)
+    ) {
+      setError("Grid height, width, and step must be positive integers.");
+      return;
+    }
     if (gridHeight % gridStep !== 0 || gridWidth % gridStep !== 0) {
       setError("Grid height and width must be divisible by the grid step.");
       return;
