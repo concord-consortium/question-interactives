@@ -39,7 +39,9 @@ jest.mock("@blockly/field-slider", () => ({
 jest.mock("../utils/netlogo-generator", () => ({
   netlogoGenerator: {
     forBlock: {},
-    statementToCode: jest.fn().mockReturnValue("// statement code")
+    statementToCode: jest.fn().mockReturnValue("// statement code"),
+    valueToCode: jest.fn().mockReturnValue("test_value"),
+    ORDER_NONE: 0
   }
 }));
 
@@ -56,7 +58,8 @@ describe("block-factory", () => {
 
     mockInput = {
       appendField: jest.fn().mockReturnThis(),
-      insertFieldAt: jest.fn().mockReturnThis()
+      insertFieldAt: jest.fn().mockReturnThis(),
+      setCheck: jest.fn().mockReturnThis()
     };
 
     mockStatementsInput = {
@@ -80,11 +83,14 @@ describe("block-factory", () => {
     mockBlock = {
       appendDummyInput: jest.fn().mockReturnValue(mockInput),
       appendStatementInput: jest.fn().mockReturnValue(mockStatementsInput),
+      appendValueInput: jest.fn().mockReturnValue(mockInput),
+      appendField: jest.fn().mockReturnThis(),
       setPreviousStatement: jest.fn(),
       setNextStatement: jest.fn(),
       setInputsInline: jest.fn(),
       setColour: jest.fn(),
       setOnChange: jest.fn(),
+      setOutput: jest.fn(),
       getInput: jest.fn().mockReturnValue(mockStatementsInput),
       getField: jest.fn(),
       getFieldValue: jest.fn(),
@@ -346,6 +352,154 @@ describe("block-factory", () => {
       expect(mockStatementsInput.setCheck).toHaveBeenCalledWith(["custom_set_color_123"]);
     });
 
+    it("initializes statement block with correct fields for kind 'ask'", () => {
+      const statementBlock: ICustomBlock = {
+        category: "Control",
+        color: "#0089b8",
+        config: {
+          canHaveChildren: false,
+          statementKind: "ask",
+          targetEntity: "molecules",
+          options: [["water", "water"], ["ink", "ink"]]
+        },
+        id: "custom_statement_ask_123",
+        name: "ask",
+        type: "statement"
+      };
+
+      registerCustomBlocks([statementBlock]);
+      Blocks["custom_statement_ask_123"].init.call(mockBlock);
+
+      expect(mockBlock.appendDummyInput).toHaveBeenCalled();
+      expect(mockInput.appendField).toHaveBeenCalledWith("ask");
+      expect(mockInput.appendField).toHaveBeenCalledWith(expect.any(Object), "target");
+      expect(mockInput.appendField).toHaveBeenCalledWith("molecules");
+      expect(mockBlock.appendStatementInput).toHaveBeenCalledWith("statements");
+    });
+
+    it("initializes statement block with correct fields for kind 'when'", () => {
+      const statementBlock: ICustomBlock = {
+        category: "Control",
+        color: "#0089b8",
+        config: {
+          canHaveChildren: false,
+          statementKind: "when",
+          conditionInput: true
+        },
+        id: "custom_statement_when_456",
+        name: "when",
+        type: "statement"
+      };
+
+      registerCustomBlocks([statementBlock]);
+      Blocks["custom_statement_when_456"].init.call(mockBlock);
+
+      expect(mockBlock.appendDummyInput).toHaveBeenCalled();
+      expect(mockInput.appendField).toHaveBeenCalledWith("when");
+      expect(mockBlock.appendValueInput).toHaveBeenCalledWith("condition");
+      expect(mockBlock.appendStatementInput).toHaveBeenCalledWith("statements");
+    });
+
+    it("initializes statement block with correct fields for kind 'repeat'", () => {
+      const statementBlock: ICustomBlock = {
+        category: "Control",
+        color: "#0089b8",
+        config: {
+          canHaveChildren: false,
+          statementKind: "repeat"
+        },
+        id: "custom_statement_repeat_789",
+        name: "repeat",
+        type: "statement"
+      };
+
+      registerCustomBlocks([statementBlock]);
+      Blocks["custom_statement_repeat_789"].init.call(mockBlock);
+
+      expect(mockBlock.appendDummyInput).toHaveBeenCalled();
+      expect(mockInput.appendField).toHaveBeenCalledWith("repeat");
+      expect(mockInput.appendField).toHaveBeenCalledWith(expect.any(Object), "TIMES");
+      expect(mockBlock.appendStatementInput).toHaveBeenCalledWith("statements");
+    });
+
+    it("initializes statement block with correct fields for kind 'chance'", () => {
+      const statementBlock: ICustomBlock = {
+        category: "Control",
+        color: "#0089b8",
+        config: {
+          canHaveChildren: false,
+          statementKind: "chance"
+        },
+        id: "custom_statement_chance_101",
+        name: "chance",
+        type: "statement"
+      };
+
+      registerCustomBlocks([statementBlock]);
+      Blocks["custom_statement_chance_101"].init.call(mockBlock);
+
+      expect(mockBlock.appendDummyInput).toHaveBeenCalled();
+      expect(mockInput.appendField).toHaveBeenCalledWith("with a chance of");
+      expect(mockBlock.appendValueInput).toHaveBeenCalledWith("NUM");
+      expect(mockBlock.appendDummyInput).toHaveBeenCalledTimes(2); // One for main, one for %
+      expect(mockInput.appendField).toHaveBeenCalledWith("%");
+      expect(mockBlock.appendStatementInput).toHaveBeenCalledWith("statements");
+    });
+
+    it("initializes condition block with prefix label position", () => {
+      const conditionBlock: ICustomBlock = {
+        category: "Logic",
+        color: "#0089b8",
+        config: {
+          canHaveChildren: false,
+          options: [["touching", "touching?"], ["near", "near?"]],
+          labelPosition: "prefix"
+        },
+        id: "custom_condition_touching_404",
+        name: "touching",
+        type: "condition"
+      };
+
+      registerCustomBlocks([conditionBlock]);
+      Blocks["custom_condition_touching_404"].init.call(mockBlock);
+
+      expect(mockBlock.setOutput).toHaveBeenCalledWith(true, "Boolean");
+      expect(mockBlock.appendDummyInput).toHaveBeenCalled();
+      expect(mockInput.appendField).toHaveBeenCalledWith("touching");
+      expect(mockInput.appendField).toHaveBeenCalledWith(expect.any(Object), "condition");
+    });
+
+    it("initializes condition block with suffix label position", () => {
+      const conditionBlock: ICustomBlock = {
+        category: "Logic",
+        color: "#0089b8",
+        config: {
+          canHaveChildren: false,
+          options: [["is", "is"], ["equals", "="]],
+          labelPosition: "suffix"
+        },
+        id: "custom_condition_is_505",
+        name: "is",
+        type: "condition"
+      };
+
+      const mockInput1 = { appendField: jest.fn().mockReturnThis() };
+      const mockInput2 = { appendField: jest.fn().mockReturnThis() };
+      let callCount = 0;
+      mockBlock.appendDummyInput = jest.fn(() => {
+        callCount++;
+        return callCount === 1 ? mockInput1 : mockInput2;
+      });
+
+      registerCustomBlocks([conditionBlock]);
+      Blocks["custom_condition_is_505"].init.call(mockBlock);
+
+      expect(mockBlock.setOutput).toHaveBeenCalledWith(true, "Boolean");
+      expect(mockBlock.appendDummyInput).toHaveBeenCalledTimes(2); // One for dropdown, one for label
+      expect(mockInput2.appendField).toHaveBeenCalledWith(expect.any(Object), "condition");
+      expect(mockInput2.appendField).toHaveBeenCalledWith("is");
+    });
+
     it("sets block color and connections", () => {
       Blocks["custom_action_move_789"].init.call(mockBlock);
 
@@ -587,6 +741,179 @@ describe("block-factory", () => {
 
       const code = netlogoGenerator.forBlock["custom_action_move_789"].call(mockBlock, mockBlock);
       expect(code).toBe("move FORWARD 5 2\n");
+    });
+
+    it("generates code for 'ask' statement block", () => {
+      const statementBlock: ICustomBlock = {
+        category: "Control",
+        color: "#0089b8",
+        config: {
+          canHaveChildren: false,
+          statementKind: "ask",
+          targetEntity: "molecules",
+          options: [["water", "water"], ["ink", "ink"]]
+        },
+        id: "custom_statement_ask_123",
+        name: "ask",
+        type: "statement"
+      };
+
+      registerCustomBlocks([statementBlock]);
+
+      mockBlock.getFieldValue = jest.fn().mockImplementation((fieldName) => {
+        const values: { [key: string]: any } = {
+          "target": "water"
+        };
+        return values[fieldName] || "";
+      });
+
+      const code = netlogoGenerator.forBlock["custom_statement_ask_123"].call(mockBlock, mockBlock);
+      expect(code).toBe("ask water molecules [\n// statement code]\n");
+    });
+
+    it("generates code for 'when' statement block", () => {
+      const statementBlock: ICustomBlock = {
+        category: "Control",
+        color: "#0089b8",
+        config: {
+          canHaveChildren: false,
+          statementKind: "when",
+          conditionInput: true
+        },
+        id: "custom_statement_when_456",
+        name: "when",
+        type: "statement"
+      };
+
+      registerCustomBlocks([statementBlock]);
+
+      mockBlock.getFieldValue = jest.fn().mockImplementation((fieldName) => {
+        const values: { [key: string]: any } = {
+          "condition": "touching? turtle"
+        };
+        return values[fieldName] || "";
+      });
+
+      const code = netlogoGenerator.forBlock["custom_statement_when_456"].call(mockBlock, mockBlock);
+      expect(code).toBe("if test_value [\n// statement code]\n");
+    });
+
+    it("generates code for 'repeat' statement block", () => {
+      const statementBlock: ICustomBlock = {
+        category: "Control",
+        color: "#0089b8",
+        config: {
+          canHaveChildren: false,
+          statementKind: "repeat"
+        },
+        id: "custom_statement_repeat_789",
+        name: "repeat",
+        type: "statement"
+      };
+
+      registerCustomBlocks([statementBlock]);
+
+      mockBlock.getFieldValue = jest.fn().mockImplementation((fieldName) => {
+        const values: { [key: string]: any } = {
+          "TIMES": 5
+        };
+        return values[fieldName] || "";
+      });
+
+      const code = netlogoGenerator.forBlock["custom_statement_repeat_789"].call(mockBlock, mockBlock);
+      expect(code).toBe("repeat 5 [\n// statement code]\n");
+    });
+
+    it("generates code for 'chance' statement block", () => {
+      const statementBlock: ICustomBlock = {
+        category: "Control",
+        color: "#0089b8",
+        config: {
+          canHaveChildren: false,
+          statementKind: "chance"
+        },
+        id: "custom_statement_chance_101",
+        name: "chance",
+        type: "statement"
+      };
+
+      registerCustomBlocks([statementBlock]);
+
+      mockBlock.getFieldValue = jest.fn().mockImplementation((fieldName) => {
+        const values: { [key: string]: any } = {
+          "NUM": 25
+        };
+        return values[fieldName] || "";
+      });
+
+      const code = netlogoGenerator.forBlock["custom_statement_chance_101"].call(mockBlock, mockBlock);
+      expect(code).toBe("if random-float 100 < test_value [\n// statement code]\n");
+    });
+
+    it("generates code for 'custom' statement block with template", () => {
+      const statementBlock: ICustomBlock = {
+        category: "Control",
+        color: "#0089b8",
+        config: {
+          canHaveChildren: false,
+          statementKind: "custom",
+          generatorTemplate: "custom-command ${PARAM1}"
+        },
+        id: "custom_statement_custom_202",
+        name: "custom",
+        type: "statement"
+      };
+
+      registerCustomBlocks([statementBlock]);
+
+      const code = netlogoGenerator.forBlock["custom_statement_custom_202"].call(mockBlock, mockBlock);
+      expect(code).toBe("custom-command ${PARAM1}\n");
+    });
+
+    it("generates code for 'custom' statement block without template", () => {
+      const statementBlock: ICustomBlock = {
+        category: "Control",
+        color: "#0089b8",
+        config: {
+          canHaveChildren: false,
+          statementKind: "custom"
+        },
+        id: "custom_statement_custom_303",
+        name: "custom",
+        type: "statement"
+      };
+
+      registerCustomBlocks([statementBlock]);
+
+      const code = netlogoGenerator.forBlock["custom_statement_custom_303"].call(mockBlock, mockBlock);
+      expect(code).toBe("// statement code");
+    });
+
+    it("generates code for condition block", () => {
+      const conditionBlock: ICustomBlock = {
+        category: "Logic",
+        color: "#0089b8",
+        config: {
+          canHaveChildren: false,
+          options: [["touching", "touching?"], ["near", "near?"]],
+          labelPosition: "prefix"
+        },
+        id: "custom_condition_touching_404",
+        name: "touching",
+        type: "condition"
+      };
+
+      registerCustomBlocks([conditionBlock]);
+
+      mockBlock.getFieldValue = jest.fn().mockImplementation((fieldName) => {
+        const values: { [key: string]: any } = {
+          "condition": "touching?"
+        };
+        return values[fieldName] || "";
+      });
+
+      const code = netlogoGenerator.forBlock["custom_condition_touching_404"].call(mockBlock, mockBlock);
+      expect(code).toBe("touching?");
     });
   });
 });

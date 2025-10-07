@@ -46,7 +46,7 @@ export const BLOCK_TYPE_CONFIG: Record<CustomBlockType, IBlockTypeConfig> = {
     hasGeneratorTemplate: false,
     hasOptions: true,
     hasParameters: false,
-    label: "Object Name", 
+    label: "Object Name",
     placeholder: "e.g., molecules, people"
   },
   setter: {

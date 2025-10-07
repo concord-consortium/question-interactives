@@ -6,9 +6,12 @@ import { CustomBlockEditor } from "./custom-block-editor";
 import { ICustomBlock } from "./types";
 
 jest.mock("./custom-block-editor.scss", () => ({}));
-jest.mock("../utils/block-utils", () => ({
-  validateBlocksJson: jest.fn()
-}));
+jest.mock("../utils/block-utils", () => {
+  return {
+    validateBlocksJson: jest.fn(),
+    availableChildBlocks: jest.fn(() => [])
+  };
+});
 
 describe("CustomBlockEditor", () => {
   const mockOnChange = jest.fn();
@@ -71,11 +74,213 @@ describe("CustomBlockEditor", () => {
       expect(screen.getByText("Custom Blocks")).toBeInTheDocument();
     });
 
-    it("shows setter, creator, and action block sections", () => {
+    it("renders all block section headings and main elements", () => {
       render(<CustomBlockEditor {...defaultProps} />);
+      // Setter
+      expect(screen.getByTestId("section-setter")).toBeInTheDocument();
       expect(screen.getByText("Set Properties Blocks")).toBeInTheDocument();
+      expect(screen.getByTestId("add-setter")).toBeInTheDocument();
+      expect(screen.getByTestId("current-setter")).toBeInTheDocument();
+      // Creator
+      expect(screen.getByTestId("section-creator")).toBeInTheDocument();
       expect(screen.getByText("Create Things Blocks")).toBeInTheDocument();
+      expect(screen.getByTestId("add-creator")).toBeInTheDocument();
+      expect(screen.getByTestId("current-creator")).toBeInTheDocument();
+      // Action
+      expect(screen.getByTestId("section-action")).toBeInTheDocument();
       expect(screen.getByText("Action Blocks")).toBeInTheDocument();
+      expect(screen.getByTestId("add-action")).toBeInTheDocument();
+      expect(screen.getByTestId("current-action")).toBeInTheDocument();
+      // Statement
+      expect(screen.getByTestId("section-statement")).toBeInTheDocument();
+      expect(screen.getByText("Statement Blocks")).toBeInTheDocument();
+      expect(screen.getByTestId("add-statement")).toBeInTheDocument();
+      expect(screen.getByTestId("current-statement")).toBeInTheDocument();
+      // Condition
+      expect(screen.getByTestId("section-condition")).toBeInTheDocument();
+      expect(screen.getByText("Condition Blocks")).toBeInTheDocument();
+      expect(screen.getByTestId("add-condition")).toBeInTheDocument();
+      expect(screen.getByTestId("current-condition")).toBeInTheDocument();
+    });
+
+    // --- Set Properties (setter) ---
+    it("shows no blocks message for empty setter blocks", () => {
+      render(<CustomBlockEditor {...defaultProps} value={[]} />);
+      expect(screen.getByText("No setter blocks created yet")).toBeInTheDocument();
+    });
+    it("displays existing setter blocks", () => {
+      render(<CustomBlockEditor {...defaultProps} />);
+      expect(screen.getByText((content, element) => {
+        return element?.textContent === "color (setter) - Properties";
+      })).toBeInTheDocument();
+    });
+    it("opens setter form when add setter button is clicked", async () => {
+      const user = userEvent.setup();
+      render(<CustomBlockEditor {...defaultProps} />);
+      await user.click(screen.getByTestId("add-setter"));
+      expect(screen.getByTestId("custom-block-form")).toBeInTheDocument();
+      expect(screen.getByText("Property Name")).toBeInTheDocument();
+    });
+    it("toggles setter form visibility", async () => {
+      const user = userEvent.setup();
+      render(<CustomBlockEditor {...defaultProps} />);
+      const addButton = screen.getByTestId("add-setter");
+      expect(addButton).toHaveTextContent("Add Block");
+      await user.click(addButton);
+      expect(addButton).toHaveTextContent("Cancel");
+      expect(screen.getByTestId("custom-block-form")).toBeInTheDocument();
+      await user.click(addButton);
+      expect(addButton).toHaveTextContent("Add Block");
+      expect(screen.queryByTestId("custom-block-form")).not.toBeInTheDocument();
+    });
+
+    // --- Create Things (creator) ---
+    it("shows no blocks message for empty creator blocks", () => {
+      render(<CustomBlockEditor {...defaultProps} value={[]} />);
+      expect(screen.getByText("No creator blocks created yet")).toBeInTheDocument();
+    });
+    it("displays existing creator blocks", () => {
+      render(<CustomBlockEditor {...defaultProps} />);
+      expect(screen.getByText((content, element) => {
+        return element?.textContent === "molecules (creator) - General";
+      })).toBeInTheDocument();
+    });
+    it("opens creator form when add creator button is clicked", async () => {
+      const user = userEvent.setup();
+      render(<CustomBlockEditor {...defaultProps} />);
+      await user.click(screen.getByTestId("add-creator"));
+      expect(screen.getByTestId("custom-block-form")).toBeInTheDocument();
+      expect(screen.getByText("Object Name")).toBeInTheDocument();
+    });
+    it("toggles creator form visibility", async () => {
+      const user = userEvent.setup();
+      render(<CustomBlockEditor {...defaultProps} />);
+      const addButton = screen.getByTestId("add-creator");
+      expect(addButton).toHaveTextContent("Add Block");
+      await user.click(addButton);
+      expect(addButton).toHaveTextContent("Cancel");
+      expect(screen.getByTestId("custom-block-form")).toBeInTheDocument();
+      await user.click(addButton);
+      expect(addButton).toHaveTextContent("Add Block");
+      expect(screen.queryByTestId("custom-block-form")).not.toBeInTheDocument();
+    });
+
+    // --- Action (action) ---
+    it("shows no blocks message for empty action blocks", () => {
+      render(<CustomBlockEditor {...defaultProps} value={[]} />);
+      expect(screen.getByText("No action blocks created yet")).toBeInTheDocument();
+    });
+    it("opens action form when add action button is clicked", async () => {
+      const user = userEvent.setup();
+      render(<CustomBlockEditor {...defaultProps} />);
+      await user.click(screen.getByTestId("add-action"));
+      expect(screen.getByTestId("custom-block-form")).toBeInTheDocument();
+      expect(screen.getByText("Action Name")).toBeInTheDocument();
+    });
+    it("toggles action form visibility", async () => {
+      const user = userEvent.setup();
+      render(<CustomBlockEditor {...defaultProps} />);
+      const addButton = screen.getByTestId("add-action");
+      expect(addButton).toHaveTextContent("Add Block");
+      await user.click(addButton);
+      expect(addButton).toHaveTextContent("Cancel");
+      expect(screen.getByTestId("custom-block-form")).toBeInTheDocument();
+      await user.click(addButton);
+      expect(addButton).toHaveTextContent("Add Block");
+      expect(screen.queryByTestId("custom-block-form")).not.toBeInTheDocument();
+    });
+
+    // --- Statement (statement) ---
+    it("shows no blocks message for empty statement blocks", () => {
+      render(<CustomBlockEditor {...defaultProps} />);
+      expect(screen.getByText("No statement blocks created yet")).toBeInTheDocument();
+    });
+    it("displays existing statement blocks", () => {
+      const blocksWithStatement: ICustomBlock[] = [
+        ...mockCustomBlocks,
+        {
+          id: "custom_statement_ask_123",
+          type: "statement",
+          name: "ask",
+          color: "#0089b8",
+          category: "Control",
+          config: {
+            canHaveChildren: false,
+            statementKind: "ask",
+            targetEntity: "molecules",
+            options: [["water", "water"]]
+          }
+        }
+      ];
+      render(<CustomBlockEditor {...defaultProps} value={blocksWithStatement} />);
+      expect(screen.getByText((content, element) => {
+        return element?.textContent === "ask (statement) - Control";
+      })).toBeInTheDocument();
+    });
+    it("opens statement form when add statement button is clicked", async () => {
+      const user = userEvent.setup();
+      render(<CustomBlockEditor {...defaultProps} />);
+      await user.click(screen.getByTestId("add-statement"));
+      expect(screen.getByTestId("section-statement-kind")).toBeInTheDocument();
+      expect(screen.getByText("Statement Type")).toBeInTheDocument();
+    });
+    it("toggles statement form visibility", async () => {
+      const user = userEvent.setup();
+      render(<CustomBlockEditor {...defaultProps} />);
+      const addButton = screen.getByTestId("add-statement");
+      expect(addButton).toHaveTextContent("Add Block");
+      await user.click(addButton);
+      expect(addButton).toHaveTextContent("Cancel");
+      expect(screen.getByTestId("section-statement-kind")).toBeInTheDocument();
+      await user.click(addButton);
+      expect(addButton).toHaveTextContent("Add Block");
+      expect(screen.queryByTestId("section-statement-kind")).not.toBeInTheDocument();
+    });
+
+    // --- Condition (condition) ---
+    it("shows no blocks message for empty condition blocks", () => {
+      render(<CustomBlockEditor {...defaultProps} />);
+      expect(screen.getByText("No condition blocks created yet")).toBeInTheDocument();
+    });
+    it("displays existing condition blocks", () => {
+      const blocksWithCondition: ICustomBlock[] = [
+        ...mockCustomBlocks,
+        {
+          id: "custom_condition_touching_456",
+          type: "condition",
+          name: "touching",
+          color: "#0089b8",
+          category: "Logic",
+          config: {
+            canHaveChildren: false,
+            options: [["touching", "touching?"],],
+            labelPosition: "prefix"
+          }
+        }
+      ];
+      render(<CustomBlockEditor {...defaultProps} value={blocksWithCondition} />);
+      expect(screen.getByText((content, element) => {
+        return element?.textContent === "touching (condition) - Logic";
+      })).toBeInTheDocument();
+    });
+    it("opens condition form when add condition button is clicked", async () => {
+      const user = userEvent.setup();
+      render(<CustomBlockEditor {...defaultProps} />);
+      await user.click(screen.getByTestId("add-condition"));
+      expect(screen.getByTestId("section-options")).toBeInTheDocument();
+      expect(screen.getByText("Options")).toBeInTheDocument();
+    });
+    it("toggles condition form visibility", async () => {
+      const user = userEvent.setup();
+      render(<CustomBlockEditor {...defaultProps} />);
+      const addButton = screen.getByTestId("add-condition");
+      expect(addButton).toHaveTextContent("Add Block");
+      await user.click(addButton);
+      expect(addButton).toHaveTextContent("Cancel");
+      expect(screen.getByTestId("section-options")).toBeInTheDocument();
+      await user.click(addButton);
+      expect(addButton).toHaveTextContent("Add Block");
+      expect(screen.queryByTestId("section-options")).not.toBeInTheDocument();
     });
 
     it("shows existing custom blocks", () => {

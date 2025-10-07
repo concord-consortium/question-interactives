@@ -38,6 +38,8 @@ $shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
 $shadow-md: 0 2px 6px rgba(0, 0, 0, 0.15);
 $shadow-lg: 0 2px 8px rgba(0, 0, 0, 0.2);
 
+$focus-shadow-color: rgba($primary-blue, 0.25);
+
 $transition-fast: 0.2s ease;
 $transition-medium: 0.3s ease;
 
@@ -62,7 +64,7 @@ $form-checkbox-gap: 6px;
   margin: 0;
 }
 
-@mixin form-input() {
+@mixin _form-input-base {
   border: 1px solid $border-light;
   border-radius: $border-radius-sm;
   font-size: $font-size-sm;
@@ -70,17 +72,19 @@ $form-checkbox-gap: 6px;
   width: 100%;
 }
 
+@mixin form-input() {
+  @include _form-input-base;
+  padding: $form-input-padding;
+}
+
 @mixin form-input-sm() {
-  border: 1px solid $border-light;
-  border-radius: $border-radius-sm;
-  font-size: $font-size-sm;
-  max-width: 100%;
-  width: 100%;
+  @include _form-input-base;
+  padding: $form-input-padding-sm;
 }
 
 @mixin focus-state() {
   border-color: $primary-blue;
-  box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+  box-shadow: 0 0 0 2px $focus-shadow-color;
   outline: none;
 }
 

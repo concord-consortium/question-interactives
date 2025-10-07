@@ -7,8 +7,10 @@
   min-width: 0;
 
   label {
+    color: $text-dark;
     display: block;
     font-weight: $font-weight-medium;
+    font-size: $font-size-sm;
     margin: 0;
   }
 
@@ -82,12 +84,6 @@
           gap: 3px;
           min-width: 0;
 
-          label {
-            color: $text-dark;
-            font-size: $font-size-sm;
-            font-weight: $font-weight-medium;
-          }
-
           input, select {
             border: solid 1px $border-light;
             border-radius: $border-radius-sm;
@@ -105,11 +101,6 @@
         gap: $spacing-sm;
         min-width: 0;
 
-        label {
-          color: $text-dark;
-          font-size: $font-size-sm;
-          font-weight: $font-weight-medium;
-        }
       }
 
       .numberOptions {
@@ -117,12 +108,6 @@
           display: flex;
           flex-direction: column;
           gap: 3px;
-
-          label {
-            color: $text-dark;
-            font-size: $font-size-sm;
-            font-weight: $font-weight-medium;
-          }
 
           input {
             border: solid 1px $border-light;

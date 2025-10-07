@@ -116,7 +116,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         conditionInput: !!editingBlock.config.conditionInput,
         defaultCount: config.defaultCount ?? 100,
         generatorTemplate: config.generatorTemplate || "",
-        includeCount: !!config.defaultCount,
+        includeCount: config.defaultCount === 0 ? true : !!config.defaultCount,
         includeNumberInput: !!config.includeNumberInput,
         inputsInline: !!config.inputsInline,
         maxCount: config.maxCount ?? 500,
@@ -483,7 +483,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
                   id="min-count"
                   type="number"
                   value={formData.minCount}
-                  onChange={(e) => setFormData(prev => ({ ...prev, minCount: parseInt(e.target.value) }))}
+                  onChange={(e) => setFormData(prev => ({ ...prev, minCount: parseInt(e.target.value, 10) }))}
                 />
               </div>
               <div>
@@ -493,7 +493,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
                   id="max-count"
                   type="number"
                   value={formData.maxCount}
-                  onChange={(e) => setFormData(prev => ({ ...prev, maxCount: parseInt(e.target.value) }))}
+                  onChange={(e) => setFormData(prev => ({ ...prev, maxCount: parseInt(e.target.value, 10) }))}
                 />
               </div>
               <div>
@@ -503,7 +503,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
                   id="default-count"
                   type="number"
                   value={formData.defaultCount}
-                  onChange={(e) => setFormData(prev => ({ ...prev, defaultCount: parseInt(e.target.value) }))}
+                  onChange={(e) => setFormData(prev => ({ ...prev, defaultCount: parseInt(e.target.value, 10) }))}
                 />
               </div>
             </div>

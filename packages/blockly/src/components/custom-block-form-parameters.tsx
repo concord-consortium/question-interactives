@@ -69,7 +69,7 @@ export const CustomBlockFormParameters: React.FC<IProps> = ({ parameters, onPara
       </div>
       <div>
         {parameters.map((p, i) => (
-          <div key={i} className={css.paramRow} data-testid={`param-row-${i}`}>
+          <div key={`${p.kind}-${p.name || ''}-${i}`} className={css.paramRow} data-testid={`param-row-${i}`}>
             <div className={css.paramHeader}>
               <span
                 className={css.paramType}
@@ -133,7 +133,7 @@ export const CustomBlockFormParameters: React.FC<IProps> = ({ parameters, onPara
                   <CustomBlockFormOptionList
                     dataTestIdPrefix={`param-option-${i}`}
                     labelPlaceholder="Display text (e.g., forward)"
-                    options={(p as any).options?.map((opt: [string, string]) => ({ label: opt[0], value: opt[1] })) || []}
+                    options={p.options?.map((opt: [string, string]) => ({ label: opt[0], value: opt[1] })) || []}
                     valuePlaceholder="Value (e.g., FORWARD)"
                     onOptionsChange={(newOptions) => updateParameterOptions(i, newOptions)}
                   />
@@ -147,7 +147,7 @@ export const CustomBlockFormParameters: React.FC<IProps> = ({ parameters, onPara
                       id={`default-value-${i}`}
                       placeholder="0"
                       type="number"
-                      value={(p as any).defaultValue ?? ""}
+                      value={p.defaultValue ?? ""}
                       onChange={(e) => updateParameter(i, { defaultValue: Number(e.target.value) })}
                     />
                   </div>
