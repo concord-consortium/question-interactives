@@ -81,30 +81,29 @@ export interface ICustomBlock {
 }
 
 export interface IAuthoredState extends IAuthoringInteractiveMetadata {
-  code: string;
   customBlocks?: ICustomBlock[];
   hint?: string;
+  simulationCode: string;
   toolbox: string;
   version: number;
 }
 
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
-  blocklyCode?: string;
+  code?: string;
   blocklyState?: string;
   submitted?: boolean;
 }
 
 export const DefaultAuthoredState: Omit<Required<IAuthoredState>, "questionSubType"|"required"|"prompt"> = {
-  code: predatorPreyCode,
   customBlocks: [],
   hint: "",
   questionType: "iframe_interactive",
+  simulationCode: predatorPreyCode,
   toolbox: "",
   version: 1
 };
 
 export const DemoAuthoredState: IAuthoredState = {
-  code: predatorPreyCode,
   customBlocks: [
      {
        "category": "Properties",
@@ -298,6 +297,7 @@ export const DemoAuthoredState: IAuthoredState = {
   hint: "",
   prompt: "",
   questionType: "iframe_interactive",
+  simulationCode: predatorPreyCode,
   toolbox: `{
     "kind": "categoryToolbox",
     "name": "General",

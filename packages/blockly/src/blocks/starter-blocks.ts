@@ -59,12 +59,12 @@ Blocks.onclick = {
 
 javascriptGenerator.forBlock.setup = function(block) {
   const statements = javascriptGenerator.statementToCode(block, "statements");
-  return `async function setup() {\n${statements}}\n`;
+  return `function setup() {\n${statements}}\n`;
 };
 
 javascriptGenerator.forBlock.go = function(block) {
   const statements = javascriptGenerator.statementToCode(block, "statements");
-  return `async function go() {\n${statements}}\n`;
+  return `sim.afterTick = () => {\n${statements}}\n`;
 };
 
 javascriptGenerator.forBlock.onclick = function(block) {

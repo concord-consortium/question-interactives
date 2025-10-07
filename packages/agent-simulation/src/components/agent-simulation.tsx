@@ -18,7 +18,7 @@ interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInterac
 export const AgentSimulationComponent = ({
   authoredState, interactiveState, setInteractiveState, report
 }: IProps) => {
-  const [blocklyCode, setBlocklyCode] = useState<string>("");
+  const [code, setCode] = useState<string>("");
   const dataSourceInteractive = useLinkedInteractiveId("dataSourceInteractive");
 
   // Keep the blockly code updated with the linked interactive
@@ -26,11 +26,11 @@ export const AgentSimulationComponent = ({
     if (!dataSourceInteractive) return;
 
     const listener = (newLinkedIntState: IInteractiveState | undefined) => {
-      const newBlocklyCode = newLinkedIntState && "blocklyCode" in newLinkedIntState && newLinkedIntState.blocklyCode;
-      if (typeof newBlocklyCode === "string") {
-        setBlocklyCode(newBlocklyCode);
+      const newCode = newLinkedIntState && "code" in newLinkedIntState && newLinkedIntState.code;
+      if (typeof newCode === "string") {
+        setCode(newCode);
       } else {
-        setBlocklyCode("");
+        setCode("");
       }
     };
 
@@ -45,8 +45,8 @@ export const AgentSimulationComponent = ({
   return (
     <div className={css.agentSimulationComponent}>
       <h4>Blockly Code</h4>
-      <div className={css.blocklyCode}>
-        {blocklyCode}
+      <div className={css.code}>
+        {code}
       </div>
     </div>
   );
