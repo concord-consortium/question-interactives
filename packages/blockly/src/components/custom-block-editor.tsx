@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 import { validateBlocksJson } from "../utils/block-utils";
-import { CustomBlockForm } from "./custom-block-form";
+import { CustomBlockEditorSection } from "./custom-block-editor-section";
 import { CustomBlockType, ICustomBlock } from "./types";
 
 import css from "./custom-block-editor.scss";
@@ -12,16 +12,8 @@ interface IProps {
   onChange: (blocks: ICustomBlock[]) => void;
 }
 
-const generateBlockId = (block: ICustomBlock) => {
-  const sanitizedName = block.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
-  const timestamp = Date.now();
-  return `custom_${block.type}_${sanitizedName}_${timestamp}`;
-};
-
 export const CustomBlockEditor: React.FC<IProps> = ({ value, onChange, toolbox }) => {
   const customBlocks = Array.isArray(value) ? value : [];
-  const [showForm, setShowForm] = useState<CustomBlockType | null>(null);
-  const [editingBlock, setEditingBlock] = useState<ICustomBlock | null>(null);
   const [showCodePreview, setShowCodePreview] = useState(false);
   const [codeText, setCodeText] = useState<string>(JSON.stringify(customBlocks, null, 2));
   const [codeError, setCodeError] = useState<string>("");
@@ -64,252 +56,27 @@ export const CustomBlockEditor: React.FC<IProps> = ({ value, onChange, toolbox }
     }
   };
 
-  const addCustomBlock = (block: ICustomBlock) => {
-    const newBlock = { ...block, id: generateBlockId(block) };
-    const updatedBlocks = [...customBlocks, newBlock];
-    onChange(updatedBlocks);
-    setShowForm(null);
-    setEditingBlock(null);
-  };
-
-  const editCustomBlock = (block: ICustomBlock) => {
-    setEditingBlock(block);
-    setShowForm(block.type);
-  };
-
-  const updateCustomBlock = (updatedBlock: ICustomBlock) => {
-    const updatedBlocks = customBlocks.map(b => b.id === editingBlock?.id ? updatedBlock : b);
-    onChange(updatedBlocks);
-    
-    setShowForm(null);
-    setEditingBlock(null);
-  };
-
-  const handleFormSubmit = (block: ICustomBlock) => {
-    if (editingBlock) {
-      updateCustomBlock({ ...block, id: editingBlock.id });
-    } else {
-      addCustomBlock(block);
-    }
-  };
-
-  const deleteBlock = (id: string) => {
-    const updatedBlocks = customBlocks.filter(b => b.id !== id);
-    onChange(updatedBlocks);
-  };
-
-  const setterBlocks = customBlocks.filter(b => b.type === "setter");
-  const creatorBlocks = customBlocks.filter(b => b.type === "creator");
-  const actionBlocks = customBlocks.filter(b => b.type === "action");
+  const blockTypes: CustomBlockType[] = [
+    "setter",
+    "creator",
+    "action",
+    "statement",
+    "condition"
+  ];
 
   return (
     <div className={css.customBlockEditor} data-testid="custom-block-editor">
       <h4>Custom Blocks</h4>
 
-      {/* Setter blocks section */}
-      <div className={css.customBlocks_section} data-testid="section-setter">
-        <div className={css.customBlocks_new}>
-          <div className={css.customBlocks_newHeading}>
-            <h5>Set Properties Blocks</h5>
-            <button data-testid="add-setter" onClick={() => {
-              setEditingBlock(null);
-              setShowForm(showForm === "setter" ? null : "setter");
-            }}>
-              {showForm === "setter" ? "Cancel" : "Add Block"}
-            </button>
-          </div>
-          {showForm === "setter" && (
-            <CustomBlockForm
-              blockType="setter"
-              editingBlock={editingBlock}
-              existingBlocks={customBlocks}
-              toolbox={toolbox}
-              onSubmit={handleFormSubmit}
-            />
-          )}
-        </div>
-        <div className={css.customBlocks_current} data-testid="current-setter">
-          {setterBlocks.length > 0 ? (
-            setterBlocks.map(block => (
-              <div className={css.customBlocks_currentBlock} key={block.id} data-testid="current-block">
-                <div className={css.customBlocks_currentBlockInfo}>
-                  <strong>{block.name}</strong> ({block.type}) - {block.category}
-                </div>
-                <div className={css.customBlocks_currentBlockActions}>
-                  <button data-testid="block-edit" onClick={() => editCustomBlock(block)}>Edit</button>
-                  <button data-testid="block-delete" onClick={() => deleteBlock(block.id)}>Delete</button>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className={css.noBlocks_message}>No setter blocks created yet</div>
-          )}
-        </div>
-      </div>
-
-      {/* Creator blocks section */}
-      <div className={css.customBlocks_section} data-testid="section-creator">
-        <div className={css.customBlocks_new}>
-          <div className={css.customBlocks_newHeading}>
-            <h5>Create Things Blocks</h5>
-            <button data-testid="add-creator" onClick={() => {
-              setEditingBlock(null);
-              setShowForm(showForm === "creator" ? null : "creator");
-            }}>
-              {showForm === "creator" ? "Cancel" : "Add Block"}
-            </button>
-          </div>
-          {showForm === "creator" && (
-            <CustomBlockForm
-              blockType="creator"
-              editingBlock={editingBlock}
-              existingBlocks={customBlocks}
-              toolbox={toolbox}
-              onSubmit={handleFormSubmit}
-            />
-          )}
-        </div>
-        <div className={css.customBlocks_current} data-testid="current-creator">
-          {creatorBlocks.length > 0 ? (
-            creatorBlocks.map(block => (
-              <div className={css.customBlocks_currentBlock} key={block.id} data-testid="current-block">
-                <div className={css.customBlocks_currentBlockInfo}>
-                  <strong>{block.name}</strong> ({block.type}) - {block.category}
-                </div>
-                <div className={css.customBlocks_currentBlockActions}>
-                  <button data-testid="block-edit" onClick={() => editCustomBlock(block)}>Edit</button>
-                  <button data-testid="block-delete" onClick={() => deleteBlock(block.id)}>Delete</button>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className={css.noBlocks_message}>No creator blocks created yet</div>
-          )}
-        </div>
-      </div>
-
-      {/* Action blocks section */}
-      <div className={css.customBlocks_section} data-testid="section-action">
-        <div className={css.customBlocks_new}>
-          <div className={css.customBlocks_newHeading}>
-            <h5>Action Blocks</h5>
-            <button data-testid="add-action" onClick={() => {
-              setEditingBlock(null);
-              setShowForm(showForm === "action" ? null : "action");
-            }}>
-              {showForm === "action" ? "Cancel" : "Add Block"}
-            </button>
-          </div>
-          {showForm === "action" && (
-            <CustomBlockForm
-              blockType="action"
-              editingBlock={editingBlock}
-              existingBlocks={customBlocks}
-              toolbox={toolbox}
-              onSubmit={handleFormSubmit}
-            />
-          )}
-        </div>
-        <div className={css.customBlocks_current} data-testid="current-action">
-          {actionBlocks.length > 0 ? (
-            actionBlocks.map(block => (
-              <div className={css.customBlocks_currentBlock} key={block.id} data-testid="current-block">
-                <div className={css.customBlocks_currentBlockInfo}>
-                  <strong>{block.name}</strong> ({block.type}) - {block.category}
-                </div>
-                <div className={css.customBlocks_currentBlockActions}>
-                  <button data-testid="block-edit" onClick={() => editCustomBlock(block)}>Edit</button>
-                  <button data-testid="block-delete" onClick={() => deleteBlock(block.id)}>Delete</button>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className={css.noBlocks_message}>No action blocks created yet</div>
-          )}
-        </div>
-      </div>
-
-      {/* Statement blocks section */}
-      <div className={css.customBlocks_section} data-testid="section-statement">
-        <div className={css.customBlocks_new}>
-          <div className={css.customBlocks_newHeading}>
-            <h5>Statement Blocks</h5>
-            <button data-testid="add-statement" onClick={() => {
-              setEditingBlock(null);
-              setShowForm(showForm === "statement" ? null : "statement");
-            }}>
-              {showForm === "statement" ? "Cancel" : "Add Block"}
-            </button>
-          </div>
-          {showForm === "statement" && (
-            <CustomBlockForm
-              blockType="statement"
-              editingBlock={editingBlock}
-              existingBlocks={customBlocks}
-              toolbox={toolbox}
-              onSubmit={handleFormSubmit}
-            />
-          )}
-        </div>
-        <div className={css.customBlocks_current} data-testid="current-statement">
-          {customBlocks.filter(b => b.type === "statement").length > 0 ? (
-            customBlocks.filter(b => b.type === "statement").map(block => (
-              <div className={css.customBlocks_currentBlock} key={block.id} data-testid="current-block">
-                <div className={css.customBlocks_currentBlockInfo}>
-                  <strong>{block.name}</strong> ({block.type}) - {block.category}
-                </div>
-                <div className={css.customBlocks_currentBlockActions}>
-                  <button data-testid="block-edit" onClick={() => editCustomBlock(block)}>Edit</button>
-                  <button data-testid="block-delete" onClick={() => deleteBlock(block.id)}>Delete</button>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className={css.noBlocks_message}>No statement blocks created yet</div>
-          )}
-        </div>
-      </div>
-
-      {/* Condition blocks section */}
-      <div className={css.customBlocks_section} data-testid="section-condition">
-        <div className={css.customBlocks_new}>
-          <div className={css.customBlocks_newHeading}>
-            <h5>Condition Blocks</h5>
-            <button data-testid="add-condition" onClick={() => {
-              setEditingBlock(null);
-              setShowForm(showForm === "condition" ? null : "condition");
-            }}>
-              {showForm === "condition" ? "Cancel" : "Add Block"}
-            </button>
-          </div>
-          {showForm === "condition" && (
-            <CustomBlockForm
-              blockType="condition"
-              editingBlock={editingBlock}
-              existingBlocks={customBlocks}
-              toolbox={toolbox}
-              onSubmit={handleFormSubmit}
-            />
-          )}
-        </div>
-        <div className={css.customBlocks_current} data-testid="current-condition">
-          {customBlocks.filter(b => b.type === "condition").length > 0 ? (
-            customBlocks.filter(b => b.type === "condition").map(block => (
-              <div className={css.customBlocks_currentBlock} key={block.id} data-testid="current-block">
-                <div className={css.customBlocks_currentBlockInfo}>
-                  <strong>{block.name}</strong> ({block.type}) - {block.category}
-                </div>
-                <div className={css.customBlocks_currentBlockActions}>
-                  <button data-testid="block-edit" onClick={() => editCustomBlock(block)}>Edit</button>
-                  <button data-testid="block-delete" onClick={() => deleteBlock(block.id)}>Delete</button>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className={css.noBlocks_message}>No condition blocks created yet</div>
-          )}
-        </div>
-      </div>
+      {blockTypes.map(type => (
+        <CustomBlockEditorSection
+          key={type}
+          blockType={type}
+          toolbox={toolbox}
+          value={customBlocks}
+          onChange={onChange}
+        />
+      ))}
 
       {/* Editable code preview for all custom blocks. */}
       <div className={css.codePreview} data-testid="code-preview">
