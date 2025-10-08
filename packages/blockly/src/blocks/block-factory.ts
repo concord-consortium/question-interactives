@@ -1,9 +1,9 @@
 import { FieldSlider } from "@blockly/field-slider";
 import type { BlockSvg } from "blockly";
 import Blockly, { Blocks, FieldDropdown, FieldNumber } from "blockly/core";
+import { javascriptGenerator } from "blockly/javascript";
 
 import { IActionBlockConfig, ICustomBlock, ICreateBlockConfig, ISetBlockConfig, IParameter, isCreateBlockConfig } from "../components/types";
-import { netlogoGenerator } from "../utils/netlogo-generator";
 
 const PLUS_ICON  = "data:image/svg+xml;utf8," +
   "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>" +
@@ -196,7 +196,7 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
     };
 
     // Generator: include available values
-    netlogoGenerator.forBlock[blockType] = function(block) {
+    javascriptGenerator.forBlock[blockType] = function(block) {
       if (blockDef.type === "action") {
         // If a generatorTemplate is provided, interpolate parameter fields
         const actionName = blockDef.name.toLowerCase().replace(/\s+/g, "_");
@@ -244,10 +244,11 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         // to take into consideration and statements to process, e.g. child setter blocks.
         // For now, though, we just return a simple create command.
         const count = block.getFieldValue("count");
-        const type = block.getFieldValue("type").toLowerCase().replace(/\s+/g, "_");
-        const statements = netlogoGenerator.statementToCode(block, "statements");
+        const type = blockDef.name.toLowerCase().replace(/\s+/g, "_");
+        const statements = javascriptGenerator.statementToCode(block, "statements");
+        const callback = statements ? `, (agent) => {\n${statements}\n}` : "";
 
-        return `create-${type} ${count}\n${statements}`;
+        return `create_${type}(${count}${callback});\n`;
       }
 
       return "";

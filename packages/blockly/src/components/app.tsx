@@ -30,7 +30,7 @@ const baseAuthoringProps = {
         title: "Hint",
         type: "string"
       },
-      code: {
+      simulationCode: {
         title: "Simulation Code",
         type: "string"
       },
@@ -75,7 +75,7 @@ const baseAuthoringProps = {
     hint: {
       "ui:widget": "richtext"
     },
-    code: {
+    simulationCode: {
       "ui:widget": "textarea",
       "ui:options": {
         "rows": 15
