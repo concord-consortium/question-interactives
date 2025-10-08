@@ -59,15 +59,25 @@ Blocks.onclick = {
 
 javascriptGenerator.forBlock.setup = function(block) {
   const statements = javascriptGenerator.statementToCode(block, "statements");
-  return `function setup() {\n${statements}}\n`;
+
+  const content = statements.trim() ? statements : "// noop\n";
+  return `function setup() {\n${content}}\n`;
 };
 
 javascriptGenerator.forBlock.go = function(block) {
   const statements = javascriptGenerator.statementToCode(block, "statements");
+
+  // If no statements have been specified, don't generate any code
+  if (!statements.trim()) return "";
+
   return `sim.afterTick = () => {\n${statements}}\n`;
 };
 
 javascriptGenerator.forBlock.onclick = function(block) {
   const statements = javascriptGenerator.statementToCode(block, "statements");
-  return `async function onclick() {\n${statements}}\n`;
+
+  // If no statements have been specified, don't generate any code
+  if (!statements.trim()) return "";
+
+  return `function onclick() {\n${statements}}\n`;
 };
