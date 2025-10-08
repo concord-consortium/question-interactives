@@ -6,9 +6,9 @@ import { CustomBlockEditorSection, generateBlockId } from "./custom-block-editor
 const mockOnChange = jest.fn();
 const mockBlocks = [
 	{
-		category: "Properties",
+    category: "Properties",
     color: "#ff0000",
-		config: {
+    config: {
 			canHaveChildren: false,
 			typeOptions: [
 				["red", "RED"] as [string, string]

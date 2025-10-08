@@ -197,6 +197,17 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
 
     const effectiveChildBlocks = formData.canHaveChildren ? formData.childBlocks : [];
 
+    // Compute statement options for statement blocks with a target entity
+    let statementOptions: [string, string][] | undefined = undefined;
+    if (formData.type === "statement" && formData.targetEntity) {
+      const creatorBlock = (existingBlocks || []).find(block =>
+        block.type === "creator" && block.name === formData.targetEntity
+      );
+      if (creatorBlock) {
+        statementOptions = creatorBlock.config.typeOptions?.map(option => [option[0], option[1]] as [string, string]);
+      }
+    }
+
     const config =
       formData.type === "action"
         ? {
@@ -213,14 +224,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
             childBlocks: [],
             statementKind: formData.statementKind,
             conditionInput: formData.conditionInput,
-            options: formData.targetEntity ? (() => {
-              // Get all options from the selected creator block
-              const creatorBlock = (existingBlocks || []).find(block => 
-                block.type === "creator" && block.name === formData.targetEntity
-              );
-              if (!creatorBlock) return undefined;
-              return creatorBlock.config.typeOptions?.map(option => [option[0], option[1]] as [string, string]) || undefined;
-            })() : undefined,
+            options: statementOptions,
             targetEntity: formData.targetEntity
           }
         : formData.type === "condition"

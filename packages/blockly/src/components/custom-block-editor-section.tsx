@@ -1,9 +1,9 @@
 import React, { useState } from "react";
 
+import { CustomBlockForm } from "./custom-block-form";
 import { CustomBlockType, ICustomBlock } from "./types";
 
 import css from "./custom-block-editor-section.scss";
-import { CustomBlockForm } from "./custom-block-form";
 
 interface IProps {
   blockType: CustomBlockType;

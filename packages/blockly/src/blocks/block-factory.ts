@@ -229,8 +229,7 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
 
         // Color and inline/connection flags
         this.setColour(blockDef.color);
-        const isConditionBlockFinal = blockDef.type === "condition"; // TODO: Is this right?
-        if (isConditionBlockFinal) {
+        if (isConditionBlock) {
           // Respect inputsInline, but do not apply previous/next connections for value blocks.
           if (blockConfig.inputsInline !== undefined) this.setInputsInline(!!blockConfig.inputsInline);
         } else {
