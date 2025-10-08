@@ -1,6 +1,8 @@
 import React from "react";
 import { RJSFSchema } from "@rjsf/utils";
 import { BaseQuestionApp } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
+
+import { predatorPreyCode } from "../sims/predator-prey-model";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { Runtime } from "./runtime";
 
@@ -27,6 +29,26 @@ const baseAuthoringProps = {
       hint: {
         title: "Hint",
         type: "string"
+      },
+      gridHeight: {
+        title: "Grid Height",
+        type: "number",
+        default: 450,
+      },
+      gridWidth: {
+        title: "Grid Width",
+        type: "number",
+        default: 450,
+      },
+      gridStep: {
+        title: "Grid Step",
+        type: "number",
+        default: 10,
+      },
+      code: {
+        title: "Simulation Code",
+        type: "string",
+        default: predatorPreyCode
       },
       dataSourceInteractive: {
         title: "Data Source Interactive",
@@ -64,6 +86,21 @@ const baseAuthoringProps = {
     },
     hint: {
       "ui:widget": "richtext"
+    },
+    gridHeight: {
+      "ui:widget": "updown"
+    },
+    gridWidth: {
+      "ui:widget": "updown"
+    },
+    gridStep: {
+      "ui:widget": "updown"
+    },
+    code: {
+      "ui:widget": "textarea",
+      "ui:options": {
+        "rows": 15
+      }
     }
   }
 };
