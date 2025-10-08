@@ -90,6 +90,12 @@ export const AgentSimulationComponent = ({
     AV.vis(simRef.current, { target: containerRef.current });
     simRef.current.pause(true);
     setPaused(true);
+
+    const container = containerRef.current;
+    return () => {
+      // Remove old sim when we're ready to update the sim
+      container?.replaceChildren();
+    };
   }, [blocklyCode, code, gridHeight, gridStep, gridWidth]);
 
   const handlePauseClick = () => {
