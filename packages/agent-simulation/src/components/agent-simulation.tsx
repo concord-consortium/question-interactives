@@ -21,7 +21,10 @@ export const AgentSimulationComponent = ({
   authoredState, interactiveState, setInteractiveState, report
 }: IProps) => {
   const { code, gridHeight, gridStep, gridWidth } = authoredState;
+  // The blockly code we're using, which doesn't get updated until the user accepts newer code
   const [blocklyCode, setBlocklyCode] = useState<string>("");
+  // The code we're receiving from blockly, which won't be used until the user accepts it
+  const [externalBlocklyCode, setExternalBlocklyCode] = useState<string>("");
   const dataSourceInteractive = useLinkedInteractiveId("dataSourceInteractive");
   const containerRef = useRef<HTMLDivElement>(null);
   const [paused, setPaused] = useState(true);
@@ -35,9 +38,9 @@ export const AgentSimulationComponent = ({
     const listener = (newLinkedIntState: IInteractiveState | undefined) => {
       const newCode = newLinkedIntState && "code" in newLinkedIntState && newLinkedIntState.code;
       if (typeof newCode === "string") {
-        setBlocklyCode(newCode);
+        setExternalBlocklyCode(newCode);
       } else {
-        setBlocklyCode("");
+        setExternalBlocklyCode("");
       }
     };
 
@@ -98,6 +101,10 @@ export const AgentSimulationComponent = ({
     };
   }, [blocklyCode, code, gridHeight, gridStep, gridWidth]);
 
+  const updateBlocklyCode = () => {
+    setBlocklyCode(externalBlocklyCode);
+  };
+
   const handlePauseClick = () => {
     if (simRef.current) {
       simRef.current.pause(!paused);
@@ -114,6 +121,15 @@ export const AgentSimulationComponent = ({
             {blocklyCode}
           </div>
         </>
+      )}
+      {dataSourceInteractive && (
+        <button
+          className={css.updateButton}
+          disabled={!externalBlocklyCode || blocklyCode === externalBlocklyCode}
+          onClick={updateBlocklyCode}
+        >
+          Update Code
+        </button>
       )}
       <button onClick={handlePauseClick}>
         {paused ? "Play" : "Pause"}
