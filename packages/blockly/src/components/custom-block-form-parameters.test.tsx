@@ -13,9 +13,9 @@ const defaultProps = {
       labelText: "Near",
       name: "near",
       options: [
-        ["all", "ALL"] as [string, string],
-        ["any", "ANY"] as [string, string],
-        ["none", "NONE"] as [string, string]
+        { label: "all", value: "ALL" },
+        { label: "any", value: "ANY" },
+        { label: "none", value: "NONE" }
       ]
     }
   ],
@@ -130,10 +130,10 @@ describe("CustomBlockFormParameters", () => {
         expect.arrayContaining([
           expect.objectContaining({
             options: expect.arrayContaining([
-              ["all", "ALL"],
-              ["any", "ANY"],
-              ["none", "NONE"],
-              ["", ""] // New empty option
+              { label: "all", value: "ALL" },
+              { label: "any", value: "ANY" },
+              { label: "none", value: "NONE" },
+              { label: "", value: "" } // New empty option
             ])
           })
         ])
@@ -157,8 +157,8 @@ describe("CustomBlockFormParameters", () => {
         expect.arrayContaining([
           expect.objectContaining({
             options: [
-              ["all", "ALL"],
-              ["none", "NONE"]
+              { label: "all", value: "ALL" },
+              { label: "none", value: "NONE" }
             ]
           })
         ])

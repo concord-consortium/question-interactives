@@ -31,7 +31,8 @@ export const BLOCK_TYPE_CONFIG: Record<CustomBlockType, IBlockTypeConfig> = {
   condition: {
     canHaveChildren: false,
     color: "#0089b8",
-    hasGeneratorTemplate: false,
+    generatorPlaceholder: "",
+    hasGeneratorTemplate: true,
     hasLabelPosition: true,
     hasOptions: true,
     hasParameters: false,

@@ -15,7 +15,7 @@ export const CustomBlockFormParameters: React.FC<IProps> = ({ parameters, onPara
     const newParameter: IParameter = {
       kind: "select",
       labelPosition: "prefix",
-      options: [["", ""]],
+      options: [{ label: "", value: "" }],
       name: "",
     };
     onParametersChange([...parameters, newParameter]);
@@ -42,8 +42,7 @@ export const CustomBlockFormParameters: React.FC<IProps> = ({ parameters, onPara
   };
 
   const updateParameterOptions = (index: number, newOptions: { label: string; value: string }[]) => {
-    const paramOptions = newOptions.map(opt => [opt.label, opt.value] as [string, string]);
-    updateParameter(index, { options: paramOptions });
+    updateParameter(index, { options: newOptions });
   };
 
   return (
@@ -133,7 +132,7 @@ export const CustomBlockFormParameters: React.FC<IProps> = ({ parameters, onPara
                   <CustomBlockFormOptionList
                     dataTestIdPrefix={`param-option-${i}`}
                     labelPlaceholder="Display text (e.g., forward)"
-                    options={p.options?.map((opt: [string, string]) => ({ label: opt[0], value: opt[1] })) || []}
+                    options={p.options || []}
                     valuePlaceholder="Value (e.g., FORWARD)"
                     onOptionsChange={(newOptions) => updateParameterOptions(i, newOptions)}
                   />

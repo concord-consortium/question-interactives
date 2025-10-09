@@ -13,6 +13,11 @@ const MINUS_ICON = "data:image/svg+xml;utf8," +
   "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>" +
   "<text fill='white' x='8' y='12' text-anchor='middle' font-size='14'>−</text></svg>";
 
+function blockHasDisclosure(blockDef: ICustomBlock, blockConfig: IBlockConfig): boolean {
+  return blockDef.type === "creator" ||
+    (blockDef.type === "action" && !!blockConfig.canHaveChildren);
+}
+
 export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
   if (!Array.isArray(customBlocks)) {
     console.warn("registerCustomBlocks: customBlocks is not an array:", customBlocks);
@@ -23,11 +28,6 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
     const blockType = blockDef.id;
     const blockConfig: IBlockConfig = blockDef.config;
 
-    const applyCommonFlags = (block: any) => {
-      if (blockConfig.inputsInline !== undefined) block.setInputsInline(!!blockConfig.inputsInline);
-      if (blockConfig.previousStatement !== undefined) block.setPreviousStatement(!!blockConfig.previousStatement);
-      if (blockConfig.nextStatement !== undefined) block.setNextStatement(!!blockConfig.nextStatement);
-    };
 
     Blocks[blockType] = {
       init() {
@@ -39,12 +39,8 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         // Create input without immediately appending the name so we can control placement as needed.
         const input = this.appendDummyInput();
     
-        if ((blockDef.type === "action" && blockConfig.canHaveChildren) || blockDef.type === "creator") {
+        if (blockHasDisclosure(blockDef, blockConfig)) {
           const statementsInput = this.appendStatementInput("statements");
-          // Only apply child block restrictions for action and creator blocks, not statement blocks.
-          if (Array.isArray(blockConfig.childBlocks) && blockConfig.childBlocks.length > 0) {
-            statementsInput.setCheck(blockConfig.childBlocks);
-          }
           
           // Add open/close toggle button
           const icon = new Blockly.FieldImage(PLUS_ICON, 16, 16, "+/-");
@@ -160,10 +156,8 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
             input.appendField(new FieldDropdown(blockConfig.typeOptions), "value");
           }
         } else if (blockDef.type === "statement") {
-          this.setPreviousStatement(true);
-          this.setNextStatement(true);
           const statementKind = blockConfig.statementKind || "custom";
-          const kindLabel = STATEMENT_KIND_LABEL[statementKind as keyof typeof STATEMENT_KIND_LABEL] || "";
+          const kindLabel = STATEMENT_KIND_LABEL[statementKind] || "";
           if (statementKind === "when") { // "when [condition]"
             input.appendField(kindLabel);
             if (blockConfig.conditionInput) {
@@ -175,8 +169,7 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
           } else if (statementKind === "chance") { // "with a chance of [n]%"
             input.appendField(kindLabel);
             this.appendValueInput("NUM").setCheck("Number");
-            const suffix = this.appendDummyInput();
-            suffix.appendField("%");
+            this.appendDummyInput().appendField("%");
           } else if (statementKind === "ask") { // "ask [target]"
             input.appendField(kindLabel);
           } else {
@@ -194,18 +187,22 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
           // Condition blocks are value blocks with Boolean output.
           this.setOutput(true, "Boolean");
           const labelPosition = blockConfig.labelPosition || "prefix";
+          const hasOptions = Array.isArray(blockConfig.options) && blockConfig.options.length > 0;
+          const blockOptions = hasOptions ? blockConfig.options : undefined;
+
           if (labelPosition === "prefix") {
+            // Display name first, then dropdown.
             input.appendField(displayName);
-            if (Array.isArray(blockConfig.options) && blockConfig.options.length > 0) {
-              input.appendField(new FieldDropdown(blockConfig.options), "condition");
+            if (blockOptions) {
+              input.appendField(new FieldDropdown(blockOptions), "condition");
             }
           } else {
-            // Remove existing name field and add after dropdown.
-            const fresh = this.appendDummyInput();
-            if (Array.isArray(blockConfig.options) && blockConfig.options.length > 0) {
-              fresh.appendField(new FieldDropdown(blockConfig.options), "condition");
+            // Dropdown first, then display name.
+            const dropdownInput = this.appendDummyInput();
+            if (blockOptions) {
+              dropdownInput.appendField(new FieldDropdown(blockOptions), "condition");
             }
-            fresh.appendField(blockDef.name);
+            dropdownInput.appendField(blockDef.name);
           }
 
           // Add entity name as static label after dropdown.
@@ -218,36 +215,38 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         if (blockDef.type === "creator") {
           input.appendField(blockDef.name);
         }
-    
-        // Default connections if not specified. For condition blocks, we intentionally skip
-        // setting previous/next so the block remains a value block.
-        const isConditionBlock = blockDef.type === "condition";
-        if (!isConditionBlock) {
-          if (blockConfig.previousStatement === undefined) this.setPreviousStatement(true);
-          if (blockConfig.nextStatement === undefined) this.setNextStatement(true);
-        }
 
         // Color and inline/connection flags
         this.setColour(blockDef.color);
-        if (isConditionBlock) {
-          // Respect inputsInline, but do not apply previous/next connections for value blocks.
-          if (blockConfig.inputsInline !== undefined) this.setInputsInline(!!blockConfig.inputsInline);
-        } else {
-          applyCommonFlags(this);
+
+        // For all blocks except condition blocks, set previous/next statement connections. Use config value
+        // if defined, otherwise default to true.
+        if (blockDef.type !== "condition") {
+          this.setPreviousStatement(
+            blockConfig.previousStatement !== undefined ? !!blockConfig.previousStatement : true
+          );
+          this.setNextStatement(
+            blockConfig.nextStatement !== undefined ? !!blockConfig.nextStatement : true
+          );
+        }
+
+        // For all blocks, set inputsInline if defined.
+        if (blockConfig.inputsInline !== undefined) {
+          this.setInputsInline(!!blockConfig.inputsInline);
         }
       },
 
       // Persist open/closed state for blocks that have a disclosure toggle.
       mutationToDom() {
         const el = document.createElement("mutation");
-        const hasDisclosure = (blockDef.type === "creator") || (blockDef.type === "action" && !!blockConfig.canHaveChildren);
+        const hasDisclosure = blockHasDisclosure(blockDef, blockConfig);
         const open = hasDisclosure ? ((this as any).__disclosureOpen ?? false) : true;
         el.setAttribute("open", String(open));
         return el;
       },
       domToMutation(el: Element) {
         const b = this as Blockly.BlockSvg;
-        const hasDisclosure = (blockDef.type === "creator") || (blockDef.type === "action" && !!blockConfig.canHaveChildren);
+        const hasDisclosure = blockHasDisclosure(blockDef, blockConfig);
         if (hasDisclosure) {
           const open = el.getAttribute("open") !== "false";
           (b as any).__disclosureOpen = open;

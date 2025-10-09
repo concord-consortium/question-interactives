@@ -56,6 +56,9 @@ export const CustomBlockEditor: React.FC<IProps> = ({ value, onChange, toolbox }
     }
   };
 
+  // List of all block types to render sections for each block type in desired order.
+  // If the desired order changes or isn't necessary, we may be able to use `VALID_BLOCK_TYPES` from `types.ts` instead
+  // and avoid duplicating the list here.
   const blockTypes: CustomBlockType[] = [
     "setter",
     "creator",
@@ -73,7 +76,7 @@ export const CustomBlockEditor: React.FC<IProps> = ({ value, onChange, toolbox }
           key={type}
           blockType={type}
           toolbox={toolbox}
-          value={customBlocks}
+          customBlocks={customBlocks}
           onChange={onChange}
         />
       ))}

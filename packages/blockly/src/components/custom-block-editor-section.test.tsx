@@ -38,8 +38,8 @@ const mockBlocks = [
 ];
 
 const defaultProps = {
+	customBlocks: mockBlocks,
 	toolbox: "{}",
-	value: mockBlocks,
 	onChange: mockOnChange
 };
 
@@ -52,7 +52,7 @@ describe("Rendering", () => {
 	});
 
 	it("shows no blocks message when empty", () => {
-		render(<CustomBlockEditorSection {...defaultProps} blockType="action" value={[]} />);
+		render(<CustomBlockEditorSection {...defaultProps} blockType="action" customBlocks={[]} />);
 
 		expect(screen.getByText(/No action blocks created yet/i)).toBeInTheDocument();
 	});
@@ -102,7 +102,7 @@ describe("ID Generation", () => {
       category: "Properties",
       color: "#ff0000",
       config: {
-      canHaveChildren: false,
+        canHaveChildren: false,
       },
       id: "",
       name: "speed limit",

@@ -42,8 +42,6 @@ interface ICustomBlockFormState {
 }
 
 const blockOptionsFromConfig = (block: ICustomBlock) => {
-  if (block.type === "action") return [{ label: "", value: "" }];
-
   if (["creator", "setter"].includes(block.type)) {
     return block.config.typeOptions?.map(opt => ({ label: String(opt[0]), value: opt[1] })) || [{ label: "", value: "" }];
   }
@@ -116,7 +114,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         conditionInput: !!editingBlock.config.conditionInput,
         defaultCount: config.defaultCount ?? 100,
         generatorTemplate: config.generatorTemplate || "",
-        includeCount: config.defaultCount === 0 ? true : !!config.defaultCount,
+        includeCount: config.defaultCount != null,
         includeNumberInput: !!config.includeNumberInput,
         inputsInline: !!config.inputsInline,
         maxCount: config.maxCount ?? 500,
@@ -183,7 +181,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
     if (
       formData.type === "statement" &&
       formData.statementKind === "custom" &&
-      (!formData.generatorTemplate || !formData.generatorTemplate.trim())
+      (!formData.generatorTemplate?.trim())
     ) {
       alert("Please provide the code template for the custom statement block.");
       return;
@@ -431,6 +429,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         </div>
       )}
 
+      {/* Show Label Placement field if block supports it and has one or more options defined */}
       {blockConfig.hasLabelPosition && formData.options.some(o => o.label && o.value) && (
         <div className={css.customBlockForm_basicFields} data-testid="section-condition-label-position">
           <div className={css.fieldGroup}>

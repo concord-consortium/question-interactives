@@ -1,6 +1,6 @@
 import { Blocks, FieldDropdown, FieldNumber } from "blockly/core";
 import { registerCustomBlocks } from "./block-factory";
-import { IBlockConfig, ICustomBlock } from "../components/types";
+import { ICustomBlock } from "../components/types";
 import { netlogoGenerator } from "../utils/netlogo-generator";
 
 // Mock Blockly and its components
@@ -125,8 +125,9 @@ describe("block-factory", () => {
         color: "#FF0000",
         category: "Properties",
         config: {
+          canHaveChildren: false,
           typeOptions: [["red", "RED"], ["blue", "BLUE"]]
-        } as IBlockConfig
+        }
       };
 
       registerCustomBlocks([setterBlock]);
@@ -143,12 +144,13 @@ describe("block-factory", () => {
         color: "#00FF00",
         category: "General",
         config: {
+          canHaveChildren: true,
           childBlocks: ["custom_set_color_123"],
           defaultCount: 100,
           minCount: 0,
           maxCount: 500,
           typeOptions: [["water", "WATER"], ["air", "AIR"]]
-        } as IBlockConfig
+        }
       };
 
       registerCustomBlocks([creatorBlock]);
@@ -176,7 +178,7 @@ describe("block-factory", () => {
           name: "particles",
           color: "#00FF00",
           category: "General",
-          config: {} as IBlockConfig
+          config: { canHaveChildren: true }
         }
       ];
 
@@ -200,8 +202,9 @@ describe("block-factory", () => {
         color: "#FF0000",
         category: "Properties",
         config: {
+          canHaveChildren: false,
           typeOptions: [["red", "RED"], ["blue", "BLUE"]]
-        } as IBlockConfig
+        }
       };
 
       registerCustomBlocks([setterBlock]);
@@ -254,12 +257,13 @@ describe("block-factory", () => {
         color: "#00FF00",
         category: "General",
         config: {
+          canHaveChildren: true,
           childBlocks: ["custom_set_color_123"],
           defaultCount: 100,
           minCount: 0,
           maxCount: 500,
           typeOptions: [["water", "WATER"], ["air", "AIR"]]
-        } as IBlockConfig
+        }
       };
 
       registerCustomBlocks([creatorBlock]);
@@ -277,7 +281,6 @@ describe("block-factory", () => {
       Blocks["custom_create_molecules_456"].init.call(mockBlock);
 
       expect(mockBlock.appendStatementInput).toHaveBeenCalledWith("statements");
-      expect(mockStatementsInput.setCheck).toHaveBeenCalledWith(["custom_set_color_123"]);
     });
 
     it("adds toggle icon and initializes as closed", () => {
@@ -305,7 +308,7 @@ describe("block-factory", () => {
               labelPosition: "prefix",
               labelText: "Move",
               name: "DIRECTION",
-              options: [["forward", "FORWARD"], ["backward", "BACKWARD"]]
+              options: [{ label: "forward", value: "FORWARD" }, { label: "backward", value: "BACKWARD" }]
             },
             {
               defaultValue: 1,
@@ -334,7 +337,9 @@ describe("block-factory", () => {
     it("adds select parameter fields", () => {
       Blocks["custom_action_move_789"].init.call(mockBlock);
 
-      expect(FieldDropdown).toHaveBeenCalledWith([["forward", "FORWARD"], ["backward", "BACKWARD"]]);
+      expect(FieldDropdown).toHaveBeenCalledWith(
+        [{ label: "forward", value: "FORWARD" }, { label: "backward", value: "BACKWARD" }]
+      );
       expect(mockInput.appendField).toHaveBeenCalledWith(expect.any(Object), "DIRECTION");
     });
 
@@ -349,7 +354,6 @@ describe("block-factory", () => {
       Blocks["custom_action_move_789"].init.call(mockBlock);
 
       expect(mockBlock.appendStatementInput).toHaveBeenCalledWith("statements");
-      expect(mockStatementsInput.setCheck).toHaveBeenCalledWith(["custom_set_color_123"]);
     });
 
     it("initializes statement block with correct fields for kind 'ask'", () => {
@@ -622,7 +626,7 @@ describe("block-factory", () => {
               kind: "select",
               labelPosition: "prefix",
               name: "DIRECTION",
-              options: [["forward", "FORWARD"], ["backward", "BACKWARD"]]
+              options: [{ label: "forward", value: "FORWARD" }, { label: "backward", value: "BACKWARD" }]
             },
             { 
               kind: "number",
@@ -680,7 +684,7 @@ describe("block-factory", () => {
               kind: "select",
               labelPosition: "prefix",
               name: "DIRECTION",
-              options: [["forward", "FORWARD"], ["backward", "BACKWARD"]]
+              options: [{ label: "forward", value: "FORWARD" }, { label: "backward", value: "BACKWARD" }]
             }
           ]
         },
@@ -709,7 +713,7 @@ describe("block-factory", () => {
           kind: "select",
           labelPosition: "prefix",
           name: "DIRECTION",
-          options: [["forward", "FORWARD"], ["backward", "BACKWARD"]]
+          options: [{ label: "forward", value: "FORWARD" }, { label: "backward", value: "BACKWARD" }]
         },
         {
           kind: "number",

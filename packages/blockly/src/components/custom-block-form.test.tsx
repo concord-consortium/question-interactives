@@ -5,7 +5,7 @@ import React from "react";
 import { availableChildBlocks } from "../utils/block-utils";
 import { extractCategoriesFromToolbox } from "../utils/toolbox-utils";
 import { CustomBlockForm } from "./custom-block-form";
-import { ICustomBlock, CustomBlockType, IBlockConfig } from "./types";
+import { ICustomBlock, CustomBlockType } from "./types";
 
 jest.mock("./custom-block-form.scss", () => ({}));
 jest.mock("../utils/block-utils", () => ({
@@ -25,8 +25,9 @@ describe("CustomBlockForm", () => {
       color: "#FF0000",
       category: "Properties",
       config: {
+        canHaveChildren: false,
         typeOptions: [["red", "RED"], ["blue", "BLUE"]]
-      } as IBlockConfig
+      }
     }
   ];
 
@@ -154,8 +155,9 @@ describe("CustomBlockForm", () => {
       color: "#FF0000",
       category: "Properties",
       config: {
+        canHaveChildren: false,
         typeOptions: [["red", "RED"], ["blue", "BLUE"]]
-      } as IBlockConfig
+      }
     };
 
     it("populates form with existing block data", () => {

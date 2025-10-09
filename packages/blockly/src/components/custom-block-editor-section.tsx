@@ -7,8 +7,8 @@ import css from "./custom-block-editor-section.scss";
 
 interface IProps {
   blockType: CustomBlockType;
+  customBlocks: ICustomBlock[];
   toolbox: string;
-  value: ICustomBlock[];
   onChange: (blocks: ICustomBlock[]) => void;
 }
 
@@ -26,29 +26,28 @@ const blockTypeHeadings: Record<CustomBlockType, string> = {
   statement: "Statement"
 };
 
-export const CustomBlockEditorSection: React.FC<IProps> = ({ blockType, toolbox, value, onChange }) => {
-  const customBlocks = Array.isArray(value) ? value : [];
-  const [showForm, setShowForm] = useState<CustomBlockType | null>(null);
+export const CustomBlockEditorSection: React.FC<IProps> = ({ blockType, toolbox, customBlocks, onChange }) => {
+  const [showForm, setShowForm] = useState<boolean>(false);
   const [editingBlock, setEditingBlock] = useState<ICustomBlock | null>(null);
 
   const addCustomBlock = (block: ICustomBlock) => {
     const newBlock = { ...block, id: generateBlockId(block) };
     const updatedBlocks = [...customBlocks, newBlock];
     onChange(updatedBlocks);
-    setShowForm(null);
+    setShowForm(false);
     setEditingBlock(null);
   };
 
   const editCustomBlock = (block: ICustomBlock) => {
     setEditingBlock(block);
-    setShowForm(block.type);
+    setShowForm(true);
   };
 
   const updateCustomBlock = (updatedBlock: ICustomBlock) => {
     const updatedBlocks = customBlocks.map(b => b.id === editingBlock?.id ? updatedBlock : b);
     onChange(updatedBlocks);
-    
-    setShowForm(null);
+
+    setShowForm(false);
     setEditingBlock(null);
   };
 
@@ -75,12 +74,12 @@ export const CustomBlockEditorSection: React.FC<IProps> = ({ blockType, toolbox,
           <h5>{blockTypeHeadings[blockType]} Blocks</h5>
           <button data-testid={`add-${blockType}`} onClick={() => {
             setEditingBlock(null);
-            setShowForm(showForm === blockType ? null : blockType);
+            setShowForm(!showForm);
           }}>
-            {showForm === blockType ? "Cancel" : "Add Block"}
+            {showForm ? "Cancel" : "Add Block"}
           </button>
         </div>
-        {showForm === blockType && (
+        {showForm && (
           <CustomBlockForm
             blockType={blockType}
             editingBlock={editingBlock}

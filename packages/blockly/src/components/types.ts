@@ -25,7 +25,7 @@ export interface IParameterBase {
 }
 export interface IParameterSelect extends IParameterBase {
   kind: "select";
-  options: MenuOption[];
+  options: { label: string; value: string }[];
 }
 export interface IParameterNumber extends IParameterBase {
   kind: "number";
@@ -150,14 +150,8 @@ export const DemoAuthoredState: IAuthoredState = {
             "name": "DIRECTION",
             "labelPosition": "prefix",
             "options": [
-              [
-                "forward",
-                "FORWARD"
-              ],
-              [
-                "backward",
-                "BACKWARD"
-              ]
+              { "label": "forward", "value": "FORWARD" },
+              { "label": "backward", "value": "BACKWARD" }
             ]
           },
           {
@@ -165,14 +159,8 @@ export const DemoAuthoredState: IAuthoredState = {
             "name": "MAGNITUDE",
             "labelPosition": "prefix",
             "options": [
-              [
-                "the same",
-                "SAME"
-              ],
-              [
-                "at wind speed",
-                "WIND_SPEED"
-              ]
+              { "label": "the same", "value": "SAME" },
+              { "label": "at wind speed", "value": "WIND_SPEED" }
             ]
           }
         ]

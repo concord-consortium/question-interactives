@@ -1,4 +1,4 @@
-import { IAuthoredState, IBlockConfig, IInteractiveState } from "../types";
+import { IAuthoredState, IInteractiveState } from "../types";
 
 export const defaultAuthoredState: IAuthoredState = {
   questionType: "iframe_interactive",
@@ -91,8 +91,9 @@ export const customBlocksAuthoredState: IAuthoredState = {
       color: "#FF0000",
       category: "Properties",
       config: {
+        canHaveChildren: false,
         typeOptions: [["red", "RED"], ["blue", "BLUE"]]
-      } as IBlockConfig
+      }
     },
     {
       id: "custom_create_molecules_1234567891",
@@ -101,12 +102,13 @@ export const customBlocksAuthoredState: IAuthoredState = {
       color: "#00FF00",
       category: "General",
       config: {
+        canHaveChildren: true,
         childBlocks: ["custom_set_color_1234567890"],
         defaultCount: 100,
         minCount: 0,
         maxCount: 500,
         typeOptions: [["water", "WATER"], ["air", "AIR"]]
-      } as IBlockConfig
+      }
     }
   ]
 };
