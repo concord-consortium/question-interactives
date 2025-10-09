@@ -94,10 +94,14 @@ export const AgentSimulationComponent = ({
     simRef.current.pause(true);
     setPaused(true);
 
+    setError("");
+
+    const sim = simRef.current;
     const container = containerRef.current;
     return () => {
       // Remove old sim when we're ready to update the sim
       container?.replaceChildren();
+      sim.end();
     };
   }, [blocklyCode, code, gridHeight, gridStep, gridWidth]);
 

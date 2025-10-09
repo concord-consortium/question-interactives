@@ -6,6 +6,7 @@ const sim = new AA.Simulation({
   gridStep: 20
 });
 
+/*** Sim code */
 const sheepSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <!-- Circles (color -1 -> #FFFFFF) -->
   <circle cx="247" cy="109" r="44" fill="#FFFFFF" stroke="#FFFFFF" />
@@ -97,62 +98,6 @@ const wolfEnergyLoss = 0.1;
 const maxGrassLevel = 10;
 const grassGrowthRate = 0.01;
 
-function setup() {
-  create_sheep(50);
-  create_wolves(10);
-}
-
-sim.afterTick = () => {
-  sim.squares.forEach(square => {
-    // Grow grass
-    if (square.state.grassLevel < maxGrassLevel) {
-      square.state.grassLevel = Math.min(maxGrassLevel, square.state.grassLevel + grassGrowthRate);
-    }
-  });
-
-  sim.actors?.forEach(a => {
-    // Lose energy and possibly die
-    const energyLoss = a.label("sheep") ? sheepEnergyLoss : wolfEnergyLoss;
-    a.state.energy = a.state.energy - energyLoss;
-    if (a.state.energy <= 0) {
-      a.remove();
-      return;
-    }
-
-    // Turn
-    a.vel.turn(Math.random() * Math.PI / 4 - Math.PI / 8);
-
-    // Reproduce
-    const reproduceChance = a.label("sheep") ? sheepReproduceChance : wolfReproduceChance;
-    if (Math.random() < reproduceChance) {
-      const addFunction = a.label("sheep") ? create_a_sheep : create_a_wolf;
-      // const color = a.label("sheep") ? sheepColor : wolfColor;
-      addFunction({ energy: a.state.energy / 2, x: a.x, y: a.y });
-      a.state.energy = a.state.energy / 2;
-    }
-  });
-
-  sim.withLabel("sheep").forEach(s => {
-    // Eat grass
-    const sq = s.squareOfCentroid();
-    if (sq.state.grassLevel >= maxGrassLevel) {
-      s.state.energy = s.state.energy + sheepEnergyFromGrass;
-      sq.state.grassLevel = 0;
-    }
-  });
-
-  sim.withLabel("wolf").forEach(w => {
-    // Eat sheep
-    const s = w.overlapping("actor").find(a => a?.label("sheep"));
-    if (s) {
-      w.state.energy = w.state.energy + s.state.energy / 2;
-      s.remove();
-    }
-  });
-
-  console.log(`sheep: ${Array.from(sim.withLabel("sheep")).length}, wolves: ${Array.from(sim.withLabel("wolf")).length}`);
-};
-
 // set up squares (patches)
 for (let x = 0; x < sim.width / sim.gridStep; x++) {
   for (let y = 0; y < sim.height / sim.gridStep; y++) {
@@ -224,3 +169,60 @@ sim.interaction.set("boundary-bounce", {
 });
 
 setup();
+/*** End sim code */
+
+/*** Grow grass */
+sim.squares.forEach(square => {
+  if (square.state.grassLevel < maxGrassLevel) {
+    square.state.grassLevel = Math.min(maxGrassLevel, square.state.grassLevel + grassGrowthRate);
+  }
+});
+/*** End grow grass */
+
+/*** Reduce energy */
+sim.actors.forEach(a => {
+  const energyLoss = a.label("sheep") ? sheepEnergyLoss : wolfEnergyLoss;
+  a.state.energy = a.state.energy - energyLoss;
+  if (a.state.energy <= 0) {
+    a.remove();
+    return;
+  }
+});
+/*** End reduce energy */
+
+/*** Move */
+sim.actors.forEach(a => {
+  a.vel.turn(Math.random() * Math.PI / 4 - Math.PI / 8);
+});
+/*** End move */
+
+/*** Reproduce */
+sim.actors.forEach(a => {
+  const reproduceChance = a.label("sheep") ? sheepReproduceChance : wolfReproduceChance;
+  if (Math.random() < reproduceChance) {
+    const addFunction = a.label("sheep") ? create_a_sheep : create_a_wolf;
+    addFunction({ energy: a.state.energy / 2, x: a.x, y: a.y });
+    a.state.energy = a.state.energy / 2;
+  }
+});
+/*** End reproduce */
+
+/*** Eat grass */
+sim.withLabel("sheep").forEach(s => {
+  const sq = s.squareOfCentroid();
+  if (sq.state.grassLevel >= maxGrassLevel) {
+    s.state.energy = s.state.energy + sheepEnergyFromGrass;
+    sq.state.grassLevel = 0;
+  }
+});
+/*** End eat grass */
+
+/*** Eat sheep */
+sim.withLabel("wolf").forEach(w => {
+  const s = w.overlapping("actor").find(a => a?.label("sheep"));
+  if (s) {
+    w.state.energy = w.state.energy + s.state.energy / 2;
+    s.remove();
+  }
+});
+/*** End eat sheep */
