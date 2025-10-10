@@ -28,7 +28,6 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
     const blockType = blockDef.id;
     const blockConfig: IBlockConfig = blockDef.config;
 
-
     Blocks[blockType] = {
       init() {
         // Display block name with appropriate prefix based on block type
@@ -116,9 +115,9 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
             });
           }
         }
-    
-        // Except for condition or statement blocks, append the display name immediately.
-        if (blockDef.type !== "condition" && blockDef.type !== "statement") {
+
+        // Except for condition, statement or pre-made blocks, append the display name immediately.
+        if (blockDef.type !== "condition" && blockDef.type !== "statement" && blockDef.type !== "preMade") {
           input.appendField(displayName);
         }
 
@@ -155,22 +154,34 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
           } else if (Array.isArray(blockConfig.typeOptions) && blockConfig.typeOptions.length > 0) {
             input.appendField(new FieldDropdown(blockConfig.typeOptions), "value");
           }
-        } else if (blockDef.type === "statement") {
-          const statementKind = blockConfig.statementKind || "custom";
-          const kindLabel = STATEMENT_KIND_LABEL[statementKind] || "";
-          if (statementKind === "when") { // "when [condition]"
-            input.appendField(kindLabel);
+        } else if (blockDef.type === "preMade") {
+          // Handle preMade blocks by name
+          if (blockDef.name === "When") {
+            input.appendField("when");
             if (blockConfig.conditionInput) {
               this.appendValueInput("condition").setCheck("Boolean");
             }
-          } else if (statementKind === "repeat") { // "repeat [n]"
-            input.appendField(kindLabel);
+          } else if (blockDef.name === "Repeat") {
+            input.appendField("repeat");
             input.appendField(new FieldNumber(1, 0), "TIMES");
-          } else if (statementKind === "chance") { // "with a chance of [n]%"
-            input.appendField(kindLabel);
+          } else if (blockDef.name === "Chance") {
+            input.appendField("with a chance of");
             this.appendValueInput("NUM").setCheck("Number");
             this.appendDummyInput().appendField("%");
-          } else if (statementKind === "ask") { // "ask [target]"
+          } else {
+            input.appendField(displayName);
+          }
+          if (Array.isArray(blockConfig.options) && blockConfig.options.length > 0) {
+            input.appendField(new FieldDropdown(blockConfig.options), "target");
+          }
+          if (blockConfig.targetEntity) {
+            input.appendField(blockConfig.targetEntity);
+          }
+          this.appendStatementInput("statements");
+        } else if (blockDef.type === "statement") {
+          const statementKind = blockConfig.statementKind || "custom";
+          const kindLabel = STATEMENT_KIND_LABEL[statementKind] || "";
+          if (statementKind === "ask") {
             input.appendField(kindLabel);
           } else {
             input.appendField(displayName);
@@ -317,20 +328,15 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         const statements = netlogoGenerator.statementToCode(block, "statements");
 
         return `create-${type} ${count}\n${statements}`;
-      } else if (blockDef.type === "statement") {
+      } else if (blockDef.type === "preMade") {
         const statements = netlogoGenerator.statementToCode(block, "statements");
-        const kind = blockConfig.statementKind || "custom";
-        if (kind === "ask") {
-          const target = block.getFieldValue("target");
-          const targetEntity = blockConfig.targetEntity || "";
-          return `ask ${target} ${targetEntity} [\n${statements}]\n`;
-        } else if (kind === "when") {
+        if (blockDef.name === "When") {
           const condition = netlogoGenerator.valueToCode(block, "condition", netlogoGenerator.ORDER_NONE) || "false";
           return `if ${condition} [\n${statements}]\n`;
-        } else if (kind === "repeat") {
+        } else if (blockDef.name === "Repeat") {
           const times = block.getFieldValue("TIMES") || 0;
           return `repeat ${times} [\n${statements}]\n`;
-        } else if (kind === "chance") {
+        } else if (blockDef.name === "Chance") {
           const num = netlogoGenerator.valueToCode(block, "NUM", netlogoGenerator.ORDER_NONE) || "0";
           return `if random-float 100 < ${num} [\n${statements}]\n`;
         } else { // kind is "custom" or undefined/unknown

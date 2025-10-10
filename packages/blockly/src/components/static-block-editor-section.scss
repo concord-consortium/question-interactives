@@ -1,0 +1,70 @@
+@import "./variables.scss";
+
+.staticBlocks_section {
+  background: $background-lighter;
+  border: 1px solid $border-medium;
+  border-radius: $border-radius-lg;
+  margin-bottom: 2em;
+  padding: 15px;
+
+  .staticBlocks_new {
+    margin-bottom: $spacing-lg;
+
+    .staticBlocks_newHeading {
+      align-items: center;
+      display: flex;
+      gap: 0.5em;
+    }
+  }
+
+  .staticBlocks_list {
+
+    .staticBlocks_listItem {
+      align-items: center;
+      border-top: 1px solid $border-medium;
+      display: flex;
+      justify-content: space-between;
+      padding: $spacing-md 0;
+
+      &:last-child {
+        border-bottom: 1px solid $border-medium;
+      }
+
+      .staticBlocks_blockInfo {
+        align-items: center;
+        display: flex;
+        gap: 0.5em;
+
+        .staticBlocks_blockName {
+          font-weight: 500;
+        }
+      }
+
+      .staticBlocks_blockCategory {
+        align-items: center;
+        display: flex;
+        gap: 0.5em;
+
+        .staticBlocks_categoryLabel {
+          margin-bottom: 0;
+        }
+        .staticBlocks_categorySelect {
+          @include form-input-sm();
+          font-size: $font-size-sm;
+          max-width: 150px;
+
+          &:focus {
+            @include focus-state();
+          }
+        }
+      }
+    }
+
+    .staticBlocks_noBlocks {
+      color: #888;
+      font-style: italic;
+      padding: 0.5em 0;
+    }
+  }
+
+}

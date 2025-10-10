@@ -402,7 +402,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         </div>
       )}
 
-      {blockConfig.hasConditionInput && (formData.statementKind === "when" || formData.statementKind === "custom") && (
+      {blockConfig.hasConditionInput && formData.statementKind === "custom" && (
         <div className={css.customBlockForm_includeNumberInput} data-testid="section-include-condition-input">
           <label htmlFor="include-condition-input">
             <input

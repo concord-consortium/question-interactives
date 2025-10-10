@@ -39,7 +39,7 @@ describe("CustomBlockEditor", () => {
   ];
 
   const defaultProps = {
-    value: mockCustomBlocks,
+    customBlocks: mockCustomBlocks,
     onChange: mockOnChange,
     toolbox: `{
       "kind": "categoryToolbox",

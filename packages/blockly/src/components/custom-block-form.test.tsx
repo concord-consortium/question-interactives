@@ -299,10 +299,7 @@ describe("CustomBlockForm", () => {
       expect(select).toHaveValue("custom");
 
       expect(screen.getByText("ask")).toBeInTheDocument();
-      expect(screen.getByText("chance")).toBeInTheDocument();
       expect(screen.getByText("custom")).toBeInTheDocument();
-      expect(screen.getByText("repeat")).toBeInTheDocument();
-      expect(screen.getByText("when")).toBeInTheDocument();
     });
 
     it("shows target entity selector only for 'ask' statements", async () => {
@@ -318,20 +315,16 @@ describe("CustomBlockForm", () => {
       expect(screen.queryByTestId("section-target-entity")).not.toBeInTheDocument();
     });
 
-    it("shows condition input checkbox for 'when' and 'custom' statements", async () => {
+    it("shows condition input checkbox for 'custom' statements", async () => {
       const user = userEvent.setup();
       render(<CustomBlockForm {...defaultProps} blockType="statement" />);
       
       expect(screen.getByTestId("section-include-condition-input")).toBeInTheDocument();
       expect(screen.getByLabelText("Include condition input (Boolean)")).not.toBeChecked();
 
-      await user.selectOptions(screen.getByTestId("select-statement-kind"), "when");
-      expect(screen.getByTestId("section-include-condition-input")).toBeInTheDocument();
-      expect(screen.getByLabelText("Include condition input (Boolean)")).toBeChecked();
-
       await user.selectOptions(screen.getByTestId("select-statement-kind"), "custom");
       expect(screen.getByTestId("section-include-condition-input")).toBeInTheDocument();
-      expect(screen.getByLabelText("Include condition input (Boolean)")).toBeChecked();
+      expect(screen.getByLabelText("Include condition input (Boolean)")).not.toBeChecked();
 
       await user.selectOptions(screen.getByTestId("select-statement-kind"), "ask");
       expect(screen.queryByTestId("section-include-condition-input")).not.toBeInTheDocument();

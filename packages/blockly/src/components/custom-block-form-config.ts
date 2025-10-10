@@ -14,7 +14,7 @@ export interface IBlockTypeConfig {
   hasStatementKind?: boolean;
   generatorPlaceholder?: string;
   label: string;
-  placeholder: string;
+  placeholder?: string;
 }
 
 export const BLOCK_TYPE_CONFIG: Record<CustomBlockType, IBlockTypeConfig> = {
@@ -27,6 +27,15 @@ export const BLOCK_TYPE_CONFIG: Record<CustomBlockType, IBlockTypeConfig> = {
     generatorPlaceholder: "e.g., ${ACTION} ${DIRECTION}\\nset speed ${SPEED}",
     label: "Action Name",
     placeholder: "e.g., bounce off, move forward"
+  },
+  builtIn: {
+    canHaveChildren: true,
+    color: "#aa42f5",
+    hasConditionInput: true,
+    hasGeneratorTemplate: false,
+    hasOptions: false,
+    hasParameters: false,
+    label: "Block Name",
   },
   condition: {
     canHaveChildren: false,
@@ -49,6 +58,15 @@ export const BLOCK_TYPE_CONFIG: Record<CustomBlockType, IBlockTypeConfig> = {
     hasParameters: false,
     label: "Object Name",
     placeholder: "e.g., molecules, people"
+  },
+  preMade: {
+    canHaveChildren: true,
+    color: "#aa42f5",
+    hasConditionInput: true,
+    hasGeneratorTemplate: false,
+    hasOptions: false,
+    hasParameters: false,
+    label: "Block Name",
   },
   setter: {
     canHaveChildren: false,

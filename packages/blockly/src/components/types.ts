@@ -4,7 +4,15 @@ import { MenuOption } from "blockly";
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
 
-export const VALID_BLOCK_TYPES = ["action", "condition", "creator", "setter", "statement"] as const;
+export const VALID_BLOCK_TYPES = [
+  "action",
+  "builtIn",
+  "condition",
+  "creator",
+  "preMade",
+  "setter",
+  "statement"
+] as const;
 export const REQUIRED_BLOCK_FIELDS = [
   "category",
   "color",
@@ -32,14 +40,11 @@ export interface IParameterNumber extends IParameterBase {
 }
 export type IParameter = IParameterSelect | IParameterNumber;
 
-export const STATEMENT_KINDS = ["ask", "chance", "custom", "repeat", "when"] as const;
+export const STATEMENT_KINDS = ["ask", "custom"] as const;
 export type StatementKind = typeof STATEMENT_KINDS[number];
 export const STATEMENT_KIND_LABEL: Record<StatementKind, string> = {
   ask: "ask",
-  chance: "with a chance of",
-  custom: "custom",
-  repeat: "repeat",
-  when: "when"
+  custom: "custom"
 };
 
 export interface IBlockConfig {

@@ -38,7 +38,7 @@ const baseAuthoringProps = {
           type: "object",
           properties: {
             id: { type: "string" },
-            type: { type: "string", enum: ["action", "condition", "creator", "setter", "statement"] },
+            type: { type: "string", enum: ["action", "builtIn", "condition", "creator", "preMade", "setter", "statement"] },
             name: { type: "string" },
             color: { type: "string" },
             category: { type: "string" },
@@ -102,7 +102,7 @@ export const App = () => (
           
           return (
             <CustomBlockEditor
-              value={value}
+              customBlocks={value}
               onChange={props.onChange}
               toolbox={toolbox}
             />

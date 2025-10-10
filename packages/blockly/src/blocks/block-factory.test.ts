@@ -381,18 +381,18 @@ describe("block-factory", () => {
       expect(mockBlock.appendStatementInput).toHaveBeenCalledWith("statements");
     });
 
-    it("initializes statement block with correct fields for kind 'when'", () => {
+    it("initializes pre-made block with correct fields for 'When'", () => {
       const statementBlock: ICustomBlock = {
         category: "Control",
         color: "#0089b8",
         config: {
           canHaveChildren: false,
-          statementKind: "when",
+          statementKind: "custom",
           conditionInput: true
         },
         id: "custom_statement_when_456",
-        name: "when",
-        type: "statement"
+        name: "When",
+        type: "preMade"
       };
 
       registerCustomBlocks([statementBlock]);
@@ -404,17 +404,16 @@ describe("block-factory", () => {
       expect(mockBlock.appendStatementInput).toHaveBeenCalledWith("statements");
     });
 
-    it("initializes statement block with correct fields for kind 'repeat'", () => {
+    it("initializes pre-made block with correct fields for 'Repeat'", () => {
       const statementBlock: ICustomBlock = {
         category: "Control",
         color: "#0089b8",
         config: {
           canHaveChildren: false,
-          statementKind: "repeat"
         },
         id: "custom_statement_repeat_789",
-        name: "repeat",
-        type: "statement"
+        name: "Repeat",
+        type: "preMade"
       };
 
       registerCustomBlocks([statementBlock]);
@@ -426,17 +425,16 @@ describe("block-factory", () => {
       expect(mockBlock.appendStatementInput).toHaveBeenCalledWith("statements");
     });
 
-    it("initializes statement block with correct fields for kind 'chance'", () => {
+    it("initializes pre-made block with correct fields for 'Chance'", () => {
       const statementBlock: ICustomBlock = {
         category: "Control",
         color: "#0089b8",
         config: {
           canHaveChildren: false,
-          statementKind: "chance"
         },
         id: "custom_statement_chance_101",
-        name: "chance",
-        type: "statement"
+        name: "Chance",
+        type: "preMade"
       };
 
       registerCustomBlocks([statementBlock]);
@@ -775,18 +773,17 @@ describe("block-factory", () => {
       expect(code).toBe("ask water molecules [\n// statement code]\n");
     });
 
-    it("generates code for 'when' statement block", () => {
+    it("generates code for pre-made 'When' block", () => {
       const statementBlock: ICustomBlock = {
         category: "Control",
         color: "#0089b8",
         config: {
           canHaveChildren: false,
-          statementKind: "when",
           conditionInput: true
         },
         id: "custom_statement_when_456",
-        name: "when",
-        type: "statement"
+        name: "When",
+        type: "preMade"
       };
 
       registerCustomBlocks([statementBlock]);
@@ -802,17 +799,16 @@ describe("block-factory", () => {
       expect(code).toBe("if test_value [\n// statement code]\n");
     });
 
-    it("generates code for 'repeat' statement block", () => {
+    it("generates code for pre-made 'Repeat' block", () => {
       const statementBlock: ICustomBlock = {
         category: "Control",
         color: "#0089b8",
         config: {
           canHaveChildren: false,
-          statementKind: "repeat"
         },
         id: "custom_statement_repeat_789",
-        name: "repeat",
-        type: "statement"
+        name: "Repeat",
+        type: "preMade"
       };
 
       registerCustomBlocks([statementBlock]);
@@ -828,17 +824,16 @@ describe("block-factory", () => {
       expect(code).toBe("repeat 5 [\n// statement code]\n");
     });
 
-    it("generates code for 'chance' statement block", () => {
+    it("generates code for pre-made 'Chance' block", () => {
       const statementBlock: ICustomBlock = {
         category: "Control",
         color: "#0089b8",
         config: {
           canHaveChildren: false,
-          statementKind: "chance"
         },
         id: "custom_statement_chance_101",
-        name: "chance",
-        type: "statement"
+        name: "Chance",
+        type: "preMade"
       };
 
       registerCustomBlocks([statementBlock]);

@@ -4,16 +4,22 @@ import { validateBlocksJson } from "../utils/block-utils";
 import { CustomBlockEditorSection } from "./custom-block-editor-section";
 import { CustomBlockType, ICustomBlock } from "./types";
 
+import { preMadeBlocks } from "../blocks/pre-made-blocks";
+import { extractCategoriesFromToolbox } from "../utils/toolbox-utils";
+import { StaticBlockEditorSection } from "./static-block-editor-section";
+
+// TODO: Replace with actual built-in blocks import if available
+const builtInBlocks: ICustomBlock[] = [];
+
 import css from "./custom-block-editor.scss";
 
 interface IProps {
+  customBlocks: ICustomBlock[];
   toolbox: string;
-  value: ICustomBlock[];
   onChange: (blocks: ICustomBlock[]) => void;
 }
 
-export const CustomBlockEditor: React.FC<IProps> = ({ value, onChange, toolbox }) => {
-  const customBlocks = Array.isArray(value) ? value : [];
+export const CustomBlockEditor: React.FC<IProps> = ({ customBlocks = [], onChange, toolbox }) => {
   const [showCodePreview, setShowCodePreview] = useState(false);
   const [codeText, setCodeText] = useState<string>(JSON.stringify(customBlocks, null, 2));
   const [codeError, setCodeError] = useState<string>("");
@@ -67,6 +73,58 @@ export const CustomBlockEditor: React.FC<IProps> = ({ value, onChange, toolbox }
     "condition"
   ];
 
+  const availableCategories = extractCategoriesFromToolbox(toolbox);
+  const [staticBlockCategories, setStaticBlockCategories] = useState<Record<string, string>>(() => {
+    const allBlocks = [...builtInBlocks, ...preMadeBlocks];
+    const initial: Record<string, string> = {};
+    allBlocks.forEach(block => {
+      initial[block.id] = "";
+    });
+    return initial;
+  });
+
+  // When toolbox changes, update available categories and reset static block categories if needed
+  useEffect(() => {
+    setStaticBlockCategories(prev => {
+      const allBlocks = [...builtInBlocks, ...preMadeBlocks];
+      const updated: Record<string, string> = { ...prev };
+      allBlocks.forEach(block => {
+        if (!(block.id in updated)) {
+          updated[block.id] = "";
+        }
+      });
+      // Remove any blocks that no longer exist
+      Object.keys(updated).forEach(id => {
+        if (!allBlocks.find(b => b.id === id)) {
+          delete updated[id];
+        }
+      });
+      return updated;
+    });
+  }, [toolbox]);
+
+  const handleStaticBlockCategoryChange = (blockId: string, newCategory: string) => {
+    setStaticBlockCategories(prev => ({ ...prev, [blockId]: newCategory }));
+
+    // Find the static block template
+    const allStaticBlocks = [...builtInBlocks, ...preMadeBlocks];
+    const staticBlock = allStaticBlocks.find(b => b.id === blockId);
+    if (!staticBlock) return;
+
+    // Remove any previous instance of this static block from customBlocks
+    let updatedBlocks = customBlocks.filter(b => b.id !== blockId);
+
+    if (newCategory) {
+      // Add a new instance with the selected category
+      const blockToAdd = {
+        ...staticBlock,
+        category: newCategory
+      };
+      updatedBlocks = [...updatedBlocks, blockToAdd];
+    }
+    onChange(updatedBlocks);
+  };
+
   return (
     <div className={css.customBlockEditor} data-testid="custom-block-editor">
       <h4>Custom Blocks</h4>
@@ -80,6 +138,12 @@ export const CustomBlockEditor: React.FC<IProps> = ({ value, onChange, toolbox }
           onChange={onChange}
         />
       ))}
+
+      <StaticBlockEditorSection
+        availableCategories={availableCategories}
+        staticBlockCategories={staticBlockCategories}
+        onCategoryChange={handleStaticBlockCategoryChange}
+      />
 
       {/* Editable code preview for all custom blocks. */}
       <div className={css.codePreview} data-testid="code-preview">

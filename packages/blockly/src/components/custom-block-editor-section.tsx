@@ -20,8 +20,10 @@ export const generateBlockId = (block: ICustomBlock) => {
 
 const blockTypeHeadings: Record<CustomBlockType, string> = {
   action: "Action",
+  builtIn: "Built-in",
   condition: "Condition",
   creator: "Create Things",
+  preMade: "Pre-made",
   setter: "Set Properties",
   statement: "Statement"
 };
