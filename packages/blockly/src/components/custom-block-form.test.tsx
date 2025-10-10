@@ -59,24 +59,6 @@ describe("CustomBlockForm", () => {
   });
 
   describe("Form Labels and Fields", () => {
-    it("shows 'Property Name' label for setter blocks", () => {
-      render(<CustomBlockForm {...defaultProps} blockType="setter" />);
-      expect(screen.getByText("Property Name")).toBeInTheDocument();
-      expect(screen.getByPlaceholderText("e.g., color, speed")).toBeInTheDocument();
-    });
-
-    it("shows 'Object Name' label for creator blocks", () => {
-      render(<CustomBlockForm {...defaultProps} blockType="creator" />);
-      expect(screen.getByText("Object Name")).toBeInTheDocument();
-      expect(screen.getByPlaceholderText("e.g., molecules, people")).toBeInTheDocument();
-    });
-
-    it("shows 'Action Name' label for action blocks", () => {
-      render(<CustomBlockForm {...defaultProps} blockType="action" />);
-      expect(screen.getByText("Action Name")).toBeInTheDocument();
-      expect(screen.getByPlaceholderText("e.g., bounce off, move forward")).toBeInTheDocument();
-    });
-
     it("does not show Type Label field", () => {
       render(<CustomBlockForm {...defaultProps} />);
       expect(screen.queryByText("Type Label")).not.toBeInTheDocument();
@@ -90,10 +72,20 @@ describe("CustomBlockForm", () => {
     });
   });
 
-  describe("Setter Block Specific Fields", () => {
-    it("shows include number input checkbox for setter blocks", () => {
+  describe("Setter Block specific configuration", () => {
+    it("shows common custom block fields", () => {
+      render(<CustomBlockForm {...defaultProps} blockType="condition" />);
+      expect(screen.getByTestId("field-name")).toBeInTheDocument();
+      expect(screen.getByTestId("field-color")).toBeInTheDocument();
+      expect(screen.getByTestId("field-category")).toBeInTheDocument();
+    });
+
+    it("uses correct configuration for setter blocks", () => {
       render(<CustomBlockForm {...defaultProps} blockType="setter" />);
-      expect(screen.getByText("Use Number Input Instead of Options")).toBeInTheDocument();
+      expect(screen.getByText("Property Name")).toBeInTheDocument();
+      expect(screen.getByTestId("input-name")).toHaveAttribute("placeholder", "e.g., color, speed");
+      expect(screen.getByTestId("section-options")).toBeInTheDocument();
+      expect(screen.getByTestId("section-include-number-input")).toBeInTheDocument();
     });
 
     it("does not show count fields for setter blocks", () => {
@@ -104,23 +96,116 @@ describe("CustomBlockForm", () => {
     });
   });
 
-  describe("Creator Block Specific Fields", () => {
-    it("shows count fields for creator blocks", () => {
+  describe("Creator Block specific configuration", () => {
+    it("shows common custom block fields", () => {
+      render(<CustomBlockForm {...defaultProps} blockType="condition" />);
+      expect(screen.getByTestId("field-name")).toBeInTheDocument();
+      expect(screen.getByTestId("field-color")).toBeInTheDocument();
+      expect(screen.getByTestId("field-category")).toBeInTheDocument();
+    });
+
+    it("uses correct configuration for creator blocks", () => {
       render(<CustomBlockForm {...defaultProps} blockType="creator" />);
+      
+      expect(screen.getByText("Object Name")).toBeInTheDocument();
+      expect(screen.getByTestId("input-name")).toHaveAttribute("placeholder", "e.g., molecules, people");
       expect(screen.getByText("Include Count Slider")).toBeInTheDocument();
       expect(screen.getByText("Min Count")).toBeInTheDocument();
       expect(screen.getByText("Max Count")).toBeInTheDocument();
       expect(screen.getByText("Default Count")).toBeInTheDocument();
-    });
-
-    it("shows child blocks selector for creator blocks", () => {
-      render(<CustomBlockForm {...defaultProps} blockType="creator" />);
+      expect(screen.getByTestId("section-options")).toBeInTheDocument();
+      expect(screen.getByTestId("section-count-fields")).toBeInTheDocument();
       expect(screen.getByText("Child Blocks")).toBeInTheDocument();
     });
 
     it("does not show include number input checkbox for creator blocks", () => {
       render(<CustomBlockForm {...defaultProps} blockType="creator" />);
       expect(screen.queryByText("Use Number Input Instead of Options")).not.toBeInTheDocument();
+    });
+  });
+
+  describe("Ask Block specific configuration", () => {
+    it("shows common custom block fields", () => {
+      render(<CustomBlockForm {...defaultProps} blockType="ask" />);
+      expect(screen.getByTestId("field-name")).toBeInTheDocument();
+      expect(screen.getByTestId("field-color")).toBeInTheDocument();
+      expect(screen.getByTestId("field-category")).toBeInTheDocument();
+    });
+
+    it("uses correct configuration for ask blocks", async () => {
+      render(<CustomBlockForm {...defaultProps} blockType="ask" />);
+      expect(screen.getByText("Name")).toBeInTheDocument();
+      expect(screen.getByTestId("section-target-entity")).toBeInTheDocument();
+      expect(screen.getByTestId("section-include-all-option")).toBeInTheDocument();
+      expect(screen.getByTestId("section-show-target-entity-label")).toBeInTheDocument();
+    });
+  });
+
+  describe("Action Block specific configuration", () => {
+    it("shows common custom block fields", () => {
+      render(<CustomBlockForm {...defaultProps} blockType="action" />);
+      expect(screen.getByTestId("field-name")).toBeInTheDocument();
+      expect(screen.getByTestId("field-color")).toBeInTheDocument();
+      expect(screen.getByTestId("field-category")).toBeInTheDocument();
+    });
+
+    it("uses correct configuration for action blocks", () => {
+      render(<CustomBlockForm {...defaultProps} blockType="action" />);
+      expect(screen.getByText("Action Name")).toBeInTheDocument();
+      expect(screen.getByTestId("input-name")).toHaveAttribute("placeholder", "e.g., bounce off, move forward");
+      expect(screen.getByTestId("section-parameters")).toBeInTheDocument();
+      expect(screen.getByTestId("add-param-select")).toBeInTheDocument();
+      expect(screen.getByTestId("add-param-number")).toBeInTheDocument();
+      expect(screen.getByTestId("section-include-condition-input")).toBeInTheDocument();
+      expect(screen.getByTestId("section-can-have-children")).toBeInTheDocument();
+      expect(screen.getByTestId("section-generator-template")).toBeInTheDocument();
+      expect(screen.getByPlaceholderText(/e.g., \$\{ACTION\} \$\{DIRECTION\}/)).toBeInTheDocument();
+    });
+  });
+
+  describe("Condition Block specific configuration", () => {
+    it("shows common custom block fields", () => {
+      render(<CustomBlockForm {...defaultProps} blockType="condition" />);
+      expect(screen.getByTestId("field-name")).toBeInTheDocument();
+      expect(screen.getByTestId("field-color")).toBeInTheDocument();
+      expect(screen.getByTestId("field-category")).toBeInTheDocument();
+    });
+
+    it("uses correct configuration for condition blocks", () => {
+      render(<CustomBlockForm {...defaultProps} blockType="condition" />);
+
+      expect(screen.getByText("Condition Name")).toBeInTheDocument();
+      expect(screen.getByTestId("input-name")).toHaveAttribute("placeholder", "e.g., touching, near, with");
+      expect(screen.getByTestId("select-category")).toBeInTheDocument();
+      expect(screen.getByTestId("section-options")).toBeInTheDocument();
+    });
+
+    it("shows label position selector only when options exist", async () => {
+      const user = userEvent.setup();
+      render(<CustomBlockForm {...defaultProps} blockType="condition" />);
+
+      expect(screen.queryByTestId("section-condition-label-position")).not.toBeInTheDocument();
+
+      await user.click(screen.getByTestId("add-option"));
+      await user.type(screen.getByTestId("option-label-0"), "touching");
+      await user.type(screen.getByTestId("option-value-0"), "TOUCHING");
+
+      expect(screen.getByTestId("section-condition-label-position")).toBeInTheDocument();
+    });
+
+    it("shows correct label position options", async () => {
+      const user = userEvent.setup();
+      render(<CustomBlockForm {...defaultProps} blockType="condition" />);
+      
+
+      await user.click(screen.getByTestId("add-option"));
+      await user.type(screen.getByTestId("option-label-0"), "touching");
+      await user.type(screen.getByTestId("option-value-0"), "TOUCHING");
+
+      const labelPositionSelect = screen.getByTestId("select-condition-label-position");
+      expect(labelPositionSelect).toHaveValue("prefix");
+      expect(screen.getByText("Before options")).toBeInTheDocument();
+      expect(screen.getByText("After options")).toBeInTheDocument();
     });
   });
 
@@ -145,7 +230,6 @@ describe("CustomBlockForm", () => {
       expect(mockOnSubmit).not.toHaveBeenCalled();
     });
   });
-
 
   describe("Editing Existing Blocks", () => {
     const editingBlock: ICustomBlock = {
@@ -173,25 +257,6 @@ describe("CustomBlockForm", () => {
     it("shows 'Update Block' button when editing", () => {
       render(<CustomBlockForm {...defaultProps} editingBlock={editingBlock} />);
       expect(screen.getByRole("button", { name: "Update Block" })).toBeInTheDocument();
-    });
-  });
-
-  describe("Action Block Specific Fields", () => {
-    it("shows common custom block fields", () => {
-      render(<CustomBlockForm {...defaultProps} blockType="action" />);
-      expect(screen.getByTestId("field-name")).toBeInTheDocument();
-      expect(screen.getByTestId("field-color")).toBeInTheDocument();
-      expect(screen.getByTestId("field-category")).toBeInTheDocument();
-    });
-
-    it("shows fields specific to action blocks", () => {
-      render(<CustomBlockForm {...defaultProps} blockType="action" />);
-      expect(screen.getByTestId("section-parameters")).toBeInTheDocument();
-      expect(screen.getByTestId("add-param-select")).toBeInTheDocument();
-      expect(screen.getByTestId("add-param-number")).toBeInTheDocument();
-      expect(screen.getByTestId("section-can-have-children")).toBeInTheDocument();
-      expect(screen.getByTestId("section-generator-template")).toBeInTheDocument();
-      expect(screen.getByPlaceholderText(/e.g., \$\{ACTION\} \$\{DIRECTION\}/)).toBeInTheDocument();
     });
   });
 
@@ -254,7 +319,6 @@ describe("CustomBlockForm", () => {
     });
   });
 
-
   describe("Enhanced Form Validation", () => {
     it("validates action block requires generator template", async () => {
       const user = userEvent.setup();
@@ -288,181 +352,4 @@ describe("CustomBlockForm", () => {
     });
   });
 
-  describe("Statement block functionality", () => {
-    it("renders statement kind selector for statement blocks", () => {
-      render(<CustomBlockForm {...defaultProps} blockType="statement" />);
-      
-      expect(screen.getByTestId("section-statement-kind")).toBeInTheDocument();
-      expect(screen.getByLabelText("Statement Type")).toBeInTheDocument();
-      expect(screen.getByTestId("select-statement-kind")).toBeInTheDocument();
-      const select = screen.getByTestId("select-statement-kind");
-      expect(select).toHaveValue("custom");
-
-      expect(screen.getByText("ask")).toBeInTheDocument();
-      expect(screen.getByText("custom")).toBeInTheDocument();
-    });
-
-    it("shows target entity selector only for 'ask' statements", async () => {
-      const user = userEvent.setup();
-      render(<CustomBlockForm {...defaultProps} blockType="statement" />);
-      
-      expect(screen.queryByTestId("section-target-entity")).not.toBeInTheDocument();
-      
-      await user.selectOptions(screen.getByTestId("select-statement-kind"), "ask");
-      expect(screen.getByTestId("section-target-entity")).toBeInTheDocument();
-  
-      await user.selectOptions(screen.getByTestId("select-statement-kind"), "custom");
-      expect(screen.queryByTestId("section-target-entity")).not.toBeInTheDocument();
-    });
-
-    it("shows condition input checkbox for 'custom' statements", async () => {
-      const user = userEvent.setup();
-      render(<CustomBlockForm {...defaultProps} blockType="statement" />);
-      
-      expect(screen.getByTestId("section-include-condition-input")).toBeInTheDocument();
-      expect(screen.getByLabelText("Include condition input (Boolean)")).not.toBeChecked();
-
-      await user.selectOptions(screen.getByTestId("select-statement-kind"), "custom");
-      expect(screen.getByTestId("section-include-condition-input")).toBeInTheDocument();
-      expect(screen.getByLabelText("Include condition input (Boolean)")).not.toBeChecked();
-
-      await user.selectOptions(screen.getByTestId("select-statement-kind"), "ask");
-      expect(screen.queryByTestId("section-include-condition-input")).not.toBeInTheDocument();
-    });
-
-    it("shows code field only for custom statement kind", async () => {
-      const user = userEvent.setup();
-      render(<CustomBlockForm {...defaultProps} blockType="statement" />);
-
-      expect(screen.getByTestId("section-generator-template")).toBeInTheDocument();
-
-      await user.selectOptions(screen.getByTestId("select-statement-kind"), "ask");
-      expect(screen.queryByTestId("section-generator-template")).not.toBeInTheDocument();
-
-      await user.selectOptions(screen.getByTestId("select-statement-kind"), "custom");
-      expect(screen.getByTestId("section-generator-template")).toBeInTheDocument();
-    });
-
-    it("clears target entity when switching away from ask", async () => {
-      const user = userEvent.setup();
-      const propsWithCreatorBlocks = {
-        ...defaultProps,
-        existingBlocks: [
-          {
-            id: "custom_create_molecules_123",
-            type: "creator" as const,
-            name: "molecules",
-            color: "#312b84",
-            category: "General",
-            config: {
-              canHaveChildren: true,
-              childBlocks: [],
-              defaultCount: 100,
-              minCount: 0,
-              maxCount: 500,
-              typeOptions: [["water", "WATER"], ["air", "AIR"]] as [string, string][]
-            }
-          }
-        ]
-      };
-      
-      render(<CustomBlockForm {...propsWithCreatorBlocks} blockType="statement" />);
-
-      expect(screen.queryByTestId("select-targetEntity")).not.toBeInTheDocument();
-
-      await user.selectOptions(screen.getByTestId("select-statement-kind"), "ask");
-      expect(screen.getByTestId("select-targetEntity")).toBeInTheDocument();
-      await user.selectOptions(screen.getByTestId("select-targetEntity"), "molecules");
-
-      await user.selectOptions(screen.getByTestId("select-statement-kind"), "custom");
-      expect(screen.queryByTestId("select-targetEntity")).not.toBeInTheDocument();
-
-      await user.selectOptions(screen.getByTestId("select-statement-kind"), "ask");
-      expect(screen.getByTestId("select-targetEntity")).toHaveValue("");
-    });
-  });
-
-  describe("Condition block functionality", () => {
-    it("renders condition block form correctly", () => {
-      render(<CustomBlockForm {...defaultProps} blockType="condition" />);
-
-      expect(screen.getByTestId("input-name")).toBeInTheDocument();
-      expect(screen.getByTestId("select-category")).toBeInTheDocument();
-      expect(screen.getByTestId("section-options")).toBeInTheDocument();
-    });
-
-    it("shows label position selector only when options exist", async () => {
-      const user = userEvent.setup();
-      render(<CustomBlockForm {...defaultProps} blockType="condition" />);
-
-      expect(screen.queryByTestId("section-condition-label-position")).not.toBeInTheDocument();
-
-
-      await user.click(screen.getByTestId("add-option"));
-      await user.type(screen.getByTestId("option-label-0"), "touching");
-      await user.type(screen.getByTestId("option-value-0"), "TOUCHING");
-
-      expect(screen.getByTestId("section-condition-label-position")).toBeInTheDocument();
-    });
-
-    it("shows correct label position options", async () => {
-      const user = userEvent.setup();
-      render(<CustomBlockForm {...defaultProps} blockType="condition" />);
-      
-
-      await user.click(screen.getByTestId("add-option"));
-      await user.type(screen.getByTestId("option-label-0"), "touching");
-      await user.type(screen.getByTestId("option-value-0"), "TOUCHING");
-
-      const labelPositionSelect = screen.getByTestId("select-condition-label-position");
-      expect(labelPositionSelect).toHaveValue("prefix");
-      expect(screen.getByText("Before options")).toBeInTheDocument();
-      expect(screen.getByText("After options")).toBeInTheDocument();
-    });
-  });
-
-  describe("Block type configuration", () => {
-    it("uses correct configuration for action blocks", () => {
-      render(<CustomBlockForm {...defaultProps} blockType="action" />);
-      
-      expect(screen.getByText("Action Name")).toBeInTheDocument();
-      expect(screen.getByTestId("input-name")).toHaveAttribute("placeholder", "e.g., bounce off, move forward");
-      expect(screen.getByTestId("section-parameters")).toBeInTheDocument();
-      expect(screen.getByTestId("section-generator-template")).toBeInTheDocument();
-    });
-
-    it("uses correct configuration for statement blocks", () => {
-      render(<CustomBlockForm {...defaultProps} blockType="statement" />);
-      
-      expect(screen.getByText("Statement Name")).toBeInTheDocument();
-      expect(screen.getByTestId("input-name")).toHaveAttribute("placeholder", "e.g., ask, repeat, when");
-      expect(screen.getByTestId("section-statement-kind")).toBeInTheDocument();
-    });
-
-    it("uses correct configuration for condition blocks", () => {
-      render(<CustomBlockForm {...defaultProps} blockType="condition" />);
-      
-      expect(screen.getByText("Condition Name")).toBeInTheDocument();
-      expect(screen.getByTestId("input-name")).toHaveAttribute("placeholder", "e.g., touching, near, with");
-      expect(screen.getByTestId("section-options")).toBeInTheDocument();
-    });
-
-    it("uses correct configuration for creator blocks", () => {
-      render(<CustomBlockForm {...defaultProps} blockType="creator" />);
-      
-      expect(screen.getByText("Object Name")).toBeInTheDocument();
-      expect(screen.getByTestId("input-name")).toHaveAttribute("placeholder", "e.g., molecules, people");
-      expect(screen.getByTestId("section-options")).toBeInTheDocument();
-      expect(screen.getByTestId("section-count-fields")).toBeInTheDocument();
-    });
-
-    it("uses correct configuration for setter blocks", () => {
-      render(<CustomBlockForm {...defaultProps} blockType="setter" />);
-      
-      expect(screen.getByText("Property Name")).toBeInTheDocument();
-      expect(screen.getByTestId("input-name")).toHaveAttribute("placeholder", "e.g., color, speed");
-      expect(screen.getByTestId("section-options")).toBeInTheDocument();
-      expect(screen.getByTestId("section-include-number-input")).toBeInTheDocument();
-    });
-  });
 });

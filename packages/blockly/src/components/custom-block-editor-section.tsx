@@ -20,12 +20,12 @@ export const generateBlockId = (block: ICustomBlock) => {
 
 const blockTypeHeadings: Record<CustomBlockType, string> = {
   action: "Action",
+  ask: "Ask",
   builtIn: "Built-in",
   condition: "Condition",
   creator: "Create Things",
   preMade: "Pre-made",
-  setter: "Set Properties",
-  statement: "Statement"
+  setter: "Set Properties"
 };
 
 export const CustomBlockEditorSection: React.FC<IProps> = ({ blockType, toolbox, customBlocks, onChange }) => {

@@ -2,7 +2,7 @@ import { FieldSlider } from "@blockly/field-slider";
 import type { BlockSvg } from "blockly";
 import Blockly, { Blocks, FieldDropdown, FieldNumber } from "blockly/core";
 
-import { ICustomBlock, IParameter, IBlockConfig, STATEMENT_KIND_LABEL } from "../components/types";
+import { ICustomBlock, IParameter, IBlockConfig } from "../components/types";
 import { netlogoGenerator } from "../utils/netlogo-generator";
 
 const PLUS_ICON  = "data:image/svg+xml;utf8," +
@@ -33,6 +33,7 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         // Display block name with appropriate prefix based on block type
         const displayName = blockDef.type === "action" ? blockDef.name :
                             blockDef.type === "creator" ? "create" :
+                            blockDef.type === "ask" ? "ask" :
                             blockDef.type === "setter" ? `set ${blockDef.name}` :
                             blockDef.name;
         // Create input without immediately appending the name so we can control placement as needed.
@@ -117,7 +118,7 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         }
 
         // Except for condition, statement or pre-made blocks, append the display name immediately.
-        if (blockDef.type !== "condition" && blockDef.type !== "statement" && blockDef.type !== "preMade") {
+        if (blockDef.type !== "condition" && blockDef.type !== "ask" && blockDef.type !== "preMade") {
           input.appendField(displayName);
         }
 
@@ -128,11 +129,20 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
                 input.appendField(param.labelText);
               }
               if (param.kind === "select") {
-                const opts = (param as any).options || [];
-                input.appendField(new FieldDropdown(opts), param.name);
-                if ((param as any).defaultValue) {
-                  try { (this as any).setFieldValue((param as any).defaultValue, param.name); } catch (e) {
-                    console.warn("Failed to set default value for parameter", param.name, e);
+                let opts = (param as any).options || [];
+                // Convert {label, value}[] to [label, value][] as needed to satisfy FieldDropdown which expects the latter format (equivalent to Blockly's MenuOption[])
+                if (Array.isArray(opts) && opts.length > 0 && typeof opts[0] === "object" && opts[0] !== null && "label" in opts[0] && "value" in opts[0]) {
+                  opts = opts.map((opt: any) => [opt.label, opt.value]);
+                }
+                opts = Array.isArray(opts)
+                  ? opts.filter(opt => Array.isArray(opt) && opt.length === 2 && typeof opt[0] === "string" && typeof opt[1] === "string")
+                  : [];
+                if (opts.length > 0) {
+                  input.appendField(new FieldDropdown(opts), param.name);
+                  if ((param as any).defaultValue) {
+                    try { (this as any).setFieldValue((param as any).defaultValue, param.name); } catch (e) {
+                      console.warn("Failed to set default value for parameter", param.name, e);
+                    }
                   }
                 }
               } else if (param.kind === "number") {
@@ -146,13 +156,19 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
           }
         } else if (blockDef.type === "creator") {
           if (Array.isArray(blockConfig.typeOptions) && blockConfig.typeOptions.length > 0) {
-            input.appendField(new FieldDropdown(blockConfig.typeOptions), "type");
+            const creatorOpts = blockConfig.typeOptions.filter(opt => Array.isArray(opt) && opt.length === 2 && typeof opt[0] === "string" && typeof opt[1] === "string");
+            if (creatorOpts.length > 0) {
+              input.appendField(new FieldDropdown(creatorOpts), "type");
+            }
           }
         } else if (blockDef.type === "setter") {
           if (blockConfig.includeNumberInput) {
             input.appendField(new FieldNumber(0), "value");
           } else if (Array.isArray(blockConfig.typeOptions) && blockConfig.typeOptions.length > 0) {
-            input.appendField(new FieldDropdown(blockConfig.typeOptions), "value");
+            const setterOpts = blockConfig.typeOptions.filter(opt => Array.isArray(opt) && opt.length === 2 && typeof opt[0] === "string" && typeof opt[1] === "string");
+            if (setterOpts.length > 0) {
+              input.appendField(new FieldDropdown(setterOpts), "value");
+            }
           }
         } else if (blockDef.type === "preMade") {
           // Handle preMade blocks by name
@@ -171,26 +187,30 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
           } else {
             input.appendField(displayName);
           }
-          if (Array.isArray(blockConfig.options) && blockConfig.options.length > 0) {
-            input.appendField(new FieldDropdown(blockConfig.options), "target");
+          let askOptions = Array.isArray(blockConfig.options) ? [...blockConfig.options] : [];
+          askOptions = askOptions.filter(opt => Array.isArray(opt) && opt.length === 2 && typeof opt[0] === "string" && typeof opt[1] === "string");
+          if (blockConfig.includeAllOption && askOptions.length > 0) {
+            askOptions.push(["all", "all"]);
+          }
+          if (askOptions.length > 0) {
+            input.appendField(new FieldDropdown(askOptions), "target");
           }
           if (blockConfig.targetEntity) {
             input.appendField(blockConfig.targetEntity);
           }
           this.appendStatementInput("statements");
-        } else if (blockDef.type === "statement") {
-          const statementKind = blockConfig.statementKind || "custom";
-          const kindLabel = STATEMENT_KIND_LABEL[statementKind] || "";
-          if (statementKind === "ask") {
-            input.appendField(kindLabel);
-          } else {
-            input.appendField(displayName);
+        } else if (blockDef.type === "ask") {
+          input.appendField(displayName);
+          let askOptions = Array.isArray(blockConfig.options) ? [...blockConfig.options] : [];
+          askOptions = askOptions.filter(opt => Array.isArray(opt) && opt.length === 2 && typeof opt[0] === "string" && typeof opt[1] === "string");
+          if (blockConfig.includeAllOption && askOptions.length > 0) {
+            askOptions.push(["all", "all"]);
           }
-          if (Array.isArray(blockConfig.options) && blockConfig.options.length > 0) {
-            input.appendField(new FieldDropdown(blockConfig.options), "target");
+          if (askOptions.length > 0) {
+            input.appendField(new FieldDropdown(askOptions), "target");
           }
-          // Add entity name as static label after dropdown.
-          if (blockConfig.targetEntity) {
+          // Add entity name as static label after dropdown if showTargetEntityLabel is true (default true)
+          if (blockConfig.targetEntity && (blockConfig.showTargetEntityLabel !== false)) {
             input.appendField(blockConfig.targetEntity);
           }
           this.appendStatementInput("statements");
@@ -328,6 +348,11 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         const statements = netlogoGenerator.statementToCode(block, "statements");
 
         return `create-${type} ${count}\n${statements}`;
+      } else if (blockDef.type === "ask") {
+        const target = block.getFieldValue("target");
+        const targetEntity = blockConfig.targetEntity || "";
+        const statements = netlogoGenerator.statementToCode(block, "statements");
+        return `ask ${target} ${targetEntity} [\n${statements}]\n`;
       } else if (blockDef.type === "preMade") {
         const statements = netlogoGenerator.statementToCode(block, "statements");
         if (blockDef.name === "When") {
@@ -339,7 +364,7 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         } else if (blockDef.name === "Chance") {
           const num = netlogoGenerator.valueToCode(block, "NUM", netlogoGenerator.ORDER_NONE) || "0";
           return `if random-float 100 < ${num} [\n${statements}]\n`;
-        } else { // kind is "custom" or undefined/unknown
+        } else { // undefined/unknown
           if (blockConfig.generatorTemplate && typeof blockConfig.generatorTemplate === "string") {
             const code = String(blockConfig.generatorTemplate);
             return code.endsWith("\n") ? code : code + "\n";

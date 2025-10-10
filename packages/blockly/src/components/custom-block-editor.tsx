@@ -68,8 +68,8 @@ export const CustomBlockEditor: React.FC<IProps> = ({ customBlocks = [], onChang
   const blockTypes: CustomBlockType[] = [
     "setter",
     "creator",
+    "ask",
     "action",
-    "statement",
     "condition"
   ];
 

@@ -362,13 +362,12 @@ describe("block-factory", () => {
         color: "#0089b8",
         config: {
           canHaveChildren: false,
-          statementKind: "ask",
           targetEntity: "molecules",
           options: [["water", "water"], ["ink", "ink"]]
         },
         id: "custom_statement_ask_123",
         name: "ask",
-        type: "statement"
+        type: "ask"
       };
 
       registerCustomBlocks([statementBlock]);
@@ -387,7 +386,6 @@ describe("block-factory", () => {
         color: "#0089b8",
         config: {
           canHaveChildren: false,
-          statementKind: "custom",
           conditionInput: true
         },
         id: "custom_statement_when_456",
@@ -751,13 +749,12 @@ describe("block-factory", () => {
         color: "#0089b8",
         config: {
           canHaveChildren: false,
-          statementKind: "ask",
           targetEntity: "molecules",
           options: [["water", "water"], ["ink", "ink"]]
         },
         id: "custom_statement_ask_123",
         name: "ask",
-        type: "statement"
+        type: "ask"
       };
 
       registerCustomBlocks([statementBlock]);
@@ -849,43 +846,31 @@ describe("block-factory", () => {
       expect(code).toBe("if random-float 100 < test_value [\n// statement code]\n");
     });
 
-    it("generates code for 'custom' statement block with template", () => {
+    it("generates code for 'ask' statement block", () => {
       const statementBlock: ICustomBlock = {
         category: "Control",
         color: "#0089b8",
         config: {
           canHaveChildren: false,
-          statementKind: "custom",
-          generatorTemplate: "custom-command ${PARAM1}"
+          targetEntity: "molecules",
+          options: [["water", "water"], ["ink", "ink"]]
         },
-        id: "custom_statement_custom_202",
-        name: "custom",
-        type: "statement"
+        id: "custom_statement_ask_123",
+        name: "ask",
+        type: "ask"
       };
 
       registerCustomBlocks([statementBlock]);
 
-      const code = netlogoGenerator.forBlock["custom_statement_custom_202"].call(mockBlock, mockBlock);
-      expect(code).toBe("custom-command ${PARAM1}\n");
-    });
+      mockBlock.getFieldValue = jest.fn().mockImplementation((fieldName) => {
+        const values: { [key: string]: any } = {
+          "target": "water"
+        };
+        return values[fieldName] || "";
+      });
 
-    it("generates code for 'custom' statement block without template", () => {
-      const statementBlock: ICustomBlock = {
-        category: "Control",
-        color: "#0089b8",
-        config: {
-          canHaveChildren: false,
-          statementKind: "custom"
-        },
-        id: "custom_statement_custom_303",
-        name: "custom",
-        type: "statement"
-      };
-
-      registerCustomBlocks([statementBlock]);
-
-      const code = netlogoGenerator.forBlock["custom_statement_custom_303"].call(mockBlock, mockBlock);
-      expect(code).toBe("// statement code");
+      const code = netlogoGenerator.forBlock["custom_statement_ask_123"].call(mockBlock, mockBlock);
+      expect(code).toBe("ask water molecules [\n// statement code]\n");
     });
 
     it("generates code for condition block", () => {

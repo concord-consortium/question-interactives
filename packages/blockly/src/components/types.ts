@@ -6,12 +6,12 @@ import { MenuOption } from "blockly";
 
 export const VALID_BLOCK_TYPES = [
   "action",
+  "ask",
   "builtIn",
   "condition",
   "creator",
   "preMade",
-  "setter",
-  "statement"
+  "setter"
 ] as const;
 export const REQUIRED_BLOCK_FIELDS = [
   "category",
@@ -40,18 +40,10 @@ export interface IParameterNumber extends IParameterBase {
 }
 export type IParameter = IParameterSelect | IParameterNumber;
 
-export const STATEMENT_KINDS = ["ask", "custom"] as const;
-export type StatementKind = typeof STATEMENT_KINDS[number];
-export const STATEMENT_KIND_LABEL: Record<StatementKind, string> = {
-  ask: "ask",
-  custom: "custom"
-};
-
 export interface IBlockConfig {
   canHaveChildren: boolean;
   childBlocks?: string[];
   conditionInput?: boolean;
-  statementKind?: StatementKind;
   defaultCount?: number;
   generatorTemplate?: string;
   includeNumberInput?: boolean;
@@ -63,6 +55,8 @@ export interface IBlockConfig {
   options?: MenuOption[];
   parameters?: IParameter[];
   previousStatement?: boolean;
+  showTargetEntityLabel?: boolean;
+  includeAllOption?: boolean;
   targetEntity?: string;
   typeOptions?: MenuOption[];
 }
@@ -227,7 +221,6 @@ export const DemoAuthoredState: IAuthoredState = {
         "previousStatement": true,
         "canHaveChildren": true,
         "childBlocks": [],
-        "statementKind": "ask",
         "conditionInput": false,
         "options": [
           [
@@ -243,7 +236,7 @@ export const DemoAuthoredState: IAuthoredState = {
       },
       "id": "custom_statement_ask_molecules_1759854843519",
       "name": "ask molecules",
-      "type": "statement"
+      "type": "ask"
     },
     {
       "category": "Controls",

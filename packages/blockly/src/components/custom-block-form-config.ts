@@ -12,8 +12,12 @@ export interface IBlockTypeConfig {
   hasParameters: boolean;
   hasTargetEntity?: boolean;
   hasStatementKind?: boolean;
+  includeAllOption?: boolean;
   generatorPlaceholder?: string;
   label: string;
+  optionLabelPlaceholder?: string;
+  optionTerm?: string;
+  optionValuePlaceholder?: string;
   placeholder?: string;
 }
 
@@ -21,12 +25,26 @@ export const BLOCK_TYPE_CONFIG: Record<CustomBlockType, IBlockTypeConfig> = {
   action: {
     canHaveChildren: true,
     color: "#004696",
+    hasConditionInput: true,
     hasGeneratorTemplate: true,
     hasOptions: false,
     hasParameters: true,
     generatorPlaceholder: "e.g., ${ACTION} ${DIRECTION}\\nset speed ${SPEED}",
     label: "Action Name",
     placeholder: "e.g., bounce off, move forward"
+  },
+  ask: {
+    canHaveChildren: false,
+    color: "#0089b8",
+    hasGeneratorTemplate: false,
+    hasOptions: false,
+    hasParameters: false,
+    hasStatementKind: true,
+    hasTargetEntity: true,
+    includeAllOption: false,
+    generatorPlaceholder: "e.g., custom statement header",
+    label: "Name",
+    placeholder: ""
   },
   builtIn: {
     canHaveChildren: true,
@@ -57,6 +75,9 @@ export const BLOCK_TYPE_CONFIG: Record<CustomBlockType, IBlockTypeConfig> = {
     hasOptions: true,
     hasParameters: false,
     label: "Object Name",
+    optionLabelPlaceholder: "Display text (e.g., water)",
+    optionTerm: "Types",
+    optionValuePlaceholder: "Value (e.g., WATER)",
     placeholder: "e.g., molecules, people"
   },
   preMade: {
@@ -77,18 +98,5 @@ export const BLOCK_TYPE_CONFIG: Record<CustomBlockType, IBlockTypeConfig> = {
     hasParameters: false,
     label: "Property Name",
     placeholder: "e.g., color, speed"
-  },
-  statement: {
-    canHaveChildren: false,
-    color: "#0089b8",
-    hasConditionInput: true,
-    hasGeneratorTemplate: false,
-    hasOptions: false,
-    hasParameters: false,
-    hasStatementKind: true,
-    hasTargetEntity: true,
-    generatorPlaceholder: "e.g., custom statement header",
-    label: "Statement Name",
-    placeholder: "e.g., ask, repeat, when"
   }
 } as const;
