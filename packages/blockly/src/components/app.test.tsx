@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import { useAuthoredState, useInitMessage, useInteractiveState
         } from "@concord-consortium/lara-interactive-api";
 import { App } from "./app";
@@ -45,7 +45,9 @@ describe("Blockly question", () => {
     useInteractiveStateMock.mockReturnValue(interactiveState);
 
     const { container } = render(<App />);
-    expect(container).toBeDefined();
+    await waitFor(() => {
+      expect(container).toBeDefined();
+    });
   });
 
   it("renders custom blocks section in authoring mode", async () => {
@@ -58,6 +60,8 @@ describe("Blockly question", () => {
     useInteractiveStateMock.mockReturnValue(interactiveState);
 
     render(<App />);
-    expect(screen.getByText("Custom Blocks")).toBeInTheDocument();
+    await waitFor(() => {
+      expect(screen.getByText("Custom Blocks")).toBeInTheDocument();
+    });
   });
 });
