@@ -84,11 +84,55 @@ export interface IInteractiveState extends IRuntimeInteractiveMetadata {
   submitted?: boolean;
 }
 
+const defaultToolbox = {
+    "kind": "categoryToolbox",
+    "name": "General",
+    "contents": [
+      {
+        "kind": "category",
+        "name": "General",
+        "colour": "#00836B",
+        "contents": [
+          {
+            "kind": "block",
+            "type": "controls_if"
+          },
+          {
+            "kind": "block",
+            "type": "logic_operation"
+          },
+          {
+            "kind": "block",
+            "type": "logic_negate"
+          }
+        ]
+      },
+      {
+        "kind": "category",
+        "name": "Properties",
+        "colour": "#312b84",
+        "contents": []
+      },
+      {
+        "kind": "category",
+        "name": "Action",
+        "colour": "#004696",
+        "contents": []
+      },
+      {
+        "kind": "category",
+        "name": "Controls",
+        "colour": "#0089b8",
+        "contents": []
+      }
+    ]
+  };
+
 export const DefaultAuthoredState: Omit<Required<IAuthoredState>, "questionSubType"|"required"|"prompt"> = {
   customBlocks: [],
   hint: "",
   questionType: "iframe_interactive",
-  toolbox: "",
+  toolbox: defaultToolbox ? JSON.stringify(defaultToolbox, null, 2) : "",
   version: 1
 };
 
@@ -264,48 +308,6 @@ export const DemoAuthoredState: IAuthoredState = {
   hint: "",
   prompt: "",
   questionType: "iframe_interactive",
-  toolbox: `{
-    "kind": "categoryToolbox",
-    "name": "General",
-    "contents": [
-      {
-        "kind": "category",
-        "name": "General",
-        "colour": "#00836B",
-        "contents": [
-          {
-            "kind": "block",
-            "type": "controls_if"
-          },
-          {
-            "kind": "block",
-            "type": "logic_operation"
-          },
-          {
-            "kind": "block",
-            "type": "logic_negate"
-          }
-        ]
-      },
-      {
-        "kind": "category",
-        "name": "Properties",
-        "colour": "#312b84",
-        "contents": []
-      },
-      {
-        "kind": "category",
-        "name": "Action",
-        "colour": "#004696",
-        "contents": []
-      },
-      {
-        "kind": "category",
-        "name": "Controls",
-        "colour": "#0089b8",
-        "contents": []
-      }
-    ]
-  }`,
+  toolbox: defaultToolbox ? JSON.stringify(defaultToolbox, null, 2) : "",
   version: 1
 };

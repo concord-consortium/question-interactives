@@ -4,7 +4,7 @@ import React from "react";
 
 import { CustomBlockEditor } from "./custom-block-editor";
 import { Runtime } from "./runtime";
-import { IAuthoredState, IInteractiveState } from "./types";
+import { DefaultAuthoredState, IAuthoredState, IInteractiveState } from "./types";
 
 const baseAuthoringProps = {
   schema: {
@@ -47,6 +47,7 @@ const baseAuthoringProps = {
         }
       },
       toolbox: {
+        default: DefaultAuthoredState.toolbox || "",
         title: "Toolbox",
         type: "string"
       }
