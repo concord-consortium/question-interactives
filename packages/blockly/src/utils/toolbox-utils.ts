@@ -1,6 +1,8 @@
 import { ICustomBlock } from "../components/types";
 
 export const extractCategoriesFromToolbox = (toolboxJson: string): string[] => {
+  if (!toolboxJson || !toolboxJson.trim()) return [];
+
   try {
     const toolbox = JSON.parse(toolboxJson);
     const categories: string[] = [];
