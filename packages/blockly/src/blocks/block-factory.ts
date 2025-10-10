@@ -244,7 +244,7 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         // to take into consideration and statements to process, e.g. child setter blocks.
         // For now, though, we just return a simple create command.
         const count = block.getFieldValue("count");
-        const type = blockDef.name.toLowerCase().replace(/\s+/g, "_");
+        const type = block.getFieldValue("type").toLowerCase().replace(/\s+/g, "_");
         const statements = javascriptGenerator.statementToCode(block, "statements");
         const callback = statements ? `, (agent) => {\n${statements}\n}` : "";
 
