@@ -1,7 +1,7 @@
 import { Blocks, FieldDropdown, FieldNumber } from "blockly/core";
+import { javascriptGenerator } from "blockly/javascript";
 import { registerCustomBlocks } from "./block-factory";
 import { ICustomBlock } from "../components/types";
-import { netlogoGenerator } from "../utils/netlogo-generator";
 
 // Mock Blockly and its components
 jest.mock("blockly/core", () => ({
@@ -48,11 +48,13 @@ describe("block-factory", () => {
   let mockInput: any;
   let mockStatementsInput: any;
   let mockWorkspace: any;
+  let spy: jest.SpiedFunction<typeof javascriptGenerator.statementToCode>;
 
   beforeEach(() => {
+    if (spy) spy.mockRestore();
     jest.clearAllMocks();
     (Blocks as any) = {};
-    (netlogoGenerator.forBlock as any) = {};
+    (javascriptGenerator.forBlock as any) = {};
 
     mockInput = {
       appendField: jest.fn().mockReturnThis(),
@@ -86,12 +88,17 @@ describe("block-factory", () => {
       setColour: jest.fn(),
       setOnChange: jest.fn(),
       getInput: jest.fn().mockReturnValue(mockStatementsInput),
+      getInputTargetBlock: jest.fn().mockReturnValue(mockStatementsInput),
       getField: jest.fn(),
       getFieldValue: jest.fn(),
       render: jest.fn(),
       workspace: mockWorkspace,
       isInFlyout: false
     };
+
+    spy = jest
+      .spyOn(javascriptGenerator, "statementToCode")
+      .mockImplementation((_block, _name) => "");
   });
 
   describe("registerCustomBlocks", () => {
@@ -126,7 +133,7 @@ describe("block-factory", () => {
       registerCustomBlocks([setterBlock]);
 
       expect(Blocks["custom_set_color_123"]).toBeDefined();
-      expect(netlogoGenerator.forBlock["custom_set_color_123"]).toBeDefined();
+      expect(javascriptGenerator.forBlock["custom_set_color_123"]).toBeDefined();
     });
 
     it("registers creator blocks correctly", () => {
@@ -148,7 +155,7 @@ describe("block-factory", () => {
       registerCustomBlocks([creatorBlock]);
 
       expect(Blocks["custom_create_molecules_456"]).toBeDefined();
-      expect(netlogoGenerator.forBlock["custom_create_molecules_456"]).toBeDefined();
+      expect(javascriptGenerator.forBlock["custom_create_molecules_456"]).toBeDefined();
     });
 
     it("registers multiple blocks", () => {
@@ -178,8 +185,8 @@ describe("block-factory", () => {
 
       expect(Blocks["block1"]).toBeDefined();
       expect(Blocks["block2"]).toBeDefined();
-      expect(netlogoGenerator.forBlock["block1"]).toBeDefined();
-      expect(netlogoGenerator.forBlock["block2"]).toBeDefined();
+      expect(javascriptGenerator.forBlock["block1"]).toBeDefined();
+      expect(javascriptGenerator.forBlock["block2"]).toBeDefined();
     });
   });
 
@@ -403,7 +410,7 @@ describe("block-factory", () => {
       registerCustomBlocks([setterBlock]);
 
       mockBlock.getFieldValue = jest.fn().mockReturnValue("RED");
-      const code = netlogoGenerator.forBlock["custom_set_color_123"].call(mockBlock, mockBlock);
+      const code = javascriptGenerator.forBlock["custom_set_color_123"].call(mockBlock, mockBlock);
       expect(code).toBe("set color RED\n");
     });
 
@@ -424,7 +431,7 @@ describe("block-factory", () => {
 
       mockBlock.getFieldValue = jest.fn().mockReturnValue(5);
 
-      const code = netlogoGenerator.forBlock["custom_set_speed_123"].call(mockBlock, mockBlock);
+      const code = javascriptGenerator.forBlock["custom_set_speed_123"].call(mockBlock, mockBlock);
       expect(code).toBe("set speed 5\n");
     });
 
@@ -445,15 +452,15 @@ describe("block-factory", () => {
       registerCustomBlocks([creatorBlock]);
 
       mockBlock.getFieldValue = jest.fn().mockImplementation((fieldName) => {
-        const values: { [key: string]: any } = {
+        const values: Record<string, any> = {
           "type": "WATER",
           "count": 50
         };
         return values[fieldName] || "";
       });
 
-      const code = netlogoGenerator.forBlock["custom_create_molecules_456"].call(mockBlock, mockBlock);
-      expect(code).toBe("create-water 50\n// statement code");
+      const code = javascriptGenerator.forBlock["custom_create_molecules_456"].call(mockBlock, mockBlock);
+      expect(code).toBe("create_water(50);\n");
     });
 
     it("generates code for action block with generator template", () => {
@@ -492,7 +499,7 @@ describe("block-factory", () => {
         return values[fieldName] || "";
       });
 
-      const code = netlogoGenerator.forBlock["custom_action_move_789"].call(mockBlock, mockBlock);
+      const code = javascriptGenerator.forBlock["custom_action_move_789"].call(mockBlock, mockBlock);
       expect(code).toBe("move FORWARD\nset speed 2\n");
     });
 
@@ -510,7 +517,7 @@ describe("block-factory", () => {
 
       registerCustomBlocks([actionBlock]);
 
-      const code = netlogoGenerator.forBlock["custom_action_move_789"].call(mockBlock, mockBlock);
+      const code = javascriptGenerator.forBlock["custom_action_move_789"].call(mockBlock, mockBlock);
       expect(code).toBe("move\n");
     });
 
@@ -539,7 +546,7 @@ describe("block-factory", () => {
 
       mockBlock.getFieldValue = jest.fn().mockReturnValue("FORWARD");
 
-      const code = netlogoGenerator.forBlock["custom_action_bounce_off_789"].call(mockBlock, mockBlock);
+      const code = javascriptGenerator.forBlock["custom_action_bounce_off_789"].call(mockBlock, mockBlock);
       expect(code).toBe("bounce_off FORWARD\n");
     });
 
@@ -585,7 +592,7 @@ describe("block-factory", () => {
         return values[fieldName] || "";
       });
 
-      const code = netlogoGenerator.forBlock["custom_action_move_789"].call(mockBlock, mockBlock);
+      const code = javascriptGenerator.forBlock["custom_action_move_789"].call(mockBlock, mockBlock);
       expect(code).toBe("move FORWARD 5 2\n");
     });
   });
