@@ -29,6 +29,7 @@ export const AgentSimulationComponent = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const [paused, setPaused] = useState(true);
   const [error, setError] = useState("");
+  const [resetCount, setResetCount] = useState(0);
   const simRef = useRef<AA.Simulation | null>(null);
 
   // Keep the blockly code updated with the linked interactive
@@ -103,7 +104,7 @@ export const AgentSimulationComponent = ({
       container?.replaceChildren();
       sim.end();
     };
-  }, [blocklyCode, code, gridHeight, gridStep, gridWidth]);
+  }, [blocklyCode, code, gridHeight, gridStep, gridWidth, resetCount]);
 
   const updateBlocklyCode = () => {
     setBlocklyCode(externalBlocklyCode);
@@ -135,6 +136,9 @@ export const AgentSimulationComponent = ({
           Update Code
         </button>
       )}
+      <button onClick={() => setResetCount(resetCount + 1)}>
+        Reset
+      </button>
       <button onClick={handlePauseClick}>
         {paused ? "Play" : "Pause"}
       </button>
