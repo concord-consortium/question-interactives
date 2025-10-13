@@ -91,20 +91,7 @@ const defaultToolbox = {
         "kind": "category",
         "name": "General",
         "colour": "#00836B",
-        "contents": [
-          {
-            "kind": "block",
-            "type": "controls_if"
-          },
-          {
-            "kind": "block",
-            "type": "logic_operation"
-          },
-          {
-            "kind": "block",
-            "type": "logic_negate"
-          }
-        ]
+        "contents": []
       },
       {
         "kind": "category",

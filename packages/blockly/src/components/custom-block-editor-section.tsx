@@ -69,7 +69,6 @@ export const CustomBlockEditorSection: React.FC<IProps> = ({ blockType, toolbox,
   const filteredBlocks = customBlocks.filter(b => b.type === blockType);
 
   return (
-    <>
     <div className={css.customBlocks_section} data-testid={`section-${blockType}`}>
       <div className={css.customBlocks_new}>
         <div className={css.customBlocks_newHeading}>
@@ -109,6 +108,5 @@ export const CustomBlockEditorSection: React.FC<IProps> = ({ blockType, toolbox,
         )}
       </div>
     </div>
-    </>
   );
 };

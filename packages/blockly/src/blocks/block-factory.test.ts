@@ -338,7 +338,7 @@ describe("block-factory", () => {
       Blocks["custom_action_move_789"].init.call(mockBlock);
 
       expect(FieldDropdown).toHaveBeenCalledWith(
-        [{ label: "forward", value: "FORWARD" }, { label: "backward", value: "BACKWARD" }]
+        [["forward", "FORWARD"], ["backward", "BACKWARD"]]
       );
       expect(mockInput.appendField).toHaveBeenCalledWith(expect.any(Object), "DIRECTION");
     });

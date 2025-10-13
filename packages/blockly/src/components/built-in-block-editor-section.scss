@@ -1,25 +1,25 @@
 @import "./variables.scss";
 
-.staticBlocks_section {
+.builtInBlocks_section {
   background: $background-lighter;
   border: 1px solid $border-medium;
   border-radius: $border-radius-lg;
   margin-bottom: 2em;
   padding: 15px;
 
-  .staticBlocks_new {
+  .builtInBlocks_new {
     margin-bottom: $spacing-lg;
 
-    .staticBlocks_newHeading {
+    .builtInBlocks_newHeading {
       align-items: center;
       display: flex;
       gap: 0.5em;
     }
   }
 
-  .staticBlocks_list {
+  .builtInBlocks_list {
 
-    .staticBlocks_listItem {
+    .builtInBlocks_listItem {
       align-items: center;
       border-top: 1px solid $border-medium;
       display: flex;
@@ -30,25 +30,25 @@
         border-bottom: 1px solid $border-medium;
       }
 
-      .staticBlocks_blockInfo {
+      .builtInBlocks_blockInfo {
         align-items: center;
         display: flex;
         gap: 0.5em;
 
-        .staticBlocks_blockName {
+        .builtInBlocks_blockName {
           font-weight: 500;
         }
       }
 
-      .staticBlocks_blockCategory {
+      .builtInBlocks_blockCategory {
         align-items: center;
         display: flex;
         gap: 0.5em;
 
-        .staticBlocks_categoryLabel {
+        .builtInBlocks_categoryLabel {
           margin-bottom: 0;
         }
-        .staticBlocks_categorySelect {
+        .builtInBlocks_categorySelect {
           @include form-input-sm();
           font-size: $font-size-sm;
           max-width: 150px;
@@ -60,7 +60,7 @@
       }
     }
 
-    .staticBlocks_noBlocks {
+    .builtInBlocks_noBlocks {
       color: #888;
       font-style: italic;
       padding: 0.5em 0;

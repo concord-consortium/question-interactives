@@ -25,6 +25,11 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
   }
   
   customBlocks.forEach(blockDef => {
+    // Skip built-in blocks -- they're already registered in custom-built-in-blocks.ts
+    if (blockDef.type === "builtIn") {
+      return;
+    }
+
     const blockType = blockDef.id;
     const blockConfig: IBlockConfig = blockDef.config;
 

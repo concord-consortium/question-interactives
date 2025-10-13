@@ -1,7 +1,7 @@
-// Registry for built-in Blockly blocks that can be nested within action blocks
-// Provides metadata about built-in Blockly blocks in a format compatible with our custom block system
+// Registry for Blockly's built-in blocks that can be nested within action blocks
+// Provides metadata about Blockly library blocks in a format compatible with our custom block system
 
-export interface IBuiltInBlockInfo {
+export interface IBlocklyBuiltInBlockInfo {
   color: string;
   description: string;
   hasStatements: boolean;
@@ -10,8 +10,8 @@ export interface IBuiltInBlockInfo {
   type: "built-in";
 }
 
-// Registry of available built-in Blockly blocks
-export const BUILT_IN_BLOCKS: IBuiltInBlockInfo[] = [
+// Registry of available Blockly built-in blocks (from Blockly core library)
+export const BLOCKLY_BUILT_IN_BLOCKS: IBlocklyBuiltInBlockInfo[] = [
   {
     color: "#5ba55b",
     description: "If-then conditional block",
