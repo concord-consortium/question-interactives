@@ -24,7 +24,6 @@ const blockTypeHeadings: Record<CustomBlockType, string> = {
   builtIn: "Built-in",
   condition: "Condition",
   creator: "Create Things",
-  preMade: "Pre-made",
   setter: "Set Properties"
 };
 

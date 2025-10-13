@@ -10,7 +10,6 @@ export const VALID_BLOCK_TYPES = [
   "builtIn",
   "condition",
   "creator",
-  "preMade",
   "setter"
 ] as const;
 export const REQUIRED_BLOCK_FIELDS = [

@@ -123,7 +123,7 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         }
 
         // Except for condition, statement or pre-made blocks, append the display name immediately.
-        if (blockDef.type !== "condition" && blockDef.type !== "ask" && blockDef.type !== "preMade") {
+        if (blockDef.type !== "condition" && blockDef.type !== "ask") {
           input.appendField(displayName);
         }
 
@@ -175,35 +175,6 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
               input.appendField(new FieldDropdown(setterOpts), "value");
             }
           }
-        } else if (blockDef.type === "preMade") {
-          // Handle preMade blocks by name
-          if (blockDef.name === "When") {
-            input.appendField("when");
-            if (blockConfig.conditionInput) {
-              this.appendValueInput("condition").setCheck("Boolean");
-            }
-          } else if (blockDef.name === "Repeat") {
-            input.appendField("repeat");
-            input.appendField(new FieldNumber(1, 0), "TIMES");
-          } else if (blockDef.name === "Chance") {
-            input.appendField("with a chance of");
-            this.appendValueInput("NUM").setCheck("Number");
-            this.appendDummyInput().appendField("%");
-          } else {
-            input.appendField(displayName);
-          }
-          let askOptions = Array.isArray(blockConfig.options) ? [...blockConfig.options] : [];
-          askOptions = askOptions.filter(opt => Array.isArray(opt) && opt.length === 2 && typeof opt[0] === "string" && typeof opt[1] === "string");
-          if (blockConfig.includeAllOption && askOptions.length > 0) {
-            askOptions.push(["all", "all"]);
-          }
-          if (askOptions.length > 0) {
-            input.appendField(new FieldDropdown(askOptions), "target");
-          }
-          if (blockConfig.targetEntity) {
-            input.appendField(blockConfig.targetEntity);
-          }
-          this.appendStatementInput("statements");
         } else if (blockDef.type === "ask") {
           input.appendField(displayName);
           let askOptions = Array.isArray(blockConfig.options) ? [...blockConfig.options] : [];
@@ -358,25 +329,6 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         const targetEntity = blockConfig.targetEntity || "";
         const statements = netlogoGenerator.statementToCode(block, "statements");
         return `ask ${target} ${targetEntity} [\n${statements}]\n`;
-      } else if (blockDef.type === "preMade") {
-        const statements = netlogoGenerator.statementToCode(block, "statements");
-        if (blockDef.name === "When") {
-          const condition = netlogoGenerator.valueToCode(block, "condition", netlogoGenerator.ORDER_NONE) || "false";
-          return `if ${condition} [\n${statements}]\n`;
-        } else if (blockDef.name === "Repeat") {
-          const times = block.getFieldValue("TIMES") || 0;
-          return `repeat ${times} [\n${statements}]\n`;
-        } else if (blockDef.name === "Chance") {
-          const num = netlogoGenerator.valueToCode(block, "NUM", netlogoGenerator.ORDER_NONE) || "0";
-          return `if random-float 100 < ${num} [\n${statements}]\n`;
-        } else { // undefined/unknown
-          if (blockConfig.generatorTemplate && typeof blockConfig.generatorTemplate === "string") {
-            const code = String(blockConfig.generatorTemplate);
-            return code.endsWith("\n") ? code : code + "\n";
-          }
-
-          return statements;
-        }
       } else if (blockDef.type === "condition") {
         const condition = block.getFieldValue("condition");
         return condition;

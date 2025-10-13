@@ -38,7 +38,7 @@ const baseAuthoringProps = {
           type: "object",
           properties: {
             id: { type: "string" },
-            type: { type: "string", enum: ["action", "builtIn", "condition", "creator", "preMade", "setter", "statement"] },
+            type: { type: "string", enum: ["action", "builtIn", "condition", "creator", "setter", "statement"] },
             name: { type: "string" },
             color: { type: "string" },
             category: { type: "string" },

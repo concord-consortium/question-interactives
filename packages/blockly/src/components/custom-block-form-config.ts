@@ -80,15 +80,6 @@ export const BLOCK_TYPE_CONFIG: Record<CustomBlockType, IBlockTypeConfig> = {
     optionValuePlaceholder: "Value (e.g., WATER)",
     placeholder: "e.g., molecules, people"
   },
-  preMade: {
-    canHaveChildren: true,
-    color: "#aa42f5",
-    hasConditionInput: true,
-    hasGeneratorTemplate: false,
-    hasOptions: false,
-    hasParameters: false,
-    label: "Block Name",
-  },
   setter: {
     canHaveChildren: false,
     color: "#312b84",
