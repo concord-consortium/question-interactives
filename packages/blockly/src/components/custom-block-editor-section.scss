@@ -4,35 +4,84 @@
   background: $background-lighter;
   border: 1px solid $border-medium;
   border-radius: $border-radius-lg;
-  padding: 15px;
+  margin-bottom: $spacing-sm;
+  overflow: hidden;
 
-  .customBlocks_new {
-    border: solid 1px $border-medium;
-    border-radius: $border-radius-md;
-    margin-bottom: 10px;
-    padding: $spacing-md;
+  .customBlocks_header {
+    align-items: center;
+    display: flex;
+    padding: 0;
+  }
 
-    .customBlocks_newHeading {
-      align-items: center;
-      display: flex;
-      justify-content: space-between;
-      margin-bottom: 0;
+  .customBlocks_toggleButton {
+    align-items: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex: 1;
+    gap: $spacing-md;
+    padding: $spacing-lg;
+    text-align: left;
+    transition: background-color $transition-fast;
 
-      button {
-        background: $primary-blue;
-        border: none;
-        border-radius: $border-radius-sm;
-        color: white;
-        cursor: pointer;
-        font-weight: $font-weight-medium;
-        padding: $spacing-sm $spacing-md;
-        transition: background-color $transition-fast;
-
-        &:hover {
-          background: $primary-blue-hover;
-        }
-      }
+    &:hover {
+      background: rgba(0, 0, 0, 0.02);
     }
+
+    h5 {
+      font-size: $font-size-md;
+      font-weight: $font-weight-medium;
+      margin: 0;
+    }
+  }
+
+  .customBlocks_chevron {
+    color: $text-medium;
+    display: inline-block;
+    font-size: $font-size-xs;
+    transform: rotate(-90deg);
+    transition: transform $transition-fast;
+
+    &.expanded {
+      transform: rotate(0deg);
+    }
+  }
+
+  .customBlocks_blockCount {
+    color: $text-medium;
+    flex-shrink: 0;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-normal;
+    margin-left: auto;
+    margin-right: $spacing-md;
+  }
+
+  .customBlocks_addButton {
+    background: $primary-blue;
+    border: none;
+    border-radius: $border-radius-sm;
+    color: white;
+    cursor: pointer;
+    flex-shrink: 0;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-medium;
+    margin-right: $spacing-lg;
+    padding: $spacing-sm $spacing-md;
+    transition: background-color $transition-fast;
+
+    &:hover {
+      background: $primary-blue-hover;
+    }
+  }
+
+  .customBlocks_content {
+    border-top: 1px solid $border-medium;
+    padding: $spacing-lg;
+  }
+
+  .customBlocks_formWrapper {
+    margin-bottom: $spacing-lg;
   }
 
   .customBlocks_current {

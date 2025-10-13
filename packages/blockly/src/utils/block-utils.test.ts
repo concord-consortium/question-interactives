@@ -7,14 +7,17 @@ describe("block-utils", () => {
   describe("availableChildBlocks", () => {
     it("should return custom built-in blocks and Blockly built-in blocks when no custom blocks provided", () => {
       const result = availableChildBlocks([]);
-      expect(result).toEqual([...CUSTOM_BUILT_IN_BLOCKS, ...BLOCKLY_BUILT_IN_BLOCKS]);
+      expect(result).toEqual([
+        ...CUSTOM_BUILT_IN_BLOCKS,
+        ...BLOCKLY_BUILT_IN_BLOCKS
+      ]);
     });
 
     it("should include custom blocks when provided", () => {
       const customBlocks = [
-        { id: "custom_set_color", type: "setter", name: "color" } as ICustomBlock,
-        { id: "custom_action_test", type: "action", name: "test" } as ICustomBlock,
-        { id: "custom_create_test", type: "creator", name: "create test" } as ICustomBlock
+        { id: "custom_set_color", type: "setter", name: "color", config: { canHaveChildren: false } } as ICustomBlock,
+        { id: "custom_action_test", type: "action", name: "test", config: { canHaveChildren: true } } as ICustomBlock,
+        { id: "custom_create_test", type: "creator", name: "create test", config: { canHaveChildren: true } } as ICustomBlock
       ];
       
       const result = availableChildBlocks(customBlocks);
@@ -24,8 +27,8 @@ describe("block-utils", () => {
 
     it("should exclude the block currently being edited from results", () => {
       const customBlocks = [
-        { id: "custom_set_color", type: "setter", name: "color" } as ICustomBlock,
-        { id: "custom_action_test", type: "action", name: "test" } as ICustomBlock
+        { id: "custom_set_color", type: "setter", name: "color", config: { canHaveChildren: false } } as ICustomBlock,
+        { id: "custom_action_test", type: "action", name: "test", config: { canHaveChildren: true } } as ICustomBlock
       ];
 
       const result = availableChildBlocks(customBlocks, "custom_action_test");
@@ -35,11 +38,11 @@ describe("block-utils", () => {
 
     it("should categorize blocks by type correctly", () => {
       const customBlocks = [
-        { id: "custom_set_color", type: "setter", name: "color" } as ICustomBlock,
-        { id: "custom_set_speed", type: "setter", name: "speed" } as ICustomBlock,
-        { id: "custom_action_move", type: "action", name: "move" } as ICustomBlock,
-        { id: "custom_action_turn", type: "action", name: "turn" } as ICustomBlock,
-        { id: "custom_create_particles", type: "creator", name: "particles" } as ICustomBlock
+        { id: "custom_set_color", type: "setter", name: "color", config: { canHaveChildren: false } } as ICustomBlock,
+        { id: "custom_set_speed", type: "setter", name: "speed", config: { canHaveChildren: false } } as ICustomBlock,
+        { id: "custom_action_move", type: "action", name: "move", config: { canHaveChildren: true } } as ICustomBlock,
+        { id: "custom_action_turn", type: "action", name: "turn", config: { canHaveChildren: true } } as ICustomBlock,
+        { id: "custom_create_particles", type: "creator", name: "particles", config: { canHaveChildren: true } } as ICustomBlock
       ];
 
       const result = availableChildBlocks(customBlocks);

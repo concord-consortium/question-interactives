@@ -30,6 +30,7 @@ const blockTypeHeadings: Record<CustomBlockType, string> = {
 export const CustomBlockEditorSection: React.FC<IProps> = ({ blockType, toolbox, customBlocks, onChange }) => {
   const [showForm, setShowForm] = useState<boolean>(false);
   const [editingBlock, setEditingBlock] = useState<ICustomBlock | null>(null);
+  const [isExpanded, setIsExpanded] = useState<boolean>(false);
 
   const addCustomBlock = (block: ICustomBlock) => {
     const newBlock = { ...block, id: generateBlockId(block) };
@@ -42,6 +43,7 @@ export const CustomBlockEditorSection: React.FC<IProps> = ({ blockType, toolbox,
   const editCustomBlock = (block: ICustomBlock) => {
     setEditingBlock(block);
     setShowForm(true);
+    setIsExpanded(true);
   };
 
   const updateCustomBlock = (updatedBlock: ICustomBlock) => {
@@ -69,43 +71,67 @@ export const CustomBlockEditorSection: React.FC<IProps> = ({ blockType, toolbox,
 
   return (
     <div className={css.customBlocks_section} data-testid={`section-${blockType}`}>
-      <div className={css.customBlocks_new}>
-        <div className={css.customBlocks_newHeading}>
+      <div className={css.customBlocks_header}>
+        <button
+          className={css.customBlocks_toggleButton}
+          data-testid={`toggle-${blockType}`}
+          type="button"
+          onClick={() => setIsExpanded(!isExpanded)}
+        >
+          <span className={`${css.customBlocks_chevron} ${isExpanded ? css.expanded : ""}`}>▼</span>
           <h5>{blockTypeHeadings[blockType]} Blocks</h5>
-          <button data-testid={`add-${blockType}`} onClick={() => {
+        </button>
+        <span className={css.customBlocks_blockCount}>
+          ({filteredBlocks.length} {filteredBlocks.length === 1 ? "block" : "blocks"})
+        </span>
+        <button
+          className={css.customBlocks_addButton}
+          data-testid={`add-${blockType}`}
+          type="button"
+          onClick={() => {
             setEditingBlock(null);
             setShowForm(!showForm);
-          }}>
-            {showForm ? "Cancel" : "Add Block"}
-          </button>
-        </div>
-        {showForm && (
-          <CustomBlockForm
-            blockType={blockType}
-            editingBlock={editingBlock}
-            existingBlocks={customBlocks}
-            toolbox={toolbox}
-            onSubmit={handleFormSubmit}
-          />
-        )}
+            if (!isExpanded) {
+              setIsExpanded(true);
+            }
+          }}
+        >
+          {showForm ? "Cancel" : "Add Block"}
+        </button>
       </div>
-      <div className={css.customBlocks_current} data-testid={`current-${blockType}`}>
-        {filteredBlocks.length > 0 ? (
-          filteredBlocks.map(block => (
-            <div className={css.customBlocks_currentBlock} key={block.id} data-testid="current-block">
-              <div className={css.customBlocks_currentBlockInfo}>
-                <strong>{block.name}</strong> ({block.type}) - {block.category}
-              </div>
-              <div className={css.customBlocks_currentBlockActions}>
-                <button data-testid="block-edit" onClick={() => editCustomBlock(block)}>Edit</button>
-                <button data-testid="block-delete" onClick={() => deleteBlock(block.id)}>Delete</button>
-              </div>
+
+      {isExpanded && (
+        <div className={css.customBlocks_content}>
+          {showForm && (
+            <div className={css.customBlocks_formWrapper}>
+              <CustomBlockForm
+                blockType={blockType}
+                editingBlock={editingBlock}
+                existingBlocks={customBlocks}
+                toolbox={toolbox}
+                onSubmit={handleFormSubmit}
+              />
             </div>
-          ))
-        ) : (
-          <div className={css.noBlocks_message}>No {blockType} blocks created yet</div>
-        )}
-      </div>
+          )}
+          <div className={css.customBlocks_current} data-testid={`current-${blockType}`}>
+            {filteredBlocks.length > 0 ? (
+              filteredBlocks.map(block => (
+                <div className={css.customBlocks_currentBlock} key={block.id} data-testid="current-block">
+                  <div className={css.customBlocks_currentBlockInfo}>
+                    <strong>{block.name}</strong> ({block.type}) - {block.category}
+                  </div>
+                  <div className={css.customBlocks_currentBlockActions}>
+                    <button data-testid="block-edit" onClick={() => editCustomBlock(block)}>Edit</button>
+                    <button data-testid="block-delete" onClick={() => deleteBlock(block.id)}>Delete</button>
+                  </div>
+                </div>
+              ))
+            ) : (
+              <div className={css.noBlocks_message}>No {blockType} blocks created yet</div>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };

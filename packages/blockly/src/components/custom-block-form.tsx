@@ -2,11 +2,11 @@ import React, { useState, useEffect, useMemo } from "react";
 
 import { availableChildBlocks } from "../utils/block-utils";
 import { extractCategoriesFromToolbox } from "../utils/toolbox-utils";
-import { CustomBlockFormChildBlocks } from "./custom-block-form-child-blocks";
 import { BLOCK_TYPE_CONFIG } from "./custom-block-form-config";
+import { CustomBlockFormNestedBlocks } from "./custom-block-form-nested-blocks";
 import { CustomBlockFormOptionList } from "./custom-block-form-option-list";
 import { CustomBlockFormParameters } from "./custom-block-form-parameters";
-import { CustomBlockType, IBlockConfig, ICustomBlock, IParameter } from "./types";
+import { CustomBlockType, IBlockConfig, ICustomBlock, INestedBlock, IParameter } from "./types";
 
 import css from "./custom-block-form.scss";
 
@@ -21,7 +21,7 @@ interface IProps {
 interface ICustomBlockFormState {
   canHaveChildren: boolean;
   category: string;
-  childBlocks: string[];
+  childBlocks: INestedBlock[];
   color: string;
   conditionLabelPosition?: "prefix" | "suffix";
   conditionInput: boolean;
@@ -99,9 +99,8 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       .map(block => ({ value: block.name, label: block.name }));
   }, [existingBlocks]);
 
-  const handleChildBlocksMultiSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const selected: string[] = Array.from(e.target.selectedOptions).map(o => o.value);
-    setFormData(prev => ({ ...prev, childBlocks: selected }));
+  const handleNestedBlocksChange = (nestedBlocks: INestedBlock[]) => {
+    setFormData(prev => ({ ...prev, childBlocks: nestedBlocks }));
   };
 
   const [parameters, setParameters] = useState<IParameter[]>([]);
@@ -534,10 +533,12 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       )}   
 
       {((formData.type === "creator") || (formData.type === "action" && formData.canHaveChildren)) && (
-        <CustomBlockFormChildBlocks
-          childBlocks={formData.childBlocks}
-          availableChildOptions={childOptions}
-          onChange={handleChildBlocksMultiSelect}
+        <CustomBlockFormNestedBlocks
+          availableBlocks={childOptions}
+          maxDepth={10}
+          nestedBlocks={formData.childBlocks}
+          onChange={handleNestedBlocksChange}
+          parentBlockId={editingBlock?.id || "new-block"}
         />
       )}
 
