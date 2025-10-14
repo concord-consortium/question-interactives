@@ -3,6 +3,7 @@
 
 import { Blocks, FieldNumber } from "blockly/core";
 
+import { IBuiltInBlockInfo } from "../components/types";
 import { netlogoGenerator } from "../utils/netlogo-generator";
 
 const BG_COLOR = "#0089b8";
@@ -66,16 +67,7 @@ netlogoGenerator.forBlock.when = function(block) {
   return `when ${cond} [\n${statements}]\n`;
 };
 
-export interface ICustomBuiltInBlockInfo {
-  color: string;
-  description: string;
-  hasStatements: boolean;
-  id: string;
-  name: string;
-  type: "built-in";
-}
-
-export const CUSTOM_BUILT_IN_BLOCKS: ICustomBuiltInBlockInfo[] = [
+export const CUSTOM_BUILT_IN_BLOCKS: IBuiltInBlockInfo[] = [
   {
     color: BG_COLOR,
     description: "Execute blocks with a probability",

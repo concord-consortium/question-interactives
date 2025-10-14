@@ -18,6 +18,17 @@ function blockHasDisclosure(blockDef: ICustomBlock, blockConfig: IBlockConfig): 
     (blockDef.type === "action" && !!blockConfig.canHaveChildren);
 }
 
+function appendDropdownFromTypeOptions(input: Blockly.Input, blockConfig: IBlockConfig, fieldName: string) {
+  if (Array.isArray(blockConfig.typeOptions) && blockConfig.typeOptions.length > 0) {
+    const opts = blockConfig.typeOptions.filter(
+      opt => Array.isArray(opt) && opt.length === 2 && typeof opt[0] === "string" && typeof opt[1] === "string"
+    );
+    if (opts.length > 0) {
+      input.appendField(new FieldDropdown(opts), fieldName);
+    }
+  }
+}
+
 export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
   if (!Array.isArray(customBlocks)) {
     console.warn("registerCustomBlocks: customBlocks is not an array:", customBlocks);
@@ -49,17 +60,17 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
           
           // Add open/close toggle button
           const icon = new Blockly.FieldImage(PLUS_ICON, 16, 16, "+/-");
-          (icon as any).setOnClickHandler?.(() => {
-            const open = !(this as any).__disclosureOpen;
-            (this as any).__disclosureOpen = open;
+          icon.setOnClickHandler?.(() => {
+            const open = !this.__disclosureOpen;
+            this.__disclosureOpen = open;
             statementsInput.setVisible(open);
             icon.setValue(open ? MINUS_ICON : PLUS_ICON);
-            (this as BlockSvg).render();
+            this.render();
           });
           input.insertFieldAt(0, icon, "__disclosure_icon");
           
           // Initialize as closed
-          (this as any).__disclosureOpen = false;
+          this.__disclosureOpen = false;
           statementsInput.setVisible(false);
 
           if (blockDef.type === "creator") {
@@ -72,9 +83,9 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
           const hasChildren = Array.isArray(blockConfig.childBlocks) && blockConfig.childBlocks.length > 0;
           
           if (hasChildren) {
-            (this as any).__childrenSeeded = false;
+            this.__childrenSeeded = false;
             this.setOnChange(() => {
-              if ((this as any).__childrenSeeded || !this.workspace || this.isInFlyout) return;
+              if (this.__childrenSeeded || !this.workspace || this.isInFlyout) return;
     
               const stmt = this.getInput("statements");
               if (!stmt) return;
@@ -114,7 +125,7 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
                     previousChild = child;
                   }
                 }
-                (this as any).__childrenSeeded = true;
+                this.__childrenSeeded = true;
               } catch (error) {
                 console.warn("Failed to auto-seed child blocks for", blockDef.id, error);
               }
@@ -122,8 +133,8 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
           }
         }
 
-        // Except for condition, statement or pre-made blocks, append the display name immediately.
-        if (blockDef.type !== "condition" && blockDef.type !== "ask") {
+        // Except for condition blocks, append the display name immediately.
+        if (blockDef.type !== "condition") {
           input.appendField(displayName);
         }
 
@@ -136,16 +147,19 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
               if (param.kind === "select") {
                 let opts = (param as any).options || [];
                 // Convert {label, value}[] to [label, value][] as needed to satisfy FieldDropdown which expects the latter format (equivalent to Blockly's MenuOption[])
-                if (Array.isArray(opts) && opts.length > 0 && typeof opts[0] === "object" && opts[0] !== null && "label" in opts[0] && "value" in opts[0]) {
-                  opts = opts.map((opt: any) => [opt.label, opt.value]);
+                if (Array.isArray(opts)) {
+                  opts = opts.map(opt => [opt?.label, opt?.value]);
+                  opts = opts.filter((opt: any) => typeof opt[0] === "string" && typeof opt[1] === "string");
+                } else {
+                  opts = [];
                 }
                 opts = Array.isArray(opts)
                   ? opts.filter(opt => Array.isArray(opt) && opt.length === 2 && typeof opt[0] === "string" && typeof opt[1] === "string")
                   : [];
                 if (opts.length > 0) {
                   input.appendField(new FieldDropdown(opts), param.name);
-                  if ((param as any).defaultValue) {
-                    try { (this as any).setFieldValue((param as any).defaultValue, param.name); } catch (e) {
+                  if (param.defaultValue) {
+                    try { this.setFieldValue(param.defaultValue, param.name); } catch (e) {
                       console.warn("Failed to set default value for parameter", param.name, e);
                     }
                   }
@@ -160,29 +174,18 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
             });
           }
         } else if (blockDef.type === "creator") {
-          if (Array.isArray(blockConfig.typeOptions) && blockConfig.typeOptions.length > 0) {
-            const creatorOpts = blockConfig.typeOptions.filter(opt => Array.isArray(opt) && opt.length === 2 && typeof opt[0] === "string" && typeof opt[1] === "string");
-            if (creatorOpts.length > 0) {
-              input.appendField(new FieldDropdown(creatorOpts), "type");
-            }
-          }
+          appendDropdownFromTypeOptions(input, blockConfig, "type");
         } else if (blockDef.type === "setter") {
           if (blockConfig.includeNumberInput) {
             input.appendField(new FieldNumber(0), "value");
-          } else if (Array.isArray(blockConfig.typeOptions) && blockConfig.typeOptions.length > 0) {
-            const setterOpts = blockConfig.typeOptions.filter(opt => Array.isArray(opt) && opt.length === 2 && typeof opt[0] === "string" && typeof opt[1] === "string");
-            if (setterOpts.length > 0) {
-              input.appendField(new FieldDropdown(setterOpts), "value");
-            }
+          } else {
+            appendDropdownFromTypeOptions(input, blockConfig, "value");
           }
         } else if (blockDef.type === "ask") {
-          input.appendField(displayName);
           let askOptions = Array.isArray(blockConfig.options) ? [...blockConfig.options] : [];
           askOptions = askOptions.filter(opt => Array.isArray(opt) && opt.length === 2 && typeof opt[0] === "string" && typeof opt[1] === "string");
-          if (blockConfig.includeAllOption && askOptions.length > 0) {
-            askOptions.push(["all", "all"]);
-          }
           if (askOptions.length > 0) {
+            if (blockConfig.includeAllOption) askOptions.push(["all", "all"]);
             input.appendField(new FieldDropdown(askOptions), "target");
           }
           // Add entity name as static label after dropdown if showTargetEntityLabel is true (default true)
@@ -247,12 +250,12 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
       mutationToDom() {
         const el = document.createElement("mutation");
         const hasDisclosure = blockHasDisclosure(blockDef, blockConfig);
-        const open = hasDisclosure ? ((this as any).__disclosureOpen ?? false) : true;
+        const open = hasDisclosure ? (this.__disclosureOpen ?? false) : true;
         el.setAttribute("open", String(open));
         return el;
       },
       domToMutation(el: Element) {
-        const b = this as Blockly.BlockSvg;
+        const b = this as BlockSvg;
         const hasDisclosure = blockHasDisclosure(blockDef, blockConfig);
         if (hasDisclosure) {
           const open = el.getAttribute("open") !== "false";

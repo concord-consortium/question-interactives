@@ -1,6 +1,8 @@
+import { Blocks } from "blockly/core";
 import React from "react";
 
-import { Blocks } from "blockly/core";
+import { BLOCKLY_BUILT_IN_BLOCKS } from "../blocks/blockly-built-in-registry";
+import { CUSTOM_BUILT_IN_BLOCKS } from "../blocks/custom-built-in-blocks";
 
 import css from "./built-in-block-editor-section.scss";
 
@@ -14,14 +16,8 @@ export const BuiltInBlockEditorSection: React.FC<IProps> = ({availableCategories
   // List of all built-in blocks (both custom-defined and from Blockly core)
   const allBuiltInBlocks = React.useMemo(() => {
     const BUILT_IN_BLOCK_KEYS = [
-      // Custom built-in blocks (defined in custom-built-in-blocks.ts)
-      "chance",
-      "repeat",
-      "when",
-      // Blockly built-in blocks (from Blockly core library)
-      "controls_if",
-      "logic_negate",
-      "logic_operation"
+      ...CUSTOM_BUILT_IN_BLOCKS.map(info => info.id),
+      ...BLOCKLY_BUILT_IN_BLOCKS.map(info => info.id)
     ];
 
     return BUILT_IN_BLOCK_KEYS

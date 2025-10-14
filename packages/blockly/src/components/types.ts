@@ -69,6 +69,15 @@ export interface ICustomBlock {
   type: CustomBlockType;
 }
 
+export interface IBuiltInBlockInfo {
+  color: string;
+  description: string;
+  hasStatements: boolean;
+  id: string;
+  name: string;
+  type: "built-in";
+}
+
 export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   customBlocks?: ICustomBlock[];
   hint?: string;

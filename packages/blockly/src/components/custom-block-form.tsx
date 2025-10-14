@@ -119,7 +119,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         conditionInput: !!editingBlock.config.conditionInput,
         defaultCount: config.defaultCount ?? 100,
         generatorTemplate: config.generatorTemplate || "",
-        includeAllOption: config.includeAllOption !== undefined ? config.includeAllOption : false,
+        includeAllOption: config.includeAllOption ?? false,
         includeCount: config.defaultCount != null,
         includeNumberInput: !!config.includeNumberInput,
         inputsInline: !!config.inputsInline,
@@ -131,7 +131,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         previousStatement: !!config.previousStatement,
         targetEntity: config.targetEntity ?? "",
         conditionLabelPosition: config.labelPosition ?? "prefix",
-        showTargetEntityLabel: config.showTargetEntityLabel !== undefined ? config.showTargetEntityLabel : true,
+        showTargetEntityLabel: config.showTargetEntityLabel ?? true,
         type: editingBlock.type
       });
 
@@ -162,7 +162,6 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         includeNumberInput: false,
         generatorTemplate: "",
         showTargetEntityLabel: true,
-        statementKind: blockType === "ask" ? "custom" : undefined,
         targetEntity: "",
         conditionLabelPosition: "prefix"
       }));
@@ -225,7 +224,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
             includeAllOption: formData.includeAllOption,
             options: statementOptions,
             targetEntity: formData.targetEntity,
-            showTargetEntityLabel: formData.showTargetEntityLabel !== undefined ? formData.showTargetEntityLabel : true
+            showTargetEntityLabel: formData.showTargetEntityLabel ?? true
           }
         : formData.type === "condition"
         ? {
@@ -555,7 +554,6 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
           />
           <div className={css.helpText}>
             {formData.type === "action" && (<>Use ${"{ACTION}"} to reference the action. To reference parameter values, use ${"{PARAM_NAME}"} where &quot;PARAM_NAME&quot; is the actual name of the parameter (e.g., ${"{DIRECTION}"}, ${"{MAGNITUDE}"}).</>)}
-            {formData.type === "ask" && (<>Enter the opening line for this block (for example, “repeat 5” or “if …”). Any code from other blocks the user places inside this one will be inserted automatically.</>)}
           </div>
         </div>
       )}
