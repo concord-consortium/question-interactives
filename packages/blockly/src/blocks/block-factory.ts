@@ -37,6 +37,8 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
   
   customBlocks.forEach(blockDef => {
     // Skip built-in blocks -- they're already registered in custom-built-in-blocks.ts
+    // TODO: Remove this check once the TODO in custom-block-editor.tsx about tracking category assignments
+    // for built-in blocks is resolved.
     if (blockDef.type === "builtIn") {
       return;
     }

@@ -105,9 +105,16 @@ export const CustomBlockEditor: React.FC<IProps> = ({ customBlocks = [], onChang
     let updatedBlocks = customBlocks.filter(b => b.id !== blockId);
 
     if (newCategory) {
-      // For built-in blocks, we just need to track the category assignment
+      // For built-in blocks, we just need to track the category assignment.
       // The actual block definition already exists in Blockly from custom-built-in-blocks.ts
-      // or from Blockly core. We create a minimal ICustomBlock entry just to track the category
+      // or from Blockly core. We create a minimal `ICustomBlock` entry just to track the category.
+      // TODO: Adding placeholder entries is a workaround, as @tealefristoe noted at
+      // https://github.com/concord-consortium/question-interactives/pull/408#discussion_r2429095534
+      // To populate the toolbox, we only need each built-in block's ID and category. Ideally, we'd drop
+      // the "builtIn" type from `ICustomBlock` and instead add a `builtInCategories` field to `authoredState`
+      // that only specifies ID and category values for built-in blocks). Then `injectCustomBlocksIntoToolbox`
+      // could use both `authoredState.customBlocks` and `authoredState.builtInCategories`, eliminating the
+      // need for this placeholder logic.
       const builtInBlock: ICustomBlock = {
         id: blockId,
         name: blockId.charAt(0).toUpperCase() + blockId.slice(1),
