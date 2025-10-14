@@ -1,8 +1,7 @@
 import { Blocks } from "blockly/core";
 import React from "react";
 
-import { BLOCKLY_BUILT_IN_BLOCKS } from "../blocks/blockly-built-in-registry";
-import { CUSTOM_BUILT_IN_BLOCKS } from "../blocks/custom-built-in-blocks";
+import { ALL_BUILT_IN_BLOCK_IDS } from "../blocks/block-constants";
 
 import css from "./built-in-block-editor-section.scss";
 
@@ -15,17 +14,11 @@ interface IProps {
 export const BuiltInBlockEditorSection: React.FC<IProps> = ({availableCategories, blockCategories, onCategoryChange }) => {
   // List of all built-in blocks (both custom-defined and from Blockly core)
   const allBuiltInBlocks = React.useMemo(() => {
-    const BUILT_IN_BLOCK_KEYS = [
-      ...CUSTOM_BUILT_IN_BLOCKS.map(info => info.id),
-      ...BLOCKLY_BUILT_IN_BLOCKS.map(info => info.id)
-    ];
-
-    return BUILT_IN_BLOCK_KEYS
-      .filter(key => Blocks[key])
-      .map(key => ({
-        blockKey: key,
-        id: key,
-        name: key
+    return ALL_BUILT_IN_BLOCK_IDS
+      .filter(blockId => Blocks[blockId])
+      .map(blockId => ({
+        id: blockId,
+        name: blockId
       }));
   }, []);
 

@@ -1,8 +1,7 @@
 import { Blocks } from "blockly";
 import React, { useEffect, useState } from "react";
 
-import { BLOCKLY_BUILT_IN_BLOCKS } from "../blocks/blockly-built-in-registry";
-import { CUSTOM_BUILT_IN_BLOCKS } from "../blocks/custom-built-in-blocks";
+import { ALL_BUILT_IN_BLOCK_IDS } from "../blocks/block-constants";
 import { BuiltInBlockEditorSection } from "./built-in-block-editor-section";
 import { CustomBlockEditorSection } from "./custom-block-editor-section";
 import { CustomBlockType, ICustomBlock } from "./types";
@@ -74,11 +73,7 @@ export const CustomBlockEditor: React.FC<IProps> = ({ customBlocks = [], onChang
   const availableCategories = extractCategoriesFromToolbox(toolbox);
   const [builtInBlockCategories, setBuiltInBlockCategories] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
-    const builtInBlockIds = [
-      ...CUSTOM_BUILT_IN_BLOCKS.map(info => info.id),
-      ...BLOCKLY_BUILT_IN_BLOCKS.map(info => info.id)
-    ];
-    builtInBlockIds.forEach((blockId: string) => {
+    ALL_BUILT_IN_BLOCK_IDS.forEach((blockId: string) => {
       initial[blockId] = "";
     });
     return initial;
