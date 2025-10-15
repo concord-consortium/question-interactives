@@ -140,7 +140,7 @@ export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
   };
 
   const getBlockInfo = (blockId: string) => {
-    return availableBlocks.find(b => b.id === blockId) || { id: blockId, name: blockId, type: "unknown" };
+    return availableBlocks.find(b => b.id === blockId) || { id: blockId, name: blockId, type: "unknown", canHaveChildren: false };
   };
 
   const renderNestedBlock = (block: INestedBlock, path: number[], depth: number) => {
