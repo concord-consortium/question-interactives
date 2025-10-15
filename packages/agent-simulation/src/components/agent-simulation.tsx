@@ -107,10 +107,6 @@ export const AgentSimulationComponent = ({
     };
   }, [blocklyCode, code, gridHeight, gridStep, gridWidth, resetCount]);
 
-  const updateBlocklyCode = () => {
-    setBlocklyCode(externalBlocklyCode);
-  };
-
   const handlePauseClick = () => {
     if (simRef.current) {
       simRef.current.pause(!paused);
@@ -124,7 +120,7 @@ export const AgentSimulationComponent = ({
         <button
           className={css.updateButton}
           disabled={!externalBlocklyCode || blocklyCode === externalBlocklyCode}
-          onClick={updateBlocklyCode}
+          onClick={() => setBlocklyCode(externalBlocklyCode)}
         >
           Update Code
         </button>

@@ -1,6 +1,7 @@
+import { Block } from "blockly";
 import { BLOCKLY_BUILT_IN_BLOCKS } from "../blocks/blockly-built-in-registry";
 import { CUSTOM_BUILT_IN_BLOCKS } from "../blocks/custom-built-in-blocks";
-import { ICustomBlock, REQUIRED_BLOCK_FIELDS, VALID_BLOCK_TYPES } from "../components/types";
+import { ICustomBlock, IParameter, REQUIRED_BLOCK_FIELDS, VALID_BLOCK_TYPES } from "../components/types";
 
 const validateString = (value: unknown): boolean => {
   return typeof value === "string" && value.length > 0;
@@ -76,3 +77,14 @@ export const validateBlocksJson = (blocks: unknown): { valid: boolean; error?: s
 
   return { valid: true };
 };
+
+// Replace ${PARAM} placeholders with field values
+export function replaceParameters(code: string, params: IParameter[], block: Block) {
+  params.forEach((p: IParameter) => {
+    const val = block.getFieldValue(p.name);
+    const safe = val != null ? String(val) : "";
+    const re = new RegExp(`\\$\\{${p.name}\\}`, "g");
+    code = code.replace(re, safe);
+  });
+  return code;
+}

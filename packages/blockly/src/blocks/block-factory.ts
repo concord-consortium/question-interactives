@@ -4,6 +4,7 @@ import Blockly, { Blocks, FieldDropdown, FieldNumber } from "blockly/core";
 import { javascriptGenerator, Order } from "blockly/javascript";
 
 import { ICustomBlock, IParameter, IBlockConfig } from "../components/types";
+import { replaceParameters } from "../utils/block-utils";
 
 const PLUS_ICON  = "data:image/svg+xml;utf8," +
   "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>" +
@@ -285,14 +286,7 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
 
         if (blockConfig.generatorTemplate) {
           let code = String(blockConfig.generatorTemplate);
-          // Replace ${PARAM} placeholders with field values
-          const params = Array.isArray(blockConfig.parameters) ? blockConfig.parameters : [];
-          params.forEach((p: IParameter) => {
-            const val = block.getFieldValue(p.name);
-            const safe = val != null ? String(val) : "";
-            const re = new RegExp(`\\$\\{${p.name}\\}`, "g");
-            code = code.replace(re, safe);
-          });
+          code = replaceParameters(code, blockConfig.parameters || [], block);
           // Also allow ${ACTION} for the action name
           code = code.replace(/\$\{ACTION\}/g, actionName);
           return code.endsWith("\n") ? code : code + "\n";
@@ -327,9 +321,9 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         const count = block.getFieldValue("count");
         const type = block.getFieldValue("type").toLowerCase().replace(/\s+/g, "_");
         const statements = javascriptGenerator.statementToCode(block, "statements");
-        const callback = statements ? `, (agent) => {\n${statements}\n}` : "";
+        const callback = statements ? `(agent) => {\n${statements}\n}` : "";
 
-        return `create_${type}(${count}${callback});\n`;
+        return `create_${type}(${count}, ${callback});\n`;
       } else if (blockDef.type === "ask") {
         const target = block.getFieldValue("target");
         const statements = javascriptGenerator.statementToCode(block, "statements");
@@ -337,17 +331,8 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         return `${agents}.forEach(agent => {\n${statements}\n});\n`;
       } else if (blockDef.type === "condition") {
         if (blockConfig.generatorTemplate) {
-          let code = String(blockConfig.generatorTemplate);
-          // Replace ${PARAM} placeholders with field values
-          const params = Array.isArray(blockConfig.parameters) ? blockConfig.parameters : [];
-          params.forEach((p: IParameter) => {
-            const val = block.getFieldValue(p.name);
-            const safe = val != null ? String(val) : "";
-            const re = new RegExp(`\\$\\{${p.name}\\}`, "g");
-            code = code.replace(re, safe);
-          });
           // TODO: Is there a more appropriate order than atomic?
-          return [code, Order.ATOMIC];
+          return [replaceParameters(blockConfig.generatorTemplate, blockConfig.parameters || [], block), Order.ATOMIC];
         }
 
         const condition = block.getFieldValue("condition");
