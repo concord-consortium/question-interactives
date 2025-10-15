@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 
+import { DEFAULT_MAX_NESTING_DEPTH } from "../blocks/block-constants";
 import { wouldCreateCircularReference } from "../utils/nested-block-utils";
 import { INestedBlock } from "./types";
 
@@ -15,7 +16,7 @@ interface IProps {
 
 export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
   availableBlocks,
-  maxDepth = 10,
+  maxDepth = DEFAULT_MAX_NESTING_DEPTH,
   nestedBlocks,
   parentBlockId,
   onChange

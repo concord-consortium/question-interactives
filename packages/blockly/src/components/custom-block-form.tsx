@@ -535,10 +535,9 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       {((formData.type === "creator") || (formData.type === "action" && formData.canHaveChildren)) && (
         <CustomBlockFormNestedBlocks
           availableBlocks={childOptions}
-          maxDepth={10}
           nestedBlocks={formData.childBlocks}
-          onChange={handleNestedBlocksChange}
           parentBlockId={editingBlock?.id || "new-block"}
+          onChange={handleNestedBlocksChange}
         />
       )}
 

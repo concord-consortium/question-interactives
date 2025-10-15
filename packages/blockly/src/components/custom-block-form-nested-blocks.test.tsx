@@ -2,6 +2,7 @@ import React from "react";
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 
+import { DEFAULT_MAX_NESTING_DEPTH } from "../blocks/block-constants";
 import { INestedBlock } from "./types";
 import { CustomBlockFormNestedBlocks } from "./custom-block-form-nested-blocks";
 
@@ -11,7 +12,7 @@ const defaultProps = {
     { id: "action1", name: "move (action)", type: "action", canHaveChildren: true },
     { id: "creator1", name: "particles (creator)", type: "creator", canHaveChildren: true }
   ],
-  maxDepth: 10,
+  maxDepth: DEFAULT_MAX_NESTING_DEPTH,
   nestedBlocks: [] as INestedBlock[],
   onChange: jest.fn(),
   parentBlockId: "parent-block"
