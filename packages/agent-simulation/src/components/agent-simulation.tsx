@@ -25,6 +25,7 @@ export const AgentSimulationComponent = ({
   const [blocklyCode, setBlocklyCode] = useState<string>("");
   // The code we're receiving from blockly, which won't be used until the user accepts it
   const [externalBlocklyCode, setExternalBlocklyCode] = useState<string>("");
+  const [showBlocklyCode, setShowBlocklyCode] = useState<boolean>(false);
   const dataSourceInteractive = useLinkedInteractiveId("dataSourceInteractive");
   const containerRef = useRef<HTMLDivElement>(null);
   const [paused, setPaused] = useState(true);
@@ -119,14 +120,6 @@ export const AgentSimulationComponent = ({
 
   return (
     <div className={css.agentSimulationComponent}>
-      { blocklyCode && (
-        <>
-          <h4>Blockly Code</h4>
-          <div className={css.code}>
-            {blocklyCode}
-          </div>
-        </>
-      )}
       {dataSourceInteractive && (
         <button
           className={css.updateButton}
@@ -144,6 +137,18 @@ export const AgentSimulationComponent = ({
       </button>
       {error && <div className={css.error}>{error}</div>}
       <div ref={containerRef} className={css.simContainer} />
+      { blocklyCode && (
+        <>
+          {showBlocklyCode &&
+            <div className={css.code}>
+              {blocklyCode}
+            </div>
+          }
+          <button onClick={() => setShowBlocklyCode(!showBlocklyCode)}>
+            {showBlocklyCode ? "Hide" : "Show"} Blockly Code
+          </button>
+        </>
+      )}
     </div>
   );
 };

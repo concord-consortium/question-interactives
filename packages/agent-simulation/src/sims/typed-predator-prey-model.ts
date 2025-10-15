@@ -150,6 +150,7 @@ sim.afterTick = () => {
   });
   /*** End go block */
 
+  // eslint-disable-next-line no-console
   console.log(`sheep: ${Array.from(sim.withLabel("sheep")).length}, wolves: ${Array.from(sim.withLabel("wolf")).length}`);
 };
 
