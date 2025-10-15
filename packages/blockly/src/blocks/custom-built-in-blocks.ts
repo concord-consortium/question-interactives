@@ -2,9 +2,9 @@
 // These blocks are always available and don't need to be created by authors.
 
 import { Blocks, FieldNumber } from "blockly/core";
+import { javascriptGenerator } from "blockly/javascript";
 
 import { IBuiltInBlockInfo } from "../components/types";
-import { netlogoGenerator } from "../utils/netlogo-generator";
 
 const BG_COLOR = "#0089b8";
 
@@ -22,10 +22,10 @@ Blocks.chance = {
   }
 };
 
-netlogoGenerator.forBlock.chance = function(block) {
-  const num = netlogoGenerator.valueToCode(block, "NUM", netlogoGenerator.ORDER_NONE) || "0";
-  const statements = netlogoGenerator.statementToCode(block, "statements");
-  return `if random-float 100 < ${num} [\n${statements}]\n`;
+javascriptGenerator.forBlock.chance = function(block) {
+  const num = javascriptGenerator.valueToCode(block, "NUM", Order.NONE) || "0";
+  const statements = javascriptGenerator.statementToCode(block, "statements");
+  return `if (Math.random() * 100 < ${num}) {\n${statements}}\n`;
 };
 
 // Repeat Block
@@ -41,10 +41,10 @@ Blocks.repeat = {
   }
 };
 
-netlogoGenerator.forBlock.repeat = function(block) {
+javascriptGenerator.forBlock.repeat = function(block) {
   const times = block.getFieldValue("TIMES") || 0;
-  const statements = netlogoGenerator.statementToCode(block, "statements");
-  return `repeat ${times} [\n${statements}]\n`;
+  const statements = javascriptGenerator.statementToCode(block, "statements");
+  return `for (let i = 0; i < ${times}; i++) {\n${statements}}\n`;
 };
 
 // When Block
@@ -61,10 +61,10 @@ Blocks.when = {
   }
 };
 
-netlogoGenerator.forBlock.when = function(block) {
-  const cond = netlogoGenerator.valueToCode(block, "condition", netlogoGenerator.ORDER_NONE) || "false";
-  const statements = netlogoGenerator.statementToCode(block, "statements");
-  return `when ${cond} [\n${statements}]\n`;
+javascriptGenerator.forBlock.when = function(block) {
+  const cond = javascriptGenerator.valueToCode(block, "condition", Order.NONE) || "false";
+  const statements = javascriptGenerator.statementToCode(block, "statements");
+  return `if (${cond}) {\n${statements}}\n`;
 };
 
 export const CUSTOM_BUILT_IN_BLOCKS: IBuiltInBlockInfo[] = [
