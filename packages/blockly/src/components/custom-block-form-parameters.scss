@@ -1,0 +1,122 @@
+@import "./variables.scss";
+
+.customBlockForm_parameters {
+  display: flex;
+  flex-direction: column;
+  gap: $spacing-md;
+  min-width: 0;
+
+  label {
+    color: $text-dark;
+    display: block;
+    font-weight: $font-weight-medium;
+    font-size: $font-size-sm;
+    margin: 0;
+  }
+
+  .paramToolbar {
+    display: flex;
+    gap: $spacing-md;
+
+    .addParamButton {
+      background: white;
+      border: solid 1px $border-light;
+      border-radius: $border-radius-sm;
+      color: $text-medium;
+      cursor: pointer;
+      font-size: $font-size-sm;
+      padding: 4px $spacing-md;
+
+      &:hover {
+        background: $background-light;
+      }
+    }
+  }
+
+  .paramRow {
+    background: $background-light;
+    border: solid 1px $border-light;
+    border-radius: $border-radius-sm;
+    margin-bottom: $spacing-sm;
+    padding: $spacing-md;
+    min-width: 0;
+
+    .paramHeader {
+      align-items: center;
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: $spacing-md;
+      min-width: 0;
+
+      .paramType {
+        color: $text-dark;
+        font-weight: $font-weight-medium;
+      }
+
+      .removeParamButton {
+        background: white;
+        border: solid 1px $border-light;
+        border-radius: $border-radius-sm;
+        color: $text-medium;
+        cursor: pointer;
+        padding: 2px $spacing-sm;
+        font-size: $font-size-xs;
+
+        &:hover {
+          background: $background-light;
+        }
+      }
+    }
+
+    .paramFields {
+      min-width: 0;
+
+      .fieldRow {
+        display: flex;
+        gap: $spacing-md;
+        margin-bottom: $spacing-md;
+        min-width: 0;
+
+        .fieldGroup {
+          display: flex;
+          flex: 1;
+          flex-direction: column;
+          gap: 3px;
+          min-width: 0;
+
+          input, select {
+            border: solid 1px $border-light;
+            border-radius: $border-radius-sm;
+            font-size: $font-size-sm;
+            padding: 4px $spacing-sm;
+            max-width: 100%;
+            width: 100%;
+          }
+        }
+      }
+
+      .selectOptions {
+        display: flex;
+        flex-direction: column;
+        gap: $spacing-sm;
+        min-width: 0;
+      }
+
+      .numberOptions {
+        .fieldGroup {
+          display: flex;
+          flex-direction: column;
+          gap: 3px;
+
+          input {
+            border: solid 1px $border-light;
+            border-radius: $border-radius-sm;
+            font-size: $font-size-sm;
+            max-width: 120px;
+            padding: 4px $spacing-sm;
+          }
+        }
+      }
+    }
+  }
+}

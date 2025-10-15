@@ -1,4 +1,5 @@
-import { BUILT_IN_BLOCKS } from "../blocks/built-in-blocks-registry";
+import { BLOCKLY_BUILT_IN_BLOCKS } from "../blocks/blockly-built-in-registry";
+import { CUSTOM_BUILT_IN_BLOCKS } from "../blocks/custom-built-in-blocks";
 import { ICustomBlock, REQUIRED_BLOCK_FIELDS, VALID_BLOCK_TYPES } from "../components/types";
 
 const validateString = (value: unknown): boolean => {
@@ -10,13 +11,15 @@ export const availableChildBlocks = (existingCustomBlocks: ICustomBlock[] = [], 
   const creatorBlocks = existingCustomBlocks.filter(b => b.type === "creator" && b.id !== excludeBlockId);
   const setterBlocks = existingCustomBlocks.filter(b => b.type === "setter" && b.id !== excludeBlockId);
   const actionBlocks = existingCustomBlocks.filter(b => b.type === "action" && b.id !== excludeBlockId);
-  const builtInBlocks = BUILT_IN_BLOCKS;
+  const customBuiltInBlocks = CUSTOM_BUILT_IN_BLOCKS;
+  const blocklyBuiltInBlocks = BLOCKLY_BUILT_IN_BLOCKS;
   
   return [
-    ...creatorBlocks.map(b => ({ id: b.id, name: `${b.name} (creator)`, type: 'creator' })),
-    ...setterBlocks.map(b => ({ id: b.id, name: `${b.name} (setter)`, type: 'setter' })),
-    ...actionBlocks.map(b => ({ id: b.id, name: `${b.name} (action)`, type: 'action' })),
-    ...builtInBlocks
+    ...creatorBlocks.map(b => ({ id: b.id, name: `${b.name} (creator)`, type: "creator" })),
+    ...setterBlocks.map(b => ({ id: b.id, name: `${b.name} (setter)`, type: "setter" })),
+    ...actionBlocks.map(b => ({ id: b.id, name: `${b.name} (action)`, type: "action" })),
+    ...customBuiltInBlocks,
+    ...blocklyBuiltInBlocks
   ];
 };
 

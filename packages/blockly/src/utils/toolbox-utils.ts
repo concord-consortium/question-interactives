@@ -1,6 +1,8 @@
 import { ICustomBlock } from "../components/types";
 
 export const extractCategoriesFromToolbox = (toolboxJson: string): string[] => {
+  if (!toolboxJson || !toolboxJson.trim()) return [];
+
   try {
     const toolbox = JSON.parse(toolboxJson);
     const categories: string[] = [];
@@ -23,7 +25,7 @@ export const extractCategoriesFromToolbox = (toolboxJson: string): string[] => {
 export const injectCustomBlocksIntoToolbox = (toolboxJson: string, customBlocks: ICustomBlock[]): string => {
   try {
     const toolbox = JSON.parse(toolboxJson);
-    
+
     if (!toolbox.contents || !Array.isArray(toolbox.contents)) {
       console.warn("Toolbox does not have contents array");
       return toolboxJson;
@@ -45,13 +47,10 @@ export const injectCustomBlocksIntoToolbox = (toolboxJson: string, customBlocks:
         if (!item.contents) {
           item.contents = [];
         }
-        
+
         // Add custom blocks to this category
         blocksByCategory[item.name].forEach(block => {
-          item.contents.push({
-            kind: "block",
-            type: block.id
-          });
+          item.contents.push({ kind: "block", type: block.id });
         });
       }
     });

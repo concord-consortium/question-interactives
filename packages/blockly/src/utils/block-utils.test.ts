@@ -1,12 +1,13 @@
-import { BUILT_IN_BLOCKS } from "../blocks/built-in-blocks-registry";
+import { BLOCKLY_BUILT_IN_BLOCKS } from "../blocks/blockly-built-in-registry";
+import { CUSTOM_BUILT_IN_BLOCKS } from "../blocks/custom-built-in-blocks";
 import { ICustomBlock } from "../components/types";
 import { availableChildBlocks, validateBlocksJson } from "./block-utils";
 
 describe("block-utils", () => {
   describe("availableChildBlocks", () => {
-    it("should return built-in blocks for action blocks", () => {
+    it("should return custom built-in blocks and Blockly built-in blocks when no custom blocks provided", () => {
       const result = availableChildBlocks([]);
-      expect(result).toEqual(BUILT_IN_BLOCKS);
+      expect(result).toEqual([...CUSTOM_BUILT_IN_BLOCKS, ...BLOCKLY_BUILT_IN_BLOCKS]);
     });
 
     it("should include custom blocks when provided", () => {
@@ -18,7 +19,7 @@ describe("block-utils", () => {
       
       const result = availableChildBlocks(customBlocks);
 
-      expect(result).toHaveLength(6); // 1 creator + 1 setter + 1 action + 3 built-in
+      expect(result).toHaveLength(9); // 1 creator + 1 setter + 1 action + 3 custom built-in + 3 Blockly built-in
     });
 
     it("should exclude the block currently being edited from results", () => {
@@ -29,7 +30,7 @@ describe("block-utils", () => {
 
       const result = availableChildBlocks(customBlocks, "custom_action_test");
 
-      expect(result).toHaveLength(4); // 1 setter + 0 action + 3 built-in
+      expect(result).toHaveLength(7); // 1 setter + 0 action + 3 custom built-in + 3 Blockly built-in
     });
 
     it("should categorize blocks by type correctly", () => {
@@ -43,7 +44,7 @@ describe("block-utils", () => {
 
       const result = availableChildBlocks(customBlocks);
 
-      expect(result).toHaveLength(8); // 1 creator + 2 setter + 2 action + 3 built-in
+      expect(result).toHaveLength(11); // 1 creator + 2 setter + 2 action + 3 custom built-in + 3 Blockly built-in
     });
   });
 

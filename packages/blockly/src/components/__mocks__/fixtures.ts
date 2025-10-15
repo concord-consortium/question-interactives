@@ -95,6 +95,7 @@ export const customBlocksAuthoredState: IAuthoredState = {
       color: "#FF0000",
       category: "Properties",
       config: {
+        canHaveChildren: false,
         typeOptions: [["red", "RED"], ["blue", "BLUE"]]
       }
     },
@@ -105,6 +106,7 @@ export const customBlocksAuthoredState: IAuthoredState = {
       color: "#00FF00",
       category: "General",
       config: {
+        canHaveChildren: true,
         childBlocks: ["custom_set_color_1234567890"],
         defaultCount: 100,
         minCount: 0,

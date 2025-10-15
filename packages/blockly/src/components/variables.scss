@@ -38,5 +38,59 @@ $shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.1);
 $shadow-md: 0 2px 6px rgba(0, 0, 0, 0.15);
 $shadow-lg: 0 2px 8px rgba(0, 0, 0, 0.2);
 
+$focus-shadow-color: rgba($primary-blue, 0.25);
+
 $transition-fast: 0.2s ease;
 $transition-medium: 0.3s ease;
+
+// Form-specific variables
+$form-input-padding: 4px $spacing-md;
+$form-input-padding-sm: 4px $spacing-sm;
+$form-label-gap: 3px;
+$form-checkbox-gap: 6px;
+
+// Mixins for common form patterns
+@mixin form-label() {
+  display: block;
+  font-weight: $font-weight-medium;
+  margin: 0;
+}
+
+@mixin checkbox-label() {
+  align-items: center;
+  display: flex;
+  font-weight: $font-weight-normal;
+  gap: $form-checkbox-gap;
+  margin: 0;
+}
+
+@mixin _form-input-base {
+  border: 1px solid $border-light;
+  border-radius: $border-radius-sm;
+  font-size: $font-size-sm;
+  max-width: 100%;
+  width: 100%;
+}
+
+@mixin form-input() {
+  @include _form-input-base;
+  padding: $form-input-padding;
+}
+
+@mixin form-input-sm() {
+  @include _form-input-base;
+  padding: $form-input-padding-sm;
+}
+
+@mixin focus-state() {
+  border-color: $primary-blue;
+  box-shadow: 0 0 0 2px $focus-shadow-color;
+  outline: none;
+}
+
+@mixin form-field-group() {
+  display: flex;
+  flex-direction: column;
+  gap: $form-label-gap;
+  min-width: 0;
+}

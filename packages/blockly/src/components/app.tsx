@@ -4,7 +4,7 @@ import React from "react";
 
 import { CustomBlockEditor } from "./custom-block-editor";
 import { Runtime } from "./runtime";
-import { IAuthoredState, IInteractiveState } from "./types";
+import { DefaultAuthoredState, IAuthoredState, IInteractiveState } from "./types";
 
 const baseAuthoringProps = {
   schema: {
@@ -42,7 +42,7 @@ const baseAuthoringProps = {
           type: "object",
           properties: {
             id: { type: "string" },
-            type: { type: "string", enum: ["action", "creator", "setter"] },
+            type: { type: "string", enum: ["action", "builtIn", "condition", "creator", "setter", "statement"] },
             name: { type: "string" },
             color: { type: "string" },
             category: { type: "string" },
@@ -51,6 +51,7 @@ const baseAuthoringProps = {
         }
       },
       toolbox: {
+        default: DefaultAuthoredState.toolbox || "",
         title: "Toolbox",
         type: "string"
       }
@@ -111,7 +112,7 @@ export const App = () => (
           
           return (
             <CustomBlockEditor
-              value={value}
+              customBlocks={value}
               onChange={props.onChange}
               toolbox={toolbox}
             />

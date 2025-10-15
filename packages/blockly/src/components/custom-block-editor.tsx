@@ -1,27 +1,22 @@
+import { Blocks } from "blockly";
 import React, { useEffect, useState } from "react";
 
-import { validateBlocksJson } from "../utils/block-utils";
-import { CustomBlockForm } from "./custom-block-form";
+import { ALL_BUILT_IN_BLOCK_IDS } from "../blocks/block-constants";
+import { BuiltInBlockEditorSection } from "./built-in-block-editor-section";
+import { CustomBlockEditorSection } from "./custom-block-editor-section";
 import { CustomBlockType, ICustomBlock } from "./types";
+import { validateBlocksJson } from "../utils/block-utils";
+import { extractCategoriesFromToolbox } from "../utils/toolbox-utils";
 
 import css from "./custom-block-editor.scss";
 
 interface IProps {
+  customBlocks: ICustomBlock[];
   toolbox: string;
-  value: ICustomBlock[];
   onChange: (blocks: ICustomBlock[]) => void;
 }
 
-const generateBlockId = (block: ICustomBlock) => {
-  const sanitizedName = block.name.toLowerCase().replace(/[^a-z0-9]/g, '_');
-  const timestamp = Date.now();
-  return `custom_${block.type}_${sanitizedName}_${timestamp}`;
-};
-
-export const CustomBlockEditor: React.FC<IProps> = ({ value, onChange, toolbox }) => {
-  const customBlocks = Array.isArray(value) ? value : [];
-  const [showForm, setShowForm] = useState<CustomBlockType | null>(null);
-  const [editingBlock, setEditingBlock] = useState<ICustomBlock | null>(null);
+export const CustomBlockEditor: React.FC<IProps> = ({ customBlocks = [], onChange, toolbox }) => {
   const [showCodePreview, setShowCodePreview] = useState(false);
   const [codeText, setCodeText] = useState<string>(JSON.stringify(customBlocks, null, 2));
   const [codeError, setCodeError] = useState<string>("");
@@ -64,170 +59,96 @@ export const CustomBlockEditor: React.FC<IProps> = ({ value, onChange, toolbox }
     }
   };
 
-  const addCustomBlock = (block: ICustomBlock) => {
-    const newBlock = { ...block, id: generateBlockId(block) };
-    const updatedBlocks = [...customBlocks, newBlock];
-    onChange(updatedBlocks);
-    setShowForm(null);
-    setEditingBlock(null);
-  };
+  // List of all block types to render sections for each block type in desired order.
+  // If the desired order changes or isn't necessary, we may be able to use `VALID_BLOCK_TYPES` from `types.ts` instead
+  // and avoid duplicating the list here.
+  const blockTypes: CustomBlockType[] = [
+    "setter",
+    "creator",
+    "ask",
+    "action",
+    "condition"
+  ];
 
-  const editCustomBlock = (block: ICustomBlock) => {
-    setEditingBlock(block);
-    setShowForm(block.type);
-  };
+  const availableCategories = extractCategoriesFromToolbox(toolbox);
+  const [builtInBlockCategories, setBuiltInBlockCategories] = useState<Record<string, string>>(() => {
+    const initial: Record<string, string> = {};
+    ALL_BUILT_IN_BLOCK_IDS.forEach((blockId: string) => {
+      initial[blockId] = "";
+    });
+    return initial;
+  });
 
-  const updateCustomBlock = (updatedBlock: ICustomBlock) => {
-    const updatedBlocks = customBlocks.map(b => b.id === editingBlock?.id ? updatedBlock : b);
-    onChange(updatedBlocks);
-    
-    setShowForm(null);
-    setEditingBlock(null);
-  };
+  // When toolbox changes, update available categories and reset built-in block categories if needed
+  useEffect(() => {
+    setBuiltInBlockCategories(prev => {
+      const updated: Record<string, string> = { ...prev };
+      Object.keys(Blocks).forEach((blockId: string) => {
+        if (!(blockId in updated)) {
+          updated[blockId] = "";
+        }
+      });
+      // Remove any blocks that no longer exist
+      Object.keys(updated).forEach(id => {
+        if (!Object.prototype.hasOwnProperty.call(Blocks, id)) {
+          delete updated[id];
+        }
+      });
+      return updated;
+    });
+  }, [toolbox]);
 
-  const handleFormSubmit = (block: ICustomBlock) => {
-    if (editingBlock) {
-      updateCustomBlock({ ...block, id: editingBlock.id });
-    } else {
-      addCustomBlock(block);
+  const handleBuiltInBlockCategoryChange = (blockId: string, newCategory: string) => {
+    setBuiltInBlockCategories(prev => ({ ...prev, [blockId]: newCategory }));
+
+    // Remove any previous instance of this built-in block from customBlocks
+    let updatedBlocks = customBlocks.filter(b => b.id !== blockId);
+
+    if (newCategory) {
+      // For built-in blocks, we just need to track the category assignment.
+      // The actual block definition already exists in Blockly from custom-built-in-blocks.ts
+      // or from Blockly core. We create a minimal `ICustomBlock` entry just to track the category.
+      // TODO: Adding placeholder entries is a workaround, as @tealefristoe noted at
+      // https://github.com/concord-consortium/question-interactives/pull/408#discussion_r2429095534
+      // To populate the toolbox, we only need each built-in block's ID and category. Ideally, we'd drop
+      // the "builtIn" type from `ICustomBlock` and instead add a `builtInCategories` field to `authoredState`
+      // that only specifies ID and category values for built-in blocks). Then `injectCustomBlocksIntoToolbox`
+      // could use both `authoredState.customBlocks` and `authoredState.builtInCategories`, eliminating the
+      // need for this placeholder logic.
+      const builtInBlock: ICustomBlock = {
+        id: blockId,
+        name: blockId.charAt(0).toUpperCase() + blockId.slice(1),
+        type: "builtIn",
+        category: newCategory,
+        color: "#0089b8",
+        config: {
+          canHaveChildren: true
+        }
+      };
+      updatedBlocks = [...updatedBlocks, builtInBlock];
     }
-  };
-
-  const deleteBlock = (id: string) => {
-    const updatedBlocks = customBlocks.filter(b => b.id !== id);
     onChange(updatedBlocks);
   };
-
-  const setterBlocks = customBlocks.filter(b => b.type === "setter");
-  const creatorBlocks = customBlocks.filter(b => b.type === "creator");
-  const actionBlocks = customBlocks.filter(b => b.type === "action");
 
   return (
     <div className={css.customBlockEditor} data-testid="custom-block-editor">
       <h4>Custom Blocks</h4>
 
-      {/* Setter blocks section */}
-      <div className={css.customBlocks_section} data-testid="section-setter">
-        <div className={css.customBlocks_new}>
-          <div className={css.customBlocks_newHeading}>
-            <h5>Set Properties Blocks</h5>
-            <button data-testid="add-setter" onClick={() => {
-              setEditingBlock(null);
-              setShowForm(showForm === "setter" ? null : "setter");
-            }}>
-              {showForm === "setter" ? "Cancel" : "Add Block"}
-            </button>
-          </div>
-          {showForm === "setter" && (
-            <CustomBlockForm
-              blockType="setter"
-              editingBlock={editingBlock}
-              existingBlocks={customBlocks}
-              toolbox={toolbox}
-              onSubmit={handleFormSubmit}
-            />
-          )}
-        </div>
-        <div className={css.customBlocks_current} data-testid="current-setter">
-          {setterBlocks.length > 0 ? (
-            setterBlocks.map(block => (
-              <div className={css.customBlocks_currentBlock} key={block.id} data-testid="current-block">
-                <div className={css.customBlocks_currentBlockInfo}>
-                  <strong>{block.name}</strong> ({block.type}) - {block.category}
-                </div>
-                <div className={css.customBlocks_currentBlockActions}>
-                  <button data-testid="block-edit" onClick={() => editCustomBlock(block)}>Edit</button>
-                  <button data-testid="block-delete" onClick={() => deleteBlock(block.id)}>Delete</button>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className={css.noBlocks_message}>No setter blocks created yet</div>
-          )}
-        </div>
-      </div>
+      {blockTypes.map(type => (
+        <CustomBlockEditorSection
+          key={type}
+          blockType={type}
+          toolbox={toolbox}
+          customBlocks={customBlocks}
+          onChange={onChange}
+        />
+      ))}
 
-      {/* Creator blocks section */}
-      <div className={css.customBlocks_section} data-testid="section-creator">
-        <div className={css.customBlocks_new}>
-          <div className={css.customBlocks_newHeading}>
-            <h5>Create Things Blocks</h5>
-            <button data-testid="add-creator" onClick={() => {
-              setEditingBlock(null);
-              setShowForm(showForm === "creator" ? null : "creator");
-            }}>
-              {showForm === "creator" ? "Cancel" : "Add Block"}
-            </button>
-          </div>
-          {showForm === "creator" && (
-            <CustomBlockForm
-              blockType="creator"
-              editingBlock={editingBlock}
-              existingBlocks={customBlocks}
-              toolbox={toolbox}
-              onSubmit={handleFormSubmit}
-            />
-          )}
-        </div>
-        <div className={css.customBlocks_current} data-testid="current-creator">
-          {creatorBlocks.length > 0 ? (
-            creatorBlocks.map(block => (
-              <div className={css.customBlocks_currentBlock} key={block.id} data-testid="current-block">
-                <div className={css.customBlocks_currentBlockInfo}>
-                  <strong>{block.name}</strong> ({block.type}) - {block.category}
-                </div>
-                <div className={css.customBlocks_currentBlockActions}>
-                  <button data-testid="block-edit" onClick={() => editCustomBlock(block)}>Edit</button>
-                  <button data-testid="block-delete" onClick={() => deleteBlock(block.id)}>Delete</button>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className={css.noBlocks_message}>No creator blocks created yet</div>
-          )}
-        </div>
-      </div>
-
-      {/* Action blocks section */}
-      <div className={css.customBlocks_section} data-testid="section-action">
-        <div className={css.customBlocks_new}>
-          <div className={css.customBlocks_newHeading}>
-            <h5>Action Blocks</h5>
-            <button data-testid="add-action" onClick={() => {
-              setEditingBlock(null);
-              setShowForm(showForm === "action" ? null : "action");
-            }}>
-              {showForm === "action" ? "Cancel" : "Add Block"}
-            </button>
-          </div>
-          {showForm === "action" && (
-            <CustomBlockForm
-              blockType="action"
-              editingBlock={editingBlock}
-              existingBlocks={customBlocks}
-              toolbox={toolbox}
-              onSubmit={handleFormSubmit}
-            />
-          )}
-        </div>
-        <div className={css.customBlocks_current} data-testid="current-action">
-          {actionBlocks.length > 0 ? (
-            actionBlocks.map(block => (
-              <div className={css.customBlocks_currentBlock} key={block.id} data-testid="current-block">
-                <div className={css.customBlocks_currentBlockInfo}>
-                  <strong>{block.name}</strong> ({block.type}) - {block.category}
-                </div>
-                <div className={css.customBlocks_currentBlockActions}>
-                  <button data-testid="block-edit" onClick={() => editCustomBlock(block)}>Edit</button>
-                  <button data-testid="block-delete" onClick={() => deleteBlock(block.id)}>Delete</button>
-                </div>
-              </div>
-            ))
-          ) : (
-            <div className={css.noBlocks_message}>No action blocks created yet</div>
-          )}
-        </div>
-      </div>
+      <BuiltInBlockEditorSection
+        availableCategories={availableCategories}
+        blockCategories={builtInBlockCategories}
+        onCategoryChange={handleBuiltInBlockCategoryChange}
+      />
 
       {/* Editable code preview for all custom blocks. */}
       <div className={css.codePreview} data-testid="code-preview">

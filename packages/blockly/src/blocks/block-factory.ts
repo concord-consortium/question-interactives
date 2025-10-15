@@ -3,7 +3,7 @@ import type { BlockSvg } from "blockly";
 import Blockly, { Blocks, FieldDropdown, FieldNumber } from "blockly/core";
 import { javascriptGenerator } from "blockly/javascript";
 
-import { IActionBlockConfig, ICustomBlock, ICreateBlockConfig, ISetBlockConfig, IParameter, isCreateBlockConfig } from "../components/types";
+import { ICustomBlock, IParameter, IBlockConfig } from "../components/types";
 
 const PLUS_ICON  = "data:image/svg+xml;utf8," +
   "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>" +
@@ -13,6 +13,22 @@ const MINUS_ICON = "data:image/svg+xml;utf8," +
   "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>" +
   "<text fill='white' x='8' y='12' text-anchor='middle' font-size='14'>−</text></svg>";
 
+function blockHasDisclosure(blockDef: ICustomBlock, blockConfig: IBlockConfig): boolean {
+  return blockDef.type === "creator" ||
+    (blockDef.type === "action" && !!blockConfig.canHaveChildren);
+}
+
+function appendDropdownFromTypeOptions(input: Blockly.Input, blockConfig: IBlockConfig, fieldName: string) {
+  if (Array.isArray(blockConfig.typeOptions) && blockConfig.typeOptions.length > 0) {
+    const opts = blockConfig.typeOptions.filter(
+      opt => Array.isArray(opt) && opt.length === 2 && typeof opt[0] === "string" && typeof opt[1] === "string"
+    );
+    if (opts.length > 0) {
+      input.appendField(new FieldDropdown(opts), fieldName);
+    }
+  }
+}
+
 export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
   if (!Array.isArray(customBlocks)) {
     console.warn("registerCustomBlocks: customBlocks is not an array:", customBlocks);
@@ -20,60 +36,58 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
   }
   
   customBlocks.forEach(blockDef => {
-    const blockType = blockDef.id;
-    const cfg = blockDef.config as (IActionBlockConfig | ICreateBlockConfig | ISetBlockConfig);
+    // Skip built-in blocks -- they're already registered in custom-built-in-blocks.ts
+    // TODO: Remove this check once the TODO in custom-block-editor.tsx about tracking category assignments
+    // for built-in blocks is resolved.
+    if (blockDef.type === "builtIn") {
+      return;
+    }
 
-    const applyCommonFlags = (block: any) => {
-      if (cfg.inputsInline !== undefined) block.setInputsInline(!!cfg.inputsInline);
-      if (cfg.previousStatement !== undefined) block.setPreviousStatement(!!cfg.previousStatement);
-      if (cfg.nextStatement !== undefined) block.setNextStatement(!!cfg.nextStatement);
-    };
+    const blockType = blockDef.id;
+    const blockConfig: IBlockConfig = blockDef.config;
 
     Blocks[blockType] = {
       init() {
         // Display block name with appropriate prefix based on block type
-        const displayName = blockDef.type === "action" ? blockDef.name : 
-                            blockDef.type === "creator" ? "create" : 
+        const displayName = blockDef.type === "action" ? blockDef.name :
+                            blockDef.type === "creator" ? "create" :
+                            blockDef.type === "ask" ? "ask" :
                             blockDef.type === "setter" ? `set ${blockDef.name}` :
                             blockDef.name;
-        const input = this.appendDummyInput().appendField(displayName);
+        // Create input without immediately appending the name so we can control placement as needed.
+        const input = this.appendDummyInput();
     
-        if ((blockDef.type === "action" && cfg.canHaveChildren) || blockDef.type === "creator") {
-          const c: IActionBlockConfig | ICreateBlockConfig = cfg;
-
+        if (blockHasDisclosure(blockDef, blockConfig)) {
           const statementsInput = this.appendStatementInput("statements");
-          if (Array.isArray(c.childBlocks) && c.childBlocks.length > 0) {
-            statementsInput.setCheck(c.childBlocks);
-          }
           
           // Add open/close toggle button
           const icon = new Blockly.FieldImage(PLUS_ICON, 16, 16, "+/-");
-          (icon as any).setOnClickHandler?.(() => {
-            const open = !(this as any).__disclosureOpen;
-            (this as any).__disclosureOpen = open;
+          icon.setOnClickHandler?.(() => {
+            const open = !this.__disclosureOpen;
+            this.__disclosureOpen = open;
             statementsInput.setVisible(open);
             icon.setValue(open ? MINUS_ICON : PLUS_ICON);
-            (this as BlockSvg).render();
+            this.render();
           });
           input.insertFieldAt(0, icon, "__disclosure_icon");
           
           // Initialize as closed
-          (this as any).__disclosureOpen = false;
+          this.__disclosureOpen = false;
           statementsInput.setVisible(false);
 
-          if (blockDef.type === "creator" && isCreateBlockConfig(c)) {
-            if (c.defaultCount !== undefined && c.minCount !== undefined && c.maxCount !== undefined) {
-              input.appendField(new FieldSlider(c.defaultCount, c.minCount, c.maxCount), "count");
+          if (blockDef.type === "creator") {
+            if (blockConfig.defaultCount !== undefined && blockConfig.minCount !== undefined && blockConfig.maxCount !== undefined) {
+              input.appendField(new FieldSlider(blockConfig.defaultCount, blockConfig.minCount, blockConfig.maxCount), "count");
             }
           }
           
           // One-time seeding of child blocks on first creation/attach.
-          const hasChildren = Array.isArray(c.childBlocks) && c.childBlocks.length > 0;
+          const hasChildren = Array.isArray(blockConfig.childBlocks) && blockConfig.childBlocks.length > 0;
           
           if (hasChildren) {
-            (this as any).__childrenSeeded = false;
+            this.__childrenSeeded = false;
             this.setOnChange(() => {
-              if ((this as any).__childrenSeeded || !this.workspace || this.isInFlyout) return;
+              if (this.__childrenSeeded || !this.workspace || this.isInFlyout) return;
     
               const stmt = this.getInput("statements");
               if (!stmt) return;
@@ -99,10 +113,10 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
                     }
                   });
                 }
-    
-                if (Array.isArray(c.childBlocks) && c.childBlocks.length > 0) {
+
+                if (Array.isArray(blockConfig.childBlocks) && blockConfig.childBlocks.length > 0) {
                   let previousChild: any = null;
-                  for (const childType of c.childBlocks) {
+                  for (const childType of blockConfig.childBlocks) {
                     const child = this.workspace.newBlock(childType);
                     child.initSvg();
                     const nextConnection = previousChild ? previousChild.nextConnection : stmt.connection;
@@ -113,27 +127,43 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
                     previousChild = child;
                   }
                 }
-                (this as any).__childrenSeeded = true;
+                this.__childrenSeeded = true;
               } catch (error) {
                 console.warn("Failed to auto-seed child blocks for", blockDef.id, error);
               }
             });
           }
         }
-    
-      if (blockDef.type === "action") {
-          const actionCfg = cfg as IActionBlockConfig;
-          if (Array.isArray(actionCfg.parameters) && actionCfg.parameters.length > 0) {
-            actionCfg.parameters.forEach((param: IParameter) => {
+
+        // Except for condition blocks, append the display name immediately.
+        if (blockDef.type !== "condition") {
+          input.appendField(displayName);
+        }
+
+        if (blockDef.type === "action") {
+          if (Array.isArray(blockConfig.parameters) && blockConfig.parameters.length > 0) {
+            blockConfig.parameters.forEach((param: IParameter) => {
               if (param.labelText && (param.labelPosition ?? "prefix") === "prefix") {
                 input.appendField(param.labelText);
               }
               if (param.kind === "select") {
-                const opts = (param as any).options || [];
-                input.appendField(new FieldDropdown(opts), param.name);
-                if ((param as any).defaultValue) {
-                  try { (this as any).setFieldValue((param as any).defaultValue, param.name); } catch (e) {
-                    console.warn("Failed to set default value for parameter", param.name, e);
+                let opts = (param as any).options || [];
+                // Convert {label, value}[] to [label, value][] as needed to satisfy FieldDropdown which expects the latter format (equivalent to Blockly's MenuOption[])
+                if (Array.isArray(opts)) {
+                  opts = opts.map(opt => [opt?.label, opt?.value]);
+                  opts = opts.filter((opt: any) => typeof opt[0] === "string" && typeof opt[1] === "string");
+                } else {
+                  opts = [];
+                }
+                opts = Array.isArray(opts)
+                  ? opts.filter(opt => Array.isArray(opt) && opt.length === 2 && typeof opt[0] === "string" && typeof opt[1] === "string")
+                  : [];
+                if (opts.length > 0) {
+                  input.appendField(new FieldDropdown(opts), param.name);
+                  if (param.defaultValue) {
+                    try { this.setFieldValue(param.defaultValue, param.name); } catch (e) {
+                      console.warn("Failed to set default value for parameter", param.name, e);
+                    }
                   }
                 }
               } else if (param.kind === "number") {
@@ -146,16 +176,50 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
             });
           }
         } else if (blockDef.type === "creator") {
-          const creatorCfg = cfg as ICreateBlockConfig;
-          if (Array.isArray(creatorCfg.typeOptions) && creatorCfg.typeOptions.length > 0) {
-            input.appendField(new FieldDropdown(creatorCfg.typeOptions), "type");
-          }
+          appendDropdownFromTypeOptions(input, blockConfig, "type");
         } else if (blockDef.type === "setter") {
-          const setterCfg = cfg as ISetBlockConfig;
-          if (setterCfg.includeNumberInput) {
+          if (blockConfig.includeNumberInput) {
             input.appendField(new FieldNumber(0), "value");
-          } else if (Array.isArray(setterCfg.typeOptions) && setterCfg.typeOptions.length > 0) {
-            input.appendField(new FieldDropdown(setterCfg.typeOptions), "value");
+          } else {
+            appendDropdownFromTypeOptions(input, blockConfig, "value");
+          }
+        } else if (blockDef.type === "ask") {
+          let askOptions = Array.isArray(blockConfig.options) ? [...blockConfig.options] : [];
+          askOptions = askOptions.filter(opt => Array.isArray(opt) && opt.length === 2 && typeof opt[0] === "string" && typeof opt[1] === "string");
+          if (askOptions.length > 0) {
+            if (blockConfig.includeAllOption) askOptions.push(["all", "all"]);
+            input.appendField(new FieldDropdown(askOptions), "target");
+          }
+          // Add entity name as static label after dropdown if showTargetEntityLabel is true (default true)
+          if (blockConfig.targetEntity && (blockConfig.showTargetEntityLabel !== false)) {
+            input.appendField(blockConfig.targetEntity);
+          }
+          this.appendStatementInput("statements");
+        } else if (blockDef.type === "condition") {
+          // Condition blocks are value blocks with Boolean output.
+          this.setOutput(true, "Boolean");
+          const labelPosition = blockConfig.labelPosition || "prefix";
+          const hasOptions = Array.isArray(blockConfig.options) && blockConfig.options.length > 0;
+          const blockOptions = hasOptions ? blockConfig.options : undefined;
+
+          if (labelPosition === "prefix") {
+            // Display name first, then dropdown.
+            input.appendField(displayName);
+            if (blockOptions) {
+              input.appendField(new FieldDropdown(blockOptions), "condition");
+            }
+          } else {
+            // Dropdown first, then display name.
+            const dropdownInput = this.appendDummyInput();
+            if (blockOptions) {
+              dropdownInput.appendField(new FieldDropdown(blockOptions), "condition");
+            }
+            dropdownInput.appendField(blockDef.name);
+          }
+
+          // Add entity name as static label after dropdown.
+          if (blockConfig.targetEntity) {
+            input.appendField(blockConfig.targetEntity);
           }
         }
 
@@ -163,34 +227,52 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         if (blockDef.type === "creator") {
           input.appendField(blockDef.name);
         }
-    
-        // Default connections if not specified
-        if (cfg.previousStatement === undefined) this.setPreviousStatement(true);
-        if (cfg.nextStatement === undefined) this.setNextStatement(true);
 
         // Color and inline/connection flags
         this.setColour(blockDef.color);
-        applyCommonFlags(this);
+
+        // For all blocks except condition blocks, set previous/next statement connections. Use config value
+        // if defined, otherwise default to true.
+        if (blockDef.type !== "condition") {
+          this.setPreviousStatement(
+            blockConfig.previousStatement !== undefined ? !!blockConfig.previousStatement : true
+          );
+          this.setNextStatement(
+            blockConfig.nextStatement !== undefined ? !!blockConfig.nextStatement : true
+          );
+        }
+
+        // For all blocks, set inputsInline if defined.
+        if (blockConfig.inputsInline !== undefined) {
+          this.setInputsInline(!!blockConfig.inputsInline);
+        }
       },
 
-      // Persist open/closed state
+      // Persist open/closed state for blocks that have a disclosure toggle.
       mutationToDom() {
         const el = document.createElement("mutation");
-        el.setAttribute("open", String((this as any).__disclosureOpen ?? false));
+        const hasDisclosure = blockHasDisclosure(blockDef, blockConfig);
+        const open = hasDisclosure ? (this.__disclosureOpen ?? false) : true;
+        el.setAttribute("open", String(open));
         return el;
       },
       domToMutation(el: Element) {
-        const b = this as Blockly.BlockSvg;
-        const open = el.getAttribute("open") !== "false";
-        (b as any).__disclosureOpen = open;
-        const stmt = b.getInput("statements");
-        if (stmt) stmt.setVisible(open);
-
-        const iconField = b.getField("__disclosure_icon");
-        if (iconField) {
-          iconField.setValue(open ? MINUS_ICON : PLUS_ICON);
+        const b = this as BlockSvg;
+        const hasDisclosure = blockHasDisclosure(blockDef, blockConfig);
+        if (hasDisclosure) {
+          const open = el.getAttribute("open") !== "false";
+          (b as any).__disclosureOpen = open;
+          const stmt = b.getInput("statements");
+          if (stmt) stmt.setVisible(open);
+          const iconField = b.getField("__disclosure_icon");
+          if (iconField) {
+            iconField.setValue(open ? MINUS_ICON : PLUS_ICON);
+          }
+        } else {
+          // Ensure statement input is visible for blocks without disclosure toggle
+          const stmt = b.getInput("statements");
+          if (stmt) stmt.setVisible(true);
         }
-        
         b.render();
       }
     };
@@ -200,12 +282,11 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
       if (blockDef.type === "action") {
         // If a generatorTemplate is provided, interpolate parameter fields
         const actionName = blockDef.name.toLowerCase().replace(/\s+/g, "_");
-        const actionConfig: IActionBlockConfig = cfg;
 
-        if (actionConfig.generatorTemplate && typeof actionConfig.generatorTemplate === "string") {
-          let code = String(actionConfig.generatorTemplate);
+        if (blockConfig.generatorTemplate && typeof blockConfig.generatorTemplate === "string") {
+          let code = String(blockConfig.generatorTemplate);
           // Replace ${PARAM} placeholders with field values
-          const params = Array.isArray(actionConfig.parameters) ? actionConfig.parameters : [];
+          const params = Array.isArray(blockConfig.parameters) ? blockConfig.parameters : [];
           params.forEach((p: IParameter) => {
             const val = block.getFieldValue(p.name);
             const safe = val != null ? String(val) : "";
@@ -219,8 +300,8 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
 
         // Fallback: build from parameters
         const parts: string[] = [actionName];
-        if (Array.isArray(actionConfig.parameters) && actionConfig.parameters.length > 0) {
-          actionConfig.parameters.forEach((param: IParameter) => {
+        if (Array.isArray(blockConfig.parameters) && blockConfig.parameters.length > 0) {
+          blockConfig.parameters.forEach((param: IParameter) => {
             if (param.labelText && (param.labelPosition ?? "prefix") === "prefix") {
               parts.push(String(param.labelText));
             }
@@ -249,6 +330,14 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         const callback = statements ? `, (agent) => {\n${statements}\n}` : "";
 
         return `create_${type}(${count}${callback});\n`;
+      } else if (blockDef.type === "ask") {
+        const target = block.getFieldValue("target");
+        // const targetEntity = blockConfig.targetEntity || "";
+        const statements = javascriptGenerator.statementToCode(block, "statements");
+        return `sim.withLabel("${target}").forEach(agent => {\n${statements}\n});\n`;
+      } else if (blockDef.type === "condition") {
+        const condition = block.getFieldValue("condition");
+        return condition;
       }
 
       return "";
