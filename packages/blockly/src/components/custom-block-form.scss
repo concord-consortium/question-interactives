@@ -18,6 +18,66 @@
     min-width: 0;
   }
 
+  .customBlockForm_basicFields label,
+  .customBlockForm_category label,
+  .customBlockForm_typeLabel label,
+  .customBlockForm_countFields > div label,
+  .customBlockForm_targetEntity label,
+  .customBlockForm_options label {
+    @include form-label();
+  }
+
+  .customBlockForm_canHaveChildren label,
+  .customBlockForm_includeCount label,
+  .customBlockForm_includeNumberInput label {
+    @include checkbox-label();
+    
+    input[type="checkbox"] {
+      margin: 0;
+      vertical-align: middle;
+    }
+  }
+
+  .customBlockForm_category select,
+  .customBlockForm_targetEntity select,
+  .conditionLabelPosition {
+    @include form-input-sm();
+    padding: $form-input-padding-sm;
+    
+    &:focus {
+      @include focus-state();
+    }
+  }
+
+  .customBlockForm_includeAllOption label {
+    @include checkbox-label();
+
+    input[type="checkbox"] {
+      margin: 0;
+      vertical-align: middle;
+    }
+  }
+
+  .customBlockForm_showTargetEntityLabel label {
+    @include checkbox-label();
+
+    input[type="checkbox"] {
+      margin: 0;
+      vertical-align: middle;
+    }
+  }
+
+  input[type="text"],
+  input[type="number"],
+  input[type="color"] {
+    @include form-input();
+    padding: $form-input-padding;
+    
+    &:focus {
+      @include focus-state();
+    }
+  }
+
   .customBlockForm_basicFields {
     align-items: flex-start;
     display: flex;
@@ -25,17 +85,8 @@
     
     .customBlockForm_name,
     .customBlockForm_color {
-      display: flex;
+      @include form-field-group();
       flex: 1;
-      flex-direction: column;
-      gap: 3px;
-      min-width: 0;
-      
-      label {
-        display: block;
-        font-weight: $font-weight-medium;
-        margin: 0;
-      }
       
       input {
         max-width: 100%;
@@ -55,30 +106,7 @@
   }
 
   .customBlockForm_category {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    min-width: 0;
-    
-    label {
-      display: block;
-      font-weight: $font-weight-medium;
-      margin: 0;
-    }
-    
-    select {
-      border: solid 1px $border-light;
-      border-radius: $border-radius-sm;
-      font-size: $font-size-sm;
-      max-width: 100%;
-      padding: 4px $spacing-sm;
-      
-      &:focus {
-        border-color: $primary-blue;
-        box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-        outline: none;
-      }
-    }
+    @include form-field-group();
   }
 
   .customBlockForm_inputs {
@@ -88,11 +116,7 @@
     gap: $spacing-xxl;
     
     .inlineLabel {
-      align-items: center;
-      display: flex;
-      font-weight: $font-weight-normal;
-      gap: 6px;
-      margin: 0;
+      @include checkbox-label();
       white-space: nowrap;
 
       input {
@@ -102,15 +126,7 @@
   }
 
   .customBlockForm_typeLabel {
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-    
-    label {
-      display: block;
-      font-weight: $font-weight-medium;
-      margin: 0;
-    }
+    @include form-field-group();
     
     input {
       flex: 1;
@@ -124,76 +140,34 @@
     grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     
     > div {
-      display: flex;
-      flex-direction: column;
+      @include form-field-group();
       gap: 2px;
       
       label {
-        display: block;
-        font-weight: $font-weight-medium;
         font-size: $font-size-sm;
-        margin: 0;
       }
       
       input {
-        border: 1px solid $border-light;
-        border-radius: $border-radius-sm;
-        padding: 4px $spacing-sm;
+        @include form-input-sm();
+        padding: $form-input-padding-sm;
       }
     }
   }
 
-  .customBlockForm_canHaveChildren {
-    label {
-      align-items: center;
-      display: flex;
-      font-weight: $font-weight-normal;
-      gap: 6px;
-      margin: 0;
-      
-      input[type="checkbox"] {
-        margin: 0;
-        vertical-align: middle;
-      }
-    }
-  }
-
-  .customBlockForm_includeCount {
-    align-items: center;
-    display: flex;
-    gap: $spacing-md;
-    
-    label {
-      align-items: center;
-      display: flex;
-      font-weight: $font-weight-normal;
-      gap: 6px;
-      margin: 0;
-    }
-  }
-
+  .customBlockForm_canHaveChildren,
+  .customBlockForm_includeCount,
   .customBlockForm_includeNumberInput {
     align-items: center;
     display: flex;
     gap: $spacing-md;
-    
-    label {
-      align-items: center;
-      display: flex;
-      font-weight: $font-weight-normal;
-      gap: 6px;
-      margin: 0;
-    }
   }
 
+  .customBlockForm_targetEntity,
   .customBlockForm_options {
-    display: flex;
-    flex-direction: column;
+    @include form-field-group();
     gap: $spacing-md;
-    min-width: 0;
     
     label {
-      font-weight: $font-weight-medium;
       margin-bottom: 2px;
     }
   }
@@ -218,166 +192,10 @@
     margin-left: 2px;
   }
 
-  input[type="text"],
-  input[type="number"],
-  input[type="color"] {
-    border: 1px solid $border-light;
-    border-radius: $border-radius-sm;
-    font-size: $font-size-sm;
-    padding: 4px $spacing-md;
-    
-    &:focus {
-      border-color: $primary-blue;
-      box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
-      outline: none;
-    }
-  }
-
-  .customBlockForm_parameters {
-    display: flex;
-    flex-direction: column;
-    gap: $spacing-md;
-    min-width: 0;
-    
-    label {
-      display: block;
-      font-weight: $font-weight-medium;
-      margin: 0;
-    }
-    
-    .paramToolbar {
-      display: flex;
-      gap: $spacing-md;
-      
-      .addParamButton {
-        background: white;
-        border: solid 1px $border-light;
-        border-radius: $border-radius-sm;
-        color: $text-medium;
-        cursor: pointer;
-        font-size: $font-size-sm;
-        padding: 4px $spacing-md;
-        
-        &:hover {
-          background: $background-light;
-        }
-      }
-    }
-    
-    .paramRow {
-      background: $background-light;
-      border: solid 1px $border-light;
-      border-radius: $border-radius-sm;
-      margin-bottom: $spacing-sm;
-      padding: $spacing-md;
-      min-width: 0;
-      
-      .paramHeader {
-        align-items: center;
-        display: flex;
-        justify-content: space-between;
-        margin-bottom: $spacing-md;
-        min-width: 0;
-        
-        .paramType {
-          color: $text-dark;
-          font-weight: $font-weight-medium;
-        }
-        
-        .removeParamButton {
-          background: white;
-          border: solid 1px $border-light;
-          border-radius: $border-radius-sm;
-          color: $text-medium;
-          cursor: pointer;
-          padding: 2px $spacing-sm;
-          font-size: $font-size-xs;
-          
-          &:hover {
-            background: $background-light;
-          }
-        }
-      }
-      
-      .paramFields {
-        min-width: 0;
-
-        .fieldRow {
-          display: flex;
-          gap: $spacing-md;
-          margin-bottom: $spacing-md;
-          min-width: 0;
-          
-          .fieldGroup {
-            display: flex;
-            flex: 1;
-            flex-direction: column;
-            gap: 3px;
-            min-width: 0;
-            
-            label {
-              color: $text-dark;
-              font-size: $font-size-sm;
-              font-weight: $font-weight-medium;
-            }
-            
-            input, select {
-              border: solid 1px $border-light;
-              border-radius: $border-radius-sm;
-              font-size: $font-size-sm;
-              padding: 4px $spacing-sm;
-              max-width: 100%;
-              width: 100%;
-            }
-          }
-        }
-        
-        .selectOptions {
-          display: flex;
-          flex-direction: column;
-          gap: $spacing-sm;
-          min-width: 0;
-          
-          label {
-            color: $text-dark;
-            font-size: $font-size-sm;
-            font-weight: $font-weight-medium;
-          }
-          
-        }
-        
-        .numberOptions {
-          .fieldGroup {
-            display: flex;
-            flex-direction: column;
-            gap: 3px;
-            
-            label {
-              color: $text-dark;
-              font-size: $font-size-sm;
-              font-weight: $font-weight-medium;
-            }
-            
-            input {
-              border: solid 1px $border-light;
-              border-radius: $border-radius-sm;
-              font-size: $font-size-sm;
-              max-width: 120px;
-              padding: 4px $spacing-sm;
-            }
-          }
-        }
-      }
-    }
-  }
-
   .customBlockForm_generatorTemplate {
     textarea {
-      border: solid 1px $border-light;
-      border-radius: $border-radius-sm;
-      font-size: $font-size-sm;
-      padding: 4px $spacing-sm;
-      width: 100%;
+      @include form-input-sm();
+      padding: $form-input-padding-sm;
     }
   }
 }

@@ -1,0 +1,70 @@
+@import "./variables.scss";
+
+.builtInBlocks_section {
+  background: $background-lighter;
+  border: 1px solid $border-medium;
+  border-radius: $border-radius-lg;
+  margin-bottom: 2em;
+  padding: 15px;
+
+  .builtInBlocks_new {
+    margin-bottom: $spacing-lg;
+
+    .builtInBlocks_newHeading {
+      align-items: center;
+      display: flex;
+      gap: 0.5em;
+    }
+  }
+
+  .builtInBlocks_list {
+
+    .builtInBlocks_listItem {
+      align-items: center;
+      border-top: 1px solid $border-medium;
+      display: flex;
+      justify-content: space-between;
+      padding: $spacing-md 0;
+
+      &:last-child {
+        border-bottom: 1px solid $border-medium;
+      }
+
+      .builtInBlocks_blockInfo {
+        align-items: center;
+        display: flex;
+        gap: 0.5em;
+
+        .builtInBlocks_blockName {
+          font-weight: 500;
+        }
+      }
+
+      .builtInBlocks_blockCategory {
+        align-items: center;
+        display: flex;
+        gap: 0.5em;
+
+        .builtInBlocks_categoryLabel {
+          margin-bottom: 0;
+        }
+        .builtInBlocks_categorySelect {
+          @include form-input-sm();
+          font-size: $font-size-sm;
+          max-width: 150px;
+
+          &:focus {
+            @include focus-state();
+          }
+        }
+      }
+    }
+
+    .builtInBlocks_noBlocks {
+      color: #888;
+      font-style: italic;
+      padding: 0.5em 0;
+    }
+  }
+
+}

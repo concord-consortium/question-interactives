@@ -2,12 +2,13 @@ import React, { useState, useEffect, useMemo } from "react";
 
 import { availableChildBlocks } from "../utils/block-utils";
 import { extractCategoriesFromToolbox } from "../utils/toolbox-utils";
+import { CustomBlockFormChildBlocks } from "./custom-block-form-child-blocks";
+import { BLOCK_TYPE_CONFIG } from "./custom-block-form-config";
 import { CustomBlockFormOptionList } from "./custom-block-form-option-list";
-import { CustomBlockType, IActionBlockConfig, ICustomBlock, ICreateBlockConfig, ISetBlockConfig,
-  IParameter, isActionBlockConfig, isCreateBlockConfig, isSetBlockConfig } from "./types";
+import { CustomBlockFormParameters } from "./custom-block-form-parameters";
+import { CustomBlockType, IBlockConfig, ICustomBlock, IParameter } from "./types";
 
 import css from "./custom-block-form.scss";
-import { CustomBlockFormChildBlocks } from "./custom-block-form-child-blocks";
 
 interface IProps {
   blockType: CustomBlockType;
@@ -18,12 +19,15 @@ interface IProps {
 }
 
 interface ICustomBlockFormState {
-  canHaveChildren?: boolean;
+  canHaveChildren: boolean;
   category: string;
   childBlocks: string[];
   color: string;
+  conditionLabelPosition?: "prefix" | "suffix";
+  conditionInput: boolean;
   defaultCount: number;
   generatorTemplate?: string;
+  includeAllOption?: boolean;
   includeCount: boolean;
   includeNumberInput: boolean;
   inputsInline: boolean;
@@ -33,24 +37,38 @@ interface ICustomBlockFormState {
   nextStatement: boolean;
   options: { label: string; value: string }[];
   previousStatement: boolean;
+  showTargetEntityLabel: boolean;
+  targetEntity: string;
   type: CustomBlockType;
 }
 
-const categoryColors = {
-  "action": "#004696",
-  "creator": "#312b84",
-  "setter": "#312b84"
+const blockOptionsFromConfig = (block: ICustomBlock) => {
+  if (["creator", "setter"].includes(block.type)) {
+    return block.config.typeOptions?.map(opt => ({ label: String(opt[0]), value: opt[1] })) || [{ label: "", value: "" }];
+  }
+
+  if (["ask", "condition"].includes(block.type)) {
+    return block.config.options?.map(opt => ({ label: String(opt[0]), value: opt[1] })) || [{ label: "", value: "" }];
+  }
+
+  return [{ label: "", value: "" }];
 };
 
-
 export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, existingBlocks, onSubmit, toolbox }) => {
+  const blockConfig = BLOCK_TYPE_CONFIG[blockType];
+  const optionTerm = blockConfig.optionTerm || "Options";
+  const optionsLabelPlaceholder = blockConfig.optionLabelPlaceholder || "Display text (e.g., blue)";
+  const optionsValuePlaceholder = blockConfig.optionValuePlaceholder || "Value (e.g., BLUE)";
+  
   const [formData, setFormData] = useState<ICustomBlockFormState>({
-    canHaveChildren: false,
+    canHaveChildren: blockConfig.canHaveChildren,
     category: "",
     childBlocks: [],
-    color: categoryColors[blockType] || "#312b84",
+    color: blockConfig.color,
+    conditionInput: false,
     defaultCount: 100,
     generatorTemplate: "",
+    includeAllOption: false,
     includeCount: true,
     includeNumberInput: false,
     inputsInline: true,
@@ -60,6 +78,9 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
     nextStatement: true,
     options: [{ label: "", value: "" }],
     previousStatement: true,
+    targetEntity: "",
+    conditionLabelPosition: "prefix",
+    showTargetEntityLabel: true,
     type: blockType
   });
 
@@ -71,21 +92,16 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
     return [];
   }, [formData.type, existingBlocks, editingBlock?.id]);
 
+  const availableTargetEntities = useMemo(() => {
+    // Get creator blocks from existing blocks to populate target entity dropdown
+    return (existingBlocks || [])
+      .filter(block => block.type === "creator")
+      .map(block => ({ value: block.name, label: block.name }));
+  }, [existingBlocks]);
+
   const handleChildBlocksMultiSelect = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const selected: string[] = Array.from(e.target.selectedOptions).map(o => o.value);
     setFormData(prev => ({ ...prev, childBlocks: selected }));
-  };
-
-  const blockOptionsFromConfig = (config: IActionBlockConfig | ICreateBlockConfig | ISetBlockConfig) => {
-    if (isActionBlockConfig(config)) {
-      return [{ label: "", value: "" }];
-    } else if (isCreateBlockConfig(config)) {
-      return config.typeOptions?.map(opt => ({ label: String(opt[0]), value: opt[1] })) || [{ label: "", value: "" }];
-    } else if (isSetBlockConfig(config)) {
-      return config.typeOptions?.map(opt => ({ label: String(opt[0]), value: opt[1] })) || [{ label: "", value: "" }];
-    }
-
-    return [{ label: "", value: "" }];
   };
 
   const [parameters, setParameters] = useState<IParameter[]>([]);
@@ -93,29 +109,34 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
   // Populate form when editing.
   useEffect(() => {
     if (editingBlock) {
-      const config = editingBlock.config as IActionBlockConfig | ICreateBlockConfig | ISetBlockConfig;
+      const config: IBlockConfig = editingBlock.config;
 
       setFormData({
-        canHaveChildren: config.canHaveChildren ?? false,
-        category: editingBlock.category || (availableCategories[0] || ""),
+        canHaveChildren: !!config.canHaveChildren,
+        category: editingBlock.category || availableCategories[0] || "",
         childBlocks: config.childBlocks || [],
         color: editingBlock.color,
-        defaultCount: isCreateBlockConfig(config) ? config.defaultCount ?? 100 : 100,
+        conditionInput: !!editingBlock.config.conditionInput,
+        defaultCount: config.defaultCount ?? 100,
         generatorTemplate: config.generatorTemplate || "",
-        includeCount: isCreateBlockConfig(config) ? config.defaultCount !== undefined : true,
-        includeNumberInput: isSetBlockConfig(config) ? config.includeNumberInput ?? false : false,
-        inputsInline: config.inputsInline ?? true,
-        maxCount: isCreateBlockConfig(config) ? config.maxCount ?? 500 : 500,
-        minCount: isCreateBlockConfig(config) ? config.minCount ?? 0 : 0,
+        includeAllOption: config.includeAllOption ?? false,
+        includeCount: config.defaultCount != null,
+        includeNumberInput: !!config.includeNumberInput,
+        inputsInline: !!config.inputsInline,
+        maxCount: config.maxCount ?? 500,
+        minCount: config.minCount ?? 0,
         name: editingBlock.name,
-        nextStatement: config.nextStatement ?? true,
-        options: blockOptionsFromConfig(config),
-        previousStatement: config.previousStatement ?? true,
+        nextStatement: !!config.nextStatement,
+        options: blockOptionsFromConfig(editingBlock),
+        previousStatement: !!config.previousStatement,
+        targetEntity: config.targetEntity ?? "",
+        conditionLabelPosition: config.labelPosition ?? "prefix",
+        showTargetEntityLabel: config.showTargetEntityLabel ?? true,
         type: editingBlock.type
       });
 
       if (editingBlock.type === "action") {
-        setParameters(((config as IActionBlockConfig).parameters) || []);
+        setParameters((config.parameters) || []);
       } else {
         setParameters([]);
       }
@@ -123,10 +144,11 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       // Reset form when not editing.
       setFormData(prev => ({
         ...prev,
-        canHaveChildren: false,
+        canHaveChildren: blockConfig.canHaveChildren,
         category: "",
         childBlocks: [],
-        color: categoryColors[blockType] || "#312b84",
+        color: blockConfig.color,
+        conditionInput: false,
         name: "",
         type: blockType,
         inputsInline: true,
@@ -138,12 +160,14 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         minCount: 0,
         maxCount: 500,
         includeNumberInput: false,
-        generatorTemplate: ""
+        generatorTemplate: "",
+        showTargetEntityLabel: true,
+        targetEntity: "",
+        conditionLabelPosition: "prefix"
       }));
       setParameters([]);
     }
-  }, [editingBlock, blockType, availableCategories]);
-
+  }, [editingBlock, blockType, availableCategories, blockConfig.canHaveChildren, blockConfig.color, blockConfig]);
 
   const handleSubmit = () => {
     if (!formData.name) {
@@ -154,7 +178,10 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       alert("Please select a category.");
       return;
     }
-
+    if (formData.type === "creator" && (!formData.options.some(opt => opt.label && opt.value))) {
+      alert("Creator blocks must have at least one type option defined.");
+      return;
+    }
     if (formData.type === "action" && (!formData.generatorTemplate || !formData.generatorTemplate.trim())) {
       alert("Please provide the code template for the action block.");
       return;
@@ -168,6 +195,17 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
 
     const effectiveChildBlocks = formData.canHaveChildren ? formData.childBlocks : [];
 
+    // Compute statement options for statement blocks with a target entity
+    let statementOptions: [string, string][] | undefined = undefined;
+    if (formData.type === "ask" && formData.targetEntity) {
+      const creatorBlock = (existingBlocks || []).find(block =>
+        block.type === "creator" && block.name === formData.targetEntity
+      );
+      if (creatorBlock) {
+        statementOptions = creatorBlock.config.typeOptions?.map(option => [option[0], option[1]] as [string, string]);
+      }
+    }
+
     const config =
       formData.type === "action"
         ? {
@@ -176,7 +214,28 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
             childBlocks: effectiveChildBlocks,
             parameters: parameters.length ? parameters : undefined,
             generatorTemplate: formData.generatorTemplate?.trim() ? formData.generatorTemplate : undefined
-          } as IActionBlockConfig
+          }
+        : formData.type === "ask"
+        ? {
+            ...base,
+            canHaveChildren: true,
+            childBlocks: [],
+            conditionInput: formData.conditionInput,
+            includeAllOption: formData.includeAllOption,
+            options: statementOptions,
+            targetEntity: formData.targetEntity,
+            showTargetEntityLabel: formData.showTargetEntityLabel ?? true
+          }
+        : formData.type === "condition"
+        ? {
+            ...base,
+            canHaveChildren: false,
+            options: formData.options
+              .filter(opt => opt.label && opt.value)
+              .map(opt => [opt.label, opt.value] as [string, string]),
+            labelPosition: formData.conditionLabelPosition || "prefix",
+            targetEntity: formData.targetEntity
+          }
         : formData.type === "creator"
         ? {
             ...base,
@@ -192,7 +251,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
                   maxCount: formData.maxCount
                 }
               : {})
-          } as ICreateBlockConfig
+          }
         : {
             ...base,
             canHaveChildren: false,
@@ -202,7 +261,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
                   .filter(opt => opt.label && opt.value)
                   .map(opt => [opt.label, opt.value] as [string, string]),
             includeNumberInput: formData.includeNumberInput
-          } as ISetBlockConfig;
+          };
 
     onSubmit({
       category: formData.category,
@@ -228,13 +287,13 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       <div className={css.customBlockForm_basicFields}>
         <div className={css.customBlockForm_name} data-testid="field-name">
           <label htmlFor="block-name">
-            {blockType === "action" ? "Action Name" : blockType === "setter" ? "Property Name" : "Object Name"}
+            {blockConfig.label}
             <span className={css.required}>*</span>
           </label>
           <input
             data-testid="input-name"
             id="block-name"
-            placeholder={blockType === "setter" ? "e.g., color, speed" : "e.g., molecules, people"}
+            placeholder={blockConfig.placeholder}
             required
             type="text"
             value={formData.name}
@@ -297,140 +356,103 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         </label>
       </div>
 
+      {blockConfig.hasParameters && (
+        <CustomBlockFormParameters
+          parameters={parameters}
+          onParametersChange={setParameters}
+        />
+      )}
 
-      {formData.type === "action" && (
-        <div className={css.customBlockForm_parameters} data-testid="section-parameters">
-          <label htmlFor="block-parameters">Parameters</label>
-          <div id="block-parameters" className={css.paramToolbar}>
-            <button
-              className={css.addParamButton}
-              data-testid="add-param-select"
-              type="button"
-              onClick={() => setParameters(prev => ([...prev, { kind: "select", name: "", labelPosition: "prefix", options: [["", ""]] } as IParameter]))}
-            >
-              Add Select Parameter
-            </button>
-            <button
-              className={css.addParamButton}
-              data-testid="add-param-number"
-              type="button"
-              onClick={() => setParameters(prev => ([...prev, { kind: "number", name: "", labelPosition: "prefix" } as IParameter]))}
-            >
-              Add Number Parameter
-            </button>
-          </div>
-          <div>
-            {parameters.map((p, i) => (
-              <div key={i} className={css.paramRow} data-testid={`param-row-${i}`}>
-                <div className={css.paramHeader}>
-                  <span
-                    className={css.paramType}
-                    data-testid={`parameter-type-${i}`}
-                  >
-                    {p.kind === "select" ? "Select Parameter" : "Number Parameter"}
-                  </span>
-                  <button
-                    className={css.removeParamButton}
-                    data-testid={`remove-param-${i}`}
-                    type="button"
-                    onClick={() => setParameters(prev => prev.filter((_, idx) => idx !== i))}
-                  >
-                    Remove
-                  </button>
-                </div>
-                
-                <div className={css.paramFields}>
-                  <div className={css.fieldRow}>
-                    <div className={css.fieldGroup}>
-                      <label htmlFor={`param-name-${i}`}>Name</label>
-                      <input
-                        data-testid={`param-name-${i}`}
-                        id={`param-name-${i}`}
-                        placeholder="e.g., DIRECTION"
-                        type="text"
-                        value={p.name}
-                        onChange={(e) => setParameters(prev => prev.map((pp, idx) => idx === i ? ({ ...pp, name: e.target.value }) as IParameter : pp))}
-                      />
-                    </div>
-                    
-                    <div className={css.fieldGroup}>
-                      <label htmlFor={`label-text-${i}`}>Label Text</label>
-                      <input
-                        data-testid={`param-labelText-${i}`}
-                        id={`label-text-${i}`}
-                        placeholder="e.g., Move"
-                        type="text"
-                        value={p.labelText || ""}
-                        onChange={(e) => setParameters(prev => prev.map((pp, idx) => idx===i ? ({ ...pp, labelText: e.target.value }) as IParameter : pp))}
-                      />
-                    </div>
-                    
-                    <div className={css.fieldGroup}>
-                      <label htmlFor={`label-position-${i}`}>Label Position</label>
-                      <select
-                        data-testid={`param-labelPosition-${i}`}
-                        id={`label-position-${i}`}
-                        value={p.labelPosition || "prefix"}
-                        onChange={(e) => setParameters(prev => prev.map((pp, idx) => idx===i ? ({ ...pp, labelPosition: e.target.value as any }) as IParameter : pp))}
-                      >
-                        <option value="prefix">Before</option>
-                        <option value="suffix">After</option>
-                      </select>
-                    </div>
-                  </div>
-
-                  {p.kind === "select" ? (
-                    <div className={css.selectOptions} data-testid={`param-select-options-${i}`}>
-                      <label htmlFor="options">Options</label>
-                      <CustomBlockFormOptionList
-                        dataTestIdPrefix={`param-option-${i}`}
-                        labelPlaceholder="Display text (e.g., forward)"
-                        options={(p as any).options?.map((opt: [string, string]) => ({ label: opt[0], value: opt[1] })) || []}
-                        valuePlaceholder="Value (e.g., FORWARD)"
-                        onOptionsChange={(newOptions) => {
-                          const newParamOptions = newOptions.map(opt => [opt.label, opt.value] as [string, string]);
-                          setParameters(prev => prev.map((pp, idx) => 
-                            idx === i ? ({ ...pp, options: newParamOptions }) : pp
-                          ));
-                        }}
-                      />
-                    </div>
-                  ) : (
-                    <div className={css.numberOptions} data-testid={`param-number-options-${i}`}>
-                      <div className={css.fieldGroup}>
-                        <label htmlFor={`default-value-${i}`}>Default Value</label>
-                        <input
-                          data-testid={`param-defaultValue-${i}`}
-                          id={`default-value-${i}`}
-                          placeholder="0"
-                          type="number"
-                          value={(p as any).defaultValue ?? ""}
-                          onChange={(e) => setParameters(prev => prev.map((pp, idx) => idx===i ? ({ ...pp, defaultValue: Number(e.target.value) }) : pp))}
-                        />
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+      {blockConfig.hasTargetEntity && (
+        <div className={css.customBlockForm_targetEntity} data-testid="section-target-entity">
+          <label htmlFor="target-entity">Target Entity</label>
+          <select
+            data-testid="select-targetEntity"
+            id="target-entity"
+            value={formData.targetEntity}
+            onChange={(e) => setFormData(prev => ({ ...prev, targetEntity: e.target.value }))}
+          >
+            <option value="">Select an entity...</option>
+            {availableTargetEntities.map(entity => (
+              <option key={entity.value} value={entity.value}>{entity.label}</option>
             ))}
-          </div>
+          </select>
+
+          {formData.type === "ask" && (
+            <div className={css.customBlockForm_includeAllOption} data-testid="section-include-all-option">
+              <label>
+                <input
+                  checked={formData.includeAllOption}
+                  type="checkbox"
+                  onChange={e => setFormData(prev => ({ ...prev, includeAllOption: e.target.checked }))}
+                />
+                Add &quot;all&quot; Option
+              </label>
+            </div>
+          )}
+
+          {formData.type === "ask" && (
+            <div className={css.customBlockForm_showTargetEntityLabel} data-testid="section-show-target-entity-label">
+              <label>
+                <input
+                  type="checkbox"
+                  checked={formData.showTargetEntityLabel !== false}
+                  onChange={e => setFormData(prev => ({ ...prev, showTargetEntityLabel: e.target.checked }))}
+                /> 
+                Show Target Entity Label
+              </label>
+            </div>
+          )}
         </div>
       )}
 
-      {(formData.type === "creator" || formData.type === "setter") && (
+      {blockConfig.hasConditionInput && (
+        <div className={css.customBlockForm_includeNumberInput} data-testid="section-include-condition-input">
+          <label htmlFor="include-condition-input">
+            <input
+              checked={formData.conditionInput}
+              id="include-condition-input"
+              type="checkbox"
+              onChange={(e) => setFormData(prev => ({ ...prev, conditionInput: e.target.checked }))}
+            />
+            Include Condition Input (Boolean)
+          </label>
+        </div>
+      )}
+
+      {blockConfig.hasOptions && (
         <div className={css.customBlockForm_options} data-testid="section-options">
-          <label htmlFor="options">Options</label>
+          <label htmlFor="options">{optionTerm}</label>
           <CustomBlockFormOptionList
             dataTestIdPrefix="option"
-            labelPlaceholder="Display text (e.g., blue)"
+            labelPlaceholder={optionsLabelPlaceholder}
             options={formData.options}
-            valuePlaceholder="Value (e.g., BLUE)"
+            valuePlaceholder={optionsValuePlaceholder}
             onOptionsChange={(newOptions) => setFormData(prev => ({ ...prev, options: newOptions }))}
           />
         </div>
       )}
 
-      {formData.type === "setter" && (
+      {/* Show Label Placement field if block supports it and has one or more options defined */}
+      {blockConfig.hasLabelPosition && formData.options.some(o => o.label && o.value) && (
+        <div className={css.customBlockForm_basicFields} data-testid="section-condition-label-position">
+          <div className={css.fieldGroup}>
+            <label htmlFor="condition-label-position">Label Placement</label>
+            <select
+              className={css.conditionLabelPosition}
+              data-testid="select-condition-label-position"
+              id="condition-label-position"
+              value={formData.conditionLabelPosition || "prefix"}
+              onChange={(e) => setFormData(prev => ({ ...prev, conditionLabelPosition: (e.target.value as any) }))}
+            >
+              <option value="prefix">Before options</option>
+              <option value="suffix">After options</option>
+            </select>
+          </div>
+        </div>
+      )}
+
+      {blockConfig.hasNumberInput && (
         <div className={css.customBlockForm_includeNumberInput} data-testid="section-include-number-input">
           <label htmlFor="include-number-input">
             <input
@@ -445,7 +467,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         </div>
       )}
 
-      {formData.type === "creator" && (
+      {blockConfig.hasCountFields && (
         <>
           <div className={css.customBlockForm_includeCount} data-testid="section-include-count">
             <label htmlFor="include-count">
@@ -468,7 +490,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
                   id="min-count"
                   type="number"
                   value={formData.minCount}
-                  onChange={(e) => setFormData(prev => ({ ...prev, minCount: parseInt(e.target.value) }))}
+                  onChange={(e) => setFormData(prev => ({ ...prev, minCount: parseInt(e.target.value, 10) }))}
                 />
               </div>
               <div>
@@ -478,7 +500,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
                   id="max-count"
                   type="number"
                   value={formData.maxCount}
-                  onChange={(e) => setFormData(prev => ({ ...prev, maxCount: parseInt(e.target.value) }))}
+                  onChange={(e) => setFormData(prev => ({ ...prev, maxCount: parseInt(e.target.value, 10) }))}
                 />
               </div>
               <div>
@@ -488,7 +510,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
                   id="default-count"
                   type="number"
                   value={formData.defaultCount}
-                  onChange={(e) => setFormData(prev => ({ ...prev, defaultCount: parseInt(e.target.value) }))}
+                  onChange={(e) => setFormData(prev => ({ ...prev, defaultCount: parseInt(e.target.value, 10) }))}
                 />
               </div>
             </div>
@@ -496,8 +518,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         </>
       )}
 
-
-      {(formData.type === "action") && (
+      {blockConfig.canHaveChildren && (
         <div className={css.customBlockForm_canHaveChildren} data-testid="section-can-have-children">
           <label htmlFor="can-have-children">
             <input
@@ -520,19 +541,19 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         />
       )}
 
-      {(formData.type === "action") && (
+      {(blockConfig.hasGeneratorTemplate) && (
         <div className={css.customBlockForm_generatorTemplate} data-testid="section-generator-template">
           <label htmlFor="generator-template">Code<span className={css.required}>*</span></label>
           <textarea
             data-testid="textarea-generatorTemplate"
             id="generator-template"
             rows={3}
-            placeholder={"e.g., ${ACTION} ${DIRECTION}\\nset speed ${SPEED}"}
+            placeholder={blockConfig.generatorPlaceholder || ""}
             value={formData.generatorTemplate || ""}
             onChange={(e) => setFormData(prev => ({ ...prev, generatorTemplate: e.target.value }))}
           />
           <div className={css.helpText}>
-            Use ${"{ACTION}"} to reference the action. To reference parameter values, use ${"{PARAM_NAME}"} where &quot;PARAM_NAME&quot; is the actual name of the parameter (e.g., ${"{DIRECTION}"}, ${"{MAGNITUDE}"}).
+            {formData.type === "action" && (<>Use ${"{ACTION}"} to reference the action. To reference parameter values, use ${"{PARAM_NAME}"} where &quot;PARAM_NAME&quot; is the actual name of the parameter (e.g., ${"{DIRECTION}"}, ${"{MAGNITUDE}"}).</>)}
           </div>
         </div>
       )}
