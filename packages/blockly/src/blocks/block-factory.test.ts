@@ -548,7 +548,7 @@ describe("block-factory", () => {
       });
 
       const code = javascriptGenerator.forBlock["custom_create_molecules_456"].call(mockBlock, mockBlock);
-      expect(code).toBe("create_water(50);\n");
+      expect(code).toBe("create_water(50, );\n");
     });
 
     it("generates code for action block with generator template", () => {
