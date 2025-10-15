@@ -150,7 +150,7 @@ const create_a_wolf = getAddActorFunction({
   color: "0x333333",
   energy: wolfEnergy,
   image: wolfImage,
-  label: "wolf",
+  label: "wolves",
   radius: 10,
   velocity: 1.5
 });
@@ -180,49 +180,44 @@ sim.squares.forEach(square => {
 /*** End grow grass */
 
 /*** Reduce energy */
-sim.actors.forEach(a => {
-  const energyLoss = a.label("sheep") ? sheepEnergyLoss : wolfEnergyLoss;
-  a.state.energy = a.state.energy - energyLoss;
-  if (a.state.energy <= 0) {
-    a.remove();
-    return;
-  }
-});
+const energyLoss = agent.label("sheep") ? sheepEnergyLoss : wolfEnergyLoss;
+agent.state.energy = agent.state.energy - energyLoss;
 /*** End reduce energy */
 
+/*** No more energy */
+agent.state.energy <= 0
+/*** End no more energy */
+
+/*** Die */
+agent.remove();
+return;
+/*** End die */
+
 /*** Move */
-sim.actors.forEach(a => {
-  a.vel.turn(Math.random() * Math.PI / 4 - Math.PI / 8);
-});
+agent.vel.turn(Math.random() * Math.PI / 4 - Math.PI / 8);
 /*** End move */
 
 /*** Reproduce */
-sim.actors.forEach(a => {
-  const reproduceChance = a.label("sheep") ? sheepReproduceChance : wolfReproduceChance;
-  if (Math.random() < reproduceChance) {
-    const addFunction = a.label("sheep") ? create_a_sheep : create_a_wolf;
-    addFunction({ energy: a.state.energy / 2, x: a.x, y: a.y });
-    a.state.energy = a.state.energy / 2;
-  }
-});
+const reproduceChance = agent.label("sheep") ? sheepReproduceChance : wolfReproduceChance;
+if (Math.random() < reproduceChance) {
+  const addFunction = agent.label("sheep") ? create_a_sheep : create_a_wolf;
+  addFunction({ energy: agent.state.energy / 2, x: agent.x, y: agent.y });
+  agent.state.energy = agent.state.energy / 2;
+}
 /*** End reproduce */
 
 /*** Eat grass */
-sim.withLabel("sheep").forEach(s => {
-  const sq = s.squareOfCentroid();
-  if (sq.state.grassLevel >= maxGrassLevel) {
-    s.state.energy = s.state.energy + sheepEnergyFromGrass;
-    sq.state.grassLevel = 0;
-  }
-});
+const sq = agent.squareOfCentroid();
+if (sq.state.grassLevel >= maxGrassLevel) {
+  agent.state.energy = agent.state.energy + sheepEnergyFromGrass;
+  sq.state.grassLevel = 0;
+}
 /*** End eat grass */
 
 /*** Eat sheep */
-sim.withLabel("wolf").forEach(w => {
-  const s = w.overlapping("actor").find(a => a?.label("sheep"));
-  if (s) {
-    w.state.energy = w.state.energy + s.state.energy / 2;
-    s.remove();
-  }
-});
+const s = agent.overlapping("actor").find(a => a?.label("sheep"));
+if (s) {
+  agent.state.energy = agent.state.energy + s.state.energy / 2;
+  s.remove();
+}
 /*** End eat sheep */

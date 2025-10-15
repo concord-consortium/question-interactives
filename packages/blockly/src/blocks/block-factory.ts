@@ -1,7 +1,7 @@
 import { FieldSlider } from "@blockly/field-slider";
 import type { BlockSvg } from "blockly";
 import Blockly, { Blocks, FieldDropdown, FieldNumber } from "blockly/core";
-import { javascriptGenerator } from "blockly/javascript";
+import { javascriptGenerator, Order } from "blockly/javascript";
 
 import { ICustomBlock, IParameter, IBlockConfig } from "../components/types";
 
@@ -283,7 +283,7 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         // If a generatorTemplate is provided, interpolate parameter fields
         const actionName = blockDef.name.toLowerCase().replace(/\s+/g, "_");
 
-        if (blockConfig.generatorTemplate && typeof blockConfig.generatorTemplate === "string") {
+        if (blockConfig.generatorTemplate) {
           let code = String(blockConfig.generatorTemplate);
           // Replace ${PARAM} placeholders with field values
           const params = Array.isArray(blockConfig.parameters) ? blockConfig.parameters : [];
@@ -332,10 +332,24 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         return `create_${type}(${count}${callback});\n`;
       } else if (blockDef.type === "ask") {
         const target = block.getFieldValue("target");
-        // const targetEntity = blockConfig.targetEntity || "";
         const statements = javascriptGenerator.statementToCode(block, "statements");
-        return `sim.withLabel("${target}").forEach(agent => {\n${statements}\n});\n`;
+        const agents = target === "all" ? "sim.actors" : `sim.withLabel("${target}")`;
+        return `${agents}.forEach(agent => {\n${statements}\n});\n`;
       } else if (blockDef.type === "condition") {
+        if (blockConfig.generatorTemplate) {
+          let code = String(blockConfig.generatorTemplate);
+          // Replace ${PARAM} placeholders with field values
+          const params = Array.isArray(blockConfig.parameters) ? blockConfig.parameters : [];
+          params.forEach((p: IParameter) => {
+            const val = block.getFieldValue(p.name);
+            const safe = val != null ? String(val) : "";
+            const re = new RegExp(`\\$\\{${p.name}\\}`, "g");
+            code = code.replace(re, safe);
+          });
+          // TODO: Is there a more appropriate order than atomic?
+          return [code, Order.ATOMIC];
+        }
+
         const condition = block.getFieldValue("condition");
         return condition;
       }
