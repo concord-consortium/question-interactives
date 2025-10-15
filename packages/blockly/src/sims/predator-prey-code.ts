@@ -165,31 +165,21 @@ for (let x = 0; x < sim.width / sim.gridStep; x++) {
   }
 }
 
-function getAddActorFunction(defaults) {
-  return (props) => {
-    const { color, energy, x, y } = props ?? {};
-    const agent = new AA.Actor();
-    agent.radius = defaults.radius;
-    agent.vel = AA.Vector.randomAngle(defaults.velocity);
-    agent.vis({ image: defaults.image, tint: color ?? defaults.color });
-    agent.label(defaults.label, true);
-    agent.state = { energy: energy ?? defaults.energy };
-    agent.x = x ?? Math.random() * sim.width;
-    agent.y = y ?? Math.random() * sim.height;
-
-    agent.addTo(sim);
-    return agent;
-  };
-}
-
 // sheep
-const create_a_sheep = getAddActorFunction({
-  energy: sheepEnergy,
-  image: sheepImage,
-  label: "sheep",
-  radius: 10,
-  velocity: 1
-});
+function create_a_sheep(props) {
+  const { color, energy, x, y } = props ?? {};
+  const agent = new AA.Actor();
+  agent.radius = 10;
+  agent.vel = AA.Vector.randomAngle(1);
+  agent.vis({ image: sheepImage, tint: color });
+  agent.label("sheep", true);
+  agent.state = { energy: energy ?? sheepEnergy };
+  agent.x = x ?? Math.random() * sim.width;
+  agent.y = y ?? Math.random() * sim.height;
+
+  agent.addTo(sim);
+  return agent;
+}
 function create_sheep(num, callback) {
   for (let i = 0; i < num; i++) {
     const agent = create_a_sheep();
@@ -198,14 +188,20 @@ function create_sheep(num, callback) {
 }
 
 // wolves
-const create_a_wolf = getAddActorFunction({
-  color: "0x333333",
-  energy: wolfEnergy,
-  image: wolfImage,
-  label: "wolves",
-  radius: 10,
-  velocity: 1.5
-});
+function create_a_wolf(props) {
+  const { color, energy, x, y } = props ?? {};
+  const agent = new AA.Actor();
+  agent.radius = 10;
+  agent.vel = AA.Vector.randomAngle(1.5);
+  agent.vis({ image: wolfImage, tint: color ?? "0x333333" });
+  agent.label("wolves", true);
+  agent.state = { energy: energy ?? wolfEnergy };
+  agent.x = x ?? Math.random() * sim.width;
+  agent.y = y ?? Math.random() * sim.height;
+
+  agent.addTo(sim);
+  return agent;
+};
 function create_wolves(num, callback) {
   for (let i = 0; i < num; i++) {
     const agent = create_a_wolf();

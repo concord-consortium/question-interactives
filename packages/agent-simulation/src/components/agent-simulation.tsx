@@ -77,7 +77,7 @@ export const AgentSimulationComponent = ({
     });
 
     // Run the simulation setup code
-    const functionCode = `(sim, AA) => { ${blocklyCode || code} }`;
+    const functionCode = `(sim, AA, AV) => { ${blocklyCode || code} }`;
     try {
       // Indirect eval (with ?.) is supposed to be safer and faster than direct eval
       // - eval executes in the local scope, so has to check every containing scope for variable references
@@ -85,7 +85,7 @@ export const AgentSimulationComponent = ({
       // - eval executes with whatever permissions the containing code has, giving more opportunity for malicious code
       // For more info, see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval
       const simFunction = eval?.(functionCode);
-      simFunction?.(simRef.current, AA);
+      simFunction?.(simRef.current, AA, AV);
     } catch (e) {
       setError(`Error setting up simulation: ${String(e)}`);
       return;
