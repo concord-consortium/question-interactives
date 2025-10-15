@@ -1,6 +1,6 @@
 // This file contains vanilla javascript code that runs the predator-prey simulation when pasted into the
 // simulation interactive code area.
-// NOTE: To pasting the code directly will not work because of the backticks.
+// NOTE: Pasting the code directly will not work because of the backticks.
 
 export const predatorPreyCode = `
 const sheepSvg = \`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
@@ -95,16 +95,18 @@ const maxGrassLevel = 10;
 const grassGrowthRate = 0.01;
 
 function setup() {
-  /*** From setup block */
-  // eval(blocklySetup);
-  addMultipleSheep(50);
-  addWolves(10);
-  /*** End setup block */
+  create_sheep(50);
+  create_wolves(10);
 }
 
 sim.afterTick = () => {
-  /*** From go block */
-  // eval(blocklyGo);
+  sim.squares.forEach(square => {
+    // Grow grass
+    if (square.state.grassLevel < maxGrassLevel) {
+      square.state.grassLevel = Math.min(maxGrassLevel, square.state.grassLevel + grassGrowthRate);
+    }
+  });
+
   sim.actors?.forEach(a => {
     // Lose energy and possibly die
     const energyLoss = a.label("sheep") ? sheepEnergyLoss : wolfEnergyLoss;
@@ -120,14 +122,14 @@ sim.afterTick = () => {
     // Reproduce
     const reproduceChance = a.label("sheep") ? sheepReproduceChance : wolfReproduceChance;
     if (Math.random() < reproduceChance) {
-      const addFunction = a.label("sheep") ? addSheep : addWolf;
+      const addFunction = a.label("sheep") ? create_a_sheep : create_a_wolf;
       // const color = a.label("sheep") ? sheepColor : wolfColor;
       addFunction({ energy: a.state.energy / 2, x: a.x, y: a.y });
       a.state.energy = a.state.energy / 2;
     }
   });
 
-  sheep.forEach(s => {
+  sim.withLabel("sheep").forEach(s => {
     // Eat grass
     const sq = s.squareOfCentroid();
     if (sq.state.grassLevel >= maxGrassLevel) {
@@ -136,7 +138,7 @@ sim.afterTick = () => {
     }
   });
 
-  wolves.forEach(w => {
+  sim.withLabel("wolves").forEach(w => {
     // Eat sheep
     const s = w.overlapping("actor").find(a => a?.label("sheep"));
     if (s) {
@@ -144,7 +146,6 @@ sim.afterTick = () => {
       s.remove();
     }
   });
-  /*** End go block */
 
   console.log(\`sheep: \${Array.from(sim.withLabel("sheep")).length}, wolves: \${Array.from(sim.withLabel("wolf")).length}\`);
 };
@@ -161,59 +162,54 @@ for (let x = 0; x < sim.width / sim.gridStep; x++) {
 
     // Color squares based on grass level
     square.vis({ tint: s => s.state.grassLevel === maxGrassLevel ? "0x00cc00" : "0x996600" });
-
-    // Grow grass at every tick
-    square.updateState = () => {
-      if (square.state.grassLevel < maxGrassLevel) {
-        square.state.grassLevel = Math.min(maxGrassLevel, square.state.grassLevel + grassGrowthRate);
-      }
-    };
   }
 }
 
 function getAddActorFunction(defaults) {
   return (props) => {
     const { color, energy, x, y } = props ?? {};
-    const a = new AA.Actor();
-    a.radius = defaults.radius;
-    a.vel = AA.Vector.randomAngle(defaults.velocity);
-    a.vis({ image: defaults.image, tint: color ?? defaults.color });
-    a.label(defaults.label, true);
-    a.state = { energy: energy ?? defaults.energy };
-    a.x = x ?? Math.random() * sim.width;
-    a.y = y ?? Math.random() * sim.height;
+    const agent = new AA.Actor();
+    agent.radius = defaults.radius;
+    agent.vel = AA.Vector.randomAngle(defaults.velocity);
+    agent.vis({ image: defaults.image, tint: color ?? defaults.color });
+    agent.label(defaults.label, true);
+    agent.state = { energy: energy ?? defaults.energy };
+    agent.x = x ?? Math.random() * sim.width;
+    agent.y = y ?? Math.random() * sim.height;
 
-    a.addTo(sim);
-    return a;
+    agent.addTo(sim);
+    return agent;
   };
 }
 
 // sheep
-const addSheep = getAddActorFunction({
+const create_a_sheep = getAddActorFunction({
   energy: sheepEnergy,
   image: sheepImage,
   label: "sheep",
   radius: 10,
   velocity: 1
 });
-function addMultipleSheep(num) {
+function create_sheep(num, callback) {
   for (let i = 0; i < num; i++) {
-    addSheep();
+    const agent = create_a_sheep();
+    if (callback) callback(agent);
   }
 }
 
 // wolves
-const addWolf = getAddActorFunction({
+const create_a_wolf = getAddActorFunction({
   color: "0x333333",
   energy: wolfEnergy,
   image: wolfImage,
-  label: "wolf",
+  label: "wolves",
   radius: 10,
   velocity: 1.5
 });
-function addWolves(num) {
+function create_wolves(num, callback) {
   for (let i = 0; i < num; i++) {
-    addWolf();
+    const agent = create_a_wolf();
+    if (callback) callback(agent);
   }
 }
 
@@ -225,6 +221,4 @@ sim.interaction.set("boundary-bounce", {
 });
 
 setup();
-const sheep = sim.withLabel("sheep");
-const wolves = sim.withLabel("wolf");
 `;

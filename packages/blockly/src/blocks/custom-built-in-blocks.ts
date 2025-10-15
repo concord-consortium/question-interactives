@@ -2,7 +2,7 @@
 // These blocks are always available and don't need to be created by authors.
 
 import { Blocks, FieldNumber } from "blockly/core";
-import { javascriptGenerator } from "blockly/javascript";
+import { javascriptGenerator, Order } from "blockly/javascript";
 
 import { IBuiltInBlockInfo } from "../components/types";
 

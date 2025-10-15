@@ -1,3 +1,6 @@
+// This file contains the predator prey simulation, broken into parts that can be entered into different parts
+// of the blockly interactive interface.
+
 import * as AA from "agent-based-automation";
 
 const sim = new AA.Simulation({
