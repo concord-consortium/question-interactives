@@ -108,18 +108,22 @@ export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
     }
   };
 
+  const circularRefCache = new Map<string, boolean>();
   const canAddChild = (blockPath: number[], childBlockId: string): boolean => {
     const depth = blockPath.length + 1;
-    if (depth >= maxDepth) {
-      return false;
-    }
-    
-    // Check circular reference
+    if (depth >= maxDepth) return false;
+
     const blockAtPath = getBlockAtPath(nestedBlocks, blockPath);
-    if (blockAtPath && wouldCreateCircularReference(nestedBlocks, blockAtPath.blockId, childBlockId)) {
-      return false;
+    if (blockAtPath) {
+      const cacheKey = `${blockAtPath.blockId}:${childBlockId}`;
+      if (!circularRefCache.has(cacheKey)) {
+        circularRefCache.set(
+          cacheKey,
+          wouldCreateCircularReference(nestedBlocks, blockAtPath.blockId, childBlockId)
+        );
+      }
+      if (circularRefCache.get(cacheKey)) return false;
     }
-    
     return true;
   };
 

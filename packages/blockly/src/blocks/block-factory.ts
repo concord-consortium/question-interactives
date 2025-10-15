@@ -96,7 +96,7 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
                 // Clean up existing child blocks first to avoid connection conflicts
                 const existingBlock = stmt.connection.targetBlock();
                 if (existingBlock) {
-                  // Dispose of existing child blocks and their connections
+                  // Collect existing child blocks and their connections to dispose of them below
                   const blocksToDispose: BlockSvg[] = [];
                   let currentBlock: BlockSvg | null = existingBlock;
                   while (currentBlock) {
