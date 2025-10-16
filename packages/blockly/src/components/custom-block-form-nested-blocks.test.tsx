@@ -65,7 +65,7 @@ describe("CustomBlockFormNestedBlocks", () => {
       await user.selectOptions(dropdown, "setter1");
       
       expect(mockOnChange).toHaveBeenCalledWith([
-        { blockId: "setter1" }
+        { blockId: "setter1", canHaveChildren: false }
       ]);
     });
 
@@ -86,8 +86,9 @@ describe("CustomBlockFormNestedBlocks", () => {
     const nestedBlocks: INestedBlock[] = [
       {
         blockId: "setter1",
+        canHaveChildren: true,
         children: [
-          { blockId: "action1" }
+          { blockId: "action1", }
         ]
       },
       { blockId: "creator1" }

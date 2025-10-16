@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 
 import { DEFAULT_MAX_NESTING_DEPTH } from "../blocks/block-constants";
 import { wouldCreateCircularReference } from "../utils/nested-block-utils";
@@ -73,17 +73,12 @@ export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
   const removeBlock = (path: number[]) => {
     const newBlocks = JSON.parse(JSON.stringify(nestedBlocks)) as INestedBlock[];
     
-    if (path.length === 1) {
-      // Remove from root level
-      newBlocks.splice(path[0], 1);
-    } else {
-      // Navigate to parent and remove
-      let target: INestedBlock[] = newBlocks;
-      for (let i = 0; i < path.length - 1; i++) {
-        target = target[path[i]].children as INestedBlock[];
-      }
-      target.splice(path[path.length - 1], 1);
+    // Navigate to parent and remove
+    let target: INestedBlock[] = newBlocks;
+    for (let i = 0; i < path.length - 1; i++) {
+      target = target[path[i]].children as INestedBlock[];
     }
+    target.splice(path[path.length - 1], 1);
     
     onChange(newBlocks);
   };
@@ -93,10 +88,8 @@ export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
     
     // Navigate to the parent array
     let target: INestedBlock[] = newBlocks;
-    if (path.length > 1) {
-      for (let i = 0; i < path.length - 1; i++) {
-        target = target[path[i]].children as INestedBlock[];
-      }
+    for (let i = 0; i < path.length - 1; i++) {
+      target = target[path[i]].children as INestedBlock[];
     }
     
     const idx = path[path.length - 1];
@@ -139,8 +132,14 @@ export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
     return null;
   };
 
+  const availableBlocksMap = useMemo(() => {
+    const map = new Map<string, typeof availableBlocks[0]>();
+    availableBlocks.forEach(b => map.set(b.id, b));
+    return map;
+  }, [availableBlocks]);
+
   const getBlockInfo = (blockId: string) => {
-    return availableBlocks.find(b => b.id === blockId) || { id: blockId, name: blockId, type: "unknown", canHaveChildren: false };
+    return availableBlocksMap.get(blockId) || { id: blockId, name: blockId, type: "unknown", canHaveChildren: false };
   };
 
   const renderNestedBlock = (block: INestedBlock, path: number[], depth: number) => {
@@ -222,9 +221,9 @@ export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
         )}
 
         {/* Render children */}
-        {hasChildren && isExpanded && block.children && (
+        {hasChildren && isExpanded && (
           <div className={css.nestedBlock_children}>
-            {block.children.map((child, idx) =>
+            {block.children?.map((child, idx) =>
               renderNestedBlock(child, [...path, idx], depth + 1)
             )}
           </div>
@@ -256,11 +255,8 @@ export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
           data-testid="add-root-block"
           onChange={(e) => {
             if (e.target.value) {
-              const blockInfo = availableBlocks.find(b => b.id === e.target.value);
-              const newBlock: INestedBlock = { blockId: e.target.value };
-              if (blockInfo?.canHaveChildren) {
-                newBlock.canHaveChildren = true;
-              }
+              const blockInfo = getBlockInfo(e.target.value);
+              const newBlock: INestedBlock = { blockId: e.target.value, canHaveChildren: blockInfo?.canHaveChildren };
               onChange([...nestedBlocks, newBlock]);
               e.target.value = "";
             }
