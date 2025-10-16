@@ -53,10 +53,7 @@ export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
     
     // Add the new child
     const childBlockInfo = availableBlocks.find(b => b.id === blockId);
-    const newChild: INestedBlock = { blockId };
-    if (childBlockInfo?.canHaveChildren) {
-      newChild.canHaveChildren = true;
-    }
+    const newChild: INestedBlock = { blockId, canHaveChildren: childBlockInfo?.canHaveChildren };
     target.push(newChild);
     onChange(newBlocks);
     
