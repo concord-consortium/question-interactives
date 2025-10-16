@@ -325,7 +325,7 @@ describe("CustomBlockForm", () => {
       render(<CustomBlockForm {...defaultProps} blockType="action" />);
       
       await user.type(screen.getByLabelText(/Action Name/), "test");
-      await user.selectOptions(screen.getByRole("combobox"), "Properties");
+      await user.selectOptions(screen.getByTestId("select-category"), "Properties");
       await user.click(screen.getByRole("button", { name: "Add Block" }));
       
       expect(mockOnSubmit).not.toHaveBeenCalled();

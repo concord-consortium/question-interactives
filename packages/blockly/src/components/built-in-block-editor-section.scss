@@ -4,17 +4,59 @@
   background: $background-lighter;
   border: 1px solid $border-medium;
   border-radius: $border-radius-lg;
-  margin-bottom: 2em;
-  padding: 15px;
+  margin-bottom: $spacing-lg;
+  overflow: hidden;
 
-  .builtInBlocks_new {
-    margin-bottom: $spacing-lg;
+  .builtInBlocks_header {
+    padding: 0;
+  }
 
-    .builtInBlocks_newHeading {
-      align-items: center;
-      display: flex;
-      gap: 0.5em;
+  .builtInBlocks_toggleButton {
+    align-items: center;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    gap: $spacing-md;
+    padding: $spacing-lg;
+    text-align: left;
+    transition: background-color $transition-fast;
+    width: 100%;
+
+    &:hover {
+      background: rgba(0, 0, 0, 0.02);
     }
+
+    h5 {
+      flex: 1;
+      font-size: $font-size-md;
+      font-weight: $font-weight-medium;
+      margin: 0;
+    }
+  }
+
+  .builtInBlocks_chevron {
+    color: $text-medium;
+    display: inline-block;
+    font-size: $font-size-xs;
+    transform: rotate(-90deg);
+    transition: transform $transition-fast;
+
+    &.expanded {
+      transform: rotate(0deg);
+    }
+  }
+
+  .builtInBlocks_blockCount {
+    color: $text-medium;
+    flex-shrink: 0;
+    font-size: $font-size-sm;
+    font-weight: $font-weight-normal;
+  }
+
+  .builtInBlocks_content {
+    border-top: 1px solid $border-medium;
+    padding: $spacing-lg;
   }
 
   .builtInBlocks_list {

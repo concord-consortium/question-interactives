@@ -107,7 +107,7 @@ export const customBlocksAuthoredState: IAuthoredState = {
       category: "General",
       config: {
         canHaveChildren: true,
-        childBlocks: ["custom_set_color_1234567890"],
+        childBlocks: [{ blockId: "custom_set_color_1234567890" }],
         defaultCount: 100,
         minCount: 0,
         maxCount: 500,

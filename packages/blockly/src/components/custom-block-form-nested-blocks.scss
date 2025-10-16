@@ -1,0 +1,179 @@
+@import "./variables.scss";
+
+.nestedBlocks {
+  border: 1px solid $border-medium;
+  border-radius: $border-radius-md;
+  margin-top: $spacing-lg;
+  padding: $spacing-md;
+
+  .nestedBlocks_header {
+    margin-bottom: $spacing-md;
+
+    h6 {
+      font-size: $font-size-md;
+      font-weight: $font-weight-medium;
+      margin: 0;
+    }
+  }
+
+  .nestedBlocks_empty {
+    color: $text-medium;
+    font-style: italic;
+    padding: $spacing-md 0;
+    text-align: center;
+  }
+
+  .nestedBlocks_tree {
+    margin-bottom: $spacing-md;
+  }
+
+  .nestedBlocks_addRoot,
+  .nestedBlocks_maxDepthWarning {
+    border-top: 1px solid $border-light;
+    padding-top: $spacing-md;
+  }
+
+  .nestedBlocks_addRootSelect {
+    @include form-input-sm();
+    font-size: $font-size-sm;
+    width: 100%;
+
+    &:focus {
+      @include focus-state();
+    }
+  }
+
+  .nestedBlocks_maxDepthWarning {
+    color: $danger-red;
+    font-size: $font-size-sm;
+    font-style: italic;
+    text-align: center;
+  }
+}
+
+.nestedBlock {
+  border: 1px solid $border-light;
+  border-radius: $border-radius-sm;
+  margin-bottom: $spacing-sm;
+  padding: 10px 12px;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background-color: $background-light;
+  }
+
+  .nestedBlock_row {
+    align-items: center;
+    display: flex;
+    gap: 10px;
+    justify-content: space-between;
+    margin-bottom: 0;
+    min-height: 24px;
+  }
+
+  .nestedBlock_info {
+    align-items: center;
+    display: flex;
+    flex: 1;
+    gap: 10px;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .nestedBlock_toggleButton {
+    align-items: center;
+    background: transparent;
+    border: none;
+    border-radius: 3px;
+    color: $text-medium;
+    cursor: pointer;
+    display: flex;
+    flex-shrink: 0;
+    font-size: 10px;
+    height: 20px;
+    justify-content: center;
+    line-height: 1;
+    padding: 0;
+    transition: all $transition-fast;
+    width: 20px;
+
+    &:hover {
+      background: $border-light;
+      color: $text-dark;
+    }
+  }
+
+  .nestedBlock_spacer {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 20px;
+  }
+
+  .nestedBlock_name {
+    flex: 1;
+    font-weight: $font-weight-medium;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .nestedBlock_depth {
+    color: $text-medium;
+    flex-shrink: 0;
+    font-size: $font-size-xs;
+    white-space: nowrap;
+  }
+
+  .nestedBlock_actions {
+    align-items: center;
+    display: flex;
+    flex-shrink: 0;
+    gap: $spacing-sm;
+  }
+
+  .nestedBlock_actionButton {
+    background: $background-light;
+    border: 1px solid $border-medium;
+    border-radius: $border-radius-sm;
+    color: $text-medium;
+    cursor: pointer;
+    font-size: 11px;
+    font-weight: $font-weight-normal;
+    padding: 4px 10px;
+    transition: all $transition-fast;
+
+    &:hover:not(:disabled) {
+      background: $border-medium;
+      border-color: $text-medium;
+      color: $text-dark;
+    }
+
+    &:disabled {
+      background: $background-lighter;
+      color: $text-light;
+      cursor: not-allowed;
+      opacity: 0.5;
+    }
+  }
+
+  .nestedBlock_addChild {
+    margin-top: 10px;
+    padding-left: 30px;
+  }
+
+  .nestedBlock_addChildSelect {
+    @include form-input-sm();
+    font-size: $font-size-xs;
+    width: 100%;
+
+    &:focus {
+      @include focus-state();
+    }
+  }
+
+  .nestedBlock_children {
+    margin-top: 8px;
+  }
+}
+

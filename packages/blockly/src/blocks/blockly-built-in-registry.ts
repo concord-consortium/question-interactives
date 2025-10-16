@@ -6,6 +6,7 @@ import { IBuiltInBlockInfo } from "../components/types";
 // Registry of available Blockly built-in blocks (from Blockly core library)
 export const BLOCKLY_BUILT_IN_BLOCKS: IBuiltInBlockInfo[] = [
   {
+    canHaveChildren: true,
     color: "#5ba55b",
     description: "If-then conditional block",
     hasStatements: true,
@@ -14,6 +15,7 @@ export const BLOCKLY_BUILT_IN_BLOCKS: IBuiltInBlockInfo[] = [
     type: "built-in"
   },
   {
+    canHaveChildren: false,
     color: "#5ba55b",
     description: "Logical AND/OR operation",
     hasStatements: false,
@@ -22,6 +24,7 @@ export const BLOCKLY_BUILT_IN_BLOCKS: IBuiltInBlockInfo[] = [
     type: "built-in"
   },
   {
+    canHaveChildren: false,
     color: "#5ba55b", 
     description: "Logical NOT operation",
     hasStatements: false,
