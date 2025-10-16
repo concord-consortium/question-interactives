@@ -2,11 +2,11 @@ import {
   IRuntimeQuestionComponentProps
 } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
 import { Events, inject, serialization, WorkspaceSvg } from "blockly";
+import { javascriptGenerator } from "blockly/javascript";
 import React, { useEffect, useMemo, useRef, useState } from "react";
 
 import { registerCustomBlocks } from "../blocks/block-factory";
 import "../blocks/block-registration";
-import { netlogoGenerator } from "../utils/netlogo-generator";
 import { injectCustomBlocksIntoToolbox } from "../utils/toolbox-utils";
 import { IAuthoredState, IInteractiveState } from "./types";
 
@@ -18,7 +18,7 @@ interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInterac
 const saveEvents: string[] = [Events.BLOCK_CREATE, Events.BLOCK_DELETE, Events.BLOCK_CHANGE, Events.BLOCK_MOVE];
 
 export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
-  const { customBlocks = [], toolbox } = authoredState;
+  const { customBlocks = [], simulationCode, toolbox } = authoredState;
   const safeCustomBlocks = useMemo(() => {
     return Array.isArray(customBlocks) ? customBlocks : [];
   }, [customBlocks]);
@@ -62,11 +62,12 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
         const saveState = (event: Events.Abstract) => {
           if (saveEvents.includes(event.type)) {
             const state = serialization.workspaces.save(newWorkspace);
-            const blocklyCode = netlogoGenerator.workspaceToCode(newWorkspace);
+            const blocklyCode = javascriptGenerator.workspaceToCode(newWorkspace);
+            const code = `${simulationCode}\n\n${blocklyCode}`;
             setInteractiveState?.((prevState: IInteractiveState) => {
               const newState = {
                 ...prevState,
-                blocklyCode,
+                code,
                 blocklyState: JSON.stringify(state)
               };
               return newState;
@@ -80,7 +81,7 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
         setError(e);
       }
     }
-  }, [safeCustomBlocks, report, setInteractiveState, toolbox]);
+  }, [report, safeCustomBlocks, setInteractiveState, simulationCode, toolbox]);
 
   // Load saved state on initial load
   useEffect(() => {

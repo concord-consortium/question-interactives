@@ -1,6 +1,8 @@
 import { IAuthoringInteractiveMetadata, IRuntimeInteractiveMetadata } from "@concord-consortium/lara-interactive-api";
 import { MenuOption } from "blockly";
 
+import { predatorPreyCode } from "../sims/predator-prey-code";
+
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
 
@@ -81,12 +83,13 @@ export interface IBuiltInBlockInfo {
 export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   customBlocks?: ICustomBlock[];
   hint?: string;
+  simulationCode: string;
   toolbox: string;
   version: number;
 }
 
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
-  blocklyCode?: string;
+  code?: string;
   blocklyState?: string;
   submitted?: boolean;
 }
@@ -126,6 +129,7 @@ export const DefaultAuthoredState: Omit<Required<IAuthoredState>, "questionSubTy
   customBlocks: [],
   hint: "",
   questionType: "iframe_interactive",
+  simulationCode: predatorPreyCode,
   toolbox: defaultToolbox ? JSON.stringify(defaultToolbox, null, 2) : "",
   version: 1
 };
@@ -301,6 +305,7 @@ export const DemoAuthoredState: IAuthoredState = {
   hint: "",
   prompt: "",
   questionType: "iframe_interactive",
+  simulationCode: predatorPreyCode,
   toolbox: defaultToolbox ? JSON.stringify(defaultToolbox, null, 2) : "",
   version: 1
 };
