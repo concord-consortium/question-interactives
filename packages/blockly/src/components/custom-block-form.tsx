@@ -229,6 +229,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         ? {
             ...base,
             canHaveChildren: false,
+            generatorTemplate: formData.generatorTemplate?.trim() ? formData.generatorTemplate : undefined,
             options: formData.options
               .filter(opt => opt.label && opt.value)
               .map(opt => [opt.label, opt.value] as [string, string]),

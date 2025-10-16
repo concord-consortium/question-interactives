@@ -1,9 +1,10 @@
 import { FieldSlider } from "@blockly/field-slider";
 import type { BlockSvg } from "blockly";
+import { javascriptGenerator, Order } from "blockly/javascript";
 import Blockly, { Blocks, Connection, FieldDropdown, FieldNumber } from "blockly/core";
 
 import { ICustomBlock, INestedBlock, IParameter, IBlockConfig } from "../components/types";
-import { netlogoGenerator } from "../utils/netlogo-generator";
+import { replaceParameters } from "../utils/block-utils";
 
 const PLUS_ICON  = "data:image/svg+xml;utf8," +
   "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>" +
@@ -296,21 +297,14 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
     };
 
     // Generator: include available values
-    netlogoGenerator.forBlock[blockType] = function(block) {
+    javascriptGenerator.forBlock[blockType] = function(block) {
       if (blockDef.type === "action") {
         // If a generatorTemplate is provided, interpolate parameter fields
         const actionName = blockDef.name.toLowerCase().replace(/\s+/g, "_");
 
-        if (blockConfig.generatorTemplate && typeof blockConfig.generatorTemplate === "string") {
+        if (blockConfig.generatorTemplate) {
           let code = String(blockConfig.generatorTemplate);
-          // Replace ${PARAM} placeholders with field values
-          const params = Array.isArray(blockConfig.parameters) ? blockConfig.parameters : [];
-          params.forEach((p: IParameter) => {
-            const val = block.getFieldValue(p.name);
-            const safe = val != null ? String(val) : "";
-            const re = new RegExp(`\\$\\{${p.name}\\}`, "g");
-            code = code.replace(re, safe);
-          });
+          code = replaceParameters(code, blockConfig.parameters || [], block);
           // Also allow ${ACTION} for the action name
           code = code.replace(/\$\{ACTION\}/g, actionName);
           return code.endsWith("\n") ? code : code + "\n";
@@ -344,15 +338,21 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         // For now, though, we just return a simple create command.
         const count = block.getFieldValue("count");
         const type = block.getFieldValue("type").toLowerCase().replace(/\s+/g, "_");
-        const statements = netlogoGenerator.statementToCode(block, "statements");
+        const statements = javascriptGenerator.statementToCode(block, "statements");
+        const callback = statements ? `(agent) => {\n${statements}\n}` : "";
 
-        return `create-${type} ${count}\n${statements}`;
+        return `create_${type}(${count}, ${callback});\n`;
       } else if (blockDef.type === "ask") {
         const target = block.getFieldValue("target");
-        const targetEntity = blockConfig.targetEntity || "";
-        const statements = netlogoGenerator.statementToCode(block, "statements");
-        return `ask ${target} ${targetEntity} [\n${statements}]\n`;
+        const statements = javascriptGenerator.statementToCode(block, "statements");
+        const agents = target === "all" ? "sim.actors" : `sim.withLabel("${target}")`;
+        return `${agents}.forEach(agent => {\n${statements}\n});\n`;
       } else if (blockDef.type === "condition") {
+        if (blockConfig.generatorTemplate) {
+          // TODO: Is there a more appropriate order than atomic?
+          return [replaceParameters(blockConfig.generatorTemplate, blockConfig.parameters || [], block), Order.ATOMIC];
+        }
+
         const condition = block.getFieldValue("condition");
         return condition;
       }
