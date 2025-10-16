@@ -152,7 +152,7 @@ describe("block-factory", () => {
         category: "General",
         config: {
           canHaveChildren: true,
-          childBlocks: ["custom_set_color_123"],
+          childBlocks: [{ blockId: "custom_set_color_123" }],
           defaultCount: 100,
           minCount: 0,
           maxCount: 500,
@@ -265,7 +265,7 @@ describe("block-factory", () => {
         category: "General",
         config: {
           canHaveChildren: true,
-          childBlocks: ["custom_set_color_123"],
+          childBlocks: [{ blockId: "custom_set_color_123" }],
           defaultCount: 100,
           minCount: 0,
           maxCount: 500,
@@ -307,7 +307,7 @@ describe("block-factory", () => {
         color: "#004696",
         config: {
           canHaveChildren: true,
-          childBlocks: ["custom_set_color_123"],
+          childBlocks: [{ blockId: "custom_set_color_123" }],
           generatorTemplate: "${ACTION} ${DIRECTION}",
           parameters: [
             {

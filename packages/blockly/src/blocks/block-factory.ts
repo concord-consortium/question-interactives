@@ -1,9 +1,9 @@
 import { FieldSlider } from "@blockly/field-slider";
 import type { BlockSvg } from "blockly";
-import Blockly, { Blocks, FieldDropdown, FieldNumber } from "blockly/core";
 import { javascriptGenerator, Order } from "blockly/javascript";
+import Blockly, { Blocks, Connection, FieldDropdown, FieldNumber } from "blockly/core";
 
-import { ICustomBlock, IParameter, IBlockConfig } from "../components/types";
+import { ICustomBlock, INestedBlock, IParameter, IBlockConfig } from "../components/types";
 import { replaceParameters } from "../utils/block-utils";
 
 const PLUS_ICON  = "data:image/svg+xml;utf8," +
@@ -97,9 +97,9 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
                 // Clean up existing child blocks first to avoid connection conflicts
                 const existingBlock = stmt.connection.targetBlock();
                 if (existingBlock) {
-                  // Dispose of existing child blocks and their connections
-                  const blocksToDispose: any[] = [];
-                  let currentBlock = existingBlock;
+                  // Collect existing child blocks and their connections to dispose of them below
+                  const blocksToDispose: BlockSvg[] = [];
+                  let currentBlock: BlockSvg | null = existingBlock;
                   while (currentBlock) {
                     blocksToDispose.push(currentBlock);
                     currentBlock = currentBlock.getNextBlock();
@@ -116,17 +116,35 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
                 }
 
                 if (Array.isArray(blockConfig.childBlocks) && blockConfig.childBlocks.length > 0) {
-                  let previousChild: any = null;
-                  for (const childType of blockConfig.childBlocks) {
-                    const child = this.workspace.newBlock(childType);
-                    child.initSvg();
-                    const nextConnection = previousChild ? previousChild.nextConnection : stmt.connection;
-                    if (nextConnection && child.previousConnection) {
-                      nextConnection.connect(child.previousConnection);
+                  const createNestedBlocks = (nestedBlocks: INestedBlock[], parentConnection: Connection) => {
+                    let previousChild = null;
+                    
+                    for (const nestedBlock of nestedBlocks) {
+                      const child = this.workspace.newBlock(nestedBlock.blockId);
+                      child.initSvg();
+                      
+                      // Connect to previous sibling or parent
+                      const nextConnection = previousChild ? previousChild.nextConnection : parentConnection;
+                      if (nextConnection && child.previousConnection) {
+                        nextConnection.connect(child.previousConnection);
+                      }
+                      
+                      child.render();
+                      previousChild = child;
+                      
+                      // Recursively create children of this block
+                      if (nestedBlock.children && nestedBlock.children.length > 0) {
+                        const childStmt = child.getInput("statements");
+                        if (childStmt && childStmt.connection) {
+                          createNestedBlocks(nestedBlock.children, childStmt.connection);
+                        }
+                      }
                     }
-                    child.render();
-                    previousChild = child;
-                  }
+                    
+                    return previousChild;
+                  };
+                  
+                  createNestedBlocks(blockConfig.childBlocks, stmt.connection);
                 }
                 this.__childrenSeeded = true;
               } catch (error) {

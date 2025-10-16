@@ -69,6 +69,7 @@ javascriptGenerator.forBlock.when = function(block) {
 
 export const CUSTOM_BUILT_IN_BLOCKS: IBuiltInBlockInfo[] = [
   {
+    canHaveChildren: true,
     color: BG_COLOR,
     description: "Execute blocks with a probability",
     hasStatements: true,
@@ -77,6 +78,7 @@ export const CUSTOM_BUILT_IN_BLOCKS: IBuiltInBlockInfo[] = [
     type: "built-in"
   },
   {
+    canHaveChildren: true,
     color: BG_COLOR,
     description: "Repeat blocks a specified number of times",
     hasStatements: true,
@@ -85,6 +87,7 @@ export const CUSTOM_BUILT_IN_BLOCKS: IBuiltInBlockInfo[] = [
     type: "built-in"
   },
   {
+    canHaveChildren: true,
     color: BG_COLOR,
     description: "Execute blocks when a condition is true",
     hasStatements: true,

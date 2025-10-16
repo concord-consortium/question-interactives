@@ -25,6 +25,13 @@ export const REQUIRED_BLOCK_FIELDS = [
 
 export type CustomBlockType = typeof VALID_BLOCK_TYPES[number];
 export type ParameterKind = "select" | "number";
+
+export interface INestedBlock {
+  blockId: string;
+  canHaveChildren?: boolean;
+  children?: INestedBlock[];
+}
+
 export interface IParameterBase {
   defaultValue?: string | number;
   kind: ParameterKind;
@@ -43,7 +50,7 @@ export type IParameter = IParameterSelect | IParameterNumber;
 
 export interface IBlockConfig {
   canHaveChildren: boolean;
-  childBlocks?: string[];
+  childBlocks?: INestedBlock[];
   conditionInput?: boolean;
   defaultCount?: number;
   generatorTemplate?: string;
@@ -72,6 +79,7 @@ export interface ICustomBlock {
 }
 
 export interface IBuiltInBlockInfo {
+  canHaveChildren: boolean;
   color: string;
   description: string;
   hasStatements: boolean;
@@ -162,7 +170,9 @@ export const DemoAuthoredState: IAuthoredState = {
         "nextStatement": true,
         "previousStatement": true,
         "childBlocks": [
-          "custom_setter_color_1759159837671"
+          {
+            "blockId": "custom_setter_color_1759159837671"
+          }
         ],
         "typeOptions": [
           ["water", "WATER"],

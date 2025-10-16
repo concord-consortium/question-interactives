@@ -16,9 +16,9 @@ export const availableChildBlocks = (existingCustomBlocks: ICustomBlock[] = [], 
   const blocklyBuiltInBlocks = BLOCKLY_BUILT_IN_BLOCKS;
   
   return [
-    ...creatorBlocks.map(b => ({ id: b.id, name: `${b.name} (creator)`, type: "creator" })),
-    ...setterBlocks.map(b => ({ id: b.id, name: `${b.name} (setter)`, type: "setter" })),
-    ...actionBlocks.map(b => ({ id: b.id, name: `${b.name} (action)`, type: "action" })),
+    ...creatorBlocks.map(b => ({ id: b.id, name: `${b.name} (creator)`, type: "creator", canHaveChildren: b.config.canHaveChildren })),
+    ...setterBlocks.map(b => ({ id: b.id, name: `${b.name} (setter)`, type: "setter", canHaveChildren: b.config.canHaveChildren })),
+    ...actionBlocks.map(b => ({ id: b.id, name: `${b.name} (action)`, type: "action", canHaveChildren: b.config.canHaveChildren })),
     ...customBuiltInBlocks,
     ...blocklyBuiltInBlocks
   ];

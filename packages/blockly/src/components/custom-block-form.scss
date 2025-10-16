@@ -172,7 +172,7 @@
     }
   }
 
-  button[type="button"] {
+  > button[type="button"] {
     align-self: center;
     background: $success-green;
     border: none;
