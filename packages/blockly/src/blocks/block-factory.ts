@@ -331,7 +331,7 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         const attributeName = blockDef.name.toLowerCase().replace(/\s+/g, "_");
         const value = block.getFieldValue("value");
 
-        return `set ${attributeName} ${value}\n`;
+        return `set_${attributeName}(agent, "${value}");\n`;
       } else if (blockDef.type === "creator") {
         // This is probaly NOT close to what we want. There can be other parameters
         // to take into consideration and statements to process, e.g. child setter blocks.

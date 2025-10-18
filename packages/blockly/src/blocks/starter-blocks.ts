@@ -79,5 +79,5 @@ javascriptGenerator.forBlock.onclick = function(block) {
   // If no statements have been specified, don't generate any code
   if (!statements.trim()) return "";
 
-  return `function onclick() {\n${statements}}\n`;
+  return `function onClick() {\n${statements}}\n`;
 };

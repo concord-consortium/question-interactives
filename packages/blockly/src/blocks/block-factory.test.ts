@@ -499,7 +499,7 @@ describe("block-factory", () => {
 
       mockBlock.getFieldValue = jest.fn().mockReturnValue("RED");
       const code = javascriptGenerator.forBlock["custom_set_color_123"].call(mockBlock, mockBlock);
-      expect(code).toBe("set color RED\n");
+      expect(code).toBe(`set_color(agent, "RED");\n`);
     });
 
     it("generates code for setter block with number input", () => {
@@ -520,7 +520,7 @@ describe("block-factory", () => {
       mockBlock.getFieldValue = jest.fn().mockReturnValue(5);
 
       const code = javascriptGenerator.forBlock["custom_set_speed_123"].call(mockBlock, mockBlock);
-      expect(code).toBe("set speed 5\n");
+      expect(code).toBe(`set_speed(agent, "5");\n`);
     });
 
     it("generates code for creator block", () => {
