@@ -1,16 +1,21 @@
-// import * as AA from "agent-based-automation";
+// This file contains the wildfire smoke simulation, broken into parts that can be entered into different parts
+// of the blockly interactive interface.
+// Note that some aspects of the MoDa simulation blocks cannot be replicated because our nested block setup
+// does not allow an author to specify conditions for if blocks, non-default values in contained blocks, etc.
 
-// const sim = new AA.Simulation({
-//   width: 600,
-//   height: 400,
-//   gridStep: 20
-// });
-
+/*** Sim code */
 let windSpeed = 1;
 let windDirection = 0;
 
-function setup() {
-  blockly_create_air(1000);
+function isTouching(agent, type) {
+  if (type === "wall") {
+    return agent.x <= 0 || agent.x >= sim.width || agent.y <= 0 || agent.y >= sim.height;
+  } else {
+    const isMoving = agent.state.speed > 0;
+    const _others = agent.overlapping("actor");
+    const others = type === "any" ? _others : _others.filter(a => a.label(type));
+    return others && others.some(a => isMoving || a.state.speed > 0);
+  }
 }
 
 // Adapted from MoDa code
@@ -41,6 +46,31 @@ function collide(actor1, actor2) {
   actor2.state.speed = Math.sqrt(v2t * v2t + v2l * v2l);
   if (v2t !== 0 || v2l !== 0) {
     actor2.state.heading = theta - Math.atan2(v2l, v2t);
+  }
+}
+
+function attach(actor1, actor2) {
+  actor1.state.speed = actor2.state.speed;
+  actor1.state.heading = actor2.state.heading;
+}
+
+function interact(agent, interactFunction) {
+  if (agent.state.collided) return;
+
+  const agentMoving = agent.state.speed > 0;
+  const others = agent.overlapping("actor");
+  if (others) {
+    const other = others.find(a => {
+      return !a.state.collided && a.state.lastCollision !== agent && agent.state.lastCollision !== a &&
+        (agentMoving || a.state.speed > 0);
+    });
+    if (other) {
+      interactFunction(agent, other);
+      agent.state.collided = true;
+      other.state.collided = true;
+      agent.state.lastCollision = other;
+      other.state.lastCollision = agent;
+    }
   }
 }
 
@@ -91,15 +121,6 @@ sim.beforeTick = () => {
 }
 
 sim.afterTick = () => {
-  // Create smoke on each tick
-  blockly_create_smoke(1);
-
-  // Air particles are affected by wind
-  sim.withLabel("air").forEach(agent => {
-    set_heading(agent, "wind direction");
-    set_speed(agent, "wind speed");
-  });
-
   // Particles bounce off each other
   sim.actors.forEach(agent => {
     if (agent.state.collided) return;
@@ -119,11 +140,6 @@ sim.afterTick = () => {
         other.state.lastCollision = agent;
       }
     }
-  });
-
-  // Make all particles move
-  sim.actors.forEach(agent => {
-    agent.state.moving = true;
   });
 };
 
@@ -183,17 +199,6 @@ function set_speed(agent, speedString) {
   set_actual_speed(agent, getSpeedNumber(speedString));
 }
 
-function set_position(agent, positionString) {
-  if (positionString === "random") {
-    agent.x = Math.random() * sim.width;
-    agent.y = Math.random() * sim.height;
-  } else if (positionString === "center") {
-    agent.x = sim.width / 2;
-    agent.y = sim.height / 2;
-  }
-  // TODO: handle horizontal and vertical lines
-}
-
 function getHeadingNumber(headingString) {
   if (headingString === "random") {
     return Math.random() * 2 * Math.PI;
@@ -227,6 +232,17 @@ function set_mass(agent, massString) {
   }
 }
 
+function set_position(agent, positionString) {
+  if (positionString === "random") {
+    agent.x = Math.random() * sim.width;
+    agent.y = Math.random() * sim.height;
+  } else if (positionString === "center") {
+    agent.x = sim.width / 2;
+    agent.y = sim.height / 2;
+  }
+  // TODO: handle horizontal and vertical lines
+}
+
 function set_color(agent, colorString) {
   agent.state.colorString = colorString;
 }
@@ -236,20 +252,21 @@ const create_a_air = getAddActorFunction({
   label: "air",
   radius: 2
 });
-function create_air(num, callback) {
+// Because we can't specify values for nested blocks in our current system, we ignore contained blocks and hardcode
+// the MoDa specified values here.
+function airCallback(agent) {
+  set_speed(agent, "wind speed");
+  set_position(agent, "random");
+  set_heading(agent, "random");
+  set_mass(agent, "medium");
+  set_color(agent, "cyan");
+}
+function create_air(num, _callback) {
   for (let i = 0; i < num; i++) {
     const agent = create_a_air();
-    if (callback) callback(agent);
+    airCallback(agent);
+    // if (_callback) _callback(agent);
   }
-}
-function blockly_create_air(num) {
-  create_air(num, agent => {
-    set_speed(agent, "wind speed");
-    set_position(agent, "random");
-    set_heading(agent, "random");
-    set_mass(agent, "medium");
-    set_color(agent, "cyan");
-  });
 }
 
 // smoke
@@ -257,20 +274,55 @@ const create_a_smoke = getAddActorFunction({
   label: "smoke",
   radius: 4
 });
-function create_smoke(num, callback) {
+// Because we can't specify values for nested blocks in our current system, we ignore contained blocks and hardcode
+// the MoDa specified values here.
+function smokeCallback(agent) {
+  set_speed(agent, "very low");
+  set_position(agent, "center");
+  set_heading(agent, "random");
+  set_mass(agent, "medium");
+  set_color(agent, "gray");
+}
+function create_smoke(num, _callback) {
   for (let i = 0; i < num; i++) {
     const agent = create_a_smoke();
-    if (callback) callback(agent);
+    smokeCallback(agent);
+    // if (_callback) _callback(agent);
   }
-}
-function blockly_create_smoke(num) {
-  create_smoke(num, agent => {
-    set_speed(agent, "very low");
-    set_position(agent, "center");
-    set_heading(agent, "random");
-    set_mass(agent, "medium");
-    set_color(agent, "gray");
-  })
 }
 
 setup();
+/*** End sim code */
+
+/*** Blow */
+// Note this does not match the MoDa sim blow block, which is just a collection of blocks.
+set_heading(agent, "wind direction");
+set_speed(agent, "wind speed");
+agent.state.moving = true;
+/*** End blow */
+
+/*** Move */
+agent.state.moving = true;
+/*** End move */
+
+/*** Erase */
+agent.remove();
+/*** End erase */
+
+/*** Attach */
+interact(agent, attach);
+/*** End attach */
+
+/*** Bounce off */
+interact(agent, collide);
+/*** End bounce off */
+
+/*** Interact */
+// Not implemented. This block is just a combination of if, touching, and bounce off blocks. But we can't set it
+// up properly in our current nested block system.
+/*** End interact */
+
+/*** Touching */
+// TODO: How do we access the value in the dropdown?
+isTouching(agent, /* type */);
+/*** End touching */
