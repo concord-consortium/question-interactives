@@ -323,6 +323,5 @@ interact(agent, collide);
 /*** End interact */
 
 /*** Touching */
-// TODO: How do we access the value in the dropdown?
-isTouching(agent, /* type */);
+isTouching(agent, "${CONDITION}");
 /*** End touching */

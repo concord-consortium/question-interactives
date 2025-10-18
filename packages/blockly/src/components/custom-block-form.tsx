@@ -554,6 +554,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
             onChange={(e) => setFormData(prev => ({ ...prev, generatorTemplate: e.target.value }))}
           />
           <div className={css.helpText}>
+            {formData.type === "condition" && (<>Use ${"{CONDITION}"} to reference the condition (selected option). To reference parameter values, use ${"{PARAM_NAME}"} where &quot;PARAM_NAME&quot; is the actual name of the parameter (e.g., ${"{DIRECTION}"}, ${"{MAGNITUDE}"}).</>)}
             {formData.type === "action" && (<>Use ${"{ACTION}"} to reference the action. To reference parameter values, use ${"{PARAM_NAME}"} where &quot;PARAM_NAME&quot; is the actual name of the parameter (e.g., ${"{DIRECTION}"}, ${"{MAGNITUDE}"}).</>)}
           </div>
         </div>

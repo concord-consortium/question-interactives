@@ -348,12 +348,14 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         const agents = target === "all" ? "sim.actors" : `sim.withLabel("${target}")`;
         return `${agents}.forEach(agent => {\n${statements}\n});\n`;
       } else if (blockDef.type === "condition") {
+        const condition = block.getFieldValue("condition");
+
         if (blockConfig.generatorTemplate) {
-          // TODO: Is there a more appropriate order than atomic?
-          return [replaceParameters(blockConfig.generatorTemplate, blockConfig.parameters || [], block), Order.ATOMIC];
+          let code = replaceParameters(blockConfig.generatorTemplate, blockConfig.parameters || [], block);
+          code = code.replace(/\$\{CONDITION\}/g, condition);
+          return [code, Order.ATOMIC];
         }
 
-        const condition = block.getFieldValue("condition");
         return condition;
       }
 
