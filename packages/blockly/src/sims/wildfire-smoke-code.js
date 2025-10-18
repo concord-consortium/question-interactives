@@ -6,30 +6,57 @@
 //   gridStep: 20
 // });
 
-let windSpeed = 2;
+let windSpeed = 1;
 let windDirection = 0;
-
-// const sheepEnergy = 6;
-// const sheepEnergyFromGrass = 3;
-// const sheepReproduceChance = 0.002;
-// const sheepEnergyLoss = 0.01;
-
-// const wolfEnergy = 20;
-// const wolfReproduceChance = 0.0005;
-// const wolfEnergyLoss = 0.1;
-
-// const maxGrassLevel = 10;
-// const grassGrowthRate = 0.01;
 
 function setup() {
   blockly_create_air(1000);
 }
 
+// Adapted from MoDa code
+// https://github.com/tamarrf/MoDa_Dev/blob/master/src/web-application/public/wildfire-and-smoke-spread-v2.nlogo
+function collide(actor1, actor2) {
+  const s1 = actor1.state.speed;
+  const s2 = actor2.state.speed;
+  const h1 = actor1.state.heading;
+  const h2 = actor2.state.heading;
+  const m1 = actor1.state.mass ?? 1;
+  const m2 = actor2.state.mass ?? 1;
+  const theta = Math.random() * 2 * Math.PI;
+
+  let v1t = s1 * Math.cos(theta - h1);
+  const v1l = s1 * Math.sin(theta - h1);
+  let v2t = s2 * Math.cos(theta - h2);
+  const v2l = s2 * Math.sin(theta - h2);
+
+  const vcm = (m1 * v1t + m2 * v2t) / (m1 + m2);
+  v1t = 2 * vcm - v1t;
+  v2t = 2 * vcm - v2t;
+
+  actor1.state.speed = Math.sqrt(v1t * v1t + v1l * v1l);
+  if (v1t !== 0 || v1l !== 0) {
+    actor1.state.heading = theta - Math.atan2(v1l, v1t);
+  }
+
+  actor2.state.speed = Math.sqrt(v2t * v2t + v2l * v2l);
+  if (v2t !== 0 || v2l !== 0) {
+    actor2.state.heading = theta - Math.atan2(v2l, v2t);
+  }
+}
+
 sim.beforeTick = () => {
+  // Update speed and heading for particles affected by wind
   sim.actors.forEach(agent => {
-    const speed = getSpeedNumber(agent.state.speed);
-    const heading = getHeadingNumber(agent);
-    agent.vel = AA.Vector.fromPolar(speed, heading);
+    if (agent.state.headingString === "wind direction") agent.state.heading = windDirection;
+    if (agent.state.speedString === "wind speed") agent.state.speed = windSpeed;
+  });
+
+  sim.actors.forEach(agent => {
+    if (agent.state.moving) {
+      agent.vel = AA.Vector.fromPolar(agent.state.speed, agent.state.heading);
+    } else {
+      agent.vel = AA.Vector.fromPolar(0, agent.state.heading);
+    }
   });
 
   // Smoke is removed when it reaches a boundary
@@ -53,69 +80,50 @@ sim.beforeTick = () => {
     }
   });
 
-  // Update heading and speed for particles affected by wind
+  // Reset particle state in preparation for next tick
   sim.actors.forEach(agent => {
-    if (agent.state.heading === "wind direction") setHeading(agent, "wind direction");
-    if (agent.state.speed === "wind speed")setSpeed(agent, "wind speed");
+    // Each agent can only collide once per tick
+    agent.state.collided = false;
+    // Agents only move if told to do so
+    agent.state.moving = false;
   });
 }
 
 sim.afterTick = () => {
-  blockly_create_smoke(2);
+  // Create smoke on each tick
+  blockly_create_smoke(1);
 
   // Air particles are affected by wind
   sim.withLabel("air").forEach(agent => {
-    setHeading(agent, "wind direction");
-    setSpeed(agent, "wind speed");
+    set_heading(agent, "wind direction");
+    set_speed(agent, "wind speed");
   });
-//   sim.squares.forEach(square => {
-//     // Grow grass
-//     if (square.state.grassLevel < maxGrassLevel) {
-//       square.state.grassLevel = Math.min(maxGrassLevel, square.state.grassLevel + grassGrowthRate);
-//     }
-//   });
 
-//   sim.actors?.forEach(a => {
-//     // Lose energy and possibly die
-//     const energyLoss = a.label("sheep") ? sheepEnergyLoss : wolfEnergyLoss;
-//     a.state.energy = a.state.energy - energyLoss;
-//     if (a.state.energy <= 0) {
-//       a.remove();
-//       return;
-//     }
+  // Particles bounce off each other
+  sim.actors.forEach(agent => {
+    if (agent.state.collided) return;
 
-//     // Turn
-//     a.vel.turn(Math.random() * Math.PI / 4 - Math.PI / 8);
+    const agentMoving = agent.state.speed > 0;
+    const others = agent.overlapping("actor");
+    if (others) {
+      const other = others.find(a => {
+        return !a.state.collided && a.state.lastCollision !== agent && agent.state.lastCollision !== a &&
+          (agentMoving || a.state.speed > 0);
+      });
+      if (other) {
+        collide(agent, other);
+        agent.state.collided = true;
+        other.state.collided = true;
+        agent.state.lastCollision = other;
+        other.state.lastCollision = agent;
+      }
+    }
+  });
 
-//     // Reproduce
-//     const reproduceChance = a.label("sheep") ? sheepReproduceChance : wolfReproduceChance;
-//     if (Math.random() < reproduceChance) {
-//       const addFunction = a.label("sheep") ? create_a_sheep : create_a_wolf;
-//       // const color = a.label("sheep") ? sheepColor : wolfColor;
-//       addFunction({ energy: a.state.energy / 2, x: a.x, y: a.y });
-//       a.state.energy = a.state.energy / 2;
-//     }
-//   });
-
-//   sim.withLabel("sheep").forEach(s => {
-//     // Eat grass
-//     const sq = s.squareOfCentroid();
-//     if (sq.state.grassLevel >= maxGrassLevel) {
-//       s.state.energy = s.state.energy + sheepEnergyFromGrass;
-//       sq.state.grassLevel = 0;
-//     }
-//   });
-
-//   sim.withLabel("wolf").forEach(w => {
-//     // Eat sheep
-//     const s = w.overlapping("actor").find(a => a?.label("sheep"));
-//     if (s) {
-//       w.state.energy = w.state.energy + s.state.energy / 2;
-//       s.remove();
-//     }
-//   });
-
-//   console.log(`sheep: ${Array.from(sim.withLabel("sheep")).length}, wolves: ${Array.from(sim.withLabel("wolf")).length}`);
+  // Make all particles move
+  sim.actors.forEach(agent => {
+    agent.state.moving = true;
+  });
 };
 
 // set up squares (patches)
@@ -125,13 +133,6 @@ for (let x = 0; x < sim.width / sim.gridStep; x++) {
     square.zIndex = -Infinity;
 
     square.vis({ tint: "0x99cc77" });
-
-    // // Set initial grass level
-    // const grassLevel = Math.random() > .5 ? maxGrassLevel : Math.random() * maxGrassLevel;
-    // square.state = { grassLevel };
-
-    // // Color squares based on grass level
-    // square.vis({ tint: s => s.state.grassLevel === maxGrassLevel ? "0x00cc00" : "0x996600" });
   }
 }
 
@@ -173,12 +174,15 @@ function getSpeedNumber(speedString) {
 
   return 0;
 }
-function setSpeed(agent, speedString) {
-  agent.state.speed = speedString;
-  agent.vel.setMag(getSpeedNumber(speedString));
+function set_actual_speed(agent, speed) {
+  agent.state.speed = speed;
+}
+function set_speed(agent, speedString) {
+  agent.state.speed_string = speedString;
+  set_actual_speed(agent, getSpeedNumber(speedString));
 }
 
-function setPosition(agent, positionString) {
+function set_position(agent, positionString) {
   if (positionString === "random") {
     agent.x = Math.random() * sim.width;
     agent.y = Math.random() * sim.height;
@@ -189,32 +193,30 @@ function setPosition(agent, positionString) {
   // TODO: handle horizontal and vertical lines
 }
 
-function getHeadingNumber(agent) {
-  if (typeof agent.state.heading === "number") {
-    return agent.state.heading;
-  } else if (agent.state.heading === "wind direction") {
+function getHeadingNumber(headingString) {
+  if (headingString === "random") {
+    return Math.random() * 2 * Math.PI;
+  } else if (headingString === "up") {
+    return 3 * Math.PI / 2;
+  } else if (headingString === "down") {
+    return Math.PI / 2;
+  } else if (headingString === "left") {
+    return Math.PI;
+  } else if (headingString === "right") {
+    return 0;
+  } else if (headingString === "wind direction") {
     return windDirection;
   }
 }
-function setHeading(agent, headingString) {
-  if (headingString === "random") {
-    agent.state.heading = Math.random() * 2 * Math.PI;
-  } else if (headingString === "up") {
-    agent.state.heading = 3 * Math.PI / 2;
-  } else if (headingString === "down") {
-    agent.state.heading = Math.PI / 2;
-  } else if (headingString === "left") {
-    agent.state.heading = Math.PI;
-  } else if (headingString === "right") {
-    agent.state.heading = 0;
-  } else if (headingString === "wind direction") {
-    agent.state.heading = "wind direction";
-  }
-
-  agent.vel.setHeading(getHeadingNumber(agent));
+function set_actual_heading(agent, heading) {
+  agent.state.heading = heading;
+}
+function set_heading(agent, headingString) {
+  agent.state.heading_string = headingString;
+  set_actual_heading(agent, getHeadingNumber(headingString));
 }
 
-function setMass(agent, massString) {
+function set_mass(agent, massString) {
   if (massString === "light") {
     agent.state.mass = 0.5;
   } else if (massString === "medium") {
@@ -224,7 +226,7 @@ function setMass(agent, massString) {
   }
 }
 
-function setColor(agent, colorString) {
+function set_color(agent, colorString) {
   agent.state.colorString = colorString;
 }
 
@@ -241,11 +243,11 @@ function create_air(num, callback) {
 }
 function blockly_create_air(num) {
   create_air(num, agent => {
-    setSpeed(agent, "wind speed");
-    setPosition(agent, "random");
-    setHeading(agent, "random");
-    setMass(agent, "medium");
-    setColor(agent, "cyan");
+    set_speed(agent, "wind speed");
+    set_position(agent, "random");
+    set_heading(agent, "random");
+    set_mass(agent, "medium");
+    set_color(agent, "cyan");
   });
 }
 
@@ -262,20 +264,12 @@ function create_smoke(num, callback) {
 }
 function blockly_create_smoke(num) {
   create_smoke(num, agent => {
-    setSpeed(agent, "very low");
-    setPosition(agent, "center");
-    setHeading(agent, "random");
-    setMass(agent, "medium");
-    setColor(agent, "gray");
+    set_speed(agent, "very low");
+    set_position(agent, "center");
+    set_heading(agent, "random");
+    set_mass(agent, "medium");
+    set_color(agent, "gray");
   })
 }
 
-// actors bounce off the simulation boundary
-sim.interaction.set("boundary-bounce", {
-  group1: sim.actors,
-  group2: sim.actors,
-  behavior: "bounce"
-});
-
 setup();
-
