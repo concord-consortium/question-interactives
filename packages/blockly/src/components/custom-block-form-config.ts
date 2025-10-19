@@ -19,11 +19,12 @@ export interface IBlockTypeConfig {
   optionTerm?: string;
   optionValuePlaceholder?: string;
   placeholder?: string;
+  typeCanHaveChildren?: boolean;
 }
 
 export const BLOCK_TYPE_CONFIG: Record<CustomBlockType, IBlockTypeConfig> = {
   action: {
-    canHaveChildren: true,
+    canHaveChildren: false,
     color: "#004696",
     hasConditionInput: true,
     hasGeneratorTemplate: true,
@@ -31,7 +32,8 @@ export const BLOCK_TYPE_CONFIG: Record<CustomBlockType, IBlockTypeConfig> = {
     hasParameters: true,
     generatorPlaceholder: "e.g., ${ACTION} ${DIRECTION}\\nset speed ${SPEED}",
     label: "Action Name",
-    placeholder: "e.g., bounce off, move forward"
+    placeholder: "e.g., bounce off, move forward",
+    typeCanHaveChildren: true
   },
   ask: {
     canHaveChildren: false,
@@ -78,7 +80,8 @@ export const BLOCK_TYPE_CONFIG: Record<CustomBlockType, IBlockTypeConfig> = {
     optionLabelPlaceholder: "Display text (e.g., water)",
     optionTerm: "Types",
     optionValuePlaceholder: "Value (e.g., WATER)",
-    placeholder: "e.g., molecules, people"
+    placeholder: "e.g., molecules, people",
+    typeCanHaveChildren: true
   },
   setter: {
     canHaveChildren: false,

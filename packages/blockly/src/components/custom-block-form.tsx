@@ -518,7 +518,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         </>
       )}
 
-      {blockConfig.canHaveChildren && (
+      {blockConfig.typeCanHaveChildren && (
         <div className={css.customBlockForm_canHaveChildren} data-testid="section-can-have-children">
           <label htmlFor="can-have-children">
             <input
