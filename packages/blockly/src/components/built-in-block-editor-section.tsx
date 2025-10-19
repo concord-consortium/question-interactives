@@ -16,11 +16,11 @@ export const BuiltInBlockEditorSection: React.FC<IProps> = ({availableCategories
 
   // List of all built-in blocks (both custom-defined and from Blockly core)
   const allBuiltInBlocks = React.useMemo(() => {
-    return ALL_BUILT_IN_BLOCKS.map(b => b.id)
-      .filter(blockId => Blocks[blockId])
-      .map(blockId => ({
-        id: blockId,
-        name: blockId
+    return ALL_BUILT_IN_BLOCKS
+      .filter(block => Blocks[block.id])
+      .map(block => ({
+        id: block.id,
+        name: block.id
       }));
   }, []);
 

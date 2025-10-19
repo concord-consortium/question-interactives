@@ -1,10 +1,5 @@
-// import * as AA from "agent-based-automation";
-
-// const sim = new AA.Simulation({
-//   width: 600,
-//   height: 400,
-//   gridStep: 20
-// });
+// This file contains vanilla javascript code that runs a version of the wildfire smoke simulation when pasted into the
+// simulation interactive code area.
 
 let windSpeed = 1;
 let windDirection = 0;
