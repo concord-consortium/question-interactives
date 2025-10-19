@@ -81,6 +81,7 @@ export interface ICustomBlock {
 export interface IBuiltInBlockInfo {
   canHaveChildren: boolean;
   color: string;
+  defaultCategory?: string;
   description: string;
   hasStatements: boolean;
   id: string;

@@ -1,7 +1,7 @@
 import { Blocks } from "blockly/core";
 import React, { useState } from "react";
 
-import { ALL_BUILT_IN_BLOCK_IDS } from "../blocks/block-constants";
+import { ALL_BUILT_IN_BLOCKS } from "../blocks/block-constants";
 
 import css from "./built-in-block-editor-section.scss";
 
@@ -16,7 +16,7 @@ export const BuiltInBlockEditorSection: React.FC<IProps> = ({availableCategories
 
   // List of all built-in blocks (both custom-defined and from Blockly core)
   const allBuiltInBlocks = React.useMemo(() => {
-    return ALL_BUILT_IN_BLOCK_IDS
+    return ALL_BUILT_IN_BLOCKS.map(b => b.id)
       .filter(blockId => Blocks[blockId])
       .map(blockId => ({
         id: blockId,
