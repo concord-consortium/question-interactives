@@ -1,9 +1,7 @@
-// This file contains vanilla javascript code that runs the predator-prey simulation when pasted into the
-// simulation interactive code area.
-// NOTE: Pasting the code directly will not work because of the backticks.
+// This file contains vanilla javascript code that runs the predator-prey simulation when it is copied and pasted
+// into the simulation code area for the blockly or agent simulation interactives.
 
-export const predatorPreyCode = `
-const sheepSvg = \`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+const sheepSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <!-- Circles (color -1 -> #FFFFFF) -->
   <circle cx="247" cy="109" r="44" fill="#FFFFFF" stroke="#FFFFFF" />
   <circle cx="151" cy="146" r="81" fill="#FFFFFF" stroke="#FFFFFF" />
@@ -45,9 +43,9 @@ const sheepSvg = \`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300"
     fill="#8D8D8D" stroke="none"
   />
 </svg>
-\`;
+`;
 
-const wolfSvg = \`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+const wolfSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
   <!-- Polygon -16777216 true false -->
   <!-- color = #000000 (black), filled, no stroke -->
   <polygon
@@ -76,9 +74,9 @@ const wolfSvg = \`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
     stroke-linejoin="round"
   />
 </svg>
-\`;
+`;
 
-const encodeSvg = (svg) => \`data:image/svg+xml;charset=utf-8,\${encodeURIComponent(svg)}\`;
+const encodeSvg = (svg) => `data:image/svg+xml;charset=utf-8,\${encodeURIComponent(svg)}`;
 const wolfImage = encodeSvg(wolfSvg);
 const sheepImage = encodeSvg(sheepSvg);
 
@@ -147,7 +145,7 @@ sim.afterTick = () => {
     }
   });
 
-  console.log(\`sheep: \${Array.from(sim.withLabel("sheep")).length}, wolves: \${Array.from(sim.withLabel("wolf")).length}\`);
+  console.log(`sheep: ${Array.from(sim.withLabel("sheep")).length}, wolves: ${Array.from(sim.withLabel("wolf")).length}`);
 };
 
 // set up squares (patches)
@@ -217,4 +215,3 @@ sim.interaction.set("boundary-bounce", {
 });
 
 setup();
-`;
