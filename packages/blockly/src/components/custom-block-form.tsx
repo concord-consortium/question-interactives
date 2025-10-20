@@ -19,7 +19,7 @@ interface IProps {
 }
 
 interface ICustomBlockFormState {
-  canHaveChildren: boolean;
+  childrenEnabled: boolean;
   category: string;
   childBlocks: INestedBlock[];
   color: string;
@@ -61,9 +61,9 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
   const optionsValuePlaceholder = blockConfig.optionValuePlaceholder || "Value (e.g., BLUE)";
   
   const [formData, setFormData] = useState<ICustomBlockFormState>({
-    canHaveChildren: blockConfig.childrenEnabled,
     category: "",
     childBlocks: [],
+    childrenEnabled: blockConfig.childrenEnabled,
     color: blockConfig.color,
     conditionInput: false,
     defaultCount: 100,
@@ -111,9 +111,9 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       const config: IBlockConfig = editingBlock.config;
 
       setFormData({
-        canHaveChildren: !!config.canHaveChildren,
         category: editingBlock.category || availableCategories[0] || "",
         childBlocks: config.childBlocks || [],
+        childrenEnabled: !!config.canHaveChildren,
         color: editingBlock.color,
         conditionInput: !!editingBlock.config.conditionInput,
         defaultCount: config.defaultCount ?? 100,
@@ -143,7 +143,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       // Reset form when not editing.
       setFormData(prev => ({
         ...prev,
-        canHaveChildren: blockConfig.childrenEnabled,
+        childrenEnabled: blockConfig.childrenEnabled,
         category: "",
         childBlocks: [],
         color: blockConfig.color,
@@ -192,7 +192,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       previousStatement: formData.previousStatement
     };
 
-    const effectiveChildBlocks = formData.canHaveChildren ? formData.childBlocks : [];
+    const effectiveChildBlocks = formData.childrenEnabled ? formData.childBlocks : [];
 
     // Compute statement options for statement blocks with a target entity
     let statementOptions: [string, string][] | undefined = undefined;
@@ -209,7 +209,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       formData.type === "action"
         ? {
             ...base,
-            canHaveChildren: formData.canHaveChildren,
+            canHaveChildren: formData.childrenEnabled,
             childBlocks: effectiveChildBlocks,
             parameters: parameters.length ? parameters : undefined,
             generatorTemplate: formData.generatorTemplate?.trim() ? formData.generatorTemplate : undefined
@@ -522,18 +522,18 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         <div className={css.customBlockForm_canHaveChildren} data-testid="section-can-have-children">
           <label htmlFor="can-have-children">
             <input
-              checked={formData.canHaveChildren}
+              checked={formData.childrenEnabled}
               data-testid="toggle-canHaveChildren"
               id="can-have-children"
               type="checkbox"
-              onChange={(e) => setFormData(prev => ({ ...prev, canHaveChildren: e.target.checked }))}
+              onChange={(e) => setFormData(prev => ({ ...prev, childrenEnabled: e.target.checked }))}
             /> 
             Contains Child Blocks
           </label>
         </div>
       )}   
 
-      {((formData.type === "creator") || (formData.type === "action" && formData.canHaveChildren)) && (
+      {((formData.type === "creator") || (formData.type === "action" && formData.childrenEnabled)) && (
         <CustomBlockFormNestedBlocks
           availableBlocks={childOptions}
           nestedBlocks={formData.childBlocks}
