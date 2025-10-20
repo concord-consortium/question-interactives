@@ -1,7 +1,7 @@
 import { IAuthoringInteractiveMetadata, IRuntimeInteractiveMetadata } from "@concord-consortium/lara-interactive-api";
 import { MenuOption } from "blockly";
 
-import { predatorPreyCode } from "../sims/predator-prey-code";
+import { predatorPreyCode } from "../sims/predator-prey-string";
 
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
@@ -81,6 +81,7 @@ export interface ICustomBlock {
 export interface IBuiltInBlockInfo {
   canHaveChildren: boolean;
   color: string;
+  defaultCategory?: string;
   description: string;
   hasStatements: boolean;
   id: string;

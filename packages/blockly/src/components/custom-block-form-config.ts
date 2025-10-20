@@ -1,7 +1,8 @@
 import { CustomBlockType } from "./types";
 
 export interface IBlockTypeConfig {
-  canHaveChildren: boolean;
+  canHaveChildren?: boolean;
+  childrenEnabled: boolean;
   color: string;
   hasCountFields?: boolean;
   hasConditionInput?: boolean;
@@ -24,6 +25,7 @@ export interface IBlockTypeConfig {
 export const BLOCK_TYPE_CONFIG: Record<CustomBlockType, IBlockTypeConfig> = {
   action: {
     canHaveChildren: true,
+    childrenEnabled: false,
     color: "#004696",
     hasConditionInput: true,
     hasGeneratorTemplate: true,
@@ -34,7 +36,7 @@ export const BLOCK_TYPE_CONFIG: Record<CustomBlockType, IBlockTypeConfig> = {
     placeholder: "e.g., bounce off, move forward"
   },
   ask: {
-    canHaveChildren: false,
+    childrenEnabled: false,
     color: "#0089b8",
     hasGeneratorTemplate: false,
     hasOptions: false,
@@ -47,7 +49,7 @@ export const BLOCK_TYPE_CONFIG: Record<CustomBlockType, IBlockTypeConfig> = {
     placeholder: ""
   },
   builtIn: {
-    canHaveChildren: true,
+    childrenEnabled: true,
     color: "#aa42f5",
     hasConditionInput: true,
     hasGeneratorTemplate: false,
@@ -56,7 +58,7 @@ export const BLOCK_TYPE_CONFIG: Record<CustomBlockType, IBlockTypeConfig> = {
     label: "Block Name",
   },
   condition: {
-    canHaveChildren: false,
+    childrenEnabled: false,
     color: "#0089b8",
     generatorPlaceholder: "",
     hasGeneratorTemplate: true,
@@ -69,6 +71,7 @@ export const BLOCK_TYPE_CONFIG: Record<CustomBlockType, IBlockTypeConfig> = {
   },
   creator: {
     canHaveChildren: true,
+    childrenEnabled: true,
     color: "#312b84",
     hasCountFields: true,
     hasGeneratorTemplate: false,
@@ -81,7 +84,7 @@ export const BLOCK_TYPE_CONFIG: Record<CustomBlockType, IBlockTypeConfig> = {
     placeholder: "e.g., molecules, people"
   },
   setter: {
-    canHaveChildren: false,
+    childrenEnabled: false,
     color: "#312b84",
     hasGeneratorTemplate: false,
     hasNumberInput: true,

@@ -61,7 +61,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
   const optionsValuePlaceholder = blockConfig.optionValuePlaceholder || "Value (e.g., BLUE)";
   
   const [formData, setFormData] = useState<ICustomBlockFormState>({
-    canHaveChildren: blockConfig.canHaveChildren,
+    canHaveChildren: blockConfig.childrenEnabled,
     category: "",
     childBlocks: [],
     color: blockConfig.color,
@@ -143,7 +143,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       // Reset form when not editing.
       setFormData(prev => ({
         ...prev,
-        canHaveChildren: blockConfig.canHaveChildren,
+        canHaveChildren: blockConfig.childrenEnabled,
         category: "",
         childBlocks: [],
         color: blockConfig.color,
@@ -166,7 +166,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       }));
       setParameters([]);
     }
-  }, [editingBlock, blockType, availableCategories, blockConfig.canHaveChildren, blockConfig.color, blockConfig]);
+  }, [editingBlock, blockType, availableCategories, blockConfig.childrenEnabled, blockConfig.color, blockConfig]);
 
   const handleSubmit = () => {
     if (!formData.name) {
@@ -554,6 +554,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
             onChange={(e) => setFormData(prev => ({ ...prev, generatorTemplate: e.target.value }))}
           />
           <div className={css.helpText}>
+            {formData.type === "condition" && (<>Use ${"{CONDITION}"} to reference the condition (selected option). To reference parameter values, use ${"{PARAM_NAME}"} where &quot;PARAM_NAME&quot; is the actual name of the parameter (e.g., ${"{DIRECTION}"}, ${"{MAGNITUDE}"}).</>)}
             {formData.type === "action" && (<>Use ${"{ACTION}"} to reference the action. To reference parameter values, use ${"{PARAM_NAME}"} where &quot;PARAM_NAME&quot; is the actual name of the parameter (e.g., ${"{DIRECTION}"}, ${"{MAGNITUDE}"}).</>)}
           </div>
         </div>

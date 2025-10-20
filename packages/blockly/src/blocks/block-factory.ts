@@ -331,7 +331,7 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         const attributeName = blockDef.name.toLowerCase().replace(/\s+/g, "_");
         const value = block.getFieldValue("value");
 
-        return `set ${attributeName} ${value}\n`;
+        return `set_${attributeName}(agent, "${value}");\n`;
       } else if (blockDef.type === "creator") {
         // This is probaly NOT close to what we want. There can be other parameters
         // to take into consideration and statements to process, e.g. child setter blocks.
@@ -348,12 +348,14 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         const agents = target === "all" ? "sim.actors" : `sim.withLabel("${target}")`;
         return `${agents}.forEach(agent => {\n${statements}\n});\n`;
       } else if (blockDef.type === "condition") {
+        const condition = block.getFieldValue("condition");
+
         if (blockConfig.generatorTemplate) {
-          // TODO: Is there a more appropriate order than atomic?
-          return [replaceParameters(blockConfig.generatorTemplate, blockConfig.parameters || [], block), Order.ATOMIC];
+          let code = replaceParameters(blockConfig.generatorTemplate, blockConfig.parameters || [], block);
+          code = code.replace(/\$\{CONDITION\}/g, condition);
+          return [code, Order.ATOMIC];
         }
 
-        const condition = block.getFieldValue("condition");
         return condition;
       }
 

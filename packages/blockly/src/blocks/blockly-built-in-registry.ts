@@ -8,6 +8,7 @@ export const BLOCKLY_BUILT_IN_BLOCKS: IBuiltInBlockInfo[] = [
   {
     canHaveChildren: true,
     color: "#5ba55b",
+    defaultCategory: "General",
     description: "If-then conditional block",
     hasStatements: true,
     id: "controls_if",
@@ -17,6 +18,7 @@ export const BLOCKLY_BUILT_IN_BLOCKS: IBuiltInBlockInfo[] = [
   {
     canHaveChildren: false,
     color: "#5ba55b",
+    defaultCategory: "General",
     description: "Logical AND/OR operation",
     hasStatements: false,
     id: "logic_operation",
@@ -26,6 +28,7 @@ export const BLOCKLY_BUILT_IN_BLOCKS: IBuiltInBlockInfo[] = [
   {
     canHaveChildren: false,
     color: "#5ba55b", 
+    defaultCategory: "General",
     description: "Logical NOT operation",
     hasStatements: false,
     id: "logic_negate",
