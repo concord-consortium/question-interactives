@@ -100,6 +100,7 @@ function create_a_wolf(props) {
   agent.addTo(sim);
   return agent;
 };
+
 function create_wolves(num, callback) {
   for (let i = 0; i < num; i++) {
     const agent = create_a_wolf();

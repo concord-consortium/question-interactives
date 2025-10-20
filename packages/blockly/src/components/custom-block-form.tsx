@@ -61,7 +61,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
   const optionsValuePlaceholder = blockConfig.optionValuePlaceholder || "Value (e.g., BLUE)";
   
   const [formData, setFormData] = useState<ICustomBlockFormState>({
-    canHaveChildren: blockConfig.canHaveChildren,
+    canHaveChildren: blockConfig.childrenEnabled,
     category: "",
     childBlocks: [],
     color: blockConfig.color,
@@ -143,7 +143,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       // Reset form when not editing.
       setFormData(prev => ({
         ...prev,
-        canHaveChildren: blockConfig.canHaveChildren,
+        canHaveChildren: blockConfig.childrenEnabled,
         category: "",
         childBlocks: [],
         color: blockConfig.color,
@@ -166,7 +166,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       }));
       setParameters([]);
     }
-  }, [editingBlock, blockType, availableCategories, blockConfig.canHaveChildren, blockConfig.color, blockConfig]);
+  }, [editingBlock, blockType, availableCategories, blockConfig.childrenEnabled, blockConfig.color, blockConfig]);
 
   const handleSubmit = () => {
     if (!formData.name) {
@@ -518,7 +518,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         </>
       )}
 
-      {blockConfig.typeCanHaveChildren && (
+      {blockConfig.canHaveChildren && (
         <div className={css.customBlockForm_canHaveChildren} data-testid="section-can-have-children">
           <label htmlFor="can-have-children">
             <input
