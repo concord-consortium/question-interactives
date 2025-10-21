@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { useAccessibility } from "@concord-consortium/lara-interactive-api";
+import { nanoid } from "nanoid";
 
 import { IframeRuntime } from "../components/iframe-runtime";
 import { DemoAuthoringComponent } from "./demo-authoring";
@@ -29,6 +30,7 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
   const { App, title, getReportItemHtml } = props;
   const [authoredState, setAuthoredState] = useState<IAuthoredState>(props.authoredState);
   const [interactiveState, setInteractiveState] = useState<IInteractiveState>(props.interactiveState);
+  const [reportItemInteractiveState, setReportItemInteractiveState] = useState<IInteractiveState>(props.interactiveState);
   const [childIFrames, setChildIFrames] = useState<MessageEventSource[]>([]);
   const [reportItemHtml, setReportItemHtml] = useState<string>();
   const [reportItemHeight, setReportItemHeight] = useState(0);
@@ -36,10 +38,28 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
 
   const accessibility = useAccessibility();
 
+  // for this spike just add support for interactive state history here in the demo
+  // the real implementation would move this to the activity player
+  const supportsInteractiveStateHistoryRef = useRef(false);
+  const [supportsInteractiveStateHistory, setSupportsInteractiveStateHistory] = useState(false);
+  const interactiveStateHistoryIdRef = useRef<string>(nanoid());
+  const [interactiveStateHistory, setInteractiveStateHistory] = useState<{id: string, state: any, timestamp: number}[]>([]);
+  const [interactiveStateHistoryIndex, setInteractiveStateHistoryIndex] = useState(0);
+  const [activeTab, setActiveTab] = useState(0);
+
   // send the new authored state to the root demo and have it re-render the runtime container
   const handleSetAuthoredState = (newAuthoredState: IAuthoredState) => {
     window.parent.postMessage({ type: "setDemoAuthoredState", value: newAuthoredState });
   };
+
+  useEffect(() => {
+    // at initial render set the interactive state history with the initial state and then generate a new id for future states
+    setInteractiveStateHistory([
+        { id: interactiveStateHistoryIdRef.current, state: props.interactiveState, timestamp: Date.now() }
+    ]);
+    interactiveStateHistoryIdRef.current = nanoid();
+
+  }, [setInteractiveStateHistory, props.interactiveState]);
 
   // this is a bit of a hack to fake iframe-phone at the root and proxy messages from the
   // inner authoring-container iframe to the runtime-container
@@ -58,8 +78,24 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
             });
           }
           break;
+        case "supportedFeatures":
+          console.log("DEMO: Received supportedFeatures message in demo:", data.content);
+          supportsInteractiveStateHistoryRef.current = !!(data.content.features as any).interactiveStateHistory;
+          if (supportsInteractiveStateHistoryRef.current) {
+            console.log("DEMO: Interactive supports interactive state history");
+          }
+          setSupportsInteractiveStateHistory(supportsInteractiveStateHistoryRef.current);
+          break;
         case "interactiveState":
           setInteractiveState(data.content);
+          setReportItemInteractiveState(data.content);
+
+          // for the spike just keep this in memory - in a real implementation this would be saved to Firebase in AP
+          if (supportsInteractiveStateHistoryRef.current) {
+            setInteractiveStateHistory(prev => [...prev, { id: interactiveStateHistoryIdRef.current, state: data.content, timestamp: Date.now() }]);
+            console.log("DEMO: Saved interactive state to history using", interactiveStateHistoryIdRef.current);
+            interactiveStateHistoryIdRef.current = nanoid();
+          }
           break;
         case "setDemoAuthoredState":
           if (rootDemo) {
@@ -79,7 +115,13 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
           }
           break;
         case "log":
-          if (rootDemo) {
+          // in the real version we would add the interactiveStateHistoryId to the logData.data object
+          if (supportsInteractiveStateHistoryRef.current) {
+            console.log("DEMO: Adding interactiveStateHistoryId to log data:", interactiveStateHistoryIdRef.current);
+            data.content.data = { ...data.content.data, interactiveStateHistoryId: interactiveStateHistoryIdRef.current };
+          }
+
+          if (!rootDemo) {
             console.log("DEMO LOG:", JSON.stringify(data.content));
           }
           break;
@@ -91,13 +133,17 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
     return () => {
       window.removeEventListener("message", handleMessage);
     };
-  }, [setAuthoredState, childIFrames]);
+  }, [setAuthoredState, setInteractiveStateHistory, setSupportsInteractiveStateHistory, childIFrames]);
+
+  useEffect(() => {
+    setInteractiveStateHistoryIndex(interactiveStateHistory.length - 1);
+  }, [interactiveStateHistory]);
 
   useEffect(() => {
     if (iframe === "runtime-container" && getReportItemHtml) {
-      setReportItemHtml(getReportItemHtml({interactiveState, authoredState}));
+      setReportItemHtml(getReportItemHtml({interactiveState: reportItemInteractiveState, authoredState}));
     }
-  }, [authoredState, interactiveState, getReportItemHtml]);
+  }, [authoredState, reportItemInteractiveState, getReportItemHtml]);
 
   const handleReportItemIFrameLoaded = (e: any) => {
     const contentDocument = e.target.contentDocument;
@@ -106,6 +152,19 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
     const height = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
 
     setReportItemHeight(height);
+  };
+
+  const handleInteractiveStateHistoryIndexChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newIndex = Number(e.target.value);
+    setInteractiveStateHistoryIndex(newIndex);
+    const historyItem = interactiveStateHistory[newIndex];
+    if (historyItem) {
+      setReportItemInteractiveState(historyItem.state);
+    }
+  };
+
+  const handleTabClick = (tabIndex: number) => {
+    setActiveTab(tabIndex);
   };
 
   const renderReportItemHtml = () => {
@@ -143,6 +202,8 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
     );
   };
 
+  const interactiveStateHistoryEntry = interactiveStateHistory[interactiveStateHistoryIndex];
+
   switch (iframe) {
     case "authoring-container":
       return (
@@ -163,16 +224,65 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
         <>
           <strong>Interactive:</strong>
           <DynamicTextContext.Provider value={dynamicTextProxy}>
-            <IframeRuntime
-              url={demoUrl("runtime")}
-              authoredState={authoredState}
-              interactiveState={interactiveState}
-              setInteractiveState={setInteractiveState}
-              flushOnSave={true}
-              accessibility={accessibility}
-            />
+            <div className={css.interactiveTabs}>
+              <div
+                className={`${css.tab} ${activeTab === 0 ? css.active : ''}`}
+                onClick={() => handleTabClick(0)}
+              >
+                Activity Player
+              </div>
+              <div
+                className={`${css.tab} ${activeTab === 1 ? css.active : ''}`}
+                onClick={() => handleTabClick(1)}
+              >
+                Dashboard
+              </div>
+            </div>
+            <div className={css.interactiveTabsContainer}>
+              <div className={`${css.tabContent} ${activeTab === 0 ? css.active : ''}`}>
+                <IframeRuntime
+                  url={demoUrl("runtime")}
+                  authoredState={authoredState}
+                  interactiveState={interactiveState}
+                  setInteractiveState={setInteractiveState}
+                  flushOnSave={true}
+                  accessibility={accessibility}
+                />
+              </div>
+              <div className={`${css.tabContent} ${activeTab === 1 ? css.active : ''}`}>
+                <IframeRuntime
+                  key={interactiveStateHistoryIndex}
+                  url={demoUrl("dashboard")}
+                  authoredState={authoredState}
+                  interactiveState={reportItemInteractiveState}
+                  setInteractiveState={setInteractiveState}
+                  flushOnSave={true}
+                  accessibility={accessibility}
+                  report={true}
+                />
+              </div>
+            </div>
           </DynamicTextContext.Provider>
           {renderReportItemHtml()}
+          {supportsInteractiveStateHistory && (
+            <div className={css.interactiveStateHistory}>
+              <strong>Interactive State History:</strong>
+              <div>
+                <input
+                  type="range"
+                  min="0"
+                  max={interactiveStateHistory.length - 1}
+                  value={interactiveStateHistoryIndex}
+                  onChange={handleInteractiveStateHistoryIndexChange}
+                />
+              </div>
+              <div>
+                {interactiveStateHistoryEntry && (
+                  new Date(interactiveStateHistoryEntry.timestamp).toLocaleString()
+                )} <i>{interactiveStateHistoryEntry.id}</i> ({interactiveStateHistoryIndex + 1} of {interactiveStateHistory.length})
+              </div>
+            </div>
+          )}
         </>
       );
 
@@ -186,6 +296,13 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
       );
 
     case "runtime":
+      return (
+        <DynamicTextContext.Provider value={dynamicTextProxy}>
+          {App}
+        </DynamicTextContext.Provider>
+      );
+
+    case "dashboard":
       return (
         <DynamicTextContext.Provider value={dynamicTextProxy}>
           {App}

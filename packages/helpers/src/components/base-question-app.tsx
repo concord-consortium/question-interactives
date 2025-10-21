@@ -49,13 +49,14 @@ interface IProps<IAuthoredState, IInteractiveState> {
   isAnswered?: (state: IInteractiveState | null, authoredState?: IAuthoredState) => boolean;
   linkedInteractiveProps?: ILinkedInteractiveProp[];
   migrateAuthoredState?: (oldAuthoredState: any) => IAuthoredState;
+  supportsInteractiveStateHistory?: boolean;
 }
 
 // BaseApp for interactives that save interactive state and show in the report. E.g. open response, multiple choice.
 export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBaseQuestionAuthoredState,
   IInteractiveState extends IRuntimeMetadata & IBaseQuestionInteractiveState>(props: IProps<IAuthoredState, IInteractiveState>) => {
   const { Authoring, baseAuthoringProps, Runtime, isAnswered, disableAutoHeight, disableSubmitBtnRendering,
-    linkedInteractiveProps, migrateAuthoredState } = props;
+    linkedInteractiveProps, migrateAuthoredState, supportsInteractiveStateHistory } = props;
   const container = useRef<HTMLDivElement>(null);
   const useAuthStateResult = useAuthoredState<IAuthoredState>();
   const authoredState = migrateAuthoredState && useAuthStateResult.authoredState ?
@@ -81,11 +82,13 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
   });
 
   useEffect(() => {
+    // TODO: update ISupportedFeatures in lara-interactive-api package to include supportsInteractiveStateHistory flag
     setSupportedFeatures({
       interactiveState: true,
-      authoredState: true
-    });
-  }, [initMessage]);
+      authoredState: true,
+      interactiveStateHistory: !!supportsInteractiveStateHistory
+    } as any);
+  }, [initMessage, supportsInteractiveStateHistory]);
 
   if (!isAnswered && !disableSubmitBtnRendering) {
     throw new Error("isAnswered function is required when disableSubmitBtnRendering = false");
