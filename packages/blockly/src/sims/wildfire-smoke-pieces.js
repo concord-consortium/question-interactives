@@ -323,5 +323,5 @@ interact(agent, collide);
 /*** End interact */
 
 /*** Touching */
-isTouching(agent, "${CONDITION}");
+isTouching(agent, "${CONDITION}")
 /*** End touching */
