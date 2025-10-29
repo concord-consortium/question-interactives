@@ -16,7 +16,8 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
 }
 
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
-  exampleInteractiveState?: string;
+  version: 1;
+  blocklyCode?: string;
   submitted?: boolean;
 }
 
@@ -36,9 +37,9 @@ export const DemoAuthoredState: IAuthoredState = {
   dataSourceInteractive: "",
   gridHeight: 450,
   gridStep: 450,
-  gridWidth: 15,
-  hint: "TODO: Add the final real hint in types.ts",
-  prompt: "<p>TODO: Add the final real prompt in types.ts</p>",
+  gridWidth: 450,
+  hint: "",
+  prompt: "",
   questionType: "iframe_interactive",
   version: 1,
 };
