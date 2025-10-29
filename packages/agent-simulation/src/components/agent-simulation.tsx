@@ -3,7 +3,7 @@ import * as AV from "@gjmcn/atomic-agents-vis";
 import React, { useEffect, useRef, useState } from "react";
 
 import {
-  addLinkedInteractiveStateListener, removeLinkedInteractiveStateListener
+  addLinkedInteractiveStateListener, removeLinkedInteractiveStateListener, log
 } from "@concord-consortium/lara-interactive-api";
 import {
   IRuntimeQuestionComponentProps
@@ -49,6 +49,10 @@ export const AgentSimulationComponent = ({
 
     const listener = (newLinkedIntState: IInteractiveState | undefined) => {
       const newCode = newLinkedIntState && "code" in newLinkedIntState && newLinkedIntState.code;
+      log("linked-interactive-state-update", {
+        fromInteractive: dataSourceInteractive,
+        newCode
+      });
       if (typeof newCode === "string") {
         setExternalBlocklyCode(newCode);
       } else {
@@ -86,8 +90,13 @@ export const AgentSimulationComponent = ({
       width: gridWidth
     });
 
+    const setupCode = blocklyCode || code;
+    const usingCode = blocklyCode ? "blockly code" : "authored code";
+
+    log("setup-simulation", { gridStep, gridWidth, gridHeight, resetCount, usingCode, code: setupCode });
+
     // Run the simulation setup code
-    const functionCode = `(sim, AA, AV) => { ${blocklyCode || code} }`;
+    const functionCode = `(sim, AA, AV) => { ${setupCode} }`;
     try {
       // Indirect eval (with ?.) is supposed to be safer and faster than direct eval
       // - eval executes in the local scope, so has to check every containing scope for variable references
@@ -119,6 +128,7 @@ export const AgentSimulationComponent = ({
 
   const handlePauseClick = () => {
     if (simRef.current) {
+      log(paused ? "play-simulation" : "pause-simulation");
       simRef.current.pause(!paused);
       setPaused(!paused);
     }
@@ -130,15 +140,28 @@ export const AgentSimulationComponent = ({
         <button
           className={css.updateButton}
           disabled={!externalBlocklyCode || blocklyCode === externalBlocklyCode}
-          onClick={() => setBlocklyCode(externalBlocklyCode)}
+          onClick={() => {
+            log("update-code", {
+              oldCode: blocklyCode,
+              newCode: externalBlocklyCode
+            });
+            setBlocklyCode(externalBlocklyCode);
+          }}
         >
           Update Code
         </button>
       )}
-      <button onClick={() => setResetCount(resetCount + 1)}>
+      <button onClick={() => {
+        const newResetCount = resetCount + 1;
+        log("reset-simulation", { resetCount: newResetCount });
+        setResetCount(newResetCount);
+      }}>
         Reset
       </button>
-      <button onClick={handlePauseClick}>
+      <button onClick={() => {
+        // action is logged in handlePauseClick
+        handlePauseClick();
+      }}>
         {paused ? "Play" : "Pause"}
       </button>
       {error && <div className={css.error}>{error}</div>}
@@ -150,7 +173,10 @@ export const AgentSimulationComponent = ({
               {blocklyCode}
             </div>
           }
-          <button onClick={() => setShowBlocklyCode(!showBlocklyCode)}>
+          <button onClick={() => {
+            log(showBlocklyCode ? "hide-blockly-code" : "show-blockly-code");
+            setShowBlocklyCode(!showBlocklyCode);
+          }}>
             {showBlocklyCode ? "Hide" : "Show"} Blockly Code
           </button>
         </>

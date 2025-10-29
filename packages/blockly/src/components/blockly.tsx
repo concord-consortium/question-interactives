@@ -1,6 +1,7 @@
 import {
   IRuntimeQuestionComponentProps
 } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
+import { log } from "@concord-consortium/lara-interactive-api";
 import { Events, inject, serialization, WorkspaceSvg } from "blockly";
 import { javascriptGenerator } from "blockly/javascript";
 import React, { useEffect, useMemo, useRef, useState } from "react";
@@ -57,6 +58,38 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
         });
         setWorkspace(newWorkspace);
         setError(null);
+
+        // Log all changes to the workspace
+        newWorkspace.addChangeListener((event) => {
+          const eventName = `blockly-${event.type}`;
+
+          try {
+            // create a shallow copy so we can delete attributes without modifying the original event
+            // and having TypeScript complain as the attributes are required on the event type
+            const dupEvent: any = { ...event };
+            delete dupEvent.type;
+            delete dupEvent.workspaceId;
+
+            // the blocks array can contain circular references, so we need to handle it specially
+            const eventParams = JSON.parse(JSON.stringify(dupEvent, (key, value) => {
+              if ((key === "blocks") && Array.isArray(value)) {
+                return value.map((item) => {
+                  if (item && typeof item === "object") {
+                    const { id, type } = item as { id?: unknown; type?: unknown };
+                    return { ...(id !== undefined && { id }), ...(type !== undefined && { type }) };
+                  }
+                  return item;
+                });
+              }
+              return value;
+            }));
+
+            log(eventName, eventParams);
+          } catch (e) {
+            console.error("Error stringifying blockly change event for logging:", e);
+            log(eventName, { error: e.message || String(e) });
+          }
+        });
 
         // Set up automatic saving
         const saveState = (event: Events.Abstract) => {
