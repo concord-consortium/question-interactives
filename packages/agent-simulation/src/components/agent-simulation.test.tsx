@@ -10,7 +10,8 @@ import { IAuthoredState, IInteractiveState } from "./types";
 // Mock the dependencies
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
   addLinkedInteractiveStateListener: jest.fn(),
-  removeLinkedInteractiveStateListener: jest.fn()
+  removeLinkedInteractiveStateListener: jest.fn(),
+  log: jest.fn(),
 }));
 
 jest.mock("@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id", () => ({
