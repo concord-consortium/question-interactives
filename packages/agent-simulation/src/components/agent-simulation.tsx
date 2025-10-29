@@ -159,7 +159,7 @@ export const AgentSimulationComponent = ({
         Reset
       </button>
       <button onClick={() => {
-        log(paused ? "play-simulation" : "pause-simulation");
+        // action is logged in handlePauseClick
         handlePauseClick();
       }}>
         {paused ? "Play" : "Pause"}
