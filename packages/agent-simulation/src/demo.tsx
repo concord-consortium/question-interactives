@@ -7,7 +7,8 @@ import { IAuthoredState, IInteractiveState, DemoAuthoredState } from "./componen
 
 const DemoContainer = () => {
   const interactiveState: IInteractiveState = {
-    answerType: "interactive_state"
+    answerType: "interactive_state",
+    version: 1,
   };
 
   return (

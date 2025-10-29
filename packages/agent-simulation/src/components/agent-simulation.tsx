@@ -22,7 +22,7 @@ export const AgentSimulationComponent = ({
 }: IProps) => {
   const { code, gridHeight, gridStep, gridWidth } = authoredState;
   // The blockly code we're using, which doesn't get updated until the user accepts newer code
-  const [blocklyCode, setBlocklyCode] = useState<string>("");
+  const [blocklyCode, _setBlocklyCode] = useState<string>(interactiveState?.blocklyCode || "");
   // The code we're receiving from blockly, which won't be used until the user accepts it
   const [externalBlocklyCode, setExternalBlocklyCode] = useState<string>("");
   const [showBlocklyCode, setShowBlocklyCode] = useState<boolean>(false);
@@ -32,6 +32,16 @@ export const AgentSimulationComponent = ({
   const [error, setError] = useState("");
   const [resetCount, setResetCount] = useState(0);
   const simRef = useRef<AA.Simulation | null>(null);
+
+  const setBlocklyCode = (newCode: string) => {
+    _setBlocklyCode(newCode);
+    setInteractiveState?.(prev => ({
+      ...prev,
+      answerType: "interactive_state",
+      version: 1,
+      blocklyCode: newCode
+    }));
+  };
 
   // Keep the blockly code updated with the linked interactive
   useEffect(() => {

@@ -21,6 +21,7 @@ const useInitMessageMock = useInitMessage as jest.Mock;
 
 const interactiveState: IInteractiveState = {
   answerType: "interactive_state",
+  version: 1,
 };
 
 describe("Agent Simulation question report item", () => {

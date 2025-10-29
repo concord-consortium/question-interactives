@@ -16,7 +16,8 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
 }
 
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
-  exampleInteractiveState?: string;
+  version: 1;
+  blocklyCode?: string;
   submitted?: boolean;
 }
 
@@ -24,8 +25,8 @@ export const DefaultAuthoredState: Omit<Required<IAuthoredState>, "questionSubTy
   code: "",
   dataSourceInteractive: "",
   gridHeight: 450,
-  gridStep: 450,
-  gridWidth: 15,
+  gridStep: 15,
+  gridWidth: 450,
   hint: "",
   questionType: "iframe_interactive",
   version: 1,
@@ -35,10 +36,10 @@ export const DemoAuthoredState: IAuthoredState = {
   code: predatorPreyCode,
   dataSourceInteractive: "",
   gridHeight: 450,
-  gridStep: 450,
-  gridWidth: 15,
-  hint: "TODO: Add the final real hint in types.ts",
-  prompt: "<p>TODO: Add the final real prompt in types.ts</p>",
+  gridStep: 15,
+  gridWidth: 450,
+  hint: "",
+  prompt: "",
   questionType: "iframe_interactive",
   version: 1,
 };
