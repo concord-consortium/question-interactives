@@ -239,7 +239,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         : formData.type === "creator"
         ? {
             ...base,
-            canHaveChildren: true,
+            canHaveChildren: formData.childrenEnabled,
             childBlocks: effectiveChildBlocks,
             typeOptions: formData.options
               .filter(opt => opt.label && opt.value)
@@ -531,9 +531,9 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
             Contains Child Blocks
           </label>
         </div>
-      )}   
+      )}
 
-      {((formData.type === "creator") || (formData.type === "action" && formData.childrenEnabled)) && (
+      {((formData.type === "creator" || formData.type === "action") && formData.childrenEnabled) && (
         <CustomBlockFormNestedBlocks
           availableBlocks={childOptions}
           nestedBlocks={formData.childBlocks}
