@@ -251,6 +251,41 @@ describe("block-factory", () => {
       expect(mockBlock.setPreviousStatement).toHaveBeenCalledWith(true);
       expect(mockBlock.setNextStatement).toHaveBeenCalledWith(true);
     });
+
+    it("adds fields in correct order for setter blocks with dropdown", () => {
+      Blocks["custom_set_color_123"].init.call(mockBlock);
+      const appendFieldCalls = mockInput.appendField.mock.calls;
+      
+      // First call should be "set color"
+      expect(appendFieldCalls[0][0]).toBe("set color");
+      // Second call should be the dropdown
+      expect(appendFieldCalls[1][0]).toEqual(expect.any(Object)); // FieldDropdown
+      expect(appendFieldCalls[1][1]).toBe("value");
+    });
+
+    it("adds fields in correct order for setter blocks with number input", () => {
+      const setterBlockWithNumberInput: ICustomBlock = {
+        id: "custom_set_speed_789",
+        type: "setter",
+        name: "speed",
+        color: "#FF0000",
+        category: "Properties",
+        config: {
+          canHaveChildren: false,
+          includeNumberInput: true
+        }
+      };
+
+      registerCustomBlocks([setterBlockWithNumberInput]);
+      Blocks["custom_set_speed_789"].init.call(mockBlock);
+      const appendFieldCalls = mockInput.appendField.mock.calls;
+      
+      // First call should be "set speed"
+      expect(appendFieldCalls[0][0]).toBe("set speed");
+      // Second call should be the number field
+      expect(appendFieldCalls[1][0]).toEqual(expect.any(Object)); // FieldNumber
+      expect(appendFieldCalls[1][1]).toBe("value");
+    });
   });
 
   describe("Creator Block Initialization", () => {
@@ -295,6 +330,23 @@ describe("block-factory", () => {
 
       expect(mockInput.insertFieldAt).toHaveBeenCalledWith(0, expect.any(Object), "__disclosure_icon");
       expect(mockInput.appendField).toHaveBeenCalledWith(expect.any(Object), "count");
+    });
+
+    it("adds fields in correct order for creator blocks", () => {
+      Blocks["custom_create_molecules_456"].init.call(mockBlock);
+      const appendFieldCalls = mockInput.appendField.mock.calls;
+      
+      // First call should be "create"
+      expect(appendFieldCalls[0][0]).toBe("create");
+      // Second call should be the count slider
+      expect(appendFieldCalls[1][0]).toEqual(expect.objectContaining({
+        defaultValue: 100
+      }));
+      // Third call should be type dropdown
+      expect(appendFieldCalls[2][0]).toEqual(expect.any(Object)); // FieldDropdown
+      expect(appendFieldCalls[2][1]).toBe("type");
+      // Fourth call should be "molecules" (the name)
+      expect(appendFieldCalls[3][0]).toBe("molecules");
     });
   });
 
@@ -363,82 +415,22 @@ describe("block-factory", () => {
       expect(mockBlock.appendStatementInput).toHaveBeenCalledWith("statements");
     });
 
-    it("initializes statement block with correct fields for kind 'ask'", () => {
-      const statementBlock: ICustomBlock = {
-        category: "Control",
-        color: "#0089b8",
-        config: {
-          canHaveChildren: false,
-          targetEntity: "molecules",
-          options: [["water", "water"], ["ink", "ink"]]
-        },
-        id: "custom_statement_ask_123",
-        name: "ask",
-        type: "ask"
-      };
-
-      registerCustomBlocks([statementBlock]);
-      Blocks["custom_statement_ask_123"].init.call(mockBlock);
-
-      expect(mockBlock.appendDummyInput).toHaveBeenCalled();
-      expect(mockInput.appendField).toHaveBeenCalledWith("ask");
-      expect(mockInput.appendField).toHaveBeenCalledWith(expect.any(Object), "target");
-      expect(mockInput.appendField).toHaveBeenCalledWith("molecules");
-      expect(mockBlock.appendStatementInput).toHaveBeenCalledWith("statements");
-    });
-
-    it("initializes condition block with prefix label position", () => {
-      const conditionBlock: ICustomBlock = {
-        category: "Logic",
-        color: "#0089b8",
-        config: {
-          canHaveChildren: false,
-          options: [["touching", "touching?"], ["near", "near?"]],
-          labelPosition: "prefix"
-        },
-        id: "custom_condition_touching_404",
-        name: "touching",
-        type: "condition"
-      };
-
-      registerCustomBlocks([conditionBlock]);
-      Blocks["custom_condition_touching_404"].init.call(mockBlock);
-
-      expect(mockBlock.setOutput).toHaveBeenCalledWith(true, "Boolean");
-      expect(mockBlock.appendDummyInput).toHaveBeenCalled();
-      expect(mockInput.appendField).toHaveBeenCalledWith("touching");
-      expect(mockInput.appendField).toHaveBeenCalledWith(expect.any(Object), "condition");
-    });
-
-    it("initializes condition block with suffix label position", () => {
-      const conditionBlock: ICustomBlock = {
-        category: "Logic",
-        color: "#0089b8",
-        config: {
-          canHaveChildren: false,
-          options: [["is", "is"], ["equals", "="]],
-          labelPosition: "suffix"
-        },
-        id: "custom_condition_is_505",
-        name: "is",
-        type: "condition"
-      };
-
-      const mockInput1 = { appendField: jest.fn().mockReturnThis() };
-      const mockInput2 = { appendField: jest.fn().mockReturnThis() };
-      let callCount = 0;
-      mockBlock.appendDummyInput = jest.fn(() => {
-        callCount++;
-        return callCount === 1 ? mockInput1 : mockInput2;
-      });
-
-      registerCustomBlocks([conditionBlock]);
-      Blocks["custom_condition_is_505"].init.call(mockBlock);
-
-      expect(mockBlock.setOutput).toHaveBeenCalledWith(true, "Boolean");
-      expect(mockBlock.appendDummyInput).toHaveBeenCalledTimes(2); // One for dropdown, one for label
-      expect(mockInput2.appendField).toHaveBeenCalledWith(expect.any(Object), "condition");
-      expect(mockInput2.appendField).toHaveBeenCalledWith("is");
+    it("adds fields in correct order for action blocks", () => {
+      Blocks["custom_action_move_789"].init.call(mockBlock);
+      const appendFieldCalls = mockInput.appendField.mock.calls;
+      
+      // First call should be the block display name "move"
+      expect(appendFieldCalls[0][0]).toBe("move");
+      // Second call should be the prefix label "Move"
+      expect(appendFieldCalls[1][0]).toBe("Move");
+      // Third call should be the dropdown for DIRECTION
+      expect(appendFieldCalls[2][0]).toEqual(expect.any(Object)); // FieldDropdown
+      expect(appendFieldCalls[2][1]).toBe("DIRECTION");
+      // Fourth call should be the number field for SPEED
+      expect(appendFieldCalls[3][0]).toEqual(expect.any(Object)); // FieldNumber
+      expect(appendFieldCalls[3][1]).toBe("SPEED");
+      // Fifth call should be the suffix label "at speed"
+      expect(appendFieldCalls[4][0]).toBe("at speed");
     });
 
     it("sets block color and connections", () => {
@@ -467,6 +459,231 @@ describe("block-factory", () => {
 
       expect(FieldDropdown).not.toHaveBeenCalled();
       expect(FieldNumber).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("Ask Block Initialization", () => {
+    let askBlock: ICustomBlock;
+
+    beforeEach(() => {
+      askBlock = {
+        category: "Control",
+        color: "#0089b8",
+        config: {
+          canHaveChildren: false,
+          targetEntity: "molecules",
+          options: [["water", "water"], ["ink", "ink"]]
+        },
+        id: "custom_statement_ask_123",
+        name: "ask",
+        type: "ask"
+      };
+
+      registerCustomBlocks([askBlock]);
+    });
+
+    it("initializes ask block with correct display name", () => {
+      Blocks["custom_statement_ask_123"].init.call(mockBlock);
+
+      expect(mockBlock.appendDummyInput).toHaveBeenCalled();
+      expect(mockInput.appendField).toHaveBeenCalledWith("ask");
+    });
+
+    it("adds target dropdown field", () => {
+      Blocks["custom_statement_ask_123"].init.call(mockBlock);
+
+      expect(FieldDropdown).toHaveBeenCalledWith([["water", "water"], ["ink", "ink"]]);
+      expect(mockInput.appendField).toHaveBeenCalledWith(expect.any(Object), "target");
+    });
+
+    it("adds target entity label", () => {
+      Blocks["custom_statement_ask_123"].init.call(mockBlock);
+
+      expect(mockInput.appendField).toHaveBeenCalledWith("molecules");
+    });
+
+    it("adds statement input for nested blocks", () => {
+      Blocks["custom_statement_ask_123"].init.call(mockBlock);
+
+      expect(mockBlock.appendStatementInput).toHaveBeenCalledWith("statements");
+    });
+
+    it("sets block color and connections", () => {
+      Blocks["custom_statement_ask_123"].init.call(mockBlock);
+
+      expect(mockBlock.setColour).toHaveBeenCalledWith("#0089b8");
+      expect(mockBlock.setPreviousStatement).toHaveBeenCalledWith(true);
+      expect(mockBlock.setNextStatement).toHaveBeenCalledWith(true);
+    });
+
+    it("adds fields in correct order", () => {
+      Blocks["custom_statement_ask_123"].init.call(mockBlock);
+      const appendFieldCalls = mockInput.appendField.mock.calls;
+      
+      // First call should be "ask"
+      expect(appendFieldCalls[0][0]).toBe("ask");
+      // Second call should be the target dropdown
+      expect(appendFieldCalls[1][0]).toEqual(expect.any(Object)); // FieldDropdown
+      expect(appendFieldCalls[1][1]).toBe("target");
+      // Third call should be the target entity label
+      expect(appendFieldCalls[2][0]).toBe("molecules");
+    });
+  });
+
+  describe("Condition Block Initialization", () => {
+    // Helper function to set up multi-input mock for suffix label position tests
+    const setupMultiInputMock = () => {
+      const mockFirstInput = { appendField: jest.fn().mockReturnThis() };
+      const mockSecondInput = { appendField: jest.fn().mockReturnThis() };
+      let callCount = 0;
+      
+      mockBlock.appendDummyInput = jest.fn(() => {
+        callCount++;
+        return callCount === 1 ? mockFirstInput : mockSecondInput;
+      });
+      
+      return { mockFirstInput, mockSecondInput };
+    };
+
+    it("initializes condition block with prefix label position", () => {
+      const conditionBlock: ICustomBlock = {
+        category: "Logic",
+        color: "#0089b8",
+        config: {
+          canHaveChildren: false,
+          options: [["touching", "touching?"], ["near", "near?"]],
+          labelPosition: "prefix"
+        },
+        id: "custom_condition_touching_404",
+        name: "touching",
+        type: "condition"
+      };
+
+      registerCustomBlocks([conditionBlock]);
+      Blocks["custom_condition_touching_404"].init.call(mockBlock);
+
+      expect(mockBlock.setOutput).toHaveBeenCalledWith(true, "Boolean");
+      expect(mockBlock.appendDummyInput).toHaveBeenCalled();
+      expect(mockInput.appendField).toHaveBeenCalledWith("touching");
+      expect(mockInput.appendField).toHaveBeenCalledWith(expect.any(Object), "condition");
+    });
+
+    it("sets correct output type and color for condition blocks", () => {
+      const conditionBlock: ICustomBlock = {
+        category: "Logic",
+        color: "#0089b8",
+        config: {
+          canHaveChildren: false,
+          options: [["touching", "touching?"], ["near", "near?"]],
+          labelPosition: "prefix"
+        },
+        id: "custom_condition_touching_404",
+        name: "touching",
+        type: "condition"
+      };
+
+      registerCustomBlocks([conditionBlock]);
+      Blocks["custom_condition_touching_404"].init.call(mockBlock);
+
+      expect(mockBlock.setOutput).toHaveBeenCalledWith(true, "Boolean");
+      expect(mockBlock.setColour).toHaveBeenCalledWith("#0089b8");
+    });
+
+    it("adds dropdown field with condition options", () => {
+      const conditionBlock: ICustomBlock = {
+        category: "Logic",
+        color: "#0089b8",
+        config: {
+          canHaveChildren: false,
+          options: [["touching", "touching?"], ["near", "near?"]],
+          labelPosition: "prefix"
+        },
+        id: "custom_condition_touching_404",
+        name: "touching",
+        type: "condition"
+      };
+
+      registerCustomBlocks([conditionBlock]);
+      Blocks["custom_condition_touching_404"].init.call(mockBlock);
+
+      expect(FieldDropdown).toHaveBeenCalledWith([["touching", "touching?"], ["near", "near?"]]);
+      expect(mockInput.appendField).toHaveBeenCalledWith(expect.any(Object), "condition");
+    });
+
+    it("initializes condition block with suffix label position", () => {
+      const conditionBlock: ICustomBlock = {
+        category: "Logic",
+        color: "#0089b8",
+        config: {
+          canHaveChildren: false,
+          options: [["is", "is"], ["equals", "="]],
+          labelPosition: "suffix"
+        },
+        id: "custom_condition_is_505",
+        name: "is",
+        type: "condition"
+      };
+
+      const { mockSecondInput } = setupMultiInputMock();
+
+      registerCustomBlocks([conditionBlock]);
+      Blocks["custom_condition_is_505"].init.call(mockBlock);
+
+      expect(mockBlock.setOutput).toHaveBeenCalledWith(true, "Boolean");
+      expect(mockBlock.appendDummyInput).toHaveBeenCalledTimes(2); // One for dropdown, one for label
+      expect(mockSecondInput.appendField).toHaveBeenCalledWith(expect.any(Object), "condition");
+      expect(mockSecondInput.appendField).toHaveBeenCalledWith("is");
+    });
+
+    it("adds fields in correct order for condition blocks with prefix label position", () => {
+      const conditionBlock: ICustomBlock = {
+        category: "Logic",
+        color: "#0089b8",
+        config: {
+          canHaveChildren: false,
+          options: [["touching", "touching?"], ["near", "near?"]],
+          labelPosition: "prefix"
+        },
+        id: "custom_condition_touching_404",
+        name: "touching",
+        type: "condition"
+      };
+
+      registerCustomBlocks([conditionBlock]);
+      Blocks["custom_condition_touching_404"].init.call(mockBlock);
+      const appendFieldCalls = mockInput.appendField.mock.calls;
+      
+      // First call should be the display name "touching"
+      expect(appendFieldCalls[0][0]).toBe("touching");
+      // Second call should be the condition dropdown
+      expect(appendFieldCalls[1][0]).toEqual(expect.any(Object)); // FieldDropdown
+      expect(appendFieldCalls[1][1]).toBe("condition");
+    });
+
+    it("adds fields in correct order for condition blocks with suffix label position", () => {
+      const conditionBlock: ICustomBlock = {
+        category: "Logic",
+        color: "#0089b8",
+        config: {
+          canHaveChildren: false,
+          options: [["is", "is"], ["equals", "="]],
+          labelPosition: "suffix"
+        },
+        id: "custom_condition_is_505",
+        name: "is",
+        type: "condition"
+      };
+
+      const { mockSecondInput } = setupMultiInputMock();
+
+      registerCustomBlocks([conditionBlock]);
+      Blocks["custom_condition_is_505"].init.call(mockBlock);
+      
+      // Should have been called twice - once for main input, once for dropdown input
+      expect(mockBlock.appendDummyInput).toHaveBeenCalledTimes(2);
+      // The dropdown input should get the dropdown field and the label
+      expect(mockSecondInput.appendField).toHaveBeenCalledWith(expect.any(Object), "condition");
+      expect(mockSecondInput.appendField).toHaveBeenCalledWith("is");
     });
   });
 

@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 
@@ -121,6 +121,24 @@ describe("CustomBlockForm", () => {
     it("does not show include number input checkbox for creator blocks", () => {
       render(<CustomBlockForm {...defaultProps} blockType="creator" />);
       expect(screen.queryByText("Use Number Input Instead of Options")).not.toBeInTheDocument();
+    });
+
+    it("hides nested blocks UI when 'Contains Child Blocks' is unchecked", async () => {
+      const user = userEvent.setup();
+      (availableChildBlocks as jest.Mock).mockReturnValue([
+        { id: "setter_1", name: "color", type: "setter", canHaveChildren: false }
+      ]);
+
+      render(<CustomBlockForm {...defaultProps} blockType="creator" />);
+
+      const childrenCheckbox = screen.getByTestId("toggle-canHaveChildren");
+      expect(childrenCheckbox).toBeChecked();
+      expect(screen.queryByTestId("nested-blocks")).toBeInTheDocument();
+
+      await user.click(childrenCheckbox);
+
+      expect(childrenCheckbox).not.toBeChecked();
+      expect(screen.queryByTestId("nested-blocks")).not.toBeInTheDocument();
     });
   });
 
