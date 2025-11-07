@@ -55,7 +55,7 @@ const blockOptionsFromConfig = (block: ICustomBlock) => {
 };
 
 export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, existingBlocks, onSubmit, toolbox }) => {
-  const blockConfig = BLOCK_TYPE_CONFIG[blockType];
+  const blockConfig = useMemo(() => BLOCK_TYPE_CONFIG[blockType], [blockType]);
   const optionTerm = blockConfig.optionTerm || "Options";
   const optionsLabelPlaceholder = blockConfig.optionLabelPlaceholder || "Display text (e.g., blue)";
   const optionsValuePlaceholder = blockConfig.optionValuePlaceholder || "Value (e.g., BLUE)";
@@ -104,69 +104,46 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
   };
 
   const [parameters, setParameters] = useState<IParameter[]>([]);
+  // We create a stable scalar for the first category to use in the useEffect below to avoid
+  // unnecessary re-runs of the effect due to new array references that can be created each render.
+  const firstCategory = useMemo(() => (availableCategories[0] || ""), [availableCategories]);
 
-  // Populate form when editing.
+  // Populate form whenever editingBlock changes.
   useEffect(() => {
-    if (editingBlock) {
-      const config: IBlockConfig = editingBlock.config;
+    if (!editingBlock) return;
 
-      setFormData({
-        category: editingBlock.category || availableCategories[0] || "",
-        childBlocks: config.childBlocks || [],
-        childrenEnabled: !!config.canHaveChildren,
-        color: editingBlock.color,
-        conditionInput: !!editingBlock.config.conditionInput,
-        defaultCount: config.defaultCount ?? 100,
-        generatorTemplate: config.generatorTemplate || "",
-        includeAllOption: config.includeAllOption ?? false,
-        includeCount: config.defaultCount != null,
-        includeNumberInput: !!config.includeNumberInput,
-        inputsInline: !!config.inputsInline,
-        maxCount: config.maxCount ?? 500,
-        minCount: config.minCount ?? 0,
-        name: editingBlock.name,
-        nextStatement: !!config.nextStatement,
-        options: blockOptionsFromConfig(editingBlock),
-        previousStatement: !!config.previousStatement,
-        targetEntity: config.targetEntity ?? "",
-        conditionLabelPosition: config.labelPosition ?? "prefix",
-        showTargetEntityLabel: config.showTargetEntityLabel ?? true,
-        type: editingBlock.type
-      });
+    const config: IBlockConfig = editingBlock.config;
 
-      if (editingBlock.type === "action") {
-        setParameters((config.parameters) || []);
-      } else {
-        setParameters([]);
-      }
+    setFormData({
+      category: editingBlock.category || firstCategory || "",
+      childBlocks: config.childBlocks || [],
+      childrenEnabled: !!config.canHaveChildren,
+      color: editingBlock.color,
+      conditionInput: !!config.conditionInput,
+      defaultCount: config.defaultCount ?? 100,
+      generatorTemplate: config.generatorTemplate || "",
+      includeAllOption: config.includeAllOption ?? false,
+      includeCount: config.defaultCount != null,
+      includeNumberInput: !!config.includeNumberInput,
+      inputsInline: !!config.inputsInline,
+      maxCount: config.maxCount ?? 500,
+      minCount: config.minCount ?? 0,
+      name: editingBlock.name,
+      nextStatement: !!config.nextStatement,
+      options: blockOptionsFromConfig(editingBlock),
+      previousStatement: !!config.previousStatement,
+      targetEntity: config.targetEntity ?? "",
+      conditionLabelPosition: config.labelPosition ?? "prefix",
+      showTargetEntityLabel: config.showTargetEntityLabel ?? true,
+      type: editingBlock.type
+    });
+
+    if (editingBlock.type === "action") {
+      setParameters(config.parameters || []);
     } else {
-      // Reset form when not editing.
-      setFormData(prev => ({
-        ...prev,
-        childrenEnabled: blockConfig.childrenEnabled,
-        category: "",
-        childBlocks: [],
-        color: blockConfig.color,
-        conditionInput: false,
-        name: "",
-        type: blockType,
-        inputsInline: true,
-        previousStatement: true,
-        nextStatement: true,
-        options: [{ label: "", value: "" }],
-        includeCount: true,
-        defaultCount: 100,
-        minCount: 0,
-        maxCount: 500,
-        includeNumberInput: false,
-        generatorTemplate: "",
-        showTargetEntityLabel: true,
-        targetEntity: "",
-        conditionLabelPosition: "prefix"
-      }));
       setParameters([]);
     }
-  }, [editingBlock, blockType, availableCategories, blockConfig.childrenEnabled, blockConfig.color, blockConfig]);
+  }, [editingBlock, firstCategory]);
 
   const handleSubmit = () => {
     if (!formData.name) {
@@ -239,7 +216,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         : formData.type === "creator"
         ? {
             ...base,
-            canHaveChildren: true,
+            canHaveChildren: formData.childrenEnabled,
             childBlocks: effectiveChildBlocks,
             typeOptions: formData.options
               .filter(opt => opt.label && opt.value)
@@ -527,13 +504,13 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
               id="can-have-children"
               type="checkbox"
               onChange={(e) => setFormData(prev => ({ ...prev, childrenEnabled: e.target.checked }))}
-            /> 
+            />
             Contains Child Blocks
           </label>
         </div>
-      )}   
+      )}
 
-      {((formData.type === "creator") || (formData.type === "action" && formData.childrenEnabled)) && (
+      {((formData.type === "creator" || formData.type === "action") && formData.childrenEnabled) && (
         <CustomBlockFormNestedBlocks
           availableBlocks={childOptions}
           nestedBlocks={formData.childBlocks}

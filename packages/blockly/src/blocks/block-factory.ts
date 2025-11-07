@@ -75,12 +75,6 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
           // Initialize as closed
           this.__disclosureOpen = false;
           statementsInput.setVisible(false);
-
-          if (blockDef.type === "creator") {
-            if (blockConfig.defaultCount !== undefined && blockConfig.minCount !== undefined && blockConfig.maxCount !== undefined) {
-              input.appendField(new FieldSlider(blockConfig.defaultCount, blockConfig.minCount, blockConfig.maxCount), "count");
-            }
-          }
           
           // One-time seeding of child blocks on first creation/attach.
           const hasChildren = Array.isArray(blockConfig.childBlocks) && blockConfig.childBlocks.length > 0;
@@ -157,6 +151,12 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         // Except for condition blocks, append the display name immediately.
         if (blockDef.type !== "condition") {
           input.appendField(displayName);
+        }
+
+        if (blockDef.type === "creator") {
+          if (blockConfig.defaultCount !== undefined && blockConfig.minCount !== undefined && blockConfig.maxCount !== undefined) {
+            input.appendField(new FieldSlider(blockConfig.defaultCount, blockConfig.minCount, blockConfig.maxCount), "count");
+          }
         }
 
         if (blockDef.type === "action") {
