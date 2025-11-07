@@ -59,6 +59,9 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
         setWorkspace(newWorkspace);
         setError(null);
 
+        // Blocks not connected to top-level blocks (e.g., setup, go) should be disabled.
+        newWorkspace.addChangeListener(Events.disableOrphans);
+
         // Log all changes to the workspace
         newWorkspace.addChangeListener((event) => {
           const eventName = `blockly-${event.type}`;

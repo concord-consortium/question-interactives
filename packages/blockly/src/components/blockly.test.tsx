@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import React from "react";
 
 import {
@@ -100,5 +100,108 @@ describe("BlocklyComponent", () => {
     expect(screen.queryByText(/Enter a toolbox configuration to see Blockly./)).not.toBeInTheDocument();
     expect(screen.queryByText(/Error loading Blockly:/)).not.toBeInTheDocument();
     expect(document.querySelector(".injectionDiv")).toBeInTheDocument();
+  });
+
+  it("renders orphan blocks as disabled", async () => {
+    // saved state with an orphaned controls_if block
+    const stateWithOrphanBlock = {
+      ...defaultInteractiveState,
+      blocklyState: JSON.stringify({
+        blocks: {
+          languageVersion: 0,
+          blocks: [
+            // top-level setup block that should be enabled
+            { type: "setup", x: 10, y: 10, deletable: false },
+            // orphaned controls_if block that should be disabled
+            { 
+              type: "controls_if", 
+              id: "orphan-block",
+              x: 300, 
+              y: 300,
+            }
+          ]
+        }
+      })
+    };
+
+    const { container } = render(<BlocklyComponent
+      authoredState={customBlocksAuthoredState}
+      interactiveState={stateWithOrphanBlock}
+      setInteractiveState={() => {
+        // mock implementation
+      }}
+      report={false}
+    />);
+
+    waitFor(() => {
+      const workspaceElement = container.querySelector('.injectionDiv');
+      expect(workspaceElement).toBeInTheDocument();
+
+      // Verify orphaned controls_if block is disabled.
+      const orphanedIfBlock = container.querySelector('.controls_if');
+      expect(orphanedIfBlock).toBeInTheDocument();
+      expect(orphanedIfBlock?.classList.contains('blocklyDisabled')).toBeTruthy();
+
+      // Verify top-level setup block is not disabled.
+      const setupBlock = container.querySelector('.setup');
+      expect(setupBlock).toBeInTheDocument();
+      expect(setupBlock?.classList.contains('blocklyDisabled')).toBe(false);
+    });
+  });
+
+  it("renders connected blocks as enabled", async () => {
+    // saved state with a controls_if block nested inside a top-level setup block
+    const stateWithConnectedBlock = {
+      ...defaultInteractiveState,
+      blocklyState: JSON.stringify({
+        blocks: {
+          languageVersion: 0,
+          blocks: [
+            // top-level setup block with a nested controls_if block
+            { 
+              type: "setup", 
+              x: 10, 
+              y: 10, 
+              deletable: false,
+              id: "setup-block",
+              inputs: {
+                "statements": {
+                  block: {
+                    type: "controls_if",
+                    id: "connected-if-block"
+                  }
+                }
+              }
+            },
+            { type: "go", x: 10, y: 80, deletable: false }
+          ]
+        }
+      })
+    };
+
+    const { container } = render(<BlocklyComponent
+      authoredState={customBlocksAuthoredState}
+      interactiveState={stateWithConnectedBlock}
+      setInteractiveState={() => {
+        // mock implementation
+      }}
+      report={false}
+    />);
+
+    await waitFor(() => {
+      const workspaceElement = container.querySelector('.injectionDiv');
+      expect(workspaceElement).toBeInTheDocument();
+
+      // Verify nested controls_if block is not disabled.
+      const connectedIfBlock = container.querySelector('.controls_if');
+      expect(connectedIfBlock).toBeInTheDocument();
+      expect(connectedIfBlock?.classList.contains('blocklyDisabled')).toBe(false);
+      expect(connectedIfBlock?.closest('.blocklyDisabled')).toBeNull();
+
+      // Verify top-level setup block is also not disabled.
+      const setupBlock = container.querySelector('.setup');
+      expect(setupBlock).toBeInTheDocument();
+      expect(setupBlock?.classList.contains('blocklyDisabled')).toBe(false);
+    });
   });
 });
