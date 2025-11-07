@@ -133,7 +133,7 @@ describe("BlocklyComponent", () => {
       report={false}
     />);
 
-    waitFor(() => {
+    await waitFor(() => {
       const workspaceElement = container.querySelector('.injectionDiv');
       expect(workspaceElement).toBeInTheDocument();
 
