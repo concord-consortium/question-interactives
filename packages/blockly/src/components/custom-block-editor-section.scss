@@ -125,10 +125,15 @@
           padding: 4px $spacing-md;
           transition: all $transition-fast;
 
-            
           &:hover {
            background: $background-light;
-          } 
+          }
+          &[disabled] {
+            background: $background-lighter;
+            border-color: $border-medium;
+            color: $text-light;
+            cursor: not-allowed;
+          }
         }
       }
     }
