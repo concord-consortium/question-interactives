@@ -79,6 +79,38 @@ export const CustomBlockEditor: React.FC<IProps> = ({ customBlocks = [], onChang
     return initial;
   });
 
+  // Initialize customBlocks with built-in blocks that have default categories (only on first render)
+  const [hasInitializedBuiltIns, setHasInitializedBuiltIns] = useState(false);
+  
+  useEffect(() => {
+    if (hasInitializedBuiltIns) return;
+
+    const existingBuiltInIds = new Set(customBlocks.filter(b => b.type === "builtIn").map(b => b.id));
+    const builtInBlocksToAdd: ICustomBlock[] = [];
+
+    ALL_BUILT_IN_BLOCKS.forEach(blockInfo => {
+      if (blockInfo.defaultCategory && !existingBuiltInIds.has(blockInfo.id)) {
+        const builtInBlock: ICustomBlock = {
+          id: blockInfo.id,
+          name: blockInfo.name || blockInfo.id.charAt(0).toUpperCase() + blockInfo.id.slice(1),
+          type: "builtIn",
+          category: blockInfo.defaultCategory,
+          color: blockInfo.color || "#0089b8",
+          config: {
+            canHaveChildren: blockInfo.canHaveChildren ?? true
+          }
+        };
+        builtInBlocksToAdd.push(builtInBlock);
+      }
+    });
+
+    if (builtInBlocksToAdd.length > 0) {
+      onChange([...customBlocks, ...builtInBlocksToAdd]);
+    }
+    
+    setHasInitializedBuiltIns(true);
+  }, [customBlocks, onChange, hasInitializedBuiltIns]);
+
   // When toolbox changes, update available categories and reset built-in block categories if needed
   useEffect(() => {
     setBuiltInBlockCategories(prev => {
