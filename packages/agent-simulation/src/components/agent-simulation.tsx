@@ -15,6 +15,12 @@ import { AgentSimulation } from "../models/agent-simulation";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { Widgets } from "./widgets";
 
+import ModelIcon from "../assets/model-icon.svg";
+import PauseIcon from "../assets/pause-icon.svg";
+import PlayIcon from "../assets/run-icon.svg";
+import ResetIcon from "../assets/rewind-to-start-icon.svg";
+import UpdateCodeIcon from "../assets/update-code-icon.svg";
+
 import css from "./agent-simulation.scss";
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
@@ -29,11 +35,17 @@ export const AgentSimulationComponent = ({
   const [externalBlocklyCode, setExternalBlocklyCode] = useState<string>("");
   const [showBlocklyCode, setShowBlocklyCode] = useState<boolean>(false);
   const dataSourceInteractive = useLinkedInteractiveId("dataSourceInteractive");
+  // TODO: Eventually, users will be able to name a saved Blockly program. For details,
+  // see https://concord-consortium.atlassian.net/browse/QI-57 
+  // For now, we use a default name. This should be updated to use the name value from
+  // the Blockly interactive state when it's available.
+  const modelName = "Model 1";
   const containerRef = useRef<HTMLDivElement>(null);
   const [paused, setPaused] = useState(true);
   const [error, setError] = useState("");
   const [resetCount, setResetCount] = useState(0);
   const simRef = useRef<AgentSimulation | null>(null);
+  const [hasBeenStarted, setHasBeenStarted] = useState(false);
 
   const setBlocklyCode = (newCode: string) => {
     _setBlocklyCode(newCode);
@@ -125,44 +137,72 @@ export const AgentSimulationComponent = ({
     };
   }, [blocklyCode, code, gridHeight, gridStep, gridWidth, resetCount]);
 
-  const handlePauseClick = () => {
+  const handlePlayPauseClick = () => {
     if (simRef.current) {
       log(paused ? "play-simulation" : "pause-simulation");
       simRef.current.sim.pause(!paused);
       setPaused(!paused);
+      if (!hasBeenStarted) {
+        setHasBeenStarted(true);
+      }
     }
+  };
+
+  const handleResetClick = () => {
+    const newResetCount = resetCount + 1;
+    log("reset-simulation", { resetCount: newResetCount });
+    setResetCount(newResetCount);
+    setHasBeenStarted(false);
+  };
+
+  const handleUpdateCodeClick = () => {
+    log("update-code", {
+      oldCode: blocklyCode,
+      newCode: externalBlocklyCode
+    });
+    setBlocklyCode(externalBlocklyCode);
+    setHasBeenStarted(false);
   };
 
   return (
     <div className={css.agentSimulationComponent}>
-      {dataSourceInteractive && (
+      <div className={css.modelTitle}>
+        <ModelIcon />
+        {modelName}
+      </div>
+      <div className={`${css.controlPanel} ${css.actionControls}`}>
+        {dataSourceInteractive && (
+          <button
+            aria-label="Update Code"
+            className={css.updateButton}
+            data-testid="update-code-button"
+            disabled={!externalBlocklyCode || blocklyCode === externalBlocklyCode}
+            title="Update Code"
+            onClick={handleUpdateCodeClick}
+          >
+            <UpdateCodeIcon className={css.buttonIcon} />
+          </button>
+        )}
         <button
-          className={css.updateButton}
-          disabled={!externalBlocklyCode || blocklyCode === externalBlocklyCode}
-          onClick={() => {
-            log("update-code", {
-              oldCode: blocklyCode,
-              newCode: externalBlocklyCode
-            });
-            setBlocklyCode(externalBlocklyCode);
-          }}
+          aria-label={paused ? "Play" : "Pause"}
+          className={`${css.playPauseButton} ${paused ? css.paused : css.playing}`}
+          data-testid="play-pause-button"
+          title={paused ? "Play" : "Pause"}
+          onClick={handlePlayPauseClick}
         >
-          Update Code
+          {paused ? <PlayIcon className={css.buttonIcon} /> : <PauseIcon className={css.buttonIcon} />}
         </button>
-      )}
-      <button onClick={() => {
-        const newResetCount = resetCount + 1;
-        log("reset-simulation", { resetCount: newResetCount });
-        setResetCount(newResetCount);
-      }}>
-        Reset
-      </button>
-      <button onClick={() => {
-        // action is logged in handlePauseClick
-        handlePauseClick();
-      }}>
-        {paused ? "Play" : "Pause"}
-      </button>
+        <button
+          aria-label="Reset"
+          className={css.resetButton}
+          data-testid="reset-button"
+          disabled={!hasBeenStarted}
+          title="Reset"
+          onClick={handleResetClick}
+        >
+          <ResetIcon className={css.buttonIcon} />
+        </button>
+      </div>
       {error && <div className={css.error}>{error}</div>}
       <div ref={containerRef} className={css.simContainer} />
       <Widgets sim={simRef.current} />

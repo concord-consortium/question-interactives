@@ -78,8 +78,8 @@ describe("AgentSimulationComponent", () => {
       />
     );
 
-    expect(screen.getByText("Reset")).toBeInTheDocument();
-    expect(screen.getByText("Play")).toBeInTheDocument();
+    expect(screen.getByTestId("reset-button")).toBeInTheDocument();
+    expect(screen.getByTestId("play-pause-button")).toBeInTheDocument();
   });
 
   it.skip("creates simulation with correct parameters", () => {
@@ -160,20 +160,28 @@ describe("AgentSimulationComponent", () => {
       />
     );
 
-    const pausePlayButton = screen.getByText("Play");
+    const pausePlayButton = screen.getByTestId("play-pause-button");
     fireEvent.click(pausePlayButton);
 
     expect(mockSimulation.pause).toHaveBeenCalledWith(false);
-    expect(screen.getByText("Pause")).toBeInTheDocument();
+    expect(pausePlayButton).toHaveAttribute("aria-label", "Pause");
+    expect(pausePlayButton).toHaveAttribute("title", "Pause");
 
-    fireEvent.click(screen.getByText("Pause"));
+    fireEvent.click(pausePlayButton);
     expect(mockSimulation.pause).toHaveBeenCalledWith(true);
+    expect(pausePlayButton).toHaveAttribute("aria-label", "Play");
+    expect(pausePlayButton).toHaveAttribute("title", "Play");
 
     // Restore original eval
     global.eval = originalEval;
   });
 
   it("handles reset button click", () => {
+    // Mock eval to return a simple function that doesn't throw
+    const originalEval = global.eval;
+    const mockFunction = jest.fn();
+    global.eval = jest.fn(() => mockFunction);
+
     render(
       <AgentSimulationComponent
         authoredState={defaultAuthoredState}
@@ -184,10 +192,28 @@ describe("AgentSimulationComponent", () => {
 
     const initialCallCount = mockSimulationConstructor.mock.calls.length;
 
-    fireEvent.click(screen.getByText("Reset"));
+    // Reset button should be disabled initially
+    const resetButton = screen.getByTestId("reset-button");
+    expect(resetButton).toBeDisabled();
+
+    // Start the simulation first by clicking play
+    const playButton = screen.getByTestId("play-pause-button");
+    fireEvent.click(playButton);
+
+    // Now reset button should be enabled
+    expect(resetButton).not.toBeDisabled();
+
+    // Click reset button
+    fireEvent.click(resetButton);
 
     // Should create a new simulation instance
     expect(mockSimulationConstructor.mock.calls.length).toBeGreaterThan(initialCallCount);
+
+    // Reset button should be disabled again after reset
+    expect(resetButton).toBeDisabled();
+
+    // Restore original eval
+    global.eval = originalEval;
   });
 
   it("shows blockly code toggle when blockly code exists", () => {
@@ -222,7 +248,7 @@ describe("AgentSimulationComponent", () => {
       />
     );
 
-    const updateButton = screen.getByText("Update Code");
+    const updateButton = screen.getByTestId("update-code-button");
     expect(updateButton).toBeInTheDocument();
     expect(updateButton).toBeDisabled(); // Should be disabled initially with no external code
   });
@@ -251,7 +277,7 @@ describe("AgentSimulationComponent", () => {
     });
 
     // Update button should now be enabled
-    const updateButton = screen.getByText("Update Code");
+    const updateButton = screen.getByTestId("update-code-button");
     expect(updateButton).not.toBeDisabled();
   });
 
@@ -276,7 +302,7 @@ describe("AgentSimulationComponent", () => {
     });
 
     // Click update button
-    fireEvent.click(screen.getByText("Update Code"));
+    fireEvent.click(screen.getByTestId("update-code-button"));
 
     // Should call setInteractiveState with new code
     expect(mockSetInteractiveState).toHaveBeenCalledWith(expect.any(Function));
@@ -356,8 +382,8 @@ describe("AgentSimulationComponent", () => {
 
     // Should still render the simulation
     expect(mockSimulationConstructor).toHaveBeenCalled();
-    expect(screen.getByText("Reset")).toBeInTheDocument();
-    expect(screen.getByText("Play")).toBeInTheDocument();
+    expect(screen.getByTestId("reset-button")).toBeInTheDocument();
+    expect(screen.getByTestId("play-pause-button")).toBeInTheDocument();
 
     // Restore original eval
     global.eval = originalEval;
@@ -384,7 +410,7 @@ describe("AgentSimulationComponent", () => {
     });
 
     // Update button should remain disabled
-    const updateButton = screen.getByText("Update Code");
+    const updateButton = screen.getByTestId("update-code-button");
     expect(updateButton).toBeDisabled();
   });
 
