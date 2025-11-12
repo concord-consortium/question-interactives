@@ -169,6 +169,7 @@ export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
             <button
               aria-label={`Move ${blockInfo.name} block up`}
               className={css.nestedBlock_actionButton}
+              data-testid="block-move-up"
               disabled={isFirst}
               title={`Move ${blockInfo.name} block up`}
               type="button"
@@ -179,6 +180,7 @@ export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
             <button
               aria-label={`Move ${blockInfo.name} block down`}
               className={css.nestedBlock_actionButton}
+              data-testid="block-move-down"
               disabled={isLast}
               title={`Move ${blockInfo.name} block down`}
               type="button"

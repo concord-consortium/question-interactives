@@ -80,15 +80,15 @@ export const CustomBlockEditorSection: React.FC<IProps> = ({ blockType, toolbox,
     const [movedBlock] = reorderedFilteredBlocks.splice(filteredIndex, 1);
     reorderedFilteredBlocks.splice(newFilteredIndex, 0, movedBlock);
 
-    // Find the original positions of blocks of this type in the array of all blocks.
+    // Find the current positions of blocks of this type in the array of all blocks.
     const blockTypeIndices = customBlocks
-      .map((block, index) => ({ block, originalIndex: index }))
+      .map((block, index) => ({ block, currentIndex: index }))
       .filter(item => item.block.type === blockType);
 
-    // Create the final array preserving original inter-section ordering.
+    // Create the final array preserving inter-section ordering.
     const finalBlocks = [...customBlocks];
     blockTypeIndices.forEach((item, sectionIndex) => {
-      finalBlocks[item.originalIndex] = reorderedFilteredBlocks[sectionIndex];
+      finalBlocks[item.currentIndex] = reorderedFilteredBlocks[sectionIndex];
     });
 
     onChange(finalBlocks);

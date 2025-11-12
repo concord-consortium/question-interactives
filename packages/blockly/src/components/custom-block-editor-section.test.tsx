@@ -127,29 +127,32 @@ describe("Block Management", () => {
 	it("calls onChange when move buttons are clicked", async () => {
 		const user = userEvent.setup();
 		const multipleBlocks = [
-			...mockBlocks,
-			additionalMockBlock
+			mockBlocks[0],        // custom_set_color_1 (setter)
+			additionalMockBlock   // custom_set_color_2 (setter)
 		];
-		render(<CustomBlockEditorSection {...defaultProps} blockType="setter" customBlocks={multipleBlocks} />);
+		const { rerender } = render(<CustomBlockEditorSection {...defaultProps} blockType="setter" customBlocks={multipleBlocks} />);
 
 		await user.click(screen.getByTestId("toggle-setter"));
 		await user.click(screen.getAllByTestId("block-move-down")[0]);
 
-		expect(mockOnChange).toHaveBeenCalledWith(
-			expect.arrayContaining([
-				expect.objectContaining({ id: "custom_set_color_2" }),
-				expect.objectContaining({ id: "custom_set_color_1" })
-			])
-		);
+		expect(mockOnChange).toHaveBeenCalledWith([
+			expect.objectContaining({ id: "custom_set_color_2" }),
+			expect.objectContaining({ id: "custom_set_color_1" })
+		]);
 
+		// Simulate the parent component updating props after onChange by using the
+		// result from the first check above in a new render.
+		const firstCheckMoveResult = mockOnChange.mock.calls[0][0];
+		
+		mockOnChange.mockClear();
+		rerender(<CustomBlockEditorSection {...defaultProps} blockType="setter" customBlocks={firstCheckMoveResult} />);
+		
 		await user.click(screen.getAllByTestId("block-move-up")[1]);
 
-		expect(mockOnChange).toHaveBeenCalledWith(
-			expect.arrayContaining([
-				expect.objectContaining({ id: "custom_set_color_1" }),
-				expect.objectContaining({ id: "custom_set_color_2" })
-			])
-		);
+		expect(mockOnChange).toHaveBeenCalledWith([
+			expect.objectContaining({ id: "custom_set_color_1" }),
+			expect.objectContaining({ id: "custom_set_color_2" })
+		]);
 	});
 
 	it("calls onChange when delete is clicked", async () => {

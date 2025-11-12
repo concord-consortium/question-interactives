@@ -140,8 +140,8 @@ describe("CustomBlockFormNestedBlocks", () => {
       const mockOnChange = jest.fn();
       
       render(<CustomBlockFormNestedBlocks {...defaultProps} nestedBlocks={nestedBlocks} onChange={mockOnChange} />);
-      
-      const upButtons = screen.getAllByText("Up");
+
+      const upButtons = screen.getAllByTestId("block-move-up");
       await user.click(upButtons[1]); // Click Up on second block
       
       expect(mockOnChange).toHaveBeenCalledWith([
@@ -155,8 +155,8 @@ describe("CustomBlockFormNestedBlocks", () => {
       const mockOnChange = jest.fn();
       
       render(<CustomBlockFormNestedBlocks {...defaultProps} nestedBlocks={nestedBlocks} onChange={mockOnChange} />);
-      
-      const downButtons = screen.getAllByText("Down");
+
+      const downButtons = screen.getAllByTestId("block-move-down");
       await user.click(downButtons[0]); // Click Down on first block
       
       expect(mockOnChange).toHaveBeenCalledWith([
@@ -168,7 +168,7 @@ describe("CustomBlockFormNestedBlocks", () => {
     it("disables Up button for first block", () => {
       render(<CustomBlockFormNestedBlocks {...defaultProps} nestedBlocks={nestedBlocks} />);
       
-      const upButtons = screen.getAllByText("Up");
+      const upButtons = screen.getAllByTestId("block-move-up");
       expect(upButtons[0]).toBeDisabled();
       expect(upButtons[1]).not.toBeDisabled();
     });
@@ -176,7 +176,7 @@ describe("CustomBlockFormNestedBlocks", () => {
     it("disables Down button for last block", () => {
       render(<CustomBlockFormNestedBlocks {...defaultProps} nestedBlocks={nestedBlocks} />);
       
-      const downButtons = screen.getAllByText("Down");
+      const downButtons = screen.getAllByTestId("block-move-down");
       expect(downButtons[0]).not.toBeDisabled();
       expect(downButtons[1]).toBeDisabled();
     });
