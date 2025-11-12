@@ -1,5 +1,5 @@
 import { Blocks } from "blockly";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { ALL_BUILT_IN_BLOCKS } from "../blocks/block-constants";
 import { BuiltInBlockEditorSection } from "./built-in-block-editor-section";
@@ -21,6 +21,7 @@ export const CustomBlockEditor: React.FC<IProps> = ({ customBlocks = [], onChang
   const [codeText, setCodeText] = useState<string>(JSON.stringify(customBlocks, null, 2));
   const [codeError, setCodeError] = useState<string>("");
   const [isDirty, setIsDirty] = useState<boolean>(false);
+  const hasInitializedBuiltIns = useRef(false);
 
   // Keep textarea in sync when external value changes, unless the user has unsaved edits.
   useEffect(() => {
@@ -79,11 +80,12 @@ export const CustomBlockEditor: React.FC<IProps> = ({ customBlocks = [], onChang
     return initial;
   });
 
-  // Initialize customBlocks with built-in blocks that have default categories (only on first render)
-  const [hasInitializedBuiltIns, setHasInitializedBuiltIns] = useState(false);
-  
+  // On first render, initialize customBlocks with built-in blocks that have default categories specified.
   useEffect(() => {
-    if (hasInitializedBuiltIns) return;
+    if (hasInitializedBuiltIns.current) return;
+    
+    // Mark as initialized immediately to prevent potential race conditions.
+    hasInitializedBuiltIns.current = true;
 
     const existingBuiltInIds = new Set(customBlocks.filter(b => b.type === "builtIn").map(b => b.id));
     const builtInBlocksToAdd: ICustomBlock[] = [];
@@ -92,10 +94,10 @@ export const CustomBlockEditor: React.FC<IProps> = ({ customBlocks = [], onChang
       if (blockInfo.defaultCategory && !existingBuiltInIds.has(blockInfo.id)) {
         const builtInBlock: ICustomBlock = {
           id: blockInfo.id,
-          name: blockInfo.name || blockInfo.id.charAt(0).toUpperCase() + blockInfo.id.slice(1),
+          name: blockInfo.name,
           type: "builtIn",
           category: blockInfo.defaultCategory,
-          color: blockInfo.color || "#0089b8",
+          color: blockInfo.color,
           config: {
             canHaveChildren: blockInfo.canHaveChildren ?? true
           }
@@ -107,9 +109,8 @@ export const CustomBlockEditor: React.FC<IProps> = ({ customBlocks = [], onChang
     if (builtInBlocksToAdd.length > 0) {
       onChange([...customBlocks, ...builtInBlocksToAdd]);
     }
-    
-    setHasInitializedBuiltIns(true);
-  }, [customBlocks, onChange, hasInitializedBuiltIns]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // When toolbox changes, update available categories and reset built-in block categories if needed
   useEffect(() => {

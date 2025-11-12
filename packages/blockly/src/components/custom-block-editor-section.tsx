@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 
 import { CustomBlockForm } from "./custom-block-form";
 import { CustomBlockType, ICustomBlock } from "./types";
@@ -94,7 +94,9 @@ export const CustomBlockEditorSection: React.FC<IProps> = ({ blockType, toolbox,
     onChange(finalBlocks);
   };
 
-  const filteredBlocks = customBlocks.filter(b => b.type === blockType);
+  const filteredBlocks = useMemo(() => {
+    return customBlocks.filter(b => b.type === blockType);
+  }, [customBlocks, blockType]);
 
   return (
     <div className={css.customBlocks_section} data-testid={`section-${blockType}`}>
