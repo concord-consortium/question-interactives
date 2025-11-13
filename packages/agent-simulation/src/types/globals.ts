@@ -1,4 +1,5 @@
+export type GlobalValue = any;
 export interface Global {
   displayName: string;
-  value: any;
+  value: GlobalValue;
 }

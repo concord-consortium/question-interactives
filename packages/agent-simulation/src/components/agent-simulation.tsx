@@ -13,6 +13,7 @@ import {
 } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
 import { AgentSimulation } from "../models/agent-simulation";
 import { IAuthoredState, IInteractiveState } from "./types";
+import { Widgets } from "./widgets";
 
 import css from "./agent-simulation.scss";
 
@@ -93,7 +94,7 @@ export const AgentSimulationComponent = ({
     log("setup-simulation", { gridStep, gridWidth, gridHeight, resetCount, usingCode, code: setupCode });
 
     // Run the simulation setup code
-    const functionCode = `(sim, AA, AV, globals) => { ${setupCode} }`;
+    const functionCode = `(sim, AA, AV, globals, addWidget) => { ${setupCode} }`;
     try {
       // Indirect eval (with ?.) is supposed to be safer and faster than direct eval
       // - eval executes in the local scope, so has to check every containing scope for variable references
@@ -102,7 +103,7 @@ export const AgentSimulationComponent = ({
       // For more info, see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval
       const simFunction = eval?.(functionCode);
       const { globals, sim } = simRef.current;
-      simFunction?.(sim, AA, AV, globals);
+      simFunction?.(sim, AA, AV, globals, simRef.current.addWidget.bind(simRef.current));
     } catch (e) {
       setError(`Error setting up simulation: ${String(e)}`);
       return;
@@ -164,6 +165,7 @@ export const AgentSimulationComponent = ({
       </button>
       {error && <div className={css.error}>{error}</div>}
       <div ref={containerRef} className={css.simContainer} />
+      <Widgets sim={simRef.current} />
       { blocklyCode && (
         <>
           {showBlocklyCode &&
