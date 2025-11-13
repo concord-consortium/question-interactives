@@ -47,8 +47,8 @@ export const injectCustomBlocksIntoToolbox = (toolboxJson: string, customBlocks:
     );
     Object.keys(blocksByCategory).forEach(category => {
       blocksByCategory[category].sort((a, b) => {
-        const aIndex = typeOrderMap.get(a.type) ?? -1;
-        const bIndex = typeOrderMap.get(b.type) ?? -1;
+        const aIndex = typeOrderMap.get(a.type) ?? BLOCK_TYPE_ORDER.length;
+        const bIndex = typeOrderMap.get(b.type) ?? BLOCK_TYPE_ORDER.length;
         return aIndex - bIndex;
       });
     });
@@ -61,7 +61,7 @@ export const injectCustomBlocksIntoToolbox = (toolboxJson: string, customBlocks:
           item.contents = [];
         }
 
-        // Add custom blocks to this category (now sorted by type order)
+        // Add custom blocks to this category
         blocksByCategory[item.name].forEach(block => {
           item.contents.push({ kind: "block", type: block.id });
         });
