@@ -1,10 +1,10 @@
 import { Blocks } from "blockly";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 
-import { ALL_BUILT_IN_BLOCKS } from "../blocks/block-constants";
+import { ALL_BUILT_IN_BLOCKS, BLOCK_TYPE_ORDER } from "../blocks/block-constants";
 import { BuiltInBlockEditorSection } from "./built-in-block-editor-section";
 import { CustomBlockEditorSection } from "./custom-block-editor-section";
-import { CustomBlockType, ICustomBlock } from "./types";
+import { ICustomBlock } from "./types";
 import { validateBlocksJson } from "../utils/block-utils";
 import { extractCategoriesFromToolbox } from "../utils/toolbox-utils";
 
@@ -21,7 +21,6 @@ export const CustomBlockEditor: React.FC<IProps> = ({ customBlocks = [], onChang
   const [codeText, setCodeText] = useState<string>(JSON.stringify(customBlocks, null, 2));
   const [codeError, setCodeError] = useState<string>("");
   const [isDirty, setIsDirty] = useState<boolean>(false);
-  const hasInitializedBuiltIns = useRef(false);
 
   // Keep textarea in sync when external value changes, unless the user has unsaved edits.
   useEffect(() => {
@@ -60,17 +59,6 @@ export const CustomBlockEditor: React.FC<IProps> = ({ customBlocks = [], onChang
     }
   };
 
-  // List of all block types to render sections for each block type in desired order.
-  // If the desired order changes or isn't necessary, we may be able to use `VALID_BLOCK_TYPES` from `types.ts` instead
-  // and avoid duplicating the list here.
-  const blockTypes: CustomBlockType[] = [
-    "setter",
-    "creator",
-    "ask",
-    "action",
-    "condition"
-  ];
-
   const availableCategories = extractCategoriesFromToolbox(toolbox);
   const [builtInBlockCategories, setBuiltInBlockCategories] = useState<Record<string, string>>(() => {
     const initial: Record<string, string> = {};
@@ -82,11 +70,6 @@ export const CustomBlockEditor: React.FC<IProps> = ({ customBlocks = [], onChang
 
   // On first render, initialize customBlocks with built-in blocks that have default categories specified.
   useEffect(() => {
-    if (hasInitializedBuiltIns.current) return;
-    
-    // Mark as initialized immediately to prevent potential race conditions.
-    hasInitializedBuiltIns.current = true;
-
     const existingBuiltInIds = new Set(customBlocks.filter(b => b.type === "builtIn").map(b => b.id));
     const builtInBlocksToAdd: ICustomBlock[] = [];
 
@@ -167,7 +150,8 @@ export const CustomBlockEditor: React.FC<IProps> = ({ customBlocks = [], onChang
     <div className={css.customBlockEditor} data-testid="custom-block-editor">
       <h4>Custom Blocks</h4>
 
-      {blockTypes.map(type => (
+      {/* Render sections for each block type except "builtIn" which we handle separately below. */}
+      {BLOCK_TYPE_ORDER.filter(type => type !== "builtIn").map(type => (
         <CustomBlockEditorSection
           key={type}
           blockType={type}
