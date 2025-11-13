@@ -11,6 +11,7 @@ import {
 import {
   useLinkedInteractiveId
 } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
+import { AgentSimulation } from "../models/agent-simulation";
 import { IAuthoredState, IInteractiveState } from "./types";
 
 import css from "./agent-simulation.scss";
@@ -31,7 +32,7 @@ export const AgentSimulationComponent = ({
   const [paused, setPaused] = useState(true);
   const [error, setError] = useState("");
   const [resetCount, setResetCount] = useState(0);
-  const simRef = useRef<AA.Simulation | null>(null);
+  const simRef = useRef<AgentSimulation | null>(null);
 
   const setBlocklyCode = (newCode: string) => {
     _setBlocklyCode(newCode);
@@ -84,11 +85,7 @@ export const AgentSimulationComponent = ({
     }
 
     // Set up the simulation
-    simRef.current = new AA.Simulation({
-      gridStep: gridStep,
-      height: gridHeight,
-      width: gridWidth
-    });
+    simRef.current = new AgentSimulation(gridWidth, gridHeight, gridStep);
 
     const setupCode = blocklyCode || code;
     const usingCode = blocklyCode ? "blockly code" : "authored code";
@@ -104,15 +101,15 @@ export const AgentSimulationComponent = ({
       // - eval executes with whatever permissions the containing code has, giving more opportunity for malicious code
       // For more info, see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval
       const simFunction = eval?.(functionCode);
-      simFunction?.(simRef.current, AA, AV);
+      simFunction?.(simRef.current.sim, AA, AV);
     } catch (e) {
       setError(`Error setting up simulation: ${String(e)}`);
       return;
     }
 
     // Visualize and start the simulation
-    AV.vis(simRef.current, { target: containerRef.current });
-    simRef.current.pause(true);
+    AV.vis(simRef.current.sim, { target: containerRef.current });
+    simRef.current.sim.pause(true);
     setPaused(true);
 
     setError("");
@@ -122,14 +119,14 @@ export const AgentSimulationComponent = ({
     return () => {
       // Remove old sim when we're ready to update the sim
       container?.replaceChildren();
-      sim.end();
+      sim.destroy();
     };
   }, [blocklyCode, code, gridHeight, gridStep, gridWidth, resetCount]);
 
   const handlePauseClick = () => {
     if (simRef.current) {
       log(paused ? "play-simulation" : "pause-simulation");
-      simRef.current.pause(!paused);
+      simRef.current.sim.pause(!paused);
       setPaused(!paused);
     }
   };
