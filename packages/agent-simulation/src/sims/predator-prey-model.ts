@@ -95,8 +95,26 @@ const maxGrassLevel = 10;
 const grassGrowthRate = 0.01;
 
 function setup() {
+  globals.createGlobal("sheepCount", { displayName: "Sheep Count", value: 0 });
+  globals.createGlobal("wolfCount", { displayName: "Wolf Count", value: 0 });
   create_sheep(50);
   create_wolves(10);
+  addWidget({
+    data: {
+      label: "Sheep"
+    },
+    global: "sheepCount",
+    type: "readout"
+  });
+  addWidget({
+    data: {
+      backgroundColor: "#666",
+      color: "#fff",
+      label: "Wolves"
+    },
+    global: "wolfCount",
+    type: "readout"
+  });
 }
 
 sim.afterTick = () => {
@@ -110,8 +128,10 @@ sim.afterTick = () => {
   sim.actors?.forEach(a => {
     // Lose energy and possibly die
     const energyLoss = a.label("sheep") ? sheepEnergyLoss : wolfEnergyLoss;
+    const globalKey = a.label("sheep") ? "sheepCount" : "wolfCount";
     a.state.energy = a.state.energy - energyLoss;
     if (a.state.energy <= 0) {
+      globals.setValue(globalKey, globals.getValue(globalKey) - 1);
       a.remove();
       return;
     }
@@ -144,10 +164,9 @@ sim.afterTick = () => {
     if (s) {
       w.state.energy = w.state.energy + s.state.energy / 2;
       s.remove();
+      globals.setValue("sheepCount", globals.getValue("sheepCount") - 1);
     }
   });
-
-  console.log(\`sheep: \${Array.from(sim.withLabel("sheep")).length}, wolves: \${Array.from(sim.withLabel("wolf")).length}\`);
 };
 
 // set up squares (patches)
@@ -178,6 +197,7 @@ function create_a_sheep(props) {
   agent.y = y ?? Math.random() * sim.height;
 
   agent.addTo(sim);
+  globals.setValue("sheepCount", globals.getValue("sheepCount") + 1);
   return agent;
 }
 function create_sheep(num, callback) {
@@ -200,6 +220,7 @@ function create_a_wolf(props) {
   agent.y = y ?? Math.random() * sim.height;
 
   agent.addTo(sim);
+  globals.setValue("wolfCount", globals.getValue("wolfCount") + 1);
   return agent;
 };
 function create_wolves(num, callback) {
