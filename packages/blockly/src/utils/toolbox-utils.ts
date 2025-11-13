@@ -1,4 +1,5 @@
 import { ICustomBlock } from "../components/types";
+import { BLOCK_TYPE_ORDER } from "../blocks/block-constants";
 
 export const extractCategoriesFromToolbox = (toolboxJson: string): string[] => {
   if (!toolboxJson || !toolboxJson.trim()) return [];
@@ -40,6 +41,18 @@ export const injectCustomBlocksIntoToolbox = (toolboxJson: string, customBlocks:
       blocksByCategory[block.category].push(block);
     });
 
+    // Sort blocks within each category by type order
+    const typeOrderMap = new Map(
+      BLOCK_TYPE_ORDER.map((type, index) => [type, index])
+    );
+    Object.keys(blocksByCategory).forEach(category => {
+      blocksByCategory[category].sort((a, b) => {
+        const aIndex = typeOrderMap.get(a.type) ?? -1;
+        const bIndex = typeOrderMap.get(b.type) ?? -1;
+        return aIndex - bIndex;
+      });
+    });
+
     // Inject custom blocks into their assigned categories
     toolbox.contents.forEach((item: any) => {
       if (item.kind === "category" && item.name && blocksByCategory[item.name]) {
@@ -48,7 +61,7 @@ export const injectCustomBlocksIntoToolbox = (toolboxJson: string, customBlocks:
           item.contents = [];
         }
 
-        // Add custom blocks to this category
+        // Add custom blocks to this category (now sorted by type order)
         blocksByCategory[item.name].forEach(block => {
           item.contents.push({ kind: "block", type: block.id });
         });

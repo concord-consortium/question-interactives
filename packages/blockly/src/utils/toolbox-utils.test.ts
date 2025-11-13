@@ -302,5 +302,50 @@ describe("toolbox-utils", () => {
         type: "custom_set_speed_456"
       });
     });
+
+    it("should order blocks by type within the same category (creator before setter)", () => {
+      const mixedTypeBlocks = [
+        {
+          category: "Properties",
+          color: "#ff0000",
+          config: { canHaveChildren: false },
+          id: "custom_set_color_123",
+          name: "Set Color",
+          type: "setter" as const
+        },
+        {
+          category: "Properties", 
+          color: "#00ff00",
+          config: { canHaveChildren: true },
+          id: "custom_create_agent_456",
+          name: "Create Agent",
+          type: "creator" as const
+        }
+      ];
+
+      const toolboxJson = JSON.stringify({
+        contents: [
+          {
+            contents: [],
+            kind: "category",
+            name: "Properties"
+          }
+        ],
+        kind: "categoryToolbox"
+      });
+
+      const result = injectCustomBlocksIntoToolbox(toolboxJson, mixedTypeBlocks);
+      const parsed = JSON.parse(result);
+
+      expect(parsed.contents[0].contents).toHaveLength(2);
+      expect(parsed.contents[0].contents[0]).toEqual({
+        kind: "block",
+        type: "custom_create_agent_456"
+      });
+      expect(parsed.contents[0].contents[1]).toEqual({
+        kind: "block",
+        type: "custom_set_color_123"
+      });
+    });
   });
 });
