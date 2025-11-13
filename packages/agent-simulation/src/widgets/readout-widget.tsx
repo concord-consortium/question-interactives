@@ -6,8 +6,16 @@ import { registerWidget } from "./widget-registration";
 
 export const readoutWidgetType = "readout";
 
-const ReadoutWidget = observer(function ReadoutWidget({ global, sim }: IWidgetComponentProps) {
-  return <div>{sim.globals[global].value}</div>;
+const ReadoutWidget = observer(function ReadoutWidget({ data, global, sim }: IWidgetComponentProps) {
+  const labelString = data?.label ? ` ${data.label}` : "";
+  const style = {
+    backgroundColor: data?.backgroundColor,
+    color: data?.color
+  };
+
+  const value = sim.globals.getValue(global);
+
+  return <div style={style}>{`${value}${labelString}`}</div>;
 });
 
 registerWidget({

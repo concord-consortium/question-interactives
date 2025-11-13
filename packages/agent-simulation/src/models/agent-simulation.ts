@@ -1,12 +1,12 @@
 import * as AA from "@gjmcn/atomic-agents";
 import { makeAutoObservable } from "mobx";
 
-import { Global } from "../types/globals";
 import { IWidgetProps } from "../types/widgets";
 import "../widgets/register-widgets";
+import { Globals } from "./globals";
 
 export class AgentSimulation {
-  globals: Record<string, Global> = {};
+  globals: Globals = new Globals();
   sim: AA.Simulation;
   widgets: IWidgetProps[] = [];
 
