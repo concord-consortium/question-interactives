@@ -37,6 +37,15 @@ const mockBlocks = [
 	}
 ];
 
+const additionalMockBlock = {
+  category: "Properties",
+  color: "#0000ff",
+  config: { canHaveChildren: false, typeOptions: [["blue", "BLUE"] as [string, string]] },
+  id: "custom_set_color_2",
+  name: "background",
+  type: "setter" as const,
+};
+
 const defaultProps = {
 	customBlocks: mockBlocks,
 	toolbox: "{}",
@@ -76,14 +85,7 @@ describe("Rendering", () => {
 	it("pluralizes block count correctly", () => {
 		const multipleBlocks = [
 			...mockBlocks,
-			{
-				category: "Properties",
-				color: "#0000ff",
-				config: { canHaveChildren: false, typeOptions: [["blue", "BLUE"] as [string, string]] },
-				id: "custom_set_color_2",
-				name: "background",
-				type: "setter" as const,
-			}
+			additionalMockBlock
 		];
 		render(<CustomBlockEditorSection {...defaultProps} blockType="setter" customBlocks={multipleBlocks} />);
 
@@ -110,14 +112,47 @@ describe("Rendering", () => {
 });
 
 describe("Block Management", () => {
-	it("shows edit and delete buttons for each block when expanded", async () => {
+	it("shows move, edit, and delete buttons for each block when expanded", async () => {
 		const user = userEvent.setup();
 		render(<CustomBlockEditorSection {...defaultProps} blockType="setter" />);
 
 		await user.click(screen.getByTestId("toggle-setter"));
 
+		expect(screen.getByTestId("block-move-up")).toBeInTheDocument();
+		expect(screen.getByTestId("block-move-down")).toBeInTheDocument();
 		expect(screen.getByTestId("block-edit")).toBeInTheDocument();
 		expect(screen.getByTestId("block-delete")).toBeInTheDocument();
+	});
+
+	it("calls onChange when move buttons are clicked", async () => {
+		const user = userEvent.setup();
+		const multipleBlocks = [
+			mockBlocks[0],        // custom_set_color_1 (setter)
+			additionalMockBlock   // custom_set_color_2 (setter)
+		];
+		const { rerender } = render(<CustomBlockEditorSection {...defaultProps} blockType="setter" customBlocks={multipleBlocks} />);
+
+		await user.click(screen.getByTestId("toggle-setter"));
+		await user.click(screen.getAllByTestId("block-move-down")[0]);
+
+		expect(mockOnChange).toHaveBeenCalledWith([
+			expect.objectContaining({ id: "custom_set_color_2" }),
+			expect.objectContaining({ id: "custom_set_color_1" })
+		]);
+
+		// Simulate the parent component updating props after onChange by using the
+		// result from the first check above in a new render.
+		const firstCheckMoveResult = mockOnChange.mock.calls[0][0];
+		
+		mockOnChange.mockClear();
+		rerender(<CustomBlockEditorSection {...defaultProps} blockType="setter" customBlocks={firstCheckMoveResult} />);
+		
+		await user.click(screen.getAllByTestId("block-move-up")[1]);
+
+		expect(mockOnChange).toHaveBeenCalledWith([
+			expect.objectContaining({ id: "custom_set_color_1" }),
+			expect.objectContaining({ id: "custom_set_color_2" })
+		]);
 	});
 
 	it("calls onChange when delete is clicked", async () => {

@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 
 import { CustomBlockForm } from "./custom-block-form";
 import { CustomBlockType, ICustomBlock } from "./types";
@@ -67,7 +67,36 @@ export const CustomBlockEditorSection: React.FC<IProps> = ({ blockType, toolbox,
     onChange(updatedBlocks);
   };
 
-  const filteredBlocks = customBlocks.filter(b => b.type === blockType);
+  const moveBlock = (id: string, direction: "up" | "down") => {
+    // Blocks are only reordered within their type group (e.g., setter blocks among other setter blocks),
+    // and we maintain the relative positions of different block types in the full array.
+    const filteredIndex = filteredBlocks.findIndex(b => b.id === id);
+    if (filteredIndex === -1) return;
+
+    const newFilteredIndex = direction === "up" ? filteredIndex - 1 : filteredIndex + 1;
+    if (newFilteredIndex < 0 || newFilteredIndex >= filteredBlocks.length) return;
+
+    const reorderedFilteredBlocks = [...filteredBlocks];
+    const [movedBlock] = reorderedFilteredBlocks.splice(filteredIndex, 1);
+    reorderedFilteredBlocks.splice(newFilteredIndex, 0, movedBlock);
+
+    // Find the current positions of blocks of this type in the array of all blocks.
+    const blockTypeIndices = customBlocks
+      .map((block, index) => ({ block, currentIndex: index }))
+      .filter(item => item.block.type === blockType);
+
+    // Create the final array preserving inter-section ordering.
+    const finalBlocks = [...customBlocks];
+    blockTypeIndices.forEach((item, sectionIndex) => {
+      finalBlocks[item.currentIndex] = reorderedFilteredBlocks[sectionIndex];
+    });
+
+    onChange(finalBlocks);
+  };
+
+  const filteredBlocks = useMemo(() => {
+    return customBlocks.filter(b => b.type === blockType);
+  }, [customBlocks, blockType]);
 
   return (
     <div className={css.customBlocks_section} data-testid={`section-${blockType}`}>
@@ -115,12 +144,34 @@ export const CustomBlockEditorSection: React.FC<IProps> = ({ blockType, toolbox,
           )}
           <div className={css.customBlocks_current} data-testid={`current-${blockType}`}>
             {filteredBlocks.length > 0 ? (
-              filteredBlocks.map(block => (
+              filteredBlocks.map((block, index) => (
                 <div className={css.customBlocks_currentBlock} key={block.id} data-testid="current-block">
                   <div className={css.customBlocks_currentBlockInfo}>
                     <strong>{block.name}</strong> ({block.type}) - {block.category}
                   </div>
                   <div className={css.customBlocks_currentBlockActions}>
+                    <button
+                      aria-label={`Move ${block.name} block up`}
+                      className={css.moveButton}
+                      data-testid="block-move-up"
+                      disabled={index === 0}
+                      title={`Move ${block.name} block up`}
+                      type="button"
+                      onClick={() => moveBlock(block.id, "up")}
+                    >
+                      ↑
+                    </button>
+                    <button
+                      aria-label={`Move ${block.name} block down`}
+                      className={css.moveButton}
+                      data-testid="block-move-down"
+                      disabled={index === filteredBlocks.length - 1}
+                      title={`Move ${block.name} block down`}
+                      type="button"
+                      onClick={() => moveBlock(block.id, "down")}
+                    >
+                      ↓
+                    </button>
                     <button data-testid="block-edit" onClick={() => editCustomBlock(block)}>Edit</button>
                     <button data-testid="block-delete" onClick={() => deleteBlock(block.id)}>Delete</button>
                   </div>
