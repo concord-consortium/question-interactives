@@ -93,7 +93,7 @@ export const AgentSimulationComponent = ({
     log("setup-simulation", { gridStep, gridWidth, gridHeight, resetCount, usingCode, code: setupCode });
 
     // Run the simulation setup code
-    const functionCode = `(sim, AA, AV) => { ${setupCode} }`;
+    const functionCode = `(sim, AA, AV, globals) => { ${setupCode} }`;
     try {
       // Indirect eval (with ?.) is supposed to be safer and faster than direct eval
       // - eval executes in the local scope, so has to check every containing scope for variable references
@@ -101,7 +101,8 @@ export const AgentSimulationComponent = ({
       // - eval executes with whatever permissions the containing code has, giving more opportunity for malicious code
       // For more info, see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval
       const simFunction = eval?.(functionCode);
-      simFunction?.(simRef.current.sim, AA, AV);
+      const { globals, sim } = simRef.current;
+      simFunction?.(sim, AA, AV, globals);
     } catch (e) {
       setError(`Error setting up simulation: ${String(e)}`);
       return;
@@ -114,12 +115,12 @@ export const AgentSimulationComponent = ({
 
     setError("");
 
-    const sim = simRef.current;
+    const oldSim = simRef.current;
     const container = containerRef.current;
     return () => {
       // Remove old sim when we're ready to update the sim
       container?.replaceChildren();
-      sim.destroy();
+      oldSim.destroy();
     };
   }, [blocklyCode, code, gridHeight, gridStep, gridWidth, resetCount]);
 
