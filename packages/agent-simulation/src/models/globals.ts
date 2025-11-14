@@ -1,32 +1,25 @@
 import { makeAutoObservable } from "mobx";
 
-import { Global } from "../types/globals";
+import { GlobalValue } from "../types/globals";
 
 export class Globals {
-  private globals: Record<string, Global> = {};
+  private globals: Record<string, GlobalValue> = {};
 
   constructor() {
     makeAutoObservable(this);
   }
 
-  createGlobal(key: string, global: Global) {
-    if (!this.globals[key])  this.globals[key] = global;
+  // Only creates a new global if it doesn't already exist
+  create(key: string, value: GlobalValue) {
+    if (this.globals[key] === undefined) this.globals[key] = value;
   }
 
-  getDisplayName(key: string) {
-    return this.getGlobal(key)?.displayName;
-  }
-
-  getGlobal(key: string) {
+  get(key: string) {
     return this.globals[key];
   }
 
-  getValue(key: string) {
-    return this.getGlobal(key)?.value;
-  }
-
-  setValue(key: string, value: any) {
-    const global = this.getGlobal(key);
-    if (global) global.value = value;
+  // Creates the global if it doesn't already exist
+  set(key: string, value: GlobalValue) {
+    this.globals[key] = value;
   }
 }

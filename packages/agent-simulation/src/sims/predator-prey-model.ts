@@ -93,9 +93,9 @@ const wolfEnergyLoss = 0.1;
 const maxGrassLevel = 10;
 const grassGrowthRate = 0.01;
 
-// Create globals
-globals.createGlobal("sheepCount", { displayName: "Sheep Count", value: 0 });
-globals.createGlobal("wolfCount", { displayName: "Wolf Count", value: 0 });
+// Initialize globals
+globals.create("sheepCount", 0);
+globals.create("wolfCount", 0);
 
 // Create widgets
 addWidget({
@@ -151,7 +151,7 @@ sim.afterTick = () => {
     const globalKey = a.label("sheep") ? "sheepCount" : "wolfCount";
     a.state.energy = a.state.energy - energyLoss;
     if (a.state.energy <= 0) {
-      globals.setValue(globalKey, globals.getValue(globalKey) - 1);
+      globals.set(globalKey, globals.get(globalKey) - 1);
       a.remove();
       return;
     }
@@ -173,7 +173,7 @@ sim.afterTick = () => {
     // Eat grass
     const sq = s.squareOfCentroid();
     if (sq.state.grassLevel >= maxGrassLevel) {
-      s.state.energy = s.state.energy + globals.getValue("sheepEnergyFromGrass");
+      s.state.energy = s.state.energy + globals.get("sheepEnergyFromGrass");
       sq.state.grassLevel = 0;
     }
   });
@@ -184,7 +184,7 @@ sim.afterTick = () => {
     if (s) {
       w.state.energy = w.state.energy + s.state.energy / 2;
       s.remove();
-      globals.setValue("sheepCount", globals.getValue("sheepCount") - 1);
+      globals.set("sheepCount", globals.get("sheepCount") - 1);
     }
   });
 };
@@ -217,7 +217,7 @@ function create_a_sheep(props) {
   agent.y = y ?? Math.random() * sim.height;
 
   agent.addTo(sim);
-  globals.setValue("sheepCount", globals.getValue("sheepCount") + 1);
+  globals.set("sheepCount", globals.get("sheepCount") + 1);
   return agent;
 }
 function create_sheep(num, callback) {
@@ -240,7 +240,7 @@ function create_a_wolf(props) {
   agent.y = y ?? Math.random() * sim.height;
 
   agent.addTo(sim);
-  globals.setValue("wolfCount", globals.getValue("wolfCount") + 1);
+  globals.set("wolfCount", globals.get("wolfCount") + 1);
   return agent;
 };
 function create_wolves(num, callback) {

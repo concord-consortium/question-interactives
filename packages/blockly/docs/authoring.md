@@ -35,14 +35,12 @@ Simulation code must be vanilla javascript. All simulation code has access to th
 - `AA` - Everything you'd get from `import * as AA from "atomic-agents"`
 - `AV` - Everything you'd get from `import * as AV from "atomic-agents-vis"`
 - `globals` - An object that allows you to directly create, access, and modify globals.
-  - `globals.createGlobal(globalKey: string, global: { displayName: string, value: any })`
-    Allows you to directly create a new global. If the global already exists, this does nothing.
-  - `globals.setValue(globalKey: string, value: any)`
-    Update the value of the given global.
-  - `globals.getValue(globalKey)`
+  - `globals.create(globalKey: string, value: any)`
+    Directly creates a new global. If the global already exists, this does nothing.
+  - `globals.set(globalKey: string, value: any)`
+    Updates the value of the given global. If the global doesn't already exist, this creates it.
+  - `globals.get(globalKey)`
     Returns the current value of the given global.
-  - `globals.getDisplayName(globalKey)`
-    Returns the displayName for the given global.
 - `addWidget` - A function that allows you to add widgets to the simulation.
   - `addWidget` takes a single parameter, an object containing the following:
     - `type` - The type of the widget (see below).
@@ -56,8 +54,6 @@ Simulation code must be vanilla javascript. All simulation code has access to th
 
 This widget displays the value of the given global.
 
-Unlike most widgets, this one will not create the global if it does not already exist, so you need to create it directly or with another widget before creating this widget.
-
 `data`:
 - `backgroundColor: string` - Optional. The color for the widget background.
 - `color: string` - Optional. The color for the widget text.
@@ -67,7 +63,7 @@ Unlike most widgets, this one will not create the global if it does not already 
 
 This widget allows the user to change the value of the given global using a horizontal slider.
 
-The global value must be a number. Make sure to include `defaultValue` if the global is not previously defined.
+The global value must be a number.
 
 `data`:
 - `min: number` - The minimum value for the slider.
