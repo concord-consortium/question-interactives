@@ -83,7 +83,6 @@ const wolfImage = encodeSvg(wolfSvg);
 const sheepImage = encodeSvg(sheepSvg);
 
 const sheepEnergy = 6;
-const sheepEnergyFromGrass = 3;
 const sheepReproduceChance = 0.002;
 const sheepEnergyLoss = 0.01;
 
@@ -97,8 +96,27 @@ const grassGrowthRate = 0.01;
 function setup() {
   globals.createGlobal("sheepCount", { displayName: "Sheep Count", value: 0 });
   globals.createGlobal("wolfCount", { displayName: "Wolf Count", value: 0 });
+
   create_sheep(50);
   create_wolves(10);
+
+  addWidget({
+    data: {
+      label: "Sheep Energy from Grass",
+      min: 1,
+      max: 50
+    },
+    defaultValue: 3,
+    global: "sheepEnergyFromGrass",
+    type: "slider"
+  });
+  addWidget({
+    data: {
+      label: "Sheep Energy from Grass"
+    },
+    global: "sheepEnergyFromGrass",
+    type: "readout"
+  });
   addWidget({
     data: {
       label: "Sheep"
@@ -153,7 +171,7 @@ sim.afterTick = () => {
     // Eat grass
     const sq = s.squareOfCentroid();
     if (sq.state.grassLevel >= maxGrassLevel) {
-      s.state.energy = s.state.energy + sheepEnergyFromGrass;
+      s.state.energy = s.state.energy + globals.getValue("sheepEnergyFromGrass");
       sq.state.grassLevel = 0;
     }
   });
