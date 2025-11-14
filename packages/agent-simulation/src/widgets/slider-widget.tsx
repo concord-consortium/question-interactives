@@ -3,6 +3,7 @@ import React, { useEffect } from "react";
 import { observer } from "mobx-react-lite";
 
 import { IWidgetComponentProps } from "../types/widgets";
+import { WidgetError } from "./widget-error";
 import { registerWidget } from "./widget-registration";
 
 import css from "./slider-widget.scss";
@@ -12,21 +13,40 @@ export const sliderWidgetType = "slider";
 const SliderWidget = observer(function SliderWidget({ data, defaultValue, globalKey, sim }: IWidgetComponentProps) {
   // Set up the global if it doesn't already exist
   useEffect(() => {
+    if (typeof defaultValue !== "number") return;
+
     sim.globals.createGlobal(globalKey, { displayName: data?.label, value: defaultValue });
   }, [data?.label, defaultValue, globalKey, sim.globals]);
 
-  const handleChange = (value: number) => {
-    sim.globals.setValue(globalKey, value);
+  if (!data) return <WidgetError message="Slider widget is missing data configuration." />;
+  
+  const { min, max } = data;
+
+  if (typeof min !== "number" || typeof max !== "number") {
+    return <WidgetError message="Slider widget requires numeric min and max values in its data configuration." />;
+  }
+  if (min >= max) {
+    return <WidgetError message="Slider widget requires min value to be less than max value." />;
+  }
+
+  const value = sim.globals.getValue(globalKey);
+  if (typeof value !== "number") {
+    return <WidgetError message={`Slider widget requires a global with a numeric value.`} />;
+  }
+
+  const handleChange = (newValue: number) => {
+    sim.globals.setValue(globalKey, newValue);
   };
 
   return (
     <div>
-      {data?.label}
+      {data?.label ?? sim.globals.getDisplayName(globalKey)}
       <Slider
         className={css.rcSlider}
-        min={data?.min ?? 0}
-        max={data?.max ?? 100}
+        min={min}
+        max={max}
         onChange={handleChange}
+        value={value}
         // It would be better to define styles in css, but I couldn't figure out how to do it in the qi repo
         styles={{
           handle: {
@@ -56,7 +76,6 @@ const SliderWidget = observer(function SliderWidget({ data, defaultValue, global
             borderRadius: "1px",
           }
         }}
-        value={sim.globals.getValue(globalKey)}
       />
     </div>
   );
