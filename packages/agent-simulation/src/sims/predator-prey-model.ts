@@ -93,46 +93,48 @@ const wolfEnergyLoss = 0.1;
 const maxGrassLevel = 10;
 const grassGrowthRate = 0.01;
 
-function setup() {
-  globals.createGlobal("sheepCount", { displayName: "Sheep Count", value: 0 });
-  globals.createGlobal("wolfCount", { displayName: "Wolf Count", value: 0 });
+// Create globals
+globals.createGlobal("sheepCount", { displayName: "Sheep Count", value: 0 });
+globals.createGlobal("wolfCount", { displayName: "Wolf Count", value: 0 });
 
+// Create widgets
+addWidget({
+  data: {
+    label: "Sheep Energy from Grass",
+    min: 1,
+    max: 50
+  },
+  defaultValue: 3,
+  globalKey: "sheepEnergyFromGrass",
+  type: "slider"
+});
+addWidget({
+  data: {
+    label: "Sheep Energy from Grass"
+  },
+  globalKey: "sheepEnergyFromGrass",
+  type: "readout"
+});
+addWidget({
+  data: {
+    label: "Sheep"
+  },
+  globalKey: "sheepCount",
+  type: "readout"
+});
+addWidget({
+  data: {
+    backgroundColor: "#666",
+    color: "#fff",
+    label: "Wolves"
+  },
+  globalKey: "wolfCount",
+  type: "readout"
+});
+
+function setup() {
   create_sheep(50);
   create_wolves(10);
-
-  addWidget({
-    data: {
-      label: "Sheep Energy from Grass",
-      min: 1,
-      max: 50
-    },
-    defaultValue: 3,
-    global: "sheepEnergyFromGrass",
-    type: "slider"
-  });
-  addWidget({
-    data: {
-      label: "Sheep Energy from Grass"
-    },
-    global: "sheepEnergyFromGrass",
-    type: "readout"
-  });
-  addWidget({
-    data: {
-      label: "Sheep"
-    },
-    global: "sheepCount",
-    type: "readout"
-  });
-  addWidget({
-    data: {
-      backgroundColor: "#666",
-      color: "#fff",
-      label: "Wolves"
-    },
-    global: "wolfCount",
-    type: "readout"
-  });
 }
 
 sim.afterTick = () => {
