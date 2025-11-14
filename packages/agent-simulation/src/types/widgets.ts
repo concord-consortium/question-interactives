@@ -6,7 +6,7 @@ export type WidgetData = any;
 export interface IWidgetProps {
   data?: WidgetData;
   defaultValue?: GlobalValue;
-  global: string;
+  globalKey: string;
   type: string;
 }
 

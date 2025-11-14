@@ -9,14 +9,14 @@ import css from "./slider-widget.scss";
 
 export const sliderWidgetType = "slider";
 
-const SliderWidget = observer(function SliderWidget({ data, defaultValue, global, sim }: IWidgetComponentProps) {
+const SliderWidget = observer(function SliderWidget({ data, defaultValue, globalKey, sim }: IWidgetComponentProps) {
   // Set up the global if it doesn't already exist
   useEffect(() => {
-    sim.globals.createGlobal(global, { displayName: data?.label, value: defaultValue });
-  }, [data?.label, defaultValue, global, sim.globals]);
+    sim.globals.createGlobal(globalKey, { displayName: data?.label, value: defaultValue });
+  }, [data?.label, defaultValue, globalKey, sim.globals]);
 
   const handleChange = (value: number) => {
-    sim.globals.setValue(global, value);
+    sim.globals.setValue(globalKey, value);
   };
 
   return (
@@ -56,7 +56,7 @@ const SliderWidget = observer(function SliderWidget({ data, defaultValue, global
             borderRadius: "1px",
           }
         }}
-        value={sim.globals.getValue(global)}
+        value={sim.globals.getValue(globalKey)}
       />
     </div>
   );

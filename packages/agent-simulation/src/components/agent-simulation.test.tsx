@@ -407,7 +407,7 @@ describe("AgentSimulationComponent", () => {
     );
 
     // Verify eval was called with the blockly code, not the authored code
-    expect(global.eval).toHaveBeenCalledWith("(sim, AA, AV) => { // Existing blockly code }");
+    expect(global.eval).toHaveBeenCalledWith("(sim, AA, AV, globals, addWidget) => { // Existing blockly code }");
     expect(mockFunction).toHaveBeenCalledWith(mockSimulation, AA, AV);
   });
 
@@ -425,7 +425,7 @@ describe("AgentSimulationComponent", () => {
     );
 
     // Verify eval was called with the authored code
-    expect(global.eval).toHaveBeenCalledWith("(sim, AA, AV) => { // Default simulation code }");
+    expect(global.eval).toHaveBeenCalledWith("(sim, AA, AV, globals, addWidget) => { // Default simulation code }");
     expect(mockFunction).toHaveBeenCalledWith(mockSimulation, AA, AV);
   });
 });

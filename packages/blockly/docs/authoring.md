@@ -34,6 +34,45 @@ Simulation code must be vanilla javascript. All simulation code has access to th
 - `sim` - The Atomic Agents simulation
 - `AA` - Everything you'd get from `import * as AA from "atomic-agents"`
 - `AV` - Everything you'd get from `import * as AV from "atomic-agents-vis"`
+- `globals` - An object that allows you to directly create, access, and modify globals.
+  - `globals.createGlobal(globalKey: string, global: { displayName: string, value: any })`
+    Allows you to directly create a new global. If the global already exists, this does nothing.
+  - `globals.setValue(globalKey: string, value: any)`
+    Update the value of the given global.
+  - `globals.getValue(globalKey)`
+    Returns the current value of the given global.
+  - `globals.getDisplayName(globalKey)`
+    Returns the displayName for the given global.
+- `addWidget` - A function that allows you to add widgets to the simulation.
+  - `addWidget` takes a single parameter, an object containing the following:
+    - `type` - The type of the widget (see below).
+    - `globalKey` - The global this widget is tied to.
+    - `defaultValue` - The value to use to intialize the global if it is not already initialized.
+    - `data` - An object containing additional information, which is different for different widgets.
+
+### Widgets
+
+#### `readout`
+
+This widget displays the value of the given global.
+
+Unlike most widgets, this one will not create the global if it does not already exist, so you need to create it directly or with another widget before creating this widget.
+
+`data`:
+- `backgroundColor: string` - Optional. The color for the widget background.
+- `color: string` - Optional. The color for the widget text.
+- `label: string` - Optional. Displayed after the global value if included.
+
+#### `slider`
+
+This widget allows the user to change the value of the given global using a horizontal slider.
+
+The global value must be a number. Make sure to include `defaultValue` if the global is not previously defined.
+
+`data`:
+- `min: number` - The minimum value for the slider.
+- `max: number` - The maximum value for the slider.
+- `label: string` - Optional. Displayed before the slider if included.
 
 Blockly code is added in two places: the simulation code, and then within individual block definitions.
 
