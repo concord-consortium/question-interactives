@@ -11,7 +11,9 @@ import {
 import {
   useLinkedInteractiveId
 } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
+import { AgentSimulation } from "../models/agent-simulation";
 import { IAuthoredState, IInteractiveState } from "./types";
+import { Widgets } from "./widgets";
 
 import css from "./agent-simulation.scss";
 
@@ -31,7 +33,7 @@ export const AgentSimulationComponent = ({
   const [paused, setPaused] = useState(true);
   const [error, setError] = useState("");
   const [resetCount, setResetCount] = useState(0);
-  const simRef = useRef<AA.Simulation | null>(null);
+  const simRef = useRef<AgentSimulation | null>(null);
 
   const setBlocklyCode = (newCode: string) => {
     _setBlocklyCode(newCode);
@@ -84,11 +86,7 @@ export const AgentSimulationComponent = ({
     }
 
     // Set up the simulation
-    simRef.current = new AA.Simulation({
-      gridStep: gridStep,
-      height: gridHeight,
-      width: gridWidth
-    });
+    simRef.current = new AgentSimulation(gridWidth, gridHeight, gridStep);
 
     const setupCode = blocklyCode || code;
     const usingCode = blocklyCode ? "blockly code" : "authored code";
@@ -96,7 +94,7 @@ export const AgentSimulationComponent = ({
     log("setup-simulation", { gridStep, gridWidth, gridHeight, resetCount, usingCode, code: setupCode });
 
     // Run the simulation setup code
-    const functionCode = `(sim, AA, AV) => { ${setupCode} }`;
+    const functionCode = `(sim, AA, AV, globals, addWidget) => { ${setupCode} }`;
     try {
       // Indirect eval (with ?.) is supposed to be safer and faster than direct eval
       // - eval executes in the local scope, so has to check every containing scope for variable references
@@ -104,32 +102,33 @@ export const AgentSimulationComponent = ({
       // - eval executes with whatever permissions the containing code has, giving more opportunity for malicious code
       // For more info, see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval
       const simFunction = eval?.(functionCode);
-      simFunction?.(simRef.current, AA, AV);
+      const { globals, sim } = simRef.current;
+      simFunction?.(sim, AA, AV, globals, simRef.current.addWidget.bind(simRef.current));
     } catch (e) {
       setError(`Error setting up simulation: ${String(e)}`);
       return;
     }
 
     // Visualize and start the simulation
-    AV.vis(simRef.current, { target: containerRef.current });
-    simRef.current.pause(true);
+    AV.vis(simRef.current.sim, { target: containerRef.current });
+    simRef.current.sim.pause(true);
     setPaused(true);
 
     setError("");
 
-    const sim = simRef.current;
+    const oldSim = simRef.current;
     const container = containerRef.current;
     return () => {
       // Remove old sim when we're ready to update the sim
       container?.replaceChildren();
-      sim.end();
+      oldSim.destroy();
     };
   }, [blocklyCode, code, gridHeight, gridStep, gridWidth, resetCount]);
 
   const handlePauseClick = () => {
     if (simRef.current) {
       log(paused ? "play-simulation" : "pause-simulation");
-      simRef.current.pause(!paused);
+      simRef.current.sim.pause(!paused);
       setPaused(!paused);
     }
   };
@@ -166,6 +165,7 @@ export const AgentSimulationComponent = ({
       </button>
       {error && <div className={css.error}>{error}</div>}
       <div ref={containerRef} className={css.simContainer} />
+      <Widgets sim={simRef.current} />
       { blocklyCode && (
         <>
           {showBlocklyCode &&

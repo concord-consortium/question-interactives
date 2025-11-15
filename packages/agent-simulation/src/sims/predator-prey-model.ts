@@ -83,7 +83,6 @@ const wolfImage = encodeSvg(wolfSvg);
 const sheepImage = encodeSvg(sheepSvg);
 
 const sheepEnergy = 6;
-const sheepEnergyFromGrass = 3;
 const sheepReproduceChance = 0.002;
 const sheepEnergyLoss = 0.01;
 
@@ -93,6 +92,43 @@ const wolfEnergyLoss = 0.1;
 
 const maxGrassLevel = 10;
 const grassGrowthRate = 0.01;
+
+// Create widgets
+addWidget({
+  data: {
+    label: "Sheep Energy from Grass",
+    min: 1,
+    max: 50
+  },
+  defaultValue: 3,
+  globalKey: "sheepEnergyFromGrass",
+  type: "slider"
+});
+addWidget({
+  data: {
+    label: "Sheep Energy from Grass"
+  },
+  globalKey: "sheepEnergyFromGrass",
+  type: "readout"
+});
+addWidget({
+  data: {
+    label: "Sheep"
+  },
+  defaultValue: 0,
+  globalKey: "sheepCount",
+  type: "readout"
+});
+addWidget({
+  data: {
+    backgroundColor: "#666",
+    color: "#fff",
+    label: "Wolves"
+  },
+  defaultValue: 0,
+  globalKey: "wolfCount",
+  type: "readout"
+});
 
 function setup() {
   create_sheep(50);
@@ -112,6 +148,8 @@ sim.afterTick = () => {
     const energyLoss = a.label("sheep") ? sheepEnergyLoss : wolfEnergyLoss;
     a.state.energy = a.state.energy - energyLoss;
     if (a.state.energy <= 0) {
+      const globalKey = a.label("sheep") ? "sheepCount" : "wolfCount";
+      globals.set(globalKey, globals.get(globalKey) - 1);
       a.remove();
       return;
     }
@@ -133,7 +171,7 @@ sim.afterTick = () => {
     // Eat grass
     const sq = s.squareOfCentroid();
     if (sq.state.grassLevel >= maxGrassLevel) {
-      s.state.energy = s.state.energy + sheepEnergyFromGrass;
+      s.state.energy = s.state.energy + globals.get("sheepEnergyFromGrass");
       sq.state.grassLevel = 0;
     }
   });
@@ -144,10 +182,9 @@ sim.afterTick = () => {
     if (s) {
       w.state.energy = w.state.energy + s.state.energy / 2;
       s.remove();
+      globals.set("sheepCount", globals.get("sheepCount") - 1);
     }
   });
-
-  console.log(\`sheep: \${Array.from(sim.withLabel("sheep")).length}, wolves: \${Array.from(sim.withLabel("wolf")).length}\`);
 };
 
 // set up squares (patches)
@@ -178,6 +215,7 @@ function create_a_sheep(props) {
   agent.y = y ?? Math.random() * sim.height;
 
   agent.addTo(sim);
+  globals.set("sheepCount", globals.get("sheepCount") + 1);
   return agent;
 }
 function create_sheep(num, callback) {
@@ -200,6 +238,7 @@ function create_a_wolf(props) {
   agent.y = y ?? Math.random() * sim.height;
 
   agent.addTo(sim);
+  globals.set("wolfCount", globals.get("wolfCount") + 1);
   return agent;
 };
 function create_wolves(num, callback) {
