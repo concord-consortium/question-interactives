@@ -7,13 +7,10 @@ import { WidgetError } from "./widget-error";
 import { registerWidget } from "./widget-registration";
 
 import css from "./slider-widget.scss";
-import { useInitializeGlobal } from "./use-initialize-global";
 
 export const sliderWidgetType = "slider";
 
 const SliderWidget = observer(function SliderWidget({ data, defaultValue, globalKey, sim }: IWidgetComponentProps) {
-  useInitializeGlobal({ defaultValue, globalKey, requiredType: "number", sim });
-
   if (!data) return <WidgetError message="Slider widget is missing data configuration." />;
   
   const { min, max } = data;

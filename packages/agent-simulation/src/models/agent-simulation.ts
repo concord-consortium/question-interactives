@@ -20,6 +20,12 @@ export class AgentSimulation {
   }
 
   addWidget(widget: IWidgetProps) {
+    // Initialize the global if a default is provided and it doesn't already exist
+    const { defaultValue, globalKey } = widget;
+    if (defaultValue !== undefined && this.globals.get(globalKey) === undefined) {
+      this.globals.set(globalKey, defaultValue);
+    }
+
     this.widgets.push(widget);
   }
 

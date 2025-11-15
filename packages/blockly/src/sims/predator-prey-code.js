@@ -91,10 +91,6 @@ const wolfEnergyLoss = 0.1;
 const maxGrassLevel = 10;
 const grassGrowthRate = 0.01;
 
-// Initialize globals
-globals.set("sheepCount", 0);
-globals.set("wolfCount", 0);
-
 // Create widgets
 addWidget({
   data: {
@@ -117,6 +113,7 @@ addWidget({
   data: {
     label: "Sheep"
   },
+  defaultValue: 0,
   globalKey: "sheepCount",
   type: "readout"
 });
@@ -126,6 +123,7 @@ addWidget({
     color: "#fff",
     label: "Wolves"
   },
+  defaultValue: 0,
   globalKey: "wolfCount",
   type: "readout"
 });
