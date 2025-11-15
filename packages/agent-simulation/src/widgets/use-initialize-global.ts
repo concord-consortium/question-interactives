@@ -8,12 +8,13 @@ interface IUseInitializeGlobalParams {
   requiredType?: string;
   sim: AgentSimulation;
 }
+
 export function useInitializeGlobal({ defaultValue, globalKey, requiredType, sim }: IUseInitializeGlobalParams) {
   useEffect(() => {
-    if (defaultValue === undefined) return;
+    if (defaultValue === undefined || sim.globals.get(globalKey) !== undefined) return;
 
     if (requiredType && typeof defaultValue !== requiredType) return;
 
-    sim.globals.create(globalKey, defaultValue);
+    sim.globals.set(globalKey, defaultValue);
   }, [defaultValue, globalKey, requiredType, sim.globals]);
 }

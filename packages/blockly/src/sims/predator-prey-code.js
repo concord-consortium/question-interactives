@@ -92,8 +92,8 @@ const maxGrassLevel = 10;
 const grassGrowthRate = 0.01;
 
 // Initialize globals
-globals.create("sheepCount", 0);
-globals.create("wolfCount", 0);
+globals.set("sheepCount", 0);
+globals.set("wolfCount", 0);
 
 // Create widgets
 addWidget({
