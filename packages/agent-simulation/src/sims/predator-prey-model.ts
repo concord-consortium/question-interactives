@@ -148,9 +148,9 @@ sim.afterTick = () => {
   sim.actors?.forEach(a => {
     // Lose energy and possibly die
     const energyLoss = a.label("sheep") ? sheepEnergyLoss : wolfEnergyLoss;
-    const globalKey = a.label("sheep") ? "sheepCount" : "wolfCount";
     a.state.energy = a.state.energy - energyLoss;
     if (a.state.energy <= 0) {
+      const globalKey = a.label("sheep") ? "sheepCount" : "wolfCount";
       globals.set(globalKey, globals.get(globalKey) - 1);
       a.remove();
       return;
