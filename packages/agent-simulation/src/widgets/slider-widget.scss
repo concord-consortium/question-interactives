@@ -8,9 +8,18 @@
   box-sizing: border-box;
   margin-top: 2px;
 
-  // I couldn't figure out how to apply these styles given how question interactive processes scss files.
-  // They're included here in case they're useful in the future.
-  &-handle {
+  :global(.rc-slider-handle) {
+    position: absolute;
+    top: 5px;
+    width: 15px;
+    height: 15px;
+    border: solid 2px;
+    background-color: #fff;
+    border-radius: 50%;
+    cursor: grab;
+    touch-action: pan-x;
+    z-index: 2;
+
     &:focus {
       outline: none;
       box-shadow: none;
@@ -21,7 +30,23 @@
     }
   }
 
-  &-mark {
+  :global(.rc-slider-rail) {
+    position: absolute;
+    width: 95%;
+    height: 2px;
+    background-color: #949494;
+  }
+
+  :global(.rc-slider-track) {
+    position: relative;
+    width: 95%;
+    height: 4px;
+    top: -1px;
+    background-color: #545454;
+    border-radius: 1px;
+  }
+
+  :global(.rc-slider-mark) {
     position: absolute;
     top: 18px;
     left: 0;
@@ -29,16 +54,16 @@
     font-size: 12px;
   }
 
-  &-mark-text {
+  :global(.rc-slider-mark-text) {
     position: absolute;
     display: inline-block;
     color: #999;
     text-align: center;
     vertical-align: middle;
     cursor: pointer;
+  }
 
-    &-active {
-      color: #666;
-    }
+  :global(.rc-slider-mark-text-active) {
+    color: #666;
   }
 }
