@@ -10,7 +10,7 @@ export function Widgets({ sim }: IWidgetProps) {
 
   return (
     <div className="widgets-container">
-      {sim.widgets.map((widget) => {
+      {sim.widgets.map(widget => {
         const WidgetComponent = widgetData[widget.type]?.component;
 
         if (!WidgetComponent) return null;
