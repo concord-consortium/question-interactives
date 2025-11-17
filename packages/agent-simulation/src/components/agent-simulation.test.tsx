@@ -22,14 +22,6 @@ jest.mock("@concord-consortium/question-interactives-helpers/src/hooks/use-linke
   useLinkedInteractiveId: jest.fn()
 }));
 
-jest.mock("@gjmcn/atomic-agents", () => ({
-  Simulation: jest.fn()
-}));
-
-jest.mock("@gjmcn/atomic-agents-vis", () => ({
-  vis: jest.fn()
-}));
-
 jest.mock("../models/agent-simulation", () => ({
   AgentSimulation: jest.fn()
 }));
@@ -47,7 +39,6 @@ describe("AgentSimulationComponent", () => {
   };
 
   const mockGlobals = {
-    createGlobal: jest.fn(),
     getValue: jest.fn(),
     setValue: jest.fn(),
     get: jest.fn(),
@@ -84,8 +75,7 @@ describe("AgentSimulationComponent", () => {
     jest.clearAllMocks();
     // Create fresh mock instances for each test
     mockSimulation.pause.mockClear();
-    mockSimulation.end.mockClear();
-    mockGlobals.createGlobal.mockClear();
+    mockAgentSimulation.destroy.mockClear();
     mockGlobals.getValue.mockClear();
     mockGlobals.setValue.mockClear();
     mockAddWidget.mockClear();
@@ -125,7 +115,7 @@ describe("AgentSimulationComponent", () => {
 
     expect(mockSimulationConstructor).toHaveBeenCalledWith(450, 450, 15);
 
-    expect(mockVis).toHaveBeenCalledWith(mockSimulation, { target: expect.any(HTMLDivElement) });
+    expect(mockVis).toHaveBeenCalledWith(mockAgentSimulation.sim, { target: expect.any(HTMLDivElement) });
     expect(mockSimulation.pause).toHaveBeenCalledWith(true);
 
     // Restore original eval
