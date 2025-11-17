@@ -82,12 +82,25 @@
 
     &.updateButton {
       background-color: #ffffdd;
+      
+      &:not([disabled]) {
+        animation: pulse-shadow 1.75s ease infinite;
+      }
     }
   
     &:disabled {
       background-color: #fcfcfc;
       border-color: #999;
       color: #999;
+    }
+  }
+
+  @keyframes pulse-shadow {
+    0% {
+      box-shadow: 0 0 0 0 var(--cc-teal-dark-1-alpha-50);
+    }
+    100% {
+      box-shadow: 0 0 0 8px var(--cc-teal-dark-1-alpha-0);
     }
   }
 
