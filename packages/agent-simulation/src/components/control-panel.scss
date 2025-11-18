@@ -1,0 +1,42 @@
+@import "./_shared-button-styles.scss";
+
+.controlPanel {
+  background: var(--cc-teal-light-5);
+  display: flex;
+  margin: 0;
+  padding: 8px;
+
+  &.actionControls {
+    align-items: center;
+    gap: 8px;
+    height: 50px;
+
+    button {
+      @include interactive-button-base;
+      border-radius: 50%;
+
+      &.updateButton {
+        background-color: #ffffdd;
+        border: 1px solid #333;
+        
+        &:not([disabled]) {
+          animation: pulse-shadow 1.75s ease infinite;
+        }
+
+        &:disabled {
+          background-color: var(--cc-teal-light-4);
+          border-color: #b8b8b8;
+        }
+      }
+    }
+
+    @keyframes pulse-shadow {
+      0% {
+        box-shadow: 0 0 0 0 var(--cc-teal-dark-1-alpha-50);
+      }
+      100% {
+        box-shadow: 0 0 0 8px var(--cc-teal-dark-1-alpha-0);
+      }
+    }
+  }
+}
