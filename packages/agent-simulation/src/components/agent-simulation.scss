@@ -1,9 +1,80 @@
 @import "../../../helpers/src/styles/px-to-rem.scss";
+@import "../../../helpers/src/styles/helpers.scss";
 
 .agentSimulationComponent {
   display: flex;
-  gap: 10px;
   flex-direction: column;
+  gap: 0;
+
+  .modelTitle {
+    align-items: center;
+    background: var(--cc-teal-light-5);
+    border-bottom: solid 1px var(--cc-teal);
+    color: var(--cc-charcoal);
+    display: flex;
+    font-size: 16px;
+    height: 50px;
+    margin: 0;
+    padding: 8px;
+
+    svg {
+      margin-right: 8px;
+    }
+  }
+
+  .controlPanel {
+    background: var(--cc-teal-light-5);
+    display: flex;
+    margin: 0;
+    padding: 8px;
+
+    &.actionControls {
+      align-items: center;
+      gap: 8px;
+      height: 50px;
+
+      button {
+        background-color: var(--cc-teal-light-5);
+        border-radius: 50%;
+        border: solid 1.5px #949494;
+        height: 34px;
+        width: 34px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+
+        &:hover {
+          background-color: var(--cc-teal-light-3);
+        }
+        
+        &:active {
+          background-color: var(--cc-teal);
+          
+          .buttonIcon {
+            color: white;
+          }
+        }
+
+        .buttonIcon {
+          color: var(--cc-teal);
+        }
+
+        &[disabled] {
+          cursor: not-allowed;
+          opacity: .35;
+
+          &:hover, &:active {
+            background-color: var(--cc-teal-light-5);
+
+            .buttonIcon {
+              color: var(--cc-teal);
+            }
+          }
+        }
+      }
+    }
+  }
 
   button {
     border: 1px solid #333;
@@ -11,12 +82,25 @@
 
     &.updateButton {
       background-color: #ffffdd;
+      
+      &:not([disabled]) {
+        animation: pulse-shadow 1.75s ease infinite;
+      }
     }
   
     &:disabled {
       background-color: #fcfcfc;
       border-color: #999;
       color: #999;
+    }
+  }
+
+  @keyframes pulse-shadow {
+    0% {
+      box-shadow: 0 0 0 0 var(--cc-teal-dark-1-alpha-50);
+    }
+    100% {
+      box-shadow: 0 0 0 8px var(--cc-teal-dark-1-alpha-0);
     }
   }
 
