@@ -76,7 +76,7 @@ const wolfSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
 </svg>
 `;
 
-const encodeSvg = (svg) => `data:image/svg+xml;charset=utf-8,\${encodeURIComponent(svg)}`;
+const encodeSvg = (svg) => `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 const wolfImage = encodeSvg(wolfSvg);
 const sheepImage = encodeSvg(sheepSvg);
 
@@ -133,6 +133,15 @@ function setup() {
   create_wolves(10);
 }
 
+// Agents added outside of the sim tick loop do not get added to the renderer,
+// so instead of adding agents directly, we create a queue and add them in beforeTick.
+let actorsToAdd = [];
+
+sim.beforeTick = () => {
+  actorsToAdd.forEach(a => a.addTo(sim));
+  actorsToAdd = [];
+}
+
 sim.afterTick = () => {
   sim.squares.forEach(square => {
     // Grow grass
@@ -159,7 +168,6 @@ sim.afterTick = () => {
     const reproduceChance = a.label("sheep") ? sheepReproduceChance : wolfReproduceChance;
     if (Math.random() < reproduceChance) {
       const addFunction = a.label("sheep") ? create_a_sheep : create_a_wolf;
-      // const color = a.label("sheep") ? sheepColor : wolfColor;
       addFunction({ energy: a.state.energy / 2, x: a.x, y: a.y });
       a.state.energy = a.state.energy / 2;
     }
@@ -212,7 +220,7 @@ function create_a_sheep(props) {
   agent.x = x ?? Math.random() * sim.width;
   agent.y = y ?? Math.random() * sim.height;
 
-  agent.addTo(sim);
+  actorsToAdd.push(agent);
   globals.set("sheepCount", globals.get("sheepCount") + 1);
   return agent;
 }
@@ -235,7 +243,7 @@ function create_a_wolf(props) {
   agent.x = x ?? Math.random() * sim.width;
   agent.y = y ?? Math.random() * sim.height;
 
-  agent.addTo(sim);
+  actorsToAdd.push(agent);
   globals.set("wolfCount", globals.get("wolfCount") + 1);
   return agent;
 };
@@ -254,3 +262,8 @@ sim.interaction.set("boundary-bounce", {
 });
 
 setup();
+
+sim.vis({
+  background: true,
+  click: onClick
+});

@@ -160,7 +160,6 @@ sim.afterTick = () => {
     const reproduceChance = a.label("sheep") ? sheepReproduceChance : wolfReproduceChance;
     if (Math.random() < reproduceChance) {
       const addFunction = a.label("sheep") ? create_a_sheep : create_a_wolf;
-      // const color = a.label("sheep") ? sheepColor : wolfColor;
       addFunction({ energy: a.state.energy / 2, x: a.x, y: a.y });
       a.state.energy = a.state.energy / 2;
     }
