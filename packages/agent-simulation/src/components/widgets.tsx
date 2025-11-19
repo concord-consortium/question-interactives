@@ -15,7 +15,7 @@ export function Widgets({ sim }: IWidgetProps) {
 
         if (!WidgetComponent) return null;
 
-        return <WidgetComponent key={`${index}-${widget.globalKey}`} {...widget} sim={sim} />;
+        return <WidgetComponent key={`${index}-${widget.globalKey}-${widget.type}`} {...widget} sim={sim} />;
       })}
     </div>
   );

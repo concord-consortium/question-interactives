@@ -6,6 +6,10 @@ import {
 } from "@concord-consortium/lara-interactive-api";
 import { AgentSimulationComponent } from "./agent-simulation";
 import { IAuthoredState, IInteractiveState } from "./types";
+import * as AA from "@gjmcn/atomic-agents";
+import * as AV from "@gjmcn/atomic-agents-vis";
+import { useLinkedInteractiveId } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
+import { AgentSimulation } from "../models/agent-simulation";
 
 // Mock the dependencies
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
@@ -18,32 +22,39 @@ jest.mock("@concord-consortium/question-interactives-helpers/src/hooks/use-linke
   useLinkedInteractiveId: jest.fn()
 }));
 
-// Mock the simulation classes with fresh instances for each test
-const mockSimulation = {
-  pause: jest.fn(),
-  end: jest.fn()
-};
-
-jest.mock("@gjmcn/atomic-agents", () => ({
-  Simulation: jest.fn()
+jest.mock("../models/agent-simulation", () => ({
+  AgentSimulation: jest.fn()
 }));
-
-jest.mock("@gjmcn/atomic-agents-vis", () => ({
-  vis: jest.fn()
-}));
-
-// Import the mocked modules for typing
-import * as AA from "@gjmcn/atomic-agents";
-import * as AV from "@gjmcn/atomic-agents-vis";
-import { useLinkedInteractiveId } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
 
 const mockUseLinkedInteractiveId = useLinkedInteractiveId as jest.Mock;
 const mockAddLinkedInteractiveStateListener = addLinkedInteractiveStateListener as jest.Mock;
 const mockRemoveLinkedInteractiveStateListener = removeLinkedInteractiveStateListener as jest.Mock;
-const mockSimulationConstructor = AA.Simulation as jest.Mock;
+const mockSimulationConstructor = AgentSimulation as jest.Mock;
 const mockVis = AV.vis as jest.Mock;
 
 describe("AgentSimulationComponent", () => {
+  const mockSimulation = {
+    pause: jest.fn(),
+    end: jest.fn()
+  };
+
+  const mockGlobals = {
+    getValue: jest.fn(),
+    setValue: jest.fn(),
+    get: jest.fn(),
+    set: jest.fn()
+  };
+
+  const mockAddWidget = jest.fn();
+
+  const mockAgentSimulation = {
+    addWidget: mockAddWidget,
+    destroy: jest.fn(),
+    globals: mockGlobals,
+    sim: mockSimulation,
+    widgets: []
+  };
+
   const defaultAuthoredState: IAuthoredState = {
     version: 1,
     questionType: "iframe_interactive",
@@ -64,8 +75,14 @@ describe("AgentSimulationComponent", () => {
     jest.clearAllMocks();
     // Create fresh mock instances for each test
     mockSimulation.pause.mockClear();
-    mockSimulation.end.mockClear();
-    mockSimulationConstructor.mockReturnValue(mockSimulation);
+    mockAgentSimulation.destroy.mockClear();
+    mockGlobals.getValue.mockClear();
+    mockGlobals.setValue.mockClear();
+    mockAddWidget.mockClear();
+    
+    // Set up AgentSimulation mock to return an object with sim and other properties
+    mockSimulationConstructor.mockReturnValue(mockAgentSimulation);
+    
     mockUseLinkedInteractiveId.mockReturnValue(null);
   });
 
@@ -78,11 +95,11 @@ describe("AgentSimulationComponent", () => {
       />
     );
 
-    expect(screen.getByText("Reset")).toBeInTheDocument();
-    expect(screen.getByText("Play")).toBeInTheDocument();
+    expect(screen.getByTestId("reset-button")).toBeInTheDocument();
+    expect(screen.getByTestId("play-pause-button")).toBeInTheDocument();
   });
 
-  it.skip("creates simulation with correct parameters", () => {
+  it("creates simulation with correct parameters", () => {
     // Mock eval to return a simple function that doesn't throw
     const originalEval = global.eval;
     const mockFunction = jest.fn();
@@ -96,13 +113,9 @@ describe("AgentSimulationComponent", () => {
       />
     );
 
-    expect(mockSimulationConstructor).toHaveBeenCalledWith({
-      gridStep: 15,
-      height: 450,
-      width: 450
-    });
+    expect(mockSimulationConstructor).toHaveBeenCalledWith(450, 450, 15);
 
-    expect(mockVis).toHaveBeenCalledWith(mockSimulation, { target: expect.any(HTMLDivElement) });
+    expect(mockVis).toHaveBeenCalledWith(mockAgentSimulation.sim, { target: expect.any(HTMLDivElement) });
     expect(mockSimulation.pause).toHaveBeenCalledWith(true);
 
     // Restore original eval
@@ -147,11 +160,6 @@ describe("AgentSimulationComponent", () => {
   });
 
   it("handles pause/play button clicks", () => {
-    // Mock eval to return a simple function that doesn't throw
-    const originalEval = global.eval;
-    const mockFunction = jest.fn();
-    global.eval = jest.fn(() => mockFunction);
-
     render(
       <AgentSimulationComponent
         authoredState={defaultAuthoredState}
@@ -160,17 +168,17 @@ describe("AgentSimulationComponent", () => {
       />
     );
 
-    const pausePlayButton = screen.getByText("Play");
+    const pausePlayButton = screen.getByTestId("play-pause-button");
     fireEvent.click(pausePlayButton);
 
     expect(mockSimulation.pause).toHaveBeenCalledWith(false);
-    expect(screen.getByText("Pause")).toBeInTheDocument();
+    expect(pausePlayButton).toHaveAttribute("aria-label", "Pause");
+    expect(pausePlayButton).toHaveAttribute("title", "Pause");
 
-    fireEvent.click(screen.getByText("Pause"));
+    fireEvent.click(pausePlayButton);
     expect(mockSimulation.pause).toHaveBeenCalledWith(true);
-
-    // Restore original eval
-    global.eval = originalEval;
+    expect(pausePlayButton).toHaveAttribute("aria-label", "Play");
+    expect(pausePlayButton).toHaveAttribute("title", "Play");
   });
 
   it("handles reset button click", () => {
@@ -184,10 +192,25 @@ describe("AgentSimulationComponent", () => {
 
     const initialCallCount = mockSimulationConstructor.mock.calls.length;
 
-    fireEvent.click(screen.getByText("Reset"));
+    // Reset button should be disabled initially
+    const resetButton = screen.getByTestId("reset-button");
+    expect(resetButton).toBeDisabled();
+
+    // Start the simulation first by clicking play
+    const playButton = screen.getByTestId("play-pause-button");
+    fireEvent.click(playButton);
+
+    // Now reset button should be enabled
+    expect(resetButton).not.toBeDisabled();
+
+    // Click reset button
+    fireEvent.click(resetButton);
 
     // Should create a new simulation instance
     expect(mockSimulationConstructor.mock.calls.length).toBeGreaterThan(initialCallCount);
+
+    // Reset button should be disabled again after reset
+    expect(resetButton).toBeDisabled();
   });
 
   it("shows blockly code toggle when blockly code exists", () => {
@@ -222,7 +245,7 @@ describe("AgentSimulationComponent", () => {
       />
     );
 
-    const updateButton = screen.getByText("Update Code");
+    const updateButton = screen.getByTestId("update-code-button");
     expect(updateButton).toBeInTheDocument();
     expect(updateButton).toBeDisabled(); // Should be disabled initially with no external code
   });
@@ -251,7 +274,7 @@ describe("AgentSimulationComponent", () => {
     });
 
     // Update button should now be enabled
-    const updateButton = screen.getByText("Update Code");
+    const updateButton = screen.getByTestId("update-code-button");
     expect(updateButton).not.toBeDisabled();
   });
 
@@ -276,7 +299,7 @@ describe("AgentSimulationComponent", () => {
     });
 
     // Click update button
-    fireEvent.click(screen.getByText("Update Code"));
+    fireEvent.click(screen.getByTestId("update-code-button"));
 
     // Should call setInteractiveState with new code
     expect(mockSetInteractiveState).toHaveBeenCalledWith(expect.any(Function));
@@ -333,18 +356,13 @@ describe("AgentSimulationComponent", () => {
     unmount();
 
     expect(mockRemoveLinkedInteractiveStateListener).toHaveBeenCalled();
-    expect(mockSimulation.end).toHaveBeenCalled();
+    expect(mockAgentSimulation.destroy).toHaveBeenCalled();
 
     // Restore original eval
     global.eval = originalEval;
   });
 
   it("works in report mode", () => {
-    // Mock eval to return a simple function that doesn't throw
-    const originalEval = global.eval;
-    const mockFunction = jest.fn();
-    global.eval = jest.fn(() => mockFunction);
-
     render(
       <AgentSimulationComponent
         authoredState={defaultAuthoredState}
@@ -356,11 +374,8 @@ describe("AgentSimulationComponent", () => {
 
     // Should still render the simulation
     expect(mockSimulationConstructor).toHaveBeenCalled();
-    expect(screen.getByText("Reset")).toBeInTheDocument();
-    expect(screen.getByText("Play")).toBeInTheDocument();
-
-    // Restore original eval
-    global.eval = originalEval;
+    expect(screen.getByTestId("reset-button")).toBeInTheDocument();
+    expect(screen.getByTestId("play-pause-button")).toBeInTheDocument();
   });
 
   it("handles non-string code from linked interactive", () => {
@@ -384,19 +399,24 @@ describe("AgentSimulationComponent", () => {
     });
 
     // Update button should remain disabled
-    const updateButton = screen.getByText("Update Code");
+    const updateButton = screen.getByTestId("update-code-button");
     expect(updateButton).toBeDisabled();
   });
 
-  it.skip("uses existing blockly code from interactive state", () => {
+  it("uses existing blockly code from interactive state", () => {
     const stateWithBlocklyCode: IInteractiveState = {
       ...defaultInteractiveState,
       blocklyCode: "// Existing blockly code"
     };
 
     // Mock eval to capture the function code
+    const originalEval = global.eval;
     const mockFunction = jest.fn();
-    global.eval = jest.fn(() => mockFunction);
+    global.eval = jest.fn((code) => {
+      // Verify the code string contains the blockly code
+      expect(code).toBe("(sim, AA, AV, globals, addWidget) => { // Existing blockly code }");
+      return mockFunction;
+    });
 
     render(
       <AgentSimulationComponent
@@ -406,15 +426,27 @@ describe("AgentSimulationComponent", () => {
       />
     );
 
-    // Verify eval was called with the blockly code, not the authored code
-    expect(global.eval).toHaveBeenCalledWith("(sim, AA, AV, globals, addWidget) => { // Existing blockly code }");
-    expect(mockFunction).toHaveBeenCalledWith(mockSimulation, AA, AV);
+    // Verify the evaluated function was called with our specific mocks
+    expect(mockFunction).toHaveBeenCalledWith(
+      mockSimulation,
+      AA,
+      AV,
+      mockGlobals,
+      expect.any(Function) // addWidget function
+    );
+
+    global.eval = originalEval;
   });
 
-  it.skip("falls back to authored code when no blockly code exists", () => {
+  it("falls back to authored code when no blockly code exists", () => {
     // Mock eval to capture the function code
+    const originalEval = global.eval;
     const mockFunction = jest.fn();
-    global.eval = jest.fn(() => mockFunction);
+    global.eval = jest.fn((code) => {
+      // Verify the code string contains the default code
+      expect(code).toBe("(sim, AA, AV, globals, addWidget) => { // Default simulation code }");
+      return mockFunction;
+    });
 
     render(
       <AgentSimulationComponent
@@ -424,8 +456,15 @@ describe("AgentSimulationComponent", () => {
       />
     );
 
-    // Verify eval was called with the authored code
-    expect(global.eval).toHaveBeenCalledWith("(sim, AA, AV, globals, addWidget) => { // Default simulation code }");
-    expect(mockFunction).toHaveBeenCalledWith(mockSimulation, AA, AV);
+    // Verify the evaluated function was called with our specific mocks
+    expect(mockFunction).toHaveBeenCalledWith(
+      mockSimulation,
+      AA,
+      AV, 
+      mockGlobals,
+      expect.any(Function) // addWidget function
+    );
+
+    global.eval = originalEval;
   });
 });

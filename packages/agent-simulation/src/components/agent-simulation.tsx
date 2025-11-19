@@ -12,8 +12,13 @@ import {
   useLinkedInteractiveId
 } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
 import { AgentSimulation } from "../models/agent-simulation";
+import { ZOOM_ANIMATION_DURATION, ZOOM_DEFAULT, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from "../constants";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { Widgets } from "./widgets";
+import { ControlPanel } from "./control-panel";
+import { ZoomControls } from "./zoom-controls";
+
+import ModelIcon from "../assets/model-icon.svg";
 
 import css from "./agent-simulation.scss";
 
@@ -29,11 +34,20 @@ export const AgentSimulationComponent = ({
   const [externalBlocklyCode, setExternalBlocklyCode] = useState<string>("");
   const [showBlocklyCode, setShowBlocklyCode] = useState<boolean>(false);
   const dataSourceInteractive = useLinkedInteractiveId("dataSourceInteractive");
+  // TODO: Eventually, users will be able to name a saved Blockly program. For details,
+  // see https://concord-consortium.atlassian.net/browse/QI-57 
+  // For now, we use a default name. This should be updated to use the name value from
+  // the Blockly interactive state when it's available.
+  const modelName = "Model 1";
   const containerRef = useRef<HTMLDivElement>(null);
+  const codeUpdateAvailable = !!(externalBlocklyCode && blocklyCode !== externalBlocklyCode);
+  const hasCodeSource = !!dataSourceInteractive;
   const [paused, setPaused] = useState(true);
   const [error, setError] = useState("");
   const [resetCount, setResetCount] = useState(0);
   const simRef = useRef<AgentSimulation | null>(null);
+  const [hasBeenStarted, setHasBeenStarted] = useState(false);
+  const [zoomLevel, setZoomLevel] = useState(ZOOM_DEFAULT);
 
   const setBlocklyCode = (newCode: string) => {
     _setBlocklyCode(newCode);
@@ -125,46 +139,106 @@ export const AgentSimulationComponent = ({
     };
   }, [blocklyCode, code, gridHeight, gridStep, gridWidth, resetCount]);
 
-  const handlePauseClick = () => {
+  const handlePlayPause = () => {
     if (simRef.current) {
       log(paused ? "play-simulation" : "pause-simulation");
       simRef.current.sim.pause(!paused);
       setPaused(!paused);
+      if (!hasBeenStarted) {
+        setHasBeenStarted(true);
+      }
     }
+  };
+
+  const handleReset = () => {
+    const newResetCount = resetCount + 1;
+    log("reset-simulation", { resetCount: newResetCount });
+    setResetCount(newResetCount);
+    setHasBeenStarted(false);
+  };
+
+  const handleUpdateCode = () => {
+    log("update-code", {
+      oldCode: blocklyCode,
+      newCode: externalBlocklyCode
+    });
+    setBlocklyCode(externalBlocklyCode);
+    setHasBeenStarted(false);
+  };
+
+  const handleZoomIn = () => {
+    const newZoomLevel = Math.min(zoomLevel + ZOOM_STEP, ZOOM_MAX);
+    log("zoom-in", { fromZoomLevel: zoomLevel, toZoomLevel: newZoomLevel });
+    setZoomLevel(newZoomLevel);
+  };
+
+  const handleZoomOut = () => {
+    const newZoomLevel = Math.max(zoomLevel - ZOOM_STEP, ZOOM_MIN);
+    log("zoom-out", { fromZoomLevel: zoomLevel, toZoomLevel: newZoomLevel });
+    setZoomLevel(newZoomLevel);
+  };
+
+  const handleFitAll = () => {
+    log("fit-all-in-view", { fromZoomLevel: zoomLevel, toZoomLevel: ZOOM_DEFAULT });
+    
+    // Smoothly scroll back to top-left while zooming to ZOOM_DEFAULT.
+    // This prevents jittering when the top-left corner is out of view.
+    const wrapper = containerRef.current?.parentElement;
+    if (wrapper) {
+      const startScrollLeft = wrapper.scrollLeft;
+      const startScrollTop = wrapper.scrollTop;
+      const startTime = performance.now();
+
+      const animate = (currentTime: number) => {
+        const elapsed = currentTime - startTime;
+        const progress = Math.min(elapsed / ZOOM_ANIMATION_DURATION, 1);
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        
+        wrapper.scrollLeft = startScrollLeft * (1 - easeOut);
+        wrapper.scrollTop = startScrollTop * (1 - easeOut);
+
+        if (progress < 1) {
+          requestAnimationFrame(animate);
+        }
+      };
+
+      requestAnimationFrame(animate);
+    }
+    
+    setZoomLevel(ZOOM_DEFAULT);
   };
 
   return (
     <div className={css.agentSimulationComponent}>
-      {dataSourceInteractive && (
-        <button
-          className={css.updateButton}
-          disabled={!externalBlocklyCode || blocklyCode === externalBlocklyCode}
-          onClick={() => {
-            log("update-code", {
-              oldCode: blocklyCode,
-              newCode: externalBlocklyCode
-            });
-            setBlocklyCode(externalBlocklyCode);
-          }}
-        >
-          Update Code
-        </button>
-      )}
-      <button onClick={() => {
-        const newResetCount = resetCount + 1;
-        log("reset-simulation", { resetCount: newResetCount });
-        setResetCount(newResetCount);
-      }}>
-        Reset
-      </button>
-      <button onClick={() => {
-        // action is logged in handlePauseClick
-        handlePauseClick();
-      }}>
-        {paused ? "Play" : "Pause"}
-      </button>
+      <div className={css.modelTitle}>
+        <ModelIcon />
+        {modelName}
+      </div>
+      <ControlPanel
+        codeUpdateAvailable={codeUpdateAvailable}
+        hasBeenStarted={hasBeenStarted}
+        hasCodeSource={hasCodeSource}
+        paused={paused}
+        onPlayPause={handlePlayPause}
+        onReset={handleReset}
+        onUpdateCode={handleUpdateCode}
+      />
       {error && <div className={css.error}>{error}</div>}
-      <div ref={containerRef} className={css.simContainer} />
+      <div className={css.simViewport}>
+        <div className={css.simScrollArea}>
+          <div 
+            ref={containerRef} 
+            className={css.simContainer}
+            style={{ transform: `scale(${zoomLevel})` }}
+          />
+        </div>
+        <ZoomControls 
+          zoomLevel={zoomLevel}
+          onZoomIn={handleZoomIn}
+          onZoomOut={handleZoomOut}
+          onFitAll={handleFitAll}
+        />
+      </div>
       <Widgets sim={simRef.current} />
       { blocklyCode && (
         <>
