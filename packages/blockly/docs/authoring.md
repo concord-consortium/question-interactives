@@ -92,7 +92,21 @@ This block defines the `sim.afterTick` method. If you define your own `sim.after
 
 #### On Mouse Click
 
-This block currently defines a function called `onClick`, which can be used as an event listener (see [Atomic Agents Vis Interaction](https://gjmcn.github.io/atomic-agents-vis/#/?id=interaction)).
+This block currently defines a function called `onClick`, which can be used as an event listener (see [Atomic Agents Vis Interaction](https://gjmcn.github.io/atomic-agents-vis/#/?id=interaction)). When assigning `onClick` to the `sim`, make sure you include `background: true` in the object you pass to `.vis()`.
+
+##### Creating Actors On Mouse Click
+
+Unfortunately, a bug in Atomic Agents Vis makes it non-trivial to add new actors by clicking. The specific bug is that actors added to the simulation outside of one of the simulation's tick functions does not get rendered by vis.
+
+The predator-prey example simulation shows one work around for this problem. The basic idea is to avoid directly adding actors to the simulation outside of the simulation's tick functions. Instead, use a queue to keep track of actors that need to be added, then actually add them in the `sim.beforeTick` function.
+
+##### Positioning Using Mouse Click Coordinates
+
+It's also tricky to use the coordinates of a mouse click to position an actor. Again, the predator-prey example shows one solution to this problem.
+- Wrap the `onClick` function in another function, `_onClick`, which you should directly pass to `sim.vis()`.
+- Before calling `onClick()` in `_onClick()`, save the coordinates of the mouse event as globals.
+- When positioning an actor to the mouse's location, use the globals you saved.
+  - Note that the predator-prey example uses the mouse coordinates when creating the actor, but it's more common to set the position in a setter with a `mouse position` option.
 
 ### Creator Blocks
 
