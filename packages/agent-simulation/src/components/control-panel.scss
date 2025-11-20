@@ -1,6 +1,7 @@
 @import "./_shared-button-styles.scss";
 
 .controlPanel {
+  align-items: center;
   background: var(--cc-teal-light-5);
   display: flex;
   margin: 0;
@@ -37,6 +38,40 @@
       100% {
         box-shadow: 0 0 0 8px var(--cc-teal-dark-1-alpha-0);
       }
+    }
+  }
+
+  .simSpeedControl {
+    align-items: center;
+    border-left: solid 1px var(--cc-teal);
+    display: flex;
+    gap: 8px;
+    margin: 0 0 0 auto;
+    padding: 8px 0 8px 8px;
+    width: 172px;
+
+    label {
+      display: block;
+      color: var(--cc-charcoal);
+      font-size: 14px;
+      font-weight: 500;
+      margin: 0 0 0 auto;
+      padding: 0;
+    }
+
+    select {
+      appearance: none;
+      background: var(--cc-teal-light-5);
+      background-image: url("../assets/arrow-icon.svg");
+      background-position: right 2px center;
+      background-repeat: no-repeat;
+      border: solid 1px #949494;
+      border-radius: 4px;
+      font-size: 16px;
+      height: 34px;
+      margin: 0 0 0 auto;
+      padding: 0 8px;
+      width: 75px;
     }
   }
 }

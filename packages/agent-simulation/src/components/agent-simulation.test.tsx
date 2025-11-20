@@ -38,6 +38,14 @@ describe("AgentSimulationComponent", () => {
     end: jest.fn()
   };
 
+  const mockTicker = {
+    maxFPS: 30
+  };
+
+  const mockVisHandle = {
+    ticker: mockTicker
+  };
+
   const mockGlobals = {
     getValue: jest.fn(),
     setValue: jest.fn(),
@@ -70,6 +78,7 @@ describe("AgentSimulationComponent", () => {
   };
 
   const mockSetInteractiveState = jest.fn();
+  const originalEval = global.eval;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -79,11 +88,24 @@ describe("AgentSimulationComponent", () => {
     mockGlobals.getValue.mockClear();
     mockGlobals.setValue.mockClear();
     mockAddWidget.mockClear();
+    mockTicker.maxFPS = 30;
     
     // Set up AgentSimulation mock to return an object with sim and other properties
     mockSimulationConstructor.mockReturnValue(mockAgentSimulation);
     
+    // Set up AV.vis mock to return the mock vis handle
+    mockVis.mockReturnValue(mockVisHandle);
+    
     mockUseLinkedInteractiveId.mockReturnValue(null);
+    
+    // Mock eval to return a simple function that doesn't throw
+    const mockFunction = jest.fn();
+    global.eval = jest.fn(() => mockFunction);
+  });
+
+  afterEach(() => {
+    // Restore eval to its original value
+    global.eval = originalEval;
   });
 
   it("renders basic simulation controls", () => {
@@ -100,11 +122,6 @@ describe("AgentSimulationComponent", () => {
   });
 
   it("creates simulation with correct parameters", () => {
-    // Mock eval to return a simple function that doesn't throw
-    const originalEval = global.eval;
-    const mockFunction = jest.fn();
-    global.eval = jest.fn(() => mockFunction);
-
     render(
       <AgentSimulationComponent
         authoredState={defaultAuthoredState}
@@ -115,11 +132,8 @@ describe("AgentSimulationComponent", () => {
 
     expect(mockSimulationConstructor).toHaveBeenCalledWith(450, 450, 15);
 
-    expect(mockVis).toHaveBeenCalledWith(mockAgentSimulation.sim, { target: expect.any(HTMLDivElement) });
+    expect(mockVis).toHaveBeenCalledWith(mockAgentSimulation.sim, { maxFPS: 30, target: expect.any(HTMLDivElement) });
     expect(mockSimulation.pause).toHaveBeenCalledWith(true);
-
-    // Restore original eval
-    global.eval = originalEval;
   });
 
   it("displays error for invalid grid dimensions", () => {
@@ -159,7 +173,7 @@ describe("AgentSimulationComponent", () => {
     expect(screen.getByText("Grid height and width must be divisible by the grid step.")).toBeInTheDocument();
   });
 
-  it("handles pause/play button clicks", () => {
+  it("handles pause/play button clicks", async () => {
     render(
       <AgentSimulationComponent
         authoredState={defaultAuthoredState}
@@ -169,8 +183,13 @@ describe("AgentSimulationComponent", () => {
     );
 
     const pausePlayButton = screen.getByTestId("play-pause-button");
-    fireEvent.click(pausePlayButton);
 
+    await screen.findByLabelText("Play");
+
+    expect(pausePlayButton).toHaveAttribute("aria-label", "Play");
+    expect(pausePlayButton).toHaveAttribute("title", "Play");
+
+    fireEvent.click(pausePlayButton);
     expect(mockSimulation.pause).toHaveBeenCalledWith(false);
     expect(pausePlayButton).toHaveAttribute("aria-label", "Pause");
     expect(pausePlayButton).toHaveAttribute("title", "Pause");
@@ -317,8 +336,7 @@ describe("AgentSimulationComponent", () => {
   });
 
   it("handles simulation setup errors gracefully", () => {
-    // Mock eval to throw an error
-    const originalEval = global.eval;
+    // Override the global eval mock to throw an error for this test
     global.eval = jest.fn(() => {
       throw new Error("Syntax error in code");
     });
@@ -332,18 +350,10 @@ describe("AgentSimulationComponent", () => {
     );
 
     expect(screen.getByText("Error setting up simulation: Error: Syntax error in code")).toBeInTheDocument();
-
-    // Restore original eval
-    global.eval = originalEval;
   });
 
   it("cleans up simulation and listeners on unmount", () => {
     mockUseLinkedInteractiveId.mockReturnValue("linked-interactive-id");
-
-    // Mock eval to return a simple function that doesn't throw
-    const originalEval = global.eval;
-    const mockFunction = jest.fn();
-    global.eval = jest.fn(() => mockFunction);
 
     const { unmount } = render(
       <AgentSimulationComponent
@@ -357,9 +367,6 @@ describe("AgentSimulationComponent", () => {
 
     expect(mockRemoveLinkedInteractiveStateListener).toHaveBeenCalled();
     expect(mockAgentSimulation.destroy).toHaveBeenCalled();
-
-    // Restore original eval
-    global.eval = originalEval;
   });
 
   it("works in report mode", () => {
@@ -409,8 +416,7 @@ describe("AgentSimulationComponent", () => {
       blocklyCode: "// Existing blockly code"
     };
 
-    // Mock eval to capture the function code
-    const originalEval = global.eval;
+    // Override the global eval mock to capture the function code
     const mockFunction = jest.fn();
     global.eval = jest.fn((code) => {
       // Verify the code string contains the blockly code
@@ -434,13 +440,10 @@ describe("AgentSimulationComponent", () => {
       mockGlobals,
       expect.any(Function) // addWidget function
     );
-
-    global.eval = originalEval;
   });
 
   it("falls back to authored code when no blockly code exists", () => {
-    // Mock eval to capture the function code
-    const originalEval = global.eval;
+    // Override the global eval mock to capture the function code
     const mockFunction = jest.fn();
     global.eval = jest.fn((code) => {
       // Verify the code string contains the default code
@@ -464,7 +467,70 @@ describe("AgentSimulationComponent", () => {
       mockGlobals,
       expect.any(Function) // addWidget function
     );
+  });
 
-    global.eval = originalEval;
+  describe("simulation speed functionality", () => {
+    it("initializes simulation with default speed", () => {
+      render(
+        <AgentSimulationComponent
+          authoredState={defaultAuthoredState}
+          interactiveState={defaultInteractiveState}
+          setInteractiveState={mockSetInteractiveState}
+        />
+      );
+
+      expect(mockVis).toHaveBeenCalledWith(
+        mockAgentSimulation.sim, 
+        { maxFPS: 30, target: expect.any(HTMLDivElement) }
+      );
+    });
+
+    it("initializes simulation with saved speed from interactive state", () => {
+      const stateWithSpeed: IInteractiveState = {
+        ...defaultInteractiveState,
+        simSpeed: 60
+      };
+
+      render(
+        <AgentSimulationComponent
+          authoredState={defaultAuthoredState}
+          interactiveState={stateWithSpeed}
+          setInteractiveState={mockSetInteractiveState}
+        />
+      );
+
+      expect(mockVis).toHaveBeenCalledWith(
+        mockAgentSimulation.sim, 
+        { maxFPS: 60, target: expect.any(HTMLDivElement) }
+      );
+      expect(screen.getByTestId("sim-speed-select")).toHaveValue("60");
+    });
+
+    it("updates simulation speed when changed", () => {
+      render(
+        <AgentSimulationComponent
+          authoredState={defaultAuthoredState}
+          interactiveState={defaultInteractiveState}
+          setInteractiveState={mockSetInteractiveState}
+        />
+      );
+
+      const speedSelect = screen.getByTestId("sim-speed-select");
+      fireEvent.change(speedSelect, { target: { value: "60" } });
+
+
+      expect(mockTicker.maxFPS).toBe(60);
+      expect(mockSetInteractiveState).toHaveBeenCalledWith(expect.any(Function));
+      
+      const updateFunction = mockSetInteractiveState.mock.calls[0][0];
+      const newState = updateFunction(defaultInteractiveState);
+      
+      expect(newState).toEqual({
+        ...defaultInteractiveState,
+        answerType: "interactive_state",
+        version: 1,
+        simSpeed: 60
+      });
+    });
   });
 });

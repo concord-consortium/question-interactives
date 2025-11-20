@@ -12,7 +12,7 @@ import {
   useLinkedInteractiveId
 } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
 import { AgentSimulation } from "../models/agent-simulation";
-import { ZOOM_ANIMATION_DURATION, ZOOM_DEFAULT, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from "../constants";
+import { SIM_SPEED_DEFAULT, ZOOM_ANIMATION_DURATION, ZOOM_DEFAULT, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from "../constants";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { Widgets } from "./widgets";
 import { ControlPanel } from "./control-panel";
@@ -23,6 +23,12 @@ import ModelIcon from "../assets/model-icon.svg";
 import css from "./agent-simulation.scss";
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
+
+type VisHandleWithTicker = ReturnType<typeof AV.vis> & {
+  ticker?: {
+    maxFPS: number;
+  };
+};
 
 export const AgentSimulationComponent = ({
   authoredState, interactiveState, setInteractiveState, report
@@ -42,12 +48,14 @@ export const AgentSimulationComponent = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const codeUpdateAvailable = !!(externalBlocklyCode && blocklyCode !== externalBlocklyCode);
   const hasCodeSource = !!dataSourceInteractive;
-  const [paused, setPaused] = useState(true);
+  const [paused, setPaused] = useState(false);
   const [error, setError] = useState("");
   const [resetCount, setResetCount] = useState(0);
   const simRef = useRef<AgentSimulation | null>(null);
   const [hasBeenStarted, setHasBeenStarted] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(ZOOM_DEFAULT);
+  const visRef = useRef<VisHandleWithTicker | null>(null);
+  const simSpeedRef = useRef(interactiveState?.simSpeed ?? SIM_SPEED_DEFAULT);
 
   const setBlocklyCode = (newCode: string) => {
     _setBlocklyCode(newCode);
@@ -124,7 +132,7 @@ export const AgentSimulationComponent = ({
     }
 
     // Visualize and start the simulation
-    AV.vis(simRef.current.sim, { target: containerRef.current });
+    visRef.current = AV.vis(simRef.current.sim, { maxFPS: simSpeedRef.current, target: containerRef.current });
     simRef.current.sim.pause(true);
     setPaused(true);
 
@@ -164,6 +172,23 @@ export const AgentSimulationComponent = ({
     });
     setBlocklyCode(externalBlocklyCode);
     setHasBeenStarted(false);
+  };
+
+  const handleChangeSimSpeed = (newSpeed: number) => {
+    const oldSpeed = simSpeedRef.current;
+    log("change-simulation-speed", { oldSpeed, newSpeed });
+
+    simSpeedRef.current = newSpeed;
+    if (visRef.current && visRef.current.ticker) {
+      visRef.current.ticker.maxFPS = newSpeed;
+    }
+
+    setInteractiveState?.(prev => ({
+      ...prev,
+      answerType: "interactive_state",
+      version: 1,
+      simSpeed: newSpeed
+    }));
   };
 
   const handleZoomIn = () => {
@@ -219,6 +244,8 @@ export const AgentSimulationComponent = ({
         hasBeenStarted={hasBeenStarted}
         hasCodeSource={hasCodeSource}
         paused={paused}
+        simSpeed={simSpeedRef.current}
+        onChangeSimSpeed={handleChangeSimSpeed}
         onPlayPause={handlePlayPause}
         onReset={handleReset}
         onUpdateCode={handleUpdateCode}

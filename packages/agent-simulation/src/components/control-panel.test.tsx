@@ -8,6 +8,8 @@ describe("ControlPanel", () => {
     hasBeenStarted: false,
     hasCodeSource: true,
     paused: true,
+    simSpeed: 30,
+    onChangeSimSpeed: jest.fn(),
     onPlayPause: jest.fn(),
     onReset: jest.fn(),
     onUpdateCode: jest.fn(),
@@ -187,6 +189,50 @@ describe("ControlPanel", () => {
 
       expect(defaultProps.onReset).not.toHaveBeenCalled();
       expect(defaultProps.onUpdateCode).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("simulation speed control", () => {
+    it("renders speed control with correct label", () => {
+      render(<ControlPanel {...defaultProps} />);
+
+      expect(screen.getByLabelText("Model Speed")).toBeInTheDocument();
+      expect(screen.getByTestId("sim-speed-select")).toBeInTheDocument();
+    });
+
+    it("displays current speed value", () => {
+      render(<ControlPanel {...defaultProps} simSpeed={60} />);
+
+      const select = screen.getByTestId("sim-speed-select") as HTMLSelectElement;
+      expect(select.value).toBe("60");
+    });
+
+    it("renders speed options in correct order", () => {
+      render(<ControlPanel {...defaultProps} />);
+
+      const select = screen.getByTestId("sim-speed-select");
+      const options = select.querySelectorAll("option");
+
+      expect(options[0]).toHaveTextContent("0.5x");
+      expect(options[0]).toHaveValue("15");
+      expect(options[1]).toHaveTextContent("1x");
+      expect(options[1]).toHaveValue("30");
+      expect(options[2]).toHaveTextContent("2x");
+      expect(options[2]).toHaveValue("60");
+    });
+
+    it("calls onChangeSimSpeed when speed is changed", () => {
+      render(<ControlPanel {...defaultProps} />);
+
+      const select = screen.getByTestId("sim-speed-select");
+
+      fireEvent.change(select, { target: { value: "15" } });
+      expect(defaultProps.onChangeSimSpeed).toHaveBeenCalledWith(15);
+
+      fireEvent.change(select, { target: { value: "60" } });
+      expect(defaultProps.onChangeSimSpeed).toHaveBeenCalledWith(60);
+
+      expect(defaultProps.onChangeSimSpeed).toHaveBeenCalledTimes(2);
     });
   });
 });
