@@ -133,7 +133,7 @@ function setup() {
   create_wolves(10);
 }
 
-// Agents added outside of the sim tick loop do not get added to the renderer,
+// Agents added outside of the sim tick function (like onClick) do not get added to the renderer,
 // so instead of adding agents directly, we create a queue and add them in beforeTick.
 let actorsToAdd = [];
 
