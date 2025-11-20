@@ -34,7 +34,7 @@ Simulation code must be vanilla javascript. All simulation code has access to th
 - `sim` - The Atomic Agents simulation
 - `AA` - Everything you'd get from `import * as AA from "atomic-agents"`
 - `AV` - Everything you'd get from `import * as AV from "atomic-agents-vis"`
-- `globals` - An object that allows you to directly access and modify globals.
+- `globals` - An object that allows you to directly access and modify globals. Globals are variables that can be changed and accessed during a simulation. They are often used by widgets, but they can also be used without them.
   - `globals.set(globalKey: string, value: any)`
     Updates the value of the given global. If the global doesn't already exist, this creates it.
   - `globals.get(globalKey)`
