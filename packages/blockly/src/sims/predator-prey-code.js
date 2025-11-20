@@ -217,8 +217,8 @@ function create_a_sheep(props) {
   agent.vis({ image: sheepImage, tint: color });
   agent.label("sheep", true);
   agent.state = { energy: energy ?? sheepEnergy };
-  agent.x = x ?? Math.random() * sim.width;
-  agent.y = y ?? Math.random() * sim.height;
+  agent.x = x ?? globals.get("mouseX") ?? Math.random() * sim.width;
+  agent.y = y ?? globals.get("mouseY") ?? Math.random() * sim.height;
 
   actorsToAdd.push(agent);
   globals.set("sheepCount", globals.get("sheepCount") + 1);
@@ -240,8 +240,8 @@ function create_a_wolf(props) {
   agent.vis({ image: wolfImage, tint: color ?? "0x333333" });
   agent.label("wolves", true);
   agent.state = { energy: energy ?? wolfEnergy };
-  agent.x = x ?? Math.random() * sim.width;
-  agent.y = y ?? Math.random() * sim.height;
+  agent.x = x ?? globals.get("mouseX") ?? Math.random() * sim.width;
+  agent.y = y ?? globals.get("mouseY") ?? Math.random() * sim.height;
 
   actorsToAdd.push(agent);
   globals.set("wolfCount", globals.get("wolfCount") + 1);
@@ -263,7 +263,13 @@ sim.interaction.set("boundary-bounce", {
 
 setup();
 
+function _onClick(event) {
+  globals.set("mouseX", event.data.global.x);
+  globals.set("mouseY", event.data.global.y);
+  onClick(event);
+}
+
 sim.vis({
   background: true,
-  click: onClick
+  click: _onClick
 });
