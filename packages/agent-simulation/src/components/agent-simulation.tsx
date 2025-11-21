@@ -24,7 +24,6 @@ import css from "./agent-simulation.scss";
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
 
-
 export const AgentSimulationComponent = ({
   authoredState, interactiveState, setInteractiveState, report
 }: IProps) => {
@@ -51,6 +50,7 @@ export const AgentSimulationComponent = ({
   const [zoomLevel, setZoomLevel] = useState(ZOOM_DEFAULT);
   const simSpeedRef = useRef(interactiveState?.simSpeed ?? SIM_SPEED_DEFAULT);
   const rafIdRef = useRef<number | null>(null);
+  const visRef = useRef<any>(null);
 
   const setBlocklyCode = (newCode: string) => {
     _setBlocklyCode(newCode);
@@ -121,18 +121,6 @@ export const AgentSimulationComponent = ({
       const simFunction = eval?.(functionCode);
       const { globals, sim } = simRef.current;
 
-      // Speed multiplier based on simSpeedRef
-      globals.set?.("speedMultiplier", simSpeedRef.current ?? 1);
-
-      // Global helper functions for applying sim speed adjustments.
-      const rate = (base: number) => base * simSpeedRef.current;
-      const chance = (base: number) => Math.min(1, base * simSpeedRef.current);
-      const vel = (base: number) => AA.Vector.randomAngle(base * simSpeedRef.current);
-
-      globals.set?.("rate", rate);
-      globals.set?.("chance", chance);
-      globals.set?.("vel", vel);
-
       simFunction?.(sim, AA, AV, globals, simRef.current.addWidget.bind(simRef.current));
     } catch (e) {
       setError(`Error setting up simulation: ${String(e)}`);
@@ -140,7 +128,7 @@ export const AgentSimulationComponent = ({
     }
 
     // Visualize and start the simulation
-    AV.vis(simRef.current.sim, { target: containerRef.current });
+    visRef.current = AV.vis(simRef.current.sim, { speed: simSpeedRef.current, target: containerRef.current });
     simRef.current.sim.pause(true);
     setPaused(true);
 
@@ -197,8 +185,9 @@ export const AgentSimulationComponent = ({
     log("change-simulation-speed", { oldSpeed, newSpeed });
 
     simSpeedRef.current = newSpeed;
-    if (simRef.current) {
-      simRef.current.globals.set?.("speedMultiplier", newSpeed);
+
+    if (visRef.current && "setSimSpeed" in visRef.current) {
+      (visRef.current as any).setSimSpeed(newSpeed);
     }
 
     setInteractiveState?.(prev => ({

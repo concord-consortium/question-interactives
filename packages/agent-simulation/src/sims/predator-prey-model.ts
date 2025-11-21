@@ -93,10 +93,6 @@ const wolfEnergyLoss = 0.1;
 const maxGrassLevel = 10;
 const grassGrowthRate = 0.01;
 
-const rate = globals.get?.("rate");
-const chance = globals.get?.("chance");
-const vel = globals.get?.("vel");
-
 // Create widgets
 addWidget({
   data: {
@@ -143,14 +139,14 @@ sim.afterTick = () => {
   sim.squares.forEach(square => {
     // Grow grass
     if (square.state.grassLevel < maxGrassLevel) {
-      square.state.grassLevel = Math.min(maxGrassLevel, square.state.grassLevel + rate(grassGrowthRate));
+      square.state.grassLevel = Math.min(maxGrassLevel, square.state.grassLevel + grassGrowthRate);
     }
   });
 
   sim.actors?.forEach(a => {
     // Lose energy and possibly die
     const energyLoss = a.label("sheep") ? sheepEnergyLoss : wolfEnergyLoss;
-    a.state.energy = a.state.energy - rate(energyLoss);
+    a.state.energy = a.state.energy - energyLoss;
     if (a.state.energy <= 0) {
       const globalKey = a.label("sheep") ? "sheepCount" : "wolfCount";
       globals.set(globalKey, globals.get(globalKey) - 1);
@@ -159,13 +155,13 @@ sim.afterTick = () => {
     }
 
     // Turn
-    const turnAmount = rate(Math.random() * Math.PI / 4 - Math.PI / 8);
-    a.vel.turn(turnAmount);
+    a.vel.turn(Math.random() * Math.PI / 4 - Math.PI / 8);
 
-    const baseReproduceChance = a.label("sheep") ? sheepReproduceChance : wolfReproduceChance;
-    const reproduceChance = chance(baseReproduceChance);
+    // Reproduce
+    const reproduceChance = a.label("sheep") ? sheepReproduceChance : wolfReproduceChance;
     if (Math.random() < reproduceChance) {
       const addFunction = a.label("sheep") ? create_a_sheep : create_a_wolf;
+      // const color = a.label("sheep") ? sheepColor : wolfColor;
       addFunction({ energy: a.state.energy / 2, x: a.x, y: a.y });
       a.state.energy = a.state.energy / 2;
     }
@@ -211,7 +207,7 @@ function create_a_sheep(props) {
   const { color, energy, x, y } = props ?? {};
   const agent = new AA.Actor();
   agent.radius = 10;
-  agent.vel = vel(1);
+  agent.vel = AA.Vector.randomAngle(1);
   agent.vis({ image: sheepImage, tint: color });
   agent.label("sheep", true);
   agent.state = { energy: energy ?? sheepEnergy };
@@ -234,7 +230,7 @@ function create_a_wolf(props) {
   const { color, energy, x, y } = props ?? {};
   const agent = new AA.Actor();
   agent.radius = 10;
-  agent.vel = vel(1.5);
+  agent.vel = AA.Vector.randomAngle(1.5);
   agent.vis({ image: wolfImage, tint: color ?? "0x333333" });
   agent.label("wolves", true);
   agent.state = { energy: energy ?? wolfEnergy };
