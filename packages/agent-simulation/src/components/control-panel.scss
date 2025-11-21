@@ -18,7 +18,7 @@
       &.updateButton {
         background-color: #ffffdd;
         border: 1px solid #333;
-        
+
         &:not([disabled]) {
           animation: pulse-shadow 1.75s ease infinite;
         }
@@ -28,6 +28,28 @@
           border-color: #b8b8b8;
         }
       }
+
+      &.recording {
+        background-color: white;
+
+        &:hover, &:focus {
+          background-color: var(--cc-orange-light-2);
+        }
+        &:active {
+          background-color: var(--cc-orange-dark-1);
+          border-color: white;
+
+          svg {
+            circle {
+              fill: white;
+            }
+          }
+        }
+      }
+    }
+
+    .deleteRecordingButton {
+      @include interactive-button-orange;
     }
 
     @keyframes pulse-shadow {

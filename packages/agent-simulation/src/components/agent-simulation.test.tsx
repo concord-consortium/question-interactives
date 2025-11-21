@@ -10,6 +10,7 @@ import * as AA from "@gjmcn/atomic-agents";
 import * as AV from "@gjmcn/atomic-agents-vis";
 import { useLinkedInteractiveId } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
 import { AgentSimulation } from "../models/agent-simulation";
+import { ObjectStorageConfig, ObjectStorageProvider } from "@concord-consortium/object-storage";
 
 // Mock the dependencies
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
@@ -66,7 +67,13 @@ describe("AgentSimulationComponent", () => {
 
   const defaultInteractiveState: IInteractiveState = {
     version: 1,
-    answerType: "interactive_state"
+    answerType: "interactive_state",
+    recordings: [],
+  };
+
+  const objectStorageConfig: ObjectStorageConfig = {
+    version: 1,
+    type: "demo",
   };
 
   const mockSetInteractiveState = jest.fn();
@@ -79,20 +86,22 @@ describe("AgentSimulationComponent", () => {
     mockGlobals.getValue.mockClear();
     mockGlobals.setValue.mockClear();
     mockAddWidget.mockClear();
-    
+
     // Set up AgentSimulation mock to return an object with sim and other properties
     mockSimulationConstructor.mockReturnValue(mockAgentSimulation);
-    
+
     mockUseLinkedInteractiveId.mockReturnValue(null);
   });
 
   it("renders basic simulation controls", () => {
     render(
-      <AgentSimulationComponent
-        authoredState={defaultAuthoredState}
-        interactiveState={defaultInteractiveState}
-        setInteractiveState={mockSetInteractiveState}
-      />
+      <ObjectStorageProvider config={objectStorageConfig}>
+        <AgentSimulationComponent
+          authoredState={defaultAuthoredState}
+          interactiveState={defaultInteractiveState}
+          setInteractiveState={mockSetInteractiveState}
+        />
+      </ObjectStorageProvider>
     );
 
     expect(screen.getByTestId("reset-button")).toBeInTheDocument();
@@ -106,16 +115,18 @@ describe("AgentSimulationComponent", () => {
     global.eval = jest.fn(() => mockFunction);
 
     render(
-      <AgentSimulationComponent
-        authoredState={defaultAuthoredState}
-        interactiveState={defaultInteractiveState}
-        setInteractiveState={mockSetInteractiveState}
-      />
+      <ObjectStorageProvider config={objectStorageConfig}>
+        <AgentSimulationComponent
+          authoredState={defaultAuthoredState}
+          interactiveState={defaultInteractiveState}
+          setInteractiveState={mockSetInteractiveState}
+        />
+      </ObjectStorageProvider>
     );
 
     expect(mockSimulationConstructor).toHaveBeenCalledWith(450, 450, 15);
 
-    expect(mockVis).toHaveBeenCalledWith(mockAgentSimulation.sim, { target: expect.any(HTMLDivElement) });
+    expect(mockVis).toHaveBeenCalledWith(mockAgentSimulation.sim, { target: expect.any(HTMLDivElement), preserveDrawingBuffer: true });
     expect(mockSimulation.pause).toHaveBeenCalledWith(true);
 
     // Restore original eval
@@ -131,11 +142,13 @@ describe("AgentSimulationComponent", () => {
     };
 
     render(
-      <AgentSimulationComponent
-        authoredState={invalidAuthoredState}
-        interactiveState={defaultInteractiveState}
-        setInteractiveState={mockSetInteractiveState}
-      />
+      <ObjectStorageProvider config={objectStorageConfig}>
+        <AgentSimulationComponent
+          authoredState={invalidAuthoredState}
+          interactiveState={defaultInteractiveState}
+          setInteractiveState={mockSetInteractiveState}
+        />
+      </ObjectStorageProvider>
     );
 
     expect(screen.getByText("Grid height, width, and step must be positive integers.")).toBeInTheDocument();
@@ -149,11 +162,13 @@ describe("AgentSimulationComponent", () => {
     };
 
     render(
-      <AgentSimulationComponent
-        authoredState={invalidAuthoredState}
-        interactiveState={defaultInteractiveState}
-        setInteractiveState={mockSetInteractiveState}
-      />
+      <ObjectStorageProvider config={objectStorageConfig}>
+        <AgentSimulationComponent
+          authoredState={invalidAuthoredState}
+          interactiveState={defaultInteractiveState}
+          setInteractiveState={mockSetInteractiveState}
+        />
+      </ObjectStorageProvider>
     );
 
     expect(screen.getByText("Grid height and width must be divisible by the grid step.")).toBeInTheDocument();
@@ -161,11 +176,13 @@ describe("AgentSimulationComponent", () => {
 
   it("handles pause/play button clicks", () => {
     render(
-      <AgentSimulationComponent
-        authoredState={defaultAuthoredState}
-        interactiveState={defaultInteractiveState}
-        setInteractiveState={mockSetInteractiveState}
-      />
+      <ObjectStorageProvider config={objectStorageConfig}>
+        <AgentSimulationComponent
+          authoredState={defaultAuthoredState}
+          interactiveState={defaultInteractiveState}
+          setInteractiveState={mockSetInteractiveState}
+        />
+      </ObjectStorageProvider>
     );
 
     const pausePlayButton = screen.getByTestId("play-pause-button");
@@ -183,11 +200,13 @@ describe("AgentSimulationComponent", () => {
 
   it("handles reset button click", () => {
     render(
-      <AgentSimulationComponent
-        authoredState={defaultAuthoredState}
-        interactiveState={defaultInteractiveState}
-        setInteractiveState={mockSetInteractiveState}
-      />
+      <ObjectStorageProvider config={objectStorageConfig}>
+        <AgentSimulationComponent
+          authoredState={defaultAuthoredState}
+          interactiveState={defaultInteractiveState}
+          setInteractiveState={mockSetInteractiveState}
+        />
+      </ObjectStorageProvider>
     );
 
     const initialCallCount = mockSimulationConstructor.mock.calls.length;
@@ -220,11 +239,13 @@ describe("AgentSimulationComponent", () => {
     };
 
     render(
-      <AgentSimulationComponent
-        authoredState={defaultAuthoredState}
-        interactiveState={stateWithBlocklyCode}
-        setInteractiveState={mockSetInteractiveState}
-      />
+      <ObjectStorageProvider config={objectStorageConfig}>
+        <AgentSimulationComponent
+          authoredState={defaultAuthoredState}
+          interactiveState={stateWithBlocklyCode}
+          setInteractiveState={mockSetInteractiveState}
+        />
+      </ObjectStorageProvider>
     );
 
     expect(screen.getByText("Show Blockly Code")).toBeInTheDocument();
@@ -238,11 +259,13 @@ describe("AgentSimulationComponent", () => {
     mockUseLinkedInteractiveId.mockReturnValue("linked-interactive-id");
 
     render(
-      <AgentSimulationComponent
-        authoredState={defaultAuthoredState}
-        interactiveState={defaultInteractiveState}
-        setInteractiveState={mockSetInteractiveState}
-      />
+      <ObjectStorageProvider config={objectStorageConfig}>
+        <AgentSimulationComponent
+          authoredState={defaultAuthoredState}
+          interactiveState={defaultInteractiveState}
+          setInteractiveState={mockSetInteractiveState}
+        />
+      </ObjectStorageProvider>
     );
 
     const updateButton = screen.getByTestId("update-code-button");
@@ -254,11 +277,13 @@ describe("AgentSimulationComponent", () => {
     mockUseLinkedInteractiveId.mockReturnValue("linked-interactive-id");
 
     render(
-      <AgentSimulationComponent
-        authoredState={defaultAuthoredState}
-        interactiveState={defaultInteractiveState}
-        setInteractiveState={mockSetInteractiveState}
-      />
+      <ObjectStorageProvider config={objectStorageConfig}>
+        <AgentSimulationComponent
+          authoredState={defaultAuthoredState}
+          interactiveState={defaultInteractiveState}
+          setInteractiveState={mockSetInteractiveState}
+        />
+      </ObjectStorageProvider>
     );
 
     // Verify listener was added
@@ -282,11 +307,13 @@ describe("AgentSimulationComponent", () => {
     mockUseLinkedInteractiveId.mockReturnValue("linked-interactive-id");
 
     render(
-      <AgentSimulationComponent
-        authoredState={defaultAuthoredState}
-        interactiveState={defaultInteractiveState}
-        setInteractiveState={mockSetInteractiveState}
-      />
+      <ObjectStorageProvider config={objectStorageConfig}>
+        <AgentSimulationComponent
+          authoredState={defaultAuthoredState}
+          interactiveState={defaultInteractiveState}
+          setInteractiveState={mockSetInteractiveState}
+        />
+      </ObjectStorageProvider>
     );
 
     // Simulate receiving new code from linked interactive
@@ -324,11 +351,13 @@ describe("AgentSimulationComponent", () => {
     });
 
     render(
-      <AgentSimulationComponent
-        authoredState={defaultAuthoredState}
-        interactiveState={defaultInteractiveState}
-        setInteractiveState={mockSetInteractiveState}
-      />
+      <ObjectStorageProvider config={objectStorageConfig}>
+        <AgentSimulationComponent
+          authoredState={defaultAuthoredState}
+          interactiveState={defaultInteractiveState}
+          setInteractiveState={mockSetInteractiveState}
+        />
+      </ObjectStorageProvider>
     );
 
     expect(screen.getByText("Error setting up simulation: Error: Syntax error in code")).toBeInTheDocument();
@@ -346,11 +375,13 @@ describe("AgentSimulationComponent", () => {
     global.eval = jest.fn(() => mockFunction);
 
     const { unmount } = render(
-      <AgentSimulationComponent
-        authoredState={defaultAuthoredState}
-        interactiveState={defaultInteractiveState}
-        setInteractiveState={mockSetInteractiveState}
-      />
+      <ObjectStorageProvider config={objectStorageConfig}>
+        <AgentSimulationComponent
+          authoredState={defaultAuthoredState}
+          interactiveState={defaultInteractiveState}
+          setInteractiveState={mockSetInteractiveState}
+        />
+      </ObjectStorageProvider>
     );
 
     unmount();
@@ -364,12 +395,14 @@ describe("AgentSimulationComponent", () => {
 
   it("works in report mode", () => {
     render(
-      <AgentSimulationComponent
-        authoredState={defaultAuthoredState}
-        interactiveState={defaultInteractiveState}
-        setInteractiveState={mockSetInteractiveState}
-        report={true}
-      />
+      <ObjectStorageProvider config={objectStorageConfig}>
+        <AgentSimulationComponent
+          authoredState={defaultAuthoredState}
+          interactiveState={defaultInteractiveState}
+          setInteractiveState={mockSetInteractiveState}
+          report={true}
+        />
+      </ObjectStorageProvider>
     );
 
     // Should still render the simulation
@@ -382,11 +415,13 @@ describe("AgentSimulationComponent", () => {
     mockUseLinkedInteractiveId.mockReturnValue("linked-interactive-id");
 
     render(
-      <AgentSimulationComponent
-        authoredState={defaultAuthoredState}
-        interactiveState={defaultInteractiveState}
-        setInteractiveState={mockSetInteractiveState}
-      />
+      <ObjectStorageProvider config={objectStorageConfig}>
+        <AgentSimulationComponent
+          authoredState={defaultAuthoredState}
+          interactiveState={defaultInteractiveState}
+          setInteractiveState={mockSetInteractiveState}
+        />
+      </ObjectStorageProvider>
     );
 
     // Simulate receiving invalid code from linked interactive
@@ -419,11 +454,13 @@ describe("AgentSimulationComponent", () => {
     });
 
     render(
-      <AgentSimulationComponent
-        authoredState={defaultAuthoredState}
-        interactiveState={stateWithBlocklyCode}
-        setInteractiveState={mockSetInteractiveState}
-      />
+      <ObjectStorageProvider config={objectStorageConfig}>
+        <AgentSimulationComponent
+          authoredState={defaultAuthoredState}
+          interactiveState={stateWithBlocklyCode}
+          setInteractiveState={mockSetInteractiveState}
+        />
+      </ObjectStorageProvider>
     );
 
     // Verify the evaluated function was called with our specific mocks
@@ -449,18 +486,20 @@ describe("AgentSimulationComponent", () => {
     });
 
     render(
-      <AgentSimulationComponent
-        authoredState={defaultAuthoredState}
-        interactiveState={defaultInteractiveState}
-        setInteractiveState={mockSetInteractiveState}
-      />
+      <ObjectStorageProvider config={objectStorageConfig}>
+        <AgentSimulationComponent
+          authoredState={defaultAuthoredState}
+          interactiveState={defaultInteractiveState}
+          setInteractiveState={mockSetInteractiveState}
+        />
+      </ObjectStorageProvider>
     );
 
     // Verify the evaluated function was called with our specific mocks
     expect(mockFunction).toHaveBeenCalledWith(
       mockSimulation,
       AA,
-      AV, 
+      AV,
       mockGlobals,
       expect.any(Function) // addWidget function
     );

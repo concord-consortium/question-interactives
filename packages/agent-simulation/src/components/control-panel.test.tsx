@@ -8,9 +8,11 @@ describe("ControlPanel", () => {
     hasBeenStarted: false,
     hasCodeSource: true,
     paused: true,
+    currentRecording: undefined,
     onPlayPause: jest.fn(),
     onReset: jest.fn(),
     onUpdateCode: jest.fn(),
+    onDeleteRecording: jest.fn(),
   };
 
   beforeEach(() => {

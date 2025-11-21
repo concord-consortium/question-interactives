@@ -1,12 +1,13 @@
 @import "../../../helpers/src/styles/px-to-rem.scss";
 @import "../../../helpers/src/styles/helpers.scss";
+@import "./_shared-button-styles.scss";
 
 .agentSimulationComponent {
   display: flex;
   flex-direction: column;
   gap: 0;
 
-  .modelTitle {
+  .topBar {
     align-items: center;
     background: var(--cc-teal-light-5);
     border-bottom: solid 1px var(--cc-teal);
@@ -14,11 +15,88 @@
     display: flex;
     font-size: 16px;
     height: 50px;
+    justify-content: space-between;
     margin: 0;
-    padding: 8px;
 
-    svg {
-      margin-right: 8px;
+    > div {
+      height: 100%;
+      display: flex;
+      align-items: center;
+    }
+
+    .leftSide {
+      border-right: solid 1px var(--cc-teal);
+      width: 50%;
+
+      .returnToTinker {
+        border-right: solid 1px var(--cc-teal);
+        border-left: none;
+        border-top: none;
+        border-bottom: none;
+        border-radius: 0;
+        flex-grow: 0;
+        height: 100%;
+        padding: 0 8px;
+        display: flex;
+        align-items: center;
+
+        button {
+          @include interactive-button-base;
+        }
+      }
+
+      .modelIcon {
+        margin-left: 8px;
+        flex-grow: 0;
+      }
+
+      .modelInfo {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 0 8px;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+
+        .modelName {
+          height: auto;
+        }
+
+        .recordingInfo {
+          height: auto;
+          font-style: italic;
+          font-size: 14px;
+        }
+      }
+    }
+
+    .rightSide {
+      width: 50%;
+    }
+
+    // Media query for screens up to 449px wide
+    @media (max-width: 449px) {
+      display: block; // Change from flex to block to stack children vertically
+      height: auto; // Allow the height to expand to accommodate stacked content
+
+      > div {
+        // Since .topBar is now block, its direct children (the divs) will stack.
+        // We can adjust their styling if needed, but they will inherently stack.
+        // You might want to remove flex-grow to ensure they take full width.
+        flex-grow: unset;
+        height: 50px; // Maintain a height for each stacked div if necessary
+      }
+
+      .topBar {
+        border-bottom: none; // Remove bottom border when stacked
+      }
+
+      .leftSide {
+        width: 100%; // Make leftSide take full width when stacked
+        border-right: none; // Remove right border when stacked
+        border-bottom: solid 1px var(--cc-teal); // Add bottom border for separation
+      }
     }
   }
 
