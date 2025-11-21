@@ -172,18 +172,24 @@
     }
   }
 
-  > button[type="button"] {
-    align-self: center;
-    background: $success-green;
-    border: none;
-    border-radius: $border-radius-sm;
-    color: white;
-    cursor: pointer;
-    font-weight: $font-weight-medium;
-    padding: 10px $spacing-xxl;
-    
-    &:hover {
-      background: $success-green-hover;
+  .submitButton {
+    align-items: center;
+    display: flex;
+    height: 55px;
+  
+    button[type="button"] {
+      align-self: center;
+      background: $success-green;
+      border: none;
+      border-radius: $border-radius-sm;
+      color: white;
+      cursor: pointer;
+      font-weight: $font-weight-medium;
+      padding: 10px $spacing-xxl;
+      
+      &:hover {
+        background: $success-green-hover;
+      }
     }
   }
 

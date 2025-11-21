@@ -286,6 +286,11 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
             onChange={(e) => setFormData(prev => ({ ...prev, color: e.target.value }))}
           />
         </div>
+        <div className={css.submitButton}>
+          <button type="button" data-testid="submit-block" onClick={handleSubmit}>
+            {editingBlock ? "Update Block" : "Save Block"}
+          </button>
+        </div>
       </div>
 
       <div className={css.customBlockForm_category} data-testid="field-category">
@@ -399,7 +404,10 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
 
       {blockConfig.hasOptions && (
         <div className={css.customBlockForm_options} data-testid="section-options">
-          <label htmlFor="options">{optionTerm}</label>
+          <label htmlFor="options">
+            {optionTerm}
+            { formData.type === "creator" && <span className={css.required}>*</span> }
+          </label>
           <CustomBlockFormOptionList
             dataTestIdPrefix="option"
             labelPlaceholder={optionsLabelPlaceholder}
@@ -536,10 +544,6 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
           </div>
         </div>
       )}
-
-      <button type="button" data-testid="submit-block" onClick={handleSubmit}>
-        {editingBlock ? "Update Block" : "Add Block"}
-      </button>
     </div>
   );
 };
