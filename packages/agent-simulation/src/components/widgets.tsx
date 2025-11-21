@@ -10,12 +10,12 @@ export function Widgets({ sim }: IWidgetProps) {
 
   return (
     <div className="widgets-container">
-      {sim.widgets.map(widget => {
+      {sim.widgets.map((widget, index) => {
         const WidgetComponent = widgetData[widget.type]?.component;
 
         if (!WidgetComponent) return null;
 
-        return <WidgetComponent key={`${widget.globalKey}-${widget.type}`} {...widget} sim={sim} />;
+        return <WidgetComponent key={`${index}-${widget.globalKey}-${widget.type}`} {...widget} sim={sim} />;
       })}
     </div>
   );

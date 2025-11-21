@@ -129,8 +129,12 @@ export const AgentSimulationComponent = ({
 
     // Visualize and start the simulation
     visRef.current = AV.vis(simRef.current.sim, { speed: simSpeedRef.current, target: containerRef.current });
-    simRef.current.sim.pause(true);
-    setPaused(true);
+    // Pause the sim after a frame.
+    // We need to let the sim run for a frame so actors created in setup have a chance to get added to the sim.
+    setTimeout(() => {
+      simRef.current?.sim.pause(true);
+      setPaused(true);
+    }, 5);
 
     setError("");
 
