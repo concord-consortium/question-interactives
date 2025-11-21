@@ -8,7 +8,7 @@ describe("ControlPanel", () => {
     hasBeenStarted: false,
     hasCodeSource: true,
     paused: true,
-    simSpeed: 30,
+    simSpeed: 1,
     onChangeSimSpeed: jest.fn(),
     onPlayPause: jest.fn(),
     onReset: jest.fn(),
@@ -201,10 +201,10 @@ describe("ControlPanel", () => {
     });
 
     it("displays current speed value", () => {
-      render(<ControlPanel {...defaultProps} simSpeed={60} />);
+      render(<ControlPanel {...defaultProps} simSpeed={2} />);
 
       const select = screen.getByTestId("sim-speed-select") as HTMLSelectElement;
-      expect(select.value).toBe("60");
+      expect(select.value).toBe("2");
     });
 
     it("renders speed options in correct order", () => {
@@ -214,11 +214,11 @@ describe("ControlPanel", () => {
       const options = select.querySelectorAll("option");
 
       expect(options[0]).toHaveTextContent("0.5x");
-      expect(options[0]).toHaveValue("15");
+      expect(options[0]).toHaveValue("0.5");
       expect(options[1]).toHaveTextContent("1x");
-      expect(options[1]).toHaveValue("30");
+      expect(options[1]).toHaveValue("1");
       expect(options[2]).toHaveTextContent("2x");
-      expect(options[2]).toHaveValue("60");
+      expect(options[2]).toHaveValue("2");
     });
 
     it("calls onChangeSimSpeed when speed is changed", () => {
@@ -226,11 +226,11 @@ describe("ControlPanel", () => {
 
       const select = screen.getByTestId("sim-speed-select");
 
-      fireEvent.change(select, { target: { value: "15" } });
-      expect(defaultProps.onChangeSimSpeed).toHaveBeenCalledWith(15);
+      fireEvent.change(select, { target: { value: "0.5" } });
+      expect(defaultProps.onChangeSimSpeed).toHaveBeenCalledWith(0.5);
 
-      fireEvent.change(select, { target: { value: "60" } });
-      expect(defaultProps.onChangeSimSpeed).toHaveBeenCalledWith(60);
+      fireEvent.change(select, { target: { value: "2" } });
+      expect(defaultProps.onChangeSimSpeed).toHaveBeenCalledWith(2);
 
       expect(defaultProps.onChangeSimSpeed).toHaveBeenCalledTimes(2);
     });

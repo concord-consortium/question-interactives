@@ -38,14 +38,6 @@ describe("AgentSimulationComponent", () => {
     end: jest.fn()
   };
 
-  const mockTicker = {
-    maxFPS: 30
-  };
-
-  const mockVisHandle = {
-    ticker: mockTicker
-  };
-
   const mockGlobals = {
     getValue: jest.fn(),
     setValue: jest.fn(),
@@ -88,13 +80,9 @@ describe("AgentSimulationComponent", () => {
     mockGlobals.getValue.mockClear();
     mockGlobals.setValue.mockClear();
     mockAddWidget.mockClear();
-    mockTicker.maxFPS = 30;
     
     // Set up AgentSimulation mock to return an object with sim and other properties
     mockSimulationConstructor.mockReturnValue(mockAgentSimulation);
-    
-    // Set up AV.vis mock to return the mock vis handle
-    mockVis.mockReturnValue(mockVisHandle);
     
     mockUseLinkedInteractiveId.mockReturnValue(null);
     
@@ -132,7 +120,7 @@ describe("AgentSimulationComponent", () => {
 
     expect(mockSimulationConstructor).toHaveBeenCalledWith(450, 450, 15);
 
-    expect(mockVis).toHaveBeenCalledWith(mockAgentSimulation.sim, { maxFPS: 30, target: expect.any(HTMLDivElement) });
+    expect(mockVis).toHaveBeenCalledWith(mockAgentSimulation.sim, { target: expect.any(HTMLDivElement) });
     expect(mockSimulation.pause).toHaveBeenCalledWith(true);
   });
 
@@ -479,16 +467,13 @@ describe("AgentSimulationComponent", () => {
         />
       );
 
-      expect(mockVis).toHaveBeenCalledWith(
-        mockAgentSimulation.sim, 
-        { maxFPS: 30, target: expect.any(HTMLDivElement) }
-      );
+      expect(screen.getByTestId("sim-speed-select")).toHaveValue("1");
     });
 
     it("initializes simulation with saved speed from interactive state", () => {
       const stateWithSpeed: IInteractiveState = {
         ...defaultInteractiveState,
-        simSpeed: 60
+        simSpeed: 2
       };
 
       render(
@@ -499,11 +484,7 @@ describe("AgentSimulationComponent", () => {
         />
       );
 
-      expect(mockVis).toHaveBeenCalledWith(
-        mockAgentSimulation.sim, 
-        { maxFPS: 60, target: expect.any(HTMLDivElement) }
-      );
-      expect(screen.getByTestId("sim-speed-select")).toHaveValue("60");
+      expect(screen.getByTestId("sim-speed-select")).toHaveValue("2");
     });
 
     it("updates simulation speed when changed", () => {
@@ -516,12 +497,10 @@ describe("AgentSimulationComponent", () => {
       );
 
       const speedSelect = screen.getByTestId("sim-speed-select");
-      fireEvent.change(speedSelect, { target: { value: "60" } });
+      fireEvent.change(speedSelect, { target: { value: "2" } });
 
-
-      expect(mockTicker.maxFPS).toBe(60);
       expect(mockSetInteractiveState).toHaveBeenCalledWith(expect.any(Function));
-      
+
       const updateFunction = mockSetInteractiveState.mock.calls[0][0];
       const newState = updateFunction(defaultInteractiveState);
       
@@ -529,7 +508,7 @@ describe("AgentSimulationComponent", () => {
         ...defaultInteractiveState,
         answerType: "interactive_state",
         version: 1,
-        simSpeed: 60
+        simSpeed: 2
       });
     });
   });
