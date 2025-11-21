@@ -109,7 +109,7 @@ describe("AgentSimulationComponent", () => {
     expect(screen.getByTestId("play-pause-button")).toBeInTheDocument();
   });
 
-  it("creates simulation with correct parameters", () => {
+  it("creates simulation with correct parameters", async () => {
     render(
       <AgentSimulationComponent
         authoredState={defaultAuthoredState}
