@@ -13,6 +13,7 @@ import {
   IReportInitInteractive,
   useAccessibility
 } from "@concord-consortium/lara-interactive-api";
+import { ObjectStorageConfig, ObjectStorageProvider } from "@concord-consortium/object-storage";
 import { IBaseAuthoredState, UpdateFunc, IAuthoringComponentProps, IRuntimeComponentProps } from "./base-app";
 import { useBasicLogging } from "../hooks/use-basic-logging";
 import { useLinkedInteractives } from "../hooks/use-linked-interactives";
@@ -65,6 +66,7 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
   const initMessage = useInitMessage();
   const isLoading = !initMessage;
   const isRuntimeView = initMessage?.mode === "runtime";
+  const objectStorageConfig = (initMessage?.mode === "runtime" || initMessage?.mode === "report" ? initMessage.objectStorageConfig : undefined) as any as ObjectStorageConfig | undefined;
 
   const dynamicTextProxy = useDynamicTextProxy();
 
@@ -110,16 +112,18 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
       return "Authored state is missing.";
     }
     return (
-      <div className={css.runtime} data-font-family-override="true">
-        <Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} />
-        {
-          !disableSubmitBtnRendering &&
-          <div>
-            <SubmitButton isAnswered={!!isAnswered?.(interactiveState, authoredState)} />
-            <LockedInfo />
-          </div>
-        }
-      </div>
+      <ObjectStorageProvider config={objectStorageConfig}>
+        <div className={css.runtime} data-font-family-override="true">
+          <Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} />
+          {
+            !disableSubmitBtnRendering &&
+            <div>
+              <SubmitButton isAnswered={!!isAnswered?.(interactiveState, authoredState)} />
+              <LockedInfo />
+            </div>
+          }
+        </div>
+      </ObjectStorageProvider>
     );
   };
 
@@ -130,10 +134,12 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
       return "Authored state is missing.";
     }
     return (
-      <div className={css.runtime}>
-        <Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} report={true} view={view} />
-        { authoredState?.required && <div>Question has been { interactiveState?.submitted ? "" : "NOT" } submitted.</div> }
-      </div>
+      <ObjectStorageProvider config={objectStorageConfig}>
+        <div className={css.runtime}>
+          <Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} report={true} view={view} />
+          { authoredState?.required && <div>Question has been { interactiveState?.submitted ? "" : "NOT" } submitted.</div> }
+        </div>
+      </ObjectStorageProvider>
     );
   };
 

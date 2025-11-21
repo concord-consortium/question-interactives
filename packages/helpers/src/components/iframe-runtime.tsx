@@ -174,7 +174,11 @@ export const IframeRuntime: React.FC<IProps> =
         authoredState,
         // This is a trick not to depend on interactiveState.
         interactiveState: interactiveStateRef.current,
-        linkedInteractives
+        linkedInteractives,
+        objectStorageConfig: {
+          version: 1,
+          type: "demo",
+        }
       };
 
       if (!report) {
