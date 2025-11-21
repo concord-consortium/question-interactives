@@ -109,7 +109,7 @@
   "dependencies": {
     "@blockly/field-slider": "^8.0.2",
     "@concord-consortium/dynamic-text": "^1.0.6",
-    "@concord-consortium/lara-interactive-api": "1.10.0-pre.2",
+    "@concord-consortium/lara-interactive-api": "^1.10.0",
     "@concord-consortium/question-interactives-helpers": "^1.16.0",
     "@rjsf/utils": "^5.0.1",
     "blockly": "^12.3.0",
