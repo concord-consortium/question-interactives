@@ -120,7 +120,7 @@ describe("AgentSimulationComponent", () => {
 
     expect(mockSimulationConstructor).toHaveBeenCalledWith(450, 450, 15);
 
-    expect(mockVis).toHaveBeenCalledWith(mockAgentSimulation.sim, { target: expect.any(HTMLDivElement) });
+    expect(mockVis).toHaveBeenCalledWith(mockAgentSimulation.sim, { speed: 1, target: expect.any(HTMLDivElement) });
 
     // Wait for 10ms
     await act(async () => {
