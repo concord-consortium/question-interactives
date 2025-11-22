@@ -36,6 +36,7 @@ declare module "@gjmcn/atomic-agents-vis" {
     destroy(): void;
     /** Recompute size/layout, if supported. */
     resize?(w?: number, h?: number): void;
+    setSimSpeed?(speed: number): void;
     /** Start/stop a render loop, if exposed by your setup. */
     start?(): void;
     stop?(): void;

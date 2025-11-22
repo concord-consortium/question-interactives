@@ -11,11 +11,11 @@ import {
 import {
   useLinkedInteractiveId
 } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
-import { AgentSimulation } from "../models/agent-simulation";
 import { SIM_SPEED_DEFAULT, ZOOM_ANIMATION_DURATION, ZOOM_DEFAULT, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from "../constants";
+import { AgentSimulation } from "../models/agent-simulation";
+import { ControlPanel } from "./control-panel";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { Widgets } from "./widgets";
-import { ControlPanel } from "./control-panel";
 import { ZoomControls } from "./zoom-controls";
 
 import ModelIcon from "../assets/model-icon.svg";
@@ -50,14 +50,14 @@ export const AgentSimulationComponent = ({
   const [zoomLevel, setZoomLevel] = useState(ZOOM_DEFAULT);
   const simSpeedRef = useRef(interactiveState?.simSpeed ?? SIM_SPEED_DEFAULT);
   const rafIdRef = useRef<number | null>(null);
-  const visRef = useRef<any>(null);
+  const visRef = useRef<AV.VisHandle | null>(null);
 
   const setBlocklyCode = (newCode: string) => {
     _setBlocklyCode(newCode);
     setInteractiveState?.(prev => ({
-      ...prev,
       answerType: "interactive_state",
       version: 1,
+      ...prev,
       blocklyCode: newCode
     }));
   };
@@ -129,6 +129,7 @@ export const AgentSimulationComponent = ({
 
     // Visualize and start the simulation
     visRef.current = AV.vis(simRef.current.sim, { speed: simSpeedRef.current, target: containerRef.current });
+
     // Pause the sim after a frame.
     // We need to let the sim run for a frame so actors created in setup have a chance to get added to the sim.
     setTimeout(() => {
@@ -190,14 +191,12 @@ export const AgentSimulationComponent = ({
 
     simSpeedRef.current = newSpeed;
 
-    if (visRef.current && "setSimSpeed" in visRef.current) {
-      (visRef.current as any).setSimSpeed(newSpeed);
-    }
+    visRef.current?.setSimSpeed?.(newSpeed);
 
     setInteractiveState?.(prev => ({
-      ...prev,
       answerType: "interactive_state",
       version: 1,
+      ...prev,
       simSpeed: newSpeed
     }));
   };
