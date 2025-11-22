@@ -49,7 +49,7 @@ export const AgentSimulationComponent = ({
   const [hasBeenStarted, setHasBeenStarted] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(ZOOM_DEFAULT);
   const simSpeedRef = useRef(interactiveState?.simSpeed ?? SIM_SPEED_DEFAULT);
-  const rafIdRef = useRef<number | null>(null);
+  const animationFrameRef = useRef<number | null>(null);
   const visRef = useRef<AV.VisHandle | null>(null);
 
   const setBlocklyCode = (newCode: string) => {
@@ -151,9 +151,9 @@ export const AgentSimulationComponent = ({
   // Cleanup animation frames on unmount
   useEffect(() => {
     return () => {
-      if (rafIdRef.current !== null) {
-        cancelAnimationFrame(rafIdRef.current);
-        rafIdRef.current = null;
+      if (animationFrameRef.current !== null) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
       }
     };
   }, []);
@@ -216,9 +216,9 @@ export const AgentSimulationComponent = ({
   const handleFitAll = () => {
     log("fit-all-in-view", { fromZoomLevel: zoomLevel, toZoomLevel: ZOOM_DEFAULT });
 
-    if (rafIdRef.current !== null) {
-      cancelAnimationFrame(rafIdRef.current);
-      rafIdRef.current = null;
+    if (animationFrameRef.current !== null) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
     }
     
     // Smoothly scroll back to top-left while zooming to ZOOM_DEFAULT.
@@ -238,13 +238,13 @@ export const AgentSimulationComponent = ({
         wrapper.scrollTop = startScrollTop * (1 - easeOut);
 
         if (progress < 1) {
-          rafIdRef.current = requestAnimationFrame(animate);
+          animationFrameRef.current = requestAnimationFrame(animate);
         } else {
-          rafIdRef.current = null;
+          animationFrameRef.current = null;
         }
       };
 
-      rafIdRef.current = requestAnimationFrame(animate);
+      animationFrameRef.current = requestAnimationFrame(animate);
     }
     
     setZoomLevel(ZOOM_DEFAULT);
