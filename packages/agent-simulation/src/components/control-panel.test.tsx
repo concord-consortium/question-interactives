@@ -8,6 +8,8 @@ describe("ControlPanel", () => {
     hasBeenStarted: false,
     hasCodeSource: true,
     paused: true,
+    simSpeed: 1,
+    onChangeSimSpeed: jest.fn(),
     onPlayPause: jest.fn(),
     onReset: jest.fn(),
     onUpdateCode: jest.fn(),
@@ -187,6 +189,50 @@ describe("ControlPanel", () => {
 
       expect(defaultProps.onReset).not.toHaveBeenCalled();
       expect(defaultProps.onUpdateCode).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("simulation speed control", () => {
+    it("renders speed control with correct label", () => {
+      render(<ControlPanel {...defaultProps} />);
+
+      expect(screen.getByLabelText("Model Speed")).toBeInTheDocument();
+      expect(screen.getByTestId("sim-speed-select")).toBeInTheDocument();
+    });
+
+    it("displays current speed value", () => {
+      render(<ControlPanel {...defaultProps} simSpeed={2} />);
+
+      const select = screen.getByTestId("sim-speed-select") as HTMLSelectElement;
+      expect(select.value).toBe("2");
+    });
+
+    it("renders speed options in correct order", () => {
+      render(<ControlPanel {...defaultProps} />);
+
+      const select = screen.getByTestId("sim-speed-select");
+      const options = select.querySelectorAll("option");
+
+      expect(options[0]).toHaveTextContent("0.5x");
+      expect(options[0]).toHaveValue("0.5");
+      expect(options[1]).toHaveTextContent("1x");
+      expect(options[1]).toHaveValue("1");
+      expect(options[2]).toHaveTextContent("2x");
+      expect(options[2]).toHaveValue("2");
+    });
+
+    it("calls onChangeSimSpeed when speed is changed", () => {
+      render(<ControlPanel {...defaultProps} />);
+
+      const select = screen.getByTestId("sim-speed-select");
+
+      fireEvent.change(select, { target: { value: "0.5" } });
+      expect(defaultProps.onChangeSimSpeed).toHaveBeenCalledWith(0.5);
+
+      fireEvent.change(select, { target: { value: "2" } });
+      expect(defaultProps.onChangeSimSpeed).toHaveBeenCalledWith(2);
+
+      expect(defaultProps.onChangeSimSpeed).toHaveBeenCalledTimes(2);
     });
   });
 });

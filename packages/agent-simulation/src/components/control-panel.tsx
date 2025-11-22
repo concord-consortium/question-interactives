@@ -1,4 +1,5 @@
 import React from "react";
+import { SIM_SPEED_STEPS } from "../constants";
 
 import PauseIcon from "../assets/pause-icon.svg";
 import PlayIcon from "../assets/run-icon.svg";
@@ -12,6 +13,8 @@ interface IProps {
   hasBeenStarted: boolean;
   hasCodeSource: boolean;
   paused: boolean;
+  simSpeed: number;
+  onChangeSimSpeed: (newSpeed: number) => void;
   onPlayPause: () => void;
   onReset: () => void;
   onUpdateCode: () => void;
@@ -22,6 +25,8 @@ export const ControlPanel = ({
   hasBeenStarted,
   hasCodeSource,
   paused,
+  simSpeed,
+  onChangeSimSpeed,
   onPlayPause,
   onReset,
   onUpdateCode,
@@ -59,6 +64,23 @@ export const ControlPanel = ({
       >
         <ResetIcon className={css.buttonIcon} />
       </button>
+      <div className={css.simSpeedControl}>
+        <label htmlFor="sim-speed-select">Model Speed</label>
+        <select
+          data-testid="sim-speed-select"
+          id="sim-speed-select"
+          value={simSpeed}
+          onChange={(e) => onChangeSimSpeed(Number(e.target.value))}
+        >
+          {Object.entries(SIM_SPEED_STEPS)
+            .sort(([, a], [, b]) => a - b)
+            .map(([label, value]) => (
+              <option key={label} value={value}>
+                {label}x
+              </option>
+            ))}
+        </select>
+      </div>
     </div>
   );
 };
