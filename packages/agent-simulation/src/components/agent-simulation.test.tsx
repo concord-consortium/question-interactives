@@ -7,7 +7,7 @@ import {
 import { AgentSimulationComponent } from "./agent-simulation";
 import { IAuthoredState, IInteractiveState } from "./types";
 import * as AA from "@gjmcn/atomic-agents";
-import * as AV from "@gjmcn/atomic-agents-vis";
+import * as AV from "@concord-consortium/atomic-agents-vis";
 import { useLinkedInteractiveId } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
 import { AgentSimulation } from "../models/agent-simulation";
 

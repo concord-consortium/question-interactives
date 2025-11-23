@@ -1,5 +1,5 @@
 import * as AA from "@gjmcn/atomic-agents";
-import * as AV from "@gjmcn/atomic-agents-vis";
+import * as AV from "@concord-consortium/atomic-agents-vis";
 import React, { useEffect, useRef, useState } from "react";
 
 import {
