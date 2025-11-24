@@ -182,7 +182,6 @@ describe("widget-layout-calculator", () => {
     describe("spanToMatchTall flag", () => {
       it("should mark short widget to match tall when exactly one short next to tall", () => {
         const result = computeLayoutForAllWidgets(["tall", "short"]);
-
         expect(result[1].spanToMatchTall).toBe(true);
       });
 
