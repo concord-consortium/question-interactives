@@ -36,6 +36,8 @@ declare module "@concord-consortium/atomic-agents-vis" {
     app: any;
     /** Convenience: the canvas element used by PIXI. */
     canvas: HTMLCanvasElement;
+    /** Current simulation speed multiplier. */
+    simSpeed?: number;
     /** Clean up textures, listeners, DOM, etc. */
     destroy(): void;
     /** Recompute size/layout, if supported. */

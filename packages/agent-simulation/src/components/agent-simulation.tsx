@@ -48,9 +48,9 @@ export const AgentSimulationComponent = ({
   const simRef = useRef<AgentSimulation | null>(null);
   const [hasBeenStarted, setHasBeenStarted] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(ZOOM_DEFAULT);
-  const simSpeedRef = useRef(interactiveState?.simSpeed ?? SIM_SPEED_DEFAULT);
   const animationFrameRef = useRef<number | null>(null);
   const visRef = useRef<AV.VisHandle | null>(null);
+  const currentSimSpeed = visRef.current?.simSpeed ?? interactiveState?.simSpeed ?? SIM_SPEED_DEFAULT;
 
   const setBlocklyCode = (newCode: string) => {
     _setBlocklyCode(newCode);
@@ -128,7 +128,8 @@ export const AgentSimulationComponent = ({
     }
 
     // Visualize and start the simulation
-    visRef.current = AV.vis(simRef.current.sim, { speed: simSpeedRef.current, target: containerRef.current });
+    const currentSpeed = visRef.current?.simSpeed ?? interactiveState?.simSpeed ?? SIM_SPEED_DEFAULT;
+    visRef.current = AV.vis(simRef.current.sim, { speed: currentSpeed, target: containerRef.current });
 
     // Pause the sim after a frame.
     // We need to let the sim run for a frame so actors created in setup have a chance to get added to the sim.
@@ -146,6 +147,8 @@ export const AgentSimulationComponent = ({
       container?.replaceChildren();
       oldSim.destroy();
     };
+    // interactiveState?.simSpeed is intentionally NOT in deps to avoid resetting sim when speed changes
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [blocklyCode, code, gridHeight, gridStep, gridWidth, resetCount]);
 
   // Cleanup animation frames on unmount
@@ -186,10 +189,8 @@ export const AgentSimulationComponent = ({
   };
 
   const handleChangeSimSpeed = (newSpeed: number) => {
-    const oldSpeed = simSpeedRef.current;
+    const oldSpeed = currentSimSpeed;
     log("change-simulation-speed", { oldSpeed, newSpeed });
-
-    simSpeedRef.current = newSpeed;
 
     visRef.current?.setSimSpeed?.(newSpeed);
 
@@ -261,7 +262,7 @@ export const AgentSimulationComponent = ({
         hasBeenStarted={hasBeenStarted}
         hasCodeSource={hasCodeSource}
         paused={paused}
-        simSpeed={simSpeedRef.current}
+        simSpeed={currentSimSpeed}
         onChangeSimSpeed={handleChangeSimSpeed}
         onPlayPause={handlePlayPause}
         onReset={handleReset}
