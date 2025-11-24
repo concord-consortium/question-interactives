@@ -129,6 +129,8 @@ export const AgentSimulationComponent = ({
 
     // Visualize and start the simulation
     const currentSpeed = visRef.current?.simSpeed ?? interactiveState?.simSpeed ?? SIM_SPEED_DEFAULT;
+    // Clean up any existing vis before creating a new one.
+    visRef.current?.destroy();
     visRef.current = AV.vis(simRef.current.sim, { speed: currentSpeed, target: containerRef.current });
 
     // Pause the sim after a frame.
