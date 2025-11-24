@@ -1,5 +1,5 @@
 import * as AA from "@gjmcn/atomic-agents";
-import * as AV from "@gjmcn/atomic-agents-vis";
+import * as AV from "@concord-consortium/atomic-agents-vis";
 import React, { useEffect, useRef, useState } from "react";
 
 import {
@@ -11,11 +11,11 @@ import {
 import {
   useLinkedInteractiveId
 } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
+import { SIM_SPEED_DEFAULT, ZOOM_ANIMATION_DURATION, ZOOM_DEFAULT, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from "../constants";
 import { AgentSimulation } from "../models/agent-simulation";
-import { ZOOM_ANIMATION_DURATION, ZOOM_DEFAULT, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from "../constants";
+import { ControlPanel } from "./control-panel";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { Widgets } from "./widgets";
-import { ControlPanel } from "./control-panel";
 import { ZoomControls } from "./zoom-controls";
 
 import ModelIcon from "../assets/model-icon.svg";
@@ -42,19 +42,22 @@ export const AgentSimulationComponent = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const codeUpdateAvailable = !!(externalBlocklyCode && blocklyCode !== externalBlocklyCode);
   const hasCodeSource = !!dataSourceInteractive;
-  const [paused, setPaused] = useState(true);
+  const [paused, setPaused] = useState(false);
   const [error, setError] = useState("");
   const [resetCount, setResetCount] = useState(0);
   const simRef = useRef<AgentSimulation | null>(null);
   const [hasBeenStarted, setHasBeenStarted] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(ZOOM_DEFAULT);
+  const simSpeedRef = useRef(interactiveState?.simSpeed ?? SIM_SPEED_DEFAULT);
+  const animationFrameRef = useRef<number | null>(null);
+  const visRef = useRef<AV.VisHandle | null>(null);
 
   const setBlocklyCode = (newCode: string) => {
     _setBlocklyCode(newCode);
     setInteractiveState?.(prev => ({
-      ...prev,
       answerType: "interactive_state",
       version: 1,
+      ...prev,
       blocklyCode: newCode
     }));
   };
@@ -117,14 +120,17 @@ export const AgentSimulationComponent = ({
       // For more info, see https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval
       const simFunction = eval?.(functionCode);
       const { globals, sim } = simRef.current;
+
       simFunction?.(sim, AA, AV, globals, simRef.current.addWidget.bind(simRef.current));
     } catch (e) {
       setError(`Error setting up simulation: ${String(e)}`);
       return;
     }
 
-    // Visualize and start the simulation
-    AV.vis(simRef.current.sim, { target: containerRef.current });
+    // Visualize and start the simulation after disposing any existing vis first.
+    visRef.current?.destroy();
+    visRef.current = AV.vis(simRef.current.sim, { speed: simSpeedRef.current, target: containerRef.current });
+
     // Pause the sim after a frame.
     // We need to let the sim run for a frame so actors created in setup have a chance to get added to the sim.
     setTimeout(() => {
@@ -142,6 +148,16 @@ export const AgentSimulationComponent = ({
       oldSim.destroy();
     };
   }, [blocklyCode, code, gridHeight, gridStep, gridWidth, resetCount]);
+
+  // Cleanup animation frames on unmount
+  useEffect(() => {
+    return () => {
+      if (animationFrameRef.current !== null) {
+        cancelAnimationFrame(animationFrameRef.current);
+        animationFrameRef.current = null;
+      }
+    };
+  }, []);
 
   const handlePlayPause = () => {
     if (simRef.current) {
@@ -170,6 +186,21 @@ export const AgentSimulationComponent = ({
     setHasBeenStarted(false);
   };
 
+  const handleChangeSimSpeed = (newSpeed: number) => {
+    const oldSpeed = simSpeedRef.current;
+    log("change-simulation-speed", { oldSpeed, newSpeed });
+
+    simSpeedRef.current = newSpeed;
+    visRef.current?.setSimSpeed?.(newSpeed);
+
+    setInteractiveState?.(prev => ({
+      answerType: "interactive_state",
+      version: 1,
+      ...prev,
+      simSpeed: newSpeed
+    }));
+  };
+
   const handleZoomIn = () => {
     const newZoomLevel = Math.min(zoomLevel + ZOOM_STEP, ZOOM_MAX);
     log("zoom-in", { fromZoomLevel: zoomLevel, toZoomLevel: newZoomLevel });
@@ -184,6 +215,11 @@ export const AgentSimulationComponent = ({
 
   const handleFitAll = () => {
     log("fit-all-in-view", { fromZoomLevel: zoomLevel, toZoomLevel: ZOOM_DEFAULT });
+
+    if (animationFrameRef.current !== null) {
+      cancelAnimationFrame(animationFrameRef.current);
+      animationFrameRef.current = null;
+    }
     
     // Smoothly scroll back to top-left while zooming to ZOOM_DEFAULT.
     // This prevents jittering when the top-left corner is out of view.
@@ -202,11 +238,13 @@ export const AgentSimulationComponent = ({
         wrapper.scrollTop = startScrollTop * (1 - easeOut);
 
         if (progress < 1) {
-          requestAnimationFrame(animate);
+          animationFrameRef.current = requestAnimationFrame(animate);
+        } else {
+          animationFrameRef.current = null;
         }
       };
 
-      requestAnimationFrame(animate);
+      animationFrameRef.current = requestAnimationFrame(animate);
     }
     
     setZoomLevel(ZOOM_DEFAULT);
@@ -223,6 +261,8 @@ export const AgentSimulationComponent = ({
         hasBeenStarted={hasBeenStarted}
         hasCodeSource={hasCodeSource}
         paused={paused}
+        simSpeed={simSpeedRef.current}
+        onChangeSimSpeed={handleChangeSimSpeed}
         onPlayPause={handlePlayPause}
         onReset={handleReset}
         onUpdateCode={handleUpdateCode}
