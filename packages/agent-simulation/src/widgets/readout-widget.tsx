@@ -17,7 +17,12 @@ const ReadoutWidget = observer(function ReadoutWidget({ data, defaultValue, glob
 
   return (
     <div className={css.readoutWidget} style={style}>
-      {`${sim.globals.get(globalKey)}${labelString}`}
+      <label id={`label-${globalKey}`} className={css.readoutWidget_label}>
+        {labelString}
+      </label>
+      <output aria-labelledby={`label-${globalKey}`}>
+        {sim.globals.get(globalKey)} {data?.unit ? data.unit : ""}
+      </output>
     </div>
   );
 });
