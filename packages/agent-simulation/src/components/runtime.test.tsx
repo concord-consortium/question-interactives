@@ -5,6 +5,8 @@ import { DemoAuthoredState } from "./types";
 import { InitMessageContext } from "@concord-consortium/question-interactives-helpers/src/hooks/use-context-init-message";
 import { useInitMessage } from "@concord-consortium/lara-interactive-api";
 import { DynamicTextTester } from "@concord-consortium/question-interactives-helpers/src/utilities/dynamic-text-tester";
+import { ObjectStorageConfig, ObjectStorageProvider } from "@concord-consortium/object-storage";
+
 import { AgentSimulationComponent } from "./agent-simulation";
 
 const useInitMessageMock = useInitMessage as jest.Mock;
@@ -27,6 +29,11 @@ const initMessage = {
 };
 useInitMessageMock.mockReturnValue(initMessage);
 
+const objectStorageConfig: ObjectStorageConfig = {
+  version: 1,
+  type: "demo",
+};
+
 describe("Agent Simulation runtime", () => {
   beforeEach(() => {
     useInitMessageMock.mockClear();
@@ -36,7 +43,9 @@ describe("Agent Simulation runtime", () => {
     const wrapper = mount(
       <InitMessageContext.Provider value={initMessage as any}>
         <DynamicTextTester>
-          <Runtime authoredState={DemoAuthoredState} />
+          <ObjectStorageProvider config={objectStorageConfig}>
+            <Runtime authoredState={DemoAuthoredState} />
+          </ObjectStorageProvider>
         </DynamicTextTester>
       </InitMessageContext.Provider>
     );

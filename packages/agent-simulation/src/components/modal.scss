@@ -1,0 +1,137 @@
+.modalOverlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+
+  .modalContent {
+    background: #fff;
+    border-radius: 4px;
+    padding: 0;
+    min-width: 320px;
+    max-width: 75%;
+    box-shadow: 0 2px 16px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
+
+    .titleBar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      width: 100%;
+      border-radius: 4px;
+
+      &.teal {
+        background: var(--cc-teal-light-5);
+        color: var(--cc-charcoal);
+      }
+      &.orange {
+        background: var(--cc-orange-light-4);
+        color: var(--cc-charcoal);
+      }
+
+      .titleIcon {
+        flex-shrink: 0;
+      }
+
+      .modalTitle {
+        flex-grow: 1;
+        text-align: center;
+        font-weight: bold;
+      }
+
+      .closeButton {
+        background: none;
+        border: none;
+        font-size: 2rem;
+        line-height: 1;
+        cursor: pointer;
+        padding: 0;
+        width: 32px;
+        height: 32px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #666;
+        flex-shrink: 0;
+
+        &.teal {
+          svg {
+            path {
+              fill: var(--cc-teal-dark-1);
+            }
+          }
+        }
+        &.orange {
+          svg {
+            path {
+              fill: var(--cc-orange-dark-1);
+            }
+          }
+
+          &:active {
+            background-color: var(--cc-orange-light-2);
+          }
+          &:hover, &:focus {
+            background-color: var(--cc-orange-light-3);
+          }
+        }
+      }
+    }
+
+    .modalBody {
+      padding: 15px;
+
+      .modalMessage {
+        padding: 15px 30px 30px 30px;
+        text-align: center;
+      }
+
+      .modalActions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 10px;
+
+        button {
+          padding: 4px 8px;
+          border: solid 1.5px #949494;
+          box-sizing: border-box;
+          display: flex;
+          justify-content: center;
+
+          &.teal {
+            &:active {
+              background: var(--cc-teal-light-3);
+            }
+            &:hover, &:focus {
+              background: var(--cc-teal-light-3);
+            }
+          }
+          &.orange {
+            &:active {
+              background: var(--cc-orange-light-2);
+            }
+            &:hover, &:focus {
+              background: var(--cc-orange-light-3);
+            }
+          }
+        }
+
+        .modalConfirmButton {
+          &.teal {
+            background: var(--cc-teal-light-4);
+          }
+          &.orange {
+            background: var(--cc-orange-light-4);
+          }
+        }
+      }
+    }
+  }
+}
