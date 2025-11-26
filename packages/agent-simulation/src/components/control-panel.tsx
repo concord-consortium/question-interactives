@@ -1,4 +1,5 @@
 import React from "react";
+import classNames from "classnames";
 
 import { IRecording } from "./types";
 
@@ -11,7 +12,6 @@ import StopIcon from "../assets/stop-icon.svg";
 import DeleteRecordingIcon from "../assets/delete-recording-icon.svg";
 
 import css from "./control-panel.scss";
-import classNames from "classnames";
 
 interface IProps {
   codeUpdateAvailable: boolean;

@@ -83,19 +83,18 @@
       > div {
         // Since .topBar is now block, its direct children (the divs) will stack.
         // We can adjust their styling if needed, but they will inherently stack.
-        // You might want to remove flex-grow to ensure they take full width.
         flex-grow: unset;
-        height: 50px; // Maintain a height for each stacked div if necessary
+        height: 50px;
       }
 
       .topBar {
-        border-bottom: none; // Remove bottom border when stacked
+        border-bottom: none;
       }
 
       .leftSide {
-        width: 100%; // Make leftSide take full width when stacked
-        border-right: none; // Remove right border when stacked
-        border-bottom: solid 1px var(--cc-teal); // Add bottom border for separation
+        width: 100%;
+        border-right: none;
+        border-bottom: solid 1px var(--cc-teal);
       }
     }
   }
