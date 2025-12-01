@@ -1,7 +1,7 @@
 import React from "react";
 import { observer } from "mobx-react-lite";
 
-import { IWidgetComponentProps } from "../types/widgets";
+import { IWidgetComponentProps, ReadoutWidgetData } from "../types/widgets";
 import { registerWidget } from "./widget-registration";
 
 import css from "./readout-widget.scss";
@@ -44,7 +44,7 @@ const formatValue = (value: number, formatType?: string, precision?: number): st
   }
 };
 
-export const ReadoutWidget = observer(function ReadoutWidget({ data, defaultValue, globalKey, sim }: IWidgetComponentProps) {
+export const ReadoutWidget = observer(function ReadoutWidget({ data, globalKey, sim }: IWidgetComponentProps<ReadoutWidgetData>) {
   const labelString = data?.label ? ` ${data.label}` : "";
   const sanitizedGlobalKey = sanitizeGlobalKey(globalKey);
   const style = {
@@ -53,10 +53,11 @@ export const ReadoutWidget = observer(function ReadoutWidget({ data, defaultValu
   };
 
   const value = sim.globals.get(globalKey);
-  const formattedValue = typeof value === "number" 
-    ? formatValue(value, data?.formatType, data?.precision)
+  const formatType = data?.formatType ?? "integer";
+  const formattedValue = typeof value === "number"
+    ? formatValue(value, formatType, data?.precision)
     : String(value);
-  const unit = data?.formatType === "percent" ? "%" : (data?.unit || "");
+  const unit = formatType === "percent" ? "%" : (data?.unit ?? "");
 
   return (
     <div className={css.readoutWidget} style={style}>
