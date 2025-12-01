@@ -2,6 +2,8 @@ import { ComponentType } from "react";
 import { AgentSimulation } from "../models/agent-simulation";
 import { GlobalValue } from "./globals";
 
+export type WidgetSize = "short" | "tall" | "very-tall";
+
 export type WidgetData = any;
 export interface IWidgetProps {
   data?: WidgetData;

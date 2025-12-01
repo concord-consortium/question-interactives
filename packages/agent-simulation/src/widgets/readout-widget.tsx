@@ -4,6 +4,8 @@ import { observer } from "mobx-react-lite";
 import { IWidgetComponentProps } from "../types/widgets";
 import { registerWidget } from "./widget-registration";
 
+import css from "./readout-widget.scss";
+
 export const readoutWidgetType = "readout";
 
 const ReadoutWidget = observer(function ReadoutWidget({ data, defaultValue, globalKey, sim }: IWidgetComponentProps) {
@@ -13,10 +15,15 @@ const ReadoutWidget = observer(function ReadoutWidget({ data, defaultValue, glob
     color: data?.color
   };
 
-  return <div style={style}>{`${sim.globals.get(globalKey)}${labelString}`}</div>;
+  return (
+    <div className={css.readoutWidget} style={style}>
+      {`${sim.globals.get(globalKey)}${labelString}`}
+    </div>
+  );
 });
 
 registerWidget({
   component: ReadoutWidget,
+  size: "short",
   type: readoutWidgetType
 });

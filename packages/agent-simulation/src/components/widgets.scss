@@ -1,0 +1,56 @@
+@import "../../../helpers/src/styles/helpers.scss";
+
+$widget-height-short: 40px;
+$widget-height-tall: 80px;
+$widget-height-very-tall: 120px;
+
+.widgetsContainer {
+  align-items: start;
+  background: var(--cc-teal-light-1);
+  border: 1px solid var(--cc-teal-light-1);
+  column-gap: 1px;
+  display: grid;
+  grid-auto-rows: $widget-height-short;
+  grid-template-columns: repeat(2, 1fr);
+  row-gap: 1px;
+}
+
+.widget {
+  background: var(--cc-teal-light-5);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  padding: 8px;
+}
+
+// Widget size classes
+.widgetShort {
+  grid-column: span 1;
+  grid-row: span 1;
+  height: $widget-height-short; // 1 row = 40px
+}
+
+.widgetTall {
+  grid-column: span 1;
+  grid-row: span 2;
+  height: calc(2 * #{$widget-height-short} + 1px); // 2 rows + 1px gap = 81px
+}
+
+.widgetVeryTall {
+  grid-column: span 2;
+  grid-row: span 3;
+  height: calc(3 * #{$widget-height-short} + 2px); // 3 rows + 2px gaps = 122px
+}
+
+// Full width modifier - applied when a widget is alone in its band
+.widgetFullWidth {
+  grid-column: span 2;
+}
+
+// Full height modifier - applied to a short widget that should match the height of a neighboring tall widget
+.widgetMatchTallHeight {
+  grid-row: span 2;
+  height: calc(2 * #{$widget-height-short} + 1px); // Match tall height: 81px
+  justify-content: center;
+}
