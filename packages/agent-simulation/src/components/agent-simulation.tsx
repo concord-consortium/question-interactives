@@ -55,7 +55,7 @@ const getThumbnail = (snapshot?: string): Promise<string | undefined> => {
 
 const maxRecordingTime = 20 * 1000; // 20 seconds
 
-interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
+interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> { }
 
 export const AgentSimulationComponent = ({
   authoredState, interactiveState, setInteractiveState, report
@@ -202,7 +202,7 @@ export const AgentSimulationComponent = ({
       return;
     }
 
-    // reset the tick data
+    // save the globals at each tick for recording
     let tick = 0;
     tickDataRef.current = [];
     const afterTick = () => {
@@ -214,10 +214,8 @@ export const AgentSimulationComponent = ({
     };
 
     // Visualize and start the simulation
-    AV.vis(simRef.current.sim, { target: containerRef.current, preserveDrawingBuffer: true, afterTick});
+    AV.vis(simRef.current.sim, { target: containerRef.current, preserveDrawingBuffer: true, afterTick });
 
-    // Visualize and start the simulation
-    AV.vis(simRef.current.sim, { target: containerRef.current, preserveDrawingBuffer: true });
     simRef.current.sim.pause(true);
     setPaused(true);
 
@@ -248,7 +246,7 @@ export const AgentSimulationComponent = ({
 
         if (paused) {
           const pausedRecordings = [...recordings];
-          log("start-record-simulation", {startedAt});
+          log("start-record-simulation", { startedAt });
           pausedRecordings[currentRecordingIndex] = { startedAt };
 
           // Update the recording duration every 1/2 second while recording
@@ -269,7 +267,7 @@ export const AgentSimulationComponent = ({
 
           setRecordings(pausedRecordings);
         } else {
-          log("stop-record-simulation", {startedAt, duration});
+          log("stop-record-simulation", { startedAt, duration });
 
           if (!currentRecording.objectId) {
             const notPausedRecordings = [...recordings];
@@ -308,13 +306,16 @@ export const AgentSimulationComponent = ({
                 });
               }
 
+              const cols = Object.keys(tickDataRef.current[0] || simRef.current?.globals.values() || {});
+              const rows = tickDataRef.current.length > 0 ? tickDataRef.current.map(tickEntry => Object.values(tickEntry)) : [];
               typedObject.addDataTable({
                 name: "Simulation Tick Data",
                 description,
                 subType: "simulation-tick-data",
-                cols: Object.keys(tickDataRef.current[0] || {}),
-                rows: tickDataRef.current.map(tickEntry => Object.values(tickEntry))
+                cols,
+                rows
               });
+              console.log("typedObject", typedObject);
 
               const finalCode = blocklyCode || code;
               typedObject.addText({
@@ -497,7 +498,7 @@ export const AgentSimulationComponent = ({
         />
       </div>
       <Widgets sim={simRef.current} />
-      { blocklyCode && (
+      {blocklyCode && (
         <>
           {showBlocklyCode &&
             <div className={css.code}>
