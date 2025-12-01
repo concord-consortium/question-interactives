@@ -1,7 +1,7 @@
 import * as AA from "@gjmcn/atomic-agents";
 import * as AV from "@gjmcn/atomic-agents-vis";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useObjectStorage } from "@concord-consortium/object-storage";
+import { useObjectStorage, TypedObject } from "@concord-consortium/object-storage";
 
 import {
   addLinkedInteractiveStateListener, removeLinkedInteractiveStateListener, log
@@ -28,8 +28,8 @@ import DeleteRecordingIcon from "../assets/delete-recording-icon.svg";
 
 import css from "./agent-simulation.scss";
 
+const thumbnailSize = 34; // size of the recording thumbnail in pixels
 const getThumbnail = (snapshot?: string): Promise<string | undefined> => {
-  const thumbnailSize = 34; // size of the recording thumbnail in pixels
 
   return new Promise<string | undefined>(resolve => {
     if (snapshot) {
@@ -52,6 +52,8 @@ const getThumbnail = (snapshot?: string): Promise<string | undefined> => {
     }
   });
 };
+
+const maxRecordingTime = 20 * 1000; // 20 seconds
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
 
@@ -85,6 +87,8 @@ export const AgentSimulationComponent = ({
   const recordStartTimeRef = useRef<number | null>(null);
   const recordUpdateDurationIntervalRef = useRef<number | null>(null);
   const [showDeleteRecordingConfirm, setShowDeleteRecordingConfirm] = useState(false);
+  const tickDataRef = useRef<{ [key: string]: any }[]>([]);
+  const handlePlayPauseRef: React.MutableRefObject<() => void> = useRef(() => undefined);
 
   const timeFormatter = useMemo(() => {
     return new Intl.DateTimeFormat(undefined, {
@@ -123,6 +127,16 @@ export const AgentSimulationComponent = ({
     return undefined;
   }, [currentRecordingIndex, recordings]);
   const isRecording = useMemo(() => !!currentRecording && !paused, [currentRecording, paused]);
+
+  const getRecordingInfo = useCallback(() => {
+    const startedAt = currentRecording?.startedAt;
+    if (startedAt) {
+      const duration = currentRecording?.duration ?? Date.now() - startedAt;
+      const durationInSeconds = Math.floor(duration / 1000);
+      const durationString = `${durationInSeconds} ${durationInSeconds === 1 ? "sec" : "secs"}`;
+      return { formattedTime: timeFormatter.format(startedAt), durationString };
+    }
+  }, [currentRecording, timeFormatter]);
 
   // Keep the blockly code updated with the linked interactive
   useEffect(() => {
@@ -188,6 +202,20 @@ export const AgentSimulationComponent = ({
       return;
     }
 
+    // reset the tick data
+    let tick = 0;
+    tickDataRef.current = [];
+    const afterTick = () => {
+      if (simRef.current) {
+        const { globals } = simRef.current;
+        tickDataRef.current.push({ tick, ...globals.values() });
+        tick++;
+      }
+    };
+
+    // Visualize and start the simulation
+    AV.vis(simRef.current.sim, { target: containerRef.current, preserveDrawingBuffer: true, afterTick});
+
     // Visualize and start the simulation
     AV.vis(simRef.current.sim, { target: containerRef.current, preserveDrawingBuffer: true });
     simRef.current.sim.pause(true);
@@ -226,12 +254,17 @@ export const AgentSimulationComponent = ({
           // Update the recording duration every 1/2 second while recording
           recordUpdateDurationIntervalRef.current = window.setInterval(() => {
             const updatedDuration = Date.now() - startedAt;
-            const updatedRecordings = [...pausedRecordings];
-            updatedRecordings[currentRecordingIndex] = {
-              ...updatedRecordings[currentRecordingIndex],
-              duration: updatedDuration
-            };
-            setRecordings(updatedRecordings);
+            if (updatedDuration <= maxRecordingTime) {
+              const updatedRecordings = [...pausedRecordings];
+              updatedRecordings[currentRecordingIndex] = {
+                ...updatedRecordings[currentRecordingIndex],
+                duration: updatedDuration
+              };
+              setRecordings(updatedRecordings);
+            } else {
+              // stop recording after maxRecordingTime
+              handlePlayPauseRef.current();
+            }
           }, 500);
 
           setRecordings(pausedRecordings);
@@ -247,14 +280,56 @@ export const AgentSimulationComponent = ({
               const snapshot = canvas?.toDataURL("image/png");
               const thumbnail = await getThumbnail(snapshot);
 
-              // record no data for now (we will implement real recording in the next story)
-              const id = objectStorage.genId();
-              objectStorage.add({
-                metadata: {},
-                data: {}
-              }, { id });
+              // save the recording data in a TypedObject
+              const info = getRecordingInfo();
+              const description = info ? `${modelName}: ${info.formattedTime} (${info.durationString})` : modelName;
+              const typedObject = new TypedObject({
+                name: "Simulation Recording",
+                description,
+              });
+
+              if (snapshot && canvas) {
+                typedObject.addImage({
+                  name: "Final Simulation Screenshot",
+                  subType: "simulation-screenshot",
+                  url: snapshot,
+                  width: canvas.width,
+                  height: canvas.height,
+                });
+              }
+
+              if (thumbnail) {
+                typedObject.addImage({
+                  name: "Final Simulation Thumbnail",
+                  subType: "simulation-thumbnail",
+                  url: thumbnail,
+                  width: thumbnailSize,
+                  height: thumbnailSize,
+                });
+              }
+
+              typedObject.addDataTable({
+                name: "Simulation Tick Data",
+                description,
+                subType: "simulation-tick-data",
+                cols: Object.keys(tickDataRef.current[0] || {}),
+                rows: tickDataRef.current.map(tickEntry => Object.values(tickEntry))
+              });
+
+              const finalCode = blocklyCode || code;
+              typedObject.addText({
+                name: "Simulation Code",
+                subType: "simulation-code",
+                text: finalCode
+              });
+
+              const { id } = typedObject;
+              objectStorage.add(typedObject, { id });
               notPausedRecordings[currentRecordingIndex] = { objectId: id, startedAt, duration, thumbnail };
               setRecordings(notPausedRecordings);
+
+              // Clear out the tick data for the next recording
+              tickDataRef.current = [];
             };
 
             save();
@@ -271,7 +346,11 @@ export const AgentSimulationComponent = ({
         setHasBeenStarted(true);
       }
     }
-  }, [currentRecording, paused, hasBeenStarted, recordings, currentRecordingIndex, setRecordings, objectStorage]);
+  }, [currentRecording, paused, hasBeenStarted, recordings, currentRecordingIndex, setRecordings, objectStorage, blocklyCode, code, getRecordingInfo]);
+
+  // a ref is used here as handlePlayPause is used in a setInterval in handlePlayPause above
+  // to stop recording after maxRecordingTime
+  handlePlayPauseRef.current = handlePlayPause;
 
   const handleReset = () => {
     const newResetCount = resetCount + 1;
@@ -352,14 +431,11 @@ export const AgentSimulationComponent = ({
   }, [currentRecordingIndex, recordings, setRecordings]);
 
   const renderRecordingInfo = () => {
-    const startedAt = currentRecording?.startedAt;
-    if (startedAt) {
-      const duration = currentRecording?.duration ?? Date.now() - startedAt;
-      const durationInSeconds = Math.floor(duration / 1000);
-      const durationString = `${durationInSeconds} ${durationInSeconds === 1 ? "sec" : "secs"}`;
+    const info = getRecordingInfo();
+    if (info) {
       return (
         <span className={css.recordingInfo}>
-          {timeFormatter.format(startedAt)} ({durationString})
+          {info.formattedTime} ({info.durationString})
         </span>
       );
     }
