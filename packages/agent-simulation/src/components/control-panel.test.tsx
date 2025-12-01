@@ -8,11 +8,13 @@ describe("ControlPanel", () => {
     hasBeenStarted: false,
     hasCodeSource: true,
     paused: true,
+    currentRecording: undefined,
     simSpeed: 1,
     onChangeSimSpeed: jest.fn(),
     onPlayPause: jest.fn(),
     onReset: jest.fn(),
     onUpdateCode: jest.fn(),
+    onDeleteRecording: jest.fn(),
   };
 
   beforeEach(() => {

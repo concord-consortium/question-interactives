@@ -1,4 +1,6 @@
 import React from "react";
+import classnames from "classnames";
+
 import { ZOOM_MAX, ZOOM_MIN } from "../constants";
 
 import FitAllIcon from "../assets/fit-all-in-view-icon.svg";
@@ -20,7 +22,7 @@ export const ZoomControls = ({ zoomLevel, onFitAll, onZoomIn, onZoomOut }: ZoomC
     <div className={css.zoomControls}>
       <button
         aria-label="Fit all in view"
-        className={css.fitAllButton}
+        className={classnames(css.fitAllButton, css.fullOpacity)}
         data-testid="fit-all-in-view-button"
         disabled={zoomLevel === 1}
         title="Fit all in view"
@@ -30,7 +32,7 @@ export const ZoomControls = ({ zoomLevel, onFitAll, onZoomIn, onZoomOut }: ZoomC
       </button>
       <button
         aria-label="Zoom in"
-        className={css.zoomInButton}
+        className={classnames(css.zoomInButton, css.fullOpacity)}
         data-testid="zoom-in-button"
         title="Zoom in"
         disabled={zoomLevel >= ZOOM_MAX}
@@ -40,7 +42,7 @@ export const ZoomControls = ({ zoomLevel, onFitAll, onZoomIn, onZoomOut }: ZoomC
       </button>
       <button
         aria-label="Zoom out"
-        className={css.zoomOutButton}
+        className={classnames(css.zoomOutButton, css.fullOpacity)}
         data-testid="zoom-out-button"
         title="Zoom out"
         disabled={zoomLevel <= ZOOM_MIN}

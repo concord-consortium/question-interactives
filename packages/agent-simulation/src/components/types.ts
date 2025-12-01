@@ -20,6 +20,7 @@ export interface IInteractiveState extends IRuntimeInteractiveMetadata {
   blocklyCode?: string;
   simSpeed?: number;
   submitted?: boolean;
+  recordings: IRecordings;
 }
 
 export const DefaultAuthoredState: Omit<Required<IAuthoredState>, "questionSubType"|"required"|"prompt"> = {
@@ -44,3 +45,11 @@ export const DemoAuthoredState: IAuthoredState = {
   questionType: "iframe_interactive",
   version: 1,
 };
+
+export interface IRecording {
+  objectId?: string;
+  startedAt?: number;
+  duration?: number;
+  thumbnail?: string;
+}
+export type IRecordings = IRecording[];

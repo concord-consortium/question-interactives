@@ -1,0 +1,110 @@
+@import "../../../helpers/src/styles/helpers.scss";
+@import "./_shared-button-styles.scss";
+
+.recordingStrip {
+  background: var(--cc-teal-light-5);
+  color: var(--cc-charcoal);
+  border-bottom: solid 1px var(--cc-teal);
+  display: flex;
+  align-items: center;
+  padding: 0 8px 8px 8px;
+  width: 100%;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.leftButton,
+.rightButton {
+  @include interactive-button-base;
+  flex-shrink: 0;
+  margin-top: 8px;
+}
+
+.recordings {
+  flex: 1;
+  min-width: 0;
+  width: 0;
+  display: flex;
+  overflow-x: auto;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE and Edge */
+  padding-right: 8px;
+
+  &::-webkit-scrollbar {
+    display: none; /* Chrome, Safari, Opera */
+  }
+}
+
+.recordingButton {
+  @include interactive-button-base;
+  flex-shrink: 0;
+  position: relative;
+  margin: 8px 0 0 8px;
+
+  &.currentRecordingButton {
+    border: 3px solid var(--cc-orange-dark-1);
+  }
+
+  .recordingIndex {
+    position: absolute;
+    top: -6px;
+    left: -6px;
+    background: white;
+    color: black;
+    border-radius: 50%;
+    width: 14px;
+    height: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 9px;
+    font-weight: bold;
+    line-height: 1;
+
+    &.currentRecording {
+      background: var(--cc-orange-dark-1);
+      color: white;
+    }
+  }
+
+  &:hover {
+    .recordingIndex {
+      background: var(--cc-orange-light-2);
+    }
+  }
+}
+
+.newRecordingButton {
+  @include interactive-button-base;
+  @include interactive-button-orange;
+
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  margin: 8px 0 0 8px;
+  padding: 0;
+
+  svg {
+    display: block;
+    width: 16px;
+    height: 16px;
+  }
+
+  .newRecordingLabel {
+    font-size: 10px;
+    text-align: center;
+    line-height: 1;
+  }
+}
+
+.leftArrow {
+  transform: rotate(90deg);
+}
+
+.rightArrow {
+  transform: rotate(-90deg);
+}

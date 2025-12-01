@@ -1,6 +1,7 @@
 import * as AA from "@gjmcn/atomic-agents";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useObjectStorage } from "@concord-consortium/object-storage";
 import * as AV from "@concord-consortium/atomic-agents-vis";
-import React, { useEffect, useRef, useState } from "react";
 
 import {
   addLinkedInteractiveStateListener, removeLinkedInteractiveStateListener, log
@@ -13,14 +14,44 @@ import {
 } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
 import { SIM_SPEED_DEFAULT, ZOOM_ANIMATION_DURATION, ZOOM_DEFAULT, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from "../constants";
 import { AgentSimulation } from "../models/agent-simulation";
+import { IAuthoredState, IInteractiveState, IRecording, IRecordings } from "./types";
 import { ControlPanel } from "./control-panel";
-import { IAuthoredState, IInteractiveState } from "./types";
 import { Widgets } from "./widgets";
 import { ZoomControls } from "./zoom-controls";
+import { RecordingStrip } from "./recording-strip";
+import { Modal } from "./modal";
 
 import ModelIcon from "../assets/model-icon.svg";
+import ReturnToModelIcon from "../assets/return-to-model-icon.svg";
+import RecordingIcon from "../assets/recording-icon.svg";
+import DeleteRecordingIcon from "../assets/delete-recording-icon.svg";
 
 import css from "./agent-simulation.scss";
+
+const getThumbnail = (snapshot?: string): Promise<string | undefined> => {
+  const thumbnailSize = 34; // size of the recording thumbnail in pixels
+
+  return new Promise<string | undefined>(resolve => {
+    if (snapshot) {
+      const thumbCanvas = document.createElement("canvas");
+      thumbCanvas.width = thumbnailSize;
+      thumbCanvas.height = thumbnailSize;
+      const ctx = thumbCanvas.getContext("2d");
+      if (ctx) {
+        const img = new window.Image();
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0, thumbnailSize, thumbnailSize);
+          resolve(thumbCanvas.toDataURL("image/png"));
+        };
+        img.src = snapshot;
+      } else {
+        resolve(undefined);
+      }
+    } else {
+      resolve(undefined);
+    }
+  });
+};
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
 
@@ -30,12 +61,14 @@ export const AgentSimulationComponent = ({
   const { code, gridHeight, gridStep, gridWidth } = authoredState;
   // The blockly code we're using, which doesn't get updated until the user accepts newer code
   const [blocklyCode, _setBlocklyCode] = useState<string>(interactiveState?.blocklyCode || "");
+  const [recordings, _setRecordings] = useState<IRecordings>(interactiveState?.recordings || []);
+  const [currentRecordingIndex, setCurrentRecordingIndex] = useState<number>(-1);
   // The code we're receiving from blockly, which won't be used until the user accepts it
   const [externalBlocklyCode, setExternalBlocklyCode] = useState<string>("");
   const [showBlocklyCode, setShowBlocklyCode] = useState<boolean>(false);
   const dataSourceInteractive = useLinkedInteractiveId("dataSourceInteractive");
   // TODO: Eventually, users will be able to name a saved Blockly program. For details,
-  // see https://concord-consortium.atlassian.net/browse/QI-57 
+  // see https://concord-consortium.atlassian.net/browse/QI-57
   // For now, we use a default name. This should be updated to use the name value from
   // the Blockly interactive state when it's available.
   const modelName = "Model 1";
@@ -48,6 +81,18 @@ export const AgentSimulationComponent = ({
   const simRef = useRef<AgentSimulation | null>(null);
   const [hasBeenStarted, setHasBeenStarted] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(ZOOM_DEFAULT);
+  const objectStorage = useObjectStorage();
+  const recordStartTimeRef = useRef<number | null>(null);
+  const recordUpdateDurationIntervalRef = useRef<number | null>(null);
+  const [showDeleteRecordingConfirm, setShowDeleteRecordingConfirm] = useState(false);
+
+  const timeFormatter = useMemo(() => {
+    return new Intl.DateTimeFormat(undefined, {
+      hour: "2-digit",
+      minute: "2-digit",
+      second: "2-digit"
+    });
+  }, []);
   const simSpeedRef = useRef(interactiveState?.simSpeed ?? SIM_SPEED_DEFAULT);
   const animationFrameRef = useRef<number | null>(null);
   const visRef = useRef<AV.VisHandle | null>(null);
@@ -57,10 +102,28 @@ export const AgentSimulationComponent = ({
     setInteractiveState?.(prev => ({
       answerType: "interactive_state",
       version: 1,
-      ...prev,
-      blocklyCode: newCode
+      blocklyCode: newCode,
+      recordings: prev?.recordings ?? []
     }));
   };
+
+  const setRecordings = useCallback((newRecordings: IRecordings) => {
+    _setRecordings(newRecordings);
+    setInteractiveState?.(prev => ({
+      answerType: "interactive_state",
+      version: 1,
+      blocklyCode: prev?.blocklyCode || "",
+      recordings: newRecordings
+    }));
+  }, [setInteractiveState]);
+
+  const currentRecording = useMemo(() => {
+    if (currentRecordingIndex >= 0 && currentRecordingIndex < recordings.length) {
+      return recordings[currentRecordingIndex];
+    }
+    return undefined;
+  }, [currentRecordingIndex, recordings]);
+  const isRecording = useMemo(() => !!currentRecording && !paused, [currentRecording, paused]);
 
   // Keep the blockly code updated with the linked interactive
   useEffect(() => {
@@ -129,7 +192,7 @@ export const AgentSimulationComponent = ({
 
     // Visualize and start the simulation after disposing any existing vis first.
     visRef.current?.destroy();
-    visRef.current = AV.vis(simRef.current.sim, { speed: simSpeedRef.current, target: containerRef.current });
+    visRef.current = AV.vis(simRef.current.sim, { speed: simSpeedRef.current, target: containerRef.current, preserveDrawingBuffer: true });
 
     // Pause the sim after a frame.
     // We need to let the sim run for a frame so actors created in setup have a chance to get added to the sim.
@@ -159,16 +222,74 @@ export const AgentSimulationComponent = ({
     };
   }, []);
 
-  const handlePlayPause = () => {
+  const handlePlayPause = useCallback(() => {
     if (simRef.current) {
-      log(paused ? "play-simulation" : "pause-simulation");
+      if (currentRecording) {
+        if (recordUpdateDurationIntervalRef.current) {
+          clearInterval(recordUpdateDurationIntervalRef.current);
+          recordUpdateDurationIntervalRef.current = null;
+        }
+
+        if (paused) {
+          recordStartTimeRef.current = Date.now();
+        }
+        const startedAt = recordStartTimeRef.current || Date.now();
+        const duration = Date.now() - startedAt;
+
+        if (paused) {
+          const pausedRecordings = [...recordings];
+          log("start-record-simulation", {startedAt});
+          pausedRecordings[currentRecordingIndex] = { startedAt };
+
+          // Update the recording duration every 1/2 second while recording
+          recordUpdateDurationIntervalRef.current = window.setInterval(() => {
+            const updatedDuration = Date.now() - startedAt;
+            const updatedRecordings = [...pausedRecordings];
+            updatedRecordings[currentRecordingIndex] = {
+              ...updatedRecordings[currentRecordingIndex],
+              duration: updatedDuration
+            };
+            setRecordings(updatedRecordings);
+          }, 500);
+
+          setRecordings(pausedRecordings);
+        } else {
+          log("stop-record-simulation", {startedAt, duration});
+
+          if (!currentRecording.objectId) {
+            const notPausedRecordings = [...recordings];
+
+            const save = async () => {
+              // get a snapshot of the simulation
+              const canvas = containerRef.current?.querySelector("canvas") as HTMLCanvasElement | null;
+              const snapshot = canvas?.toDataURL("image/png");
+              const thumbnail = await getThumbnail(snapshot);
+
+              // record no data for now (we will implement real recording in the next story)
+              const id = objectStorage.genId();
+              objectStorage.add({
+                metadata: {},
+                data: {}
+              }, { id });
+              notPausedRecordings[currentRecordingIndex] = { objectId: id, startedAt, duration, thumbnail };
+              setRecordings(notPausedRecordings);
+            };
+
+            save();
+          }
+        }
+
+      } else {
+        log(paused ? "play-simulation" : "pause-simulation");
+      }
+
       simRef.current.sim.pause(!paused);
       setPaused(!paused);
       if (!hasBeenStarted) {
         setHasBeenStarted(true);
       }
     }
-  };
+  }, [currentRecording, paused, hasBeenStarted, recordings, currentRecordingIndex, setRecordings, objectStorage]);
 
   const handleReset = () => {
     const newResetCount = resetCount + 1;
@@ -196,8 +317,9 @@ export const AgentSimulationComponent = ({
     setInteractiveState?.(prev => ({
       answerType: "interactive_state",
       version: 1,
-      ...prev,
-      simSpeed: newSpeed
+      simSpeed: newSpeed,
+      blocklyCode: prev?.blocklyCode || "",
+      recordings: prev?.recordings || []
     }));
   };
 
@@ -220,7 +342,7 @@ export const AgentSimulationComponent = ({
       cancelAnimationFrame(animationFrameRef.current);
       animationFrameRef.current = null;
     }
-    
+
     // Smoothly scroll back to top-left while zooming to ZOOM_DEFAULT.
     // This prevents jittering when the top-left corner is out of view.
     const wrapper = containerRef.current?.parentElement;
@@ -233,7 +355,7 @@ export const AgentSimulationComponent = ({
         const elapsed = currentTime - startTime;
         const progress = Math.min(elapsed / ZOOM_ANIMATION_DURATION, 1);
         const easeOut = 1 - Math.pow(1 - progress, 3);
-        
+
         wrapper.scrollLeft = startScrollLeft * (1 - easeOut);
         wrapper.scrollTop = startScrollTop * (1 - easeOut);
 
@@ -246,37 +368,95 @@ export const AgentSimulationComponent = ({
 
       animationFrameRef.current = requestAnimationFrame(animate);
     }
-    
+
     setZoomLevel(ZOOM_DEFAULT);
+  };
+
+  const handleNewRecording = () => {
+    const newRecording: IRecording = {};
+    const newRecordings = [...recordings, newRecording];
+    setRecordings(newRecordings);
+    setCurrentRecordingIndex(newRecordings.length - 1);
+  };
+
+  const handleSelectRecording = (index: number) => {
+    setCurrentRecordingIndex(index);
+  };
+
+  const handleDeleteRecording = () => setShowDeleteRecordingConfirm(true);
+  const handleCancelDeleteRecording = () => setShowDeleteRecordingConfirm(false);
+  const handleConfirmDeleteRecording = useCallback(() => {
+    const newRecordings = recordings.filter((_, i) => i !== currentRecordingIndex);
+    setRecordings(newRecordings);
+    setCurrentRecordingIndex(-1);
+    setShowDeleteRecordingConfirm(false);
+  }, [currentRecordingIndex, recordings, setRecordings]);
+
+  const renderRecordingInfo = () => {
+    const startedAt = currentRecording?.startedAt;
+    if (startedAt) {
+      const duration = currentRecording?.duration ?? Date.now() - startedAt;
+      const durationInSeconds = Math.floor(duration / 1000);
+      const durationString = `${durationInSeconds} ${durationInSeconds === 1 ? "sec" : "secs"}`;
+      return (
+        <span className={css.recordingInfo}>
+          {timeFormatter.format(startedAt)} ({durationString})
+        </span>
+      );
+    }
+    return null;
   };
 
   return (
     <div className={css.agentSimulationComponent}>
-      <div className={css.modelTitle}>
-        <ModelIcon />
-        {modelName}
+      <div className={css.topBar}>
+        <div className={css.leftSide}>
+          {currentRecordingIndex !== -1 && (
+            <div className={css.returnToTinker}>
+              <button onClick={() => handleSelectRecording(-1)} disabled={isRecording}>
+                <ReturnToModelIcon />
+              </button>
+            </div>
+          )}
+          {currentRecording ? <RecordingIcon className={css.modelIcon} /> : <ModelIcon className={css.modelIcon} />}
+          <div className={css.modelInfo}>
+            <div className={css.modelName}>{modelName}</div>
+            <div>{renderRecordingInfo()}</div>
+          </div>
+        </div>
+        <div className={css.rightSide}>
+          <RecordingStrip
+            isRecording={isRecording}
+            onNewRecording={handleNewRecording}
+            onSelectRecording={handleSelectRecording}
+            recordings={recordings}
+            currentRecordingIndex={currentRecordingIndex}
+          />
+        </div>
       </div>
       <ControlPanel
         codeUpdateAvailable={codeUpdateAvailable}
         hasBeenStarted={hasBeenStarted}
         hasCodeSource={hasCodeSource}
         paused={paused}
+        currentRecording={currentRecording}
         simSpeed={simSpeedRef.current}
         onChangeSimSpeed={handleChangeSimSpeed}
         onPlayPause={handlePlayPause}
         onReset={handleReset}
         onUpdateCode={handleUpdateCode}
+        onDeleteRecording={handleDeleteRecording}
       />
       {error && <div className={css.error}>{error}</div>}
       <div className={css.simViewport}>
         <div className={css.simScrollArea}>
-          <div 
-            ref={containerRef} 
+          <div
+            ref={containerRef}
             className={css.simContainer}
             style={{ transform: `scale(${zoomLevel})` }}
           />
         </div>
-        <ZoomControls 
+        <ZoomControls
           zoomLevel={zoomLevel}
           onZoomIn={handleZoomIn}
           onZoomOut={handleZoomOut}
@@ -298,6 +478,17 @@ export const AgentSimulationComponent = ({
             {showBlocklyCode ? "Hide" : "Show"} Blockly Code
           </button>
         </>
+      )}
+      {showDeleteRecordingConfirm && (
+        <Modal
+          variant="orange"
+          title="Delete Recording"
+          Icon={DeleteRecordingIcon}
+          message={<div>Are you sure you want to delete <strong>{modelName} {renderRecordingInfo()}</strong>?</div>}
+          confirmLabel="Delete"
+          onConfirm={handleConfirmDeleteRecording}
+          onCancel={handleCancelDeleteRecording}
+        />
       )}
     </div>
   );
