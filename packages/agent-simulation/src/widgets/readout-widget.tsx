@@ -8,8 +8,13 @@ import css from "./readout-widget.scss";
 
 export const readoutWidgetType = "readout";
 
-const ReadoutWidget = observer(function ReadoutWidget({ data, defaultValue, globalKey, sim }: IWidgetComponentProps) {
+const sanitizeGlobalKey = (str: string) => {
+  return str.replace(/[^a-zA-Z0-9\-_:.]/g, "_");
+};
+
+export const ReadoutWidget = observer(function ReadoutWidget({ data, defaultValue, globalKey, sim }: IWidgetComponentProps) {
   const labelString = data?.label ? ` ${data.label}` : "";
+  const sanitizedGlobalKey = sanitizeGlobalKey(globalKey);
   const style = {
     backgroundColor: data?.backgroundColor,
     color: data?.color
@@ -17,7 +22,12 @@ const ReadoutWidget = observer(function ReadoutWidget({ data, defaultValue, glob
 
   return (
     <div className={css.readoutWidget} style={style}>
-      {`${sim.globals.get(globalKey)}${labelString}`}
+      <label id={`label-${sanitizedGlobalKey}`} className={css.readoutWidget_label}>
+        {labelString}
+      </label>
+      <output aria-labelledby={`label-${sanitizedGlobalKey}`}>
+        {sim.globals.get(globalKey)} {data?.unit || ""}
+      </output>
     </div>
   );
 });

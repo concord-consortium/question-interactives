@@ -1,7 +1,35 @@
 @import "../../../helpers/src/styles/helpers.scss";
 
 .readoutWidget {
+  align-items: center;
   color: #333;
+  display: flex;
   font-size: 16px;
-  text-align: center;
+  gap: 5px;
+  justify-content: center;
+
+  .readoutWidget_label {
+    display: inline-block;
+    flex-shrink: 1;
+    font-weight: normal;
+    line-height: 1;
+    margin: 0;
+    max-width: 60%;
+    overflow: hidden;
+    padding: 0;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  output {
+    background: var(--cc-teal-light-6);
+    border-radius: 4px;
+    color: var(--cc-charcoal);
+    display: inline-block;
+    flex-shrink: 0;
+    font-family: Lato, sans-serif;
+    font-size: 16px;
+    line-height: 1;
+    margin: 0;
+    padding: 3px 5px;
+  }
 }
