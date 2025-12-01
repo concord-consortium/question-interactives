@@ -1,4 +1,4 @@
-import React from "react";
+import React, { version } from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
 import { TakeSnapshot } from "./take-snapshot";
 import { IAuthoredState, IInteractiveState } from "./types";
@@ -69,6 +69,10 @@ const baseInitMessage = {
   mediaLibrary: {
     enabled: false,
     items: [],
+  },
+  objectStorageConfig: {
+    version: 1,
+    type: "demo"
   }
 };
 
