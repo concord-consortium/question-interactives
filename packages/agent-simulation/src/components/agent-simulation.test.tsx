@@ -7,7 +7,7 @@ import {
 import { AgentSimulationComponent } from "./agent-simulation";
 import { IAuthoredState, IInteractiveState } from "./types";
 import * as AA from "@gjmcn/atomic-agents";
-import * as AV from "@gjmcn/atomic-agents-vis";
+import * as AV from "@concord-consortium/atomic-agents-vis";
 import { useLinkedInteractiveId } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
 import { AgentSimulation } from "../models/agent-simulation";
 import { ObjectStorageConfig, ObjectStorageProvider } from "@concord-consortium/object-storage";
@@ -77,6 +77,7 @@ describe("AgentSimulationComponent", () => {
   };
 
   const mockSetInteractiveState = jest.fn();
+  const originalEval = global.eval;
 
   beforeEach(() => {
     jest.clearAllMocks();
@@ -91,6 +92,15 @@ describe("AgentSimulationComponent", () => {
     mockSimulationConstructor.mockReturnValue(mockAgentSimulation);
 
     mockUseLinkedInteractiveId.mockReturnValue(null);
+
+    // Mock eval to return a simple function that doesn't throw
+    const mockFunction = jest.fn();
+    global.eval = jest.fn(() => mockFunction);
+  });
+
+  afterEach(() => {
+    // Restore eval to its original value
+    global.eval = originalEval;
   });
 
   it("renders basic simulation controls", () => {
@@ -108,12 +118,7 @@ describe("AgentSimulationComponent", () => {
     expect(screen.getByTestId("play-pause-button")).toBeInTheDocument();
   });
 
-  it("creates simulation with correct parameters", () => {
-    // Mock eval to return a simple function that doesn't throw
-    const originalEval = global.eval;
-    const mockFunction = jest.fn();
-    global.eval = jest.fn(() => mockFunction);
-
+  it("creates simulation with correct parameters", async () => {
     render(
       <ObjectStorageProvider config={objectStorageConfig}>
         <AgentSimulationComponent
@@ -126,11 +131,15 @@ describe("AgentSimulationComponent", () => {
 
     expect(mockSimulationConstructor).toHaveBeenCalledWith(450, 450, 15);
 
-    expect(mockVis).toHaveBeenCalledWith(mockAgentSimulation.sim, { target: expect.any(HTMLDivElement), preserveDrawingBuffer: true, afterTick: expect.any(Function) });
+    expect(mockVis).toHaveBeenCalledWith(mockAgentSimulation.sim, { speed: 1, target: expect.any(HTMLDivElement), preserveDrawingBuffer: true, afterTick: expect.any(Function) });
     expect(mockSimulation.pause).toHaveBeenCalledWith(true);
 
-    // Restore original eval
-    global.eval = originalEval;
+    // Wait for 10ms
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 10));
+    });
+
+    expect(mockSimulation.pause).toHaveBeenCalledWith(true);
   });
 
   it("displays error for invalid grid dimensions", () => {
@@ -174,7 +183,7 @@ describe("AgentSimulationComponent", () => {
     expect(screen.getByText("Grid height and width must be divisible by the grid step.")).toBeInTheDocument();
   });
 
-  it("handles pause/play button clicks", () => {
+  it("handles pause/play button clicks", async () => {
     render(
       <ObjectStorageProvider config={objectStorageConfig}>
         <AgentSimulationComponent
@@ -186,8 +195,13 @@ describe("AgentSimulationComponent", () => {
     );
 
     const pausePlayButton = screen.getByTestId("play-pause-button");
-    fireEvent.click(pausePlayButton);
 
+    await screen.findByLabelText("Play");
+
+    expect(pausePlayButton).toHaveAttribute("aria-label", "Play");
+    expect(pausePlayButton).toHaveAttribute("title", "Play");
+
+    fireEvent.click(pausePlayButton);
     expect(mockSimulation.pause).toHaveBeenCalledWith(false);
     expect(pausePlayButton).toHaveAttribute("aria-label", "Pause");
     expect(pausePlayButton).toHaveAttribute("title", "Pause");
@@ -344,8 +358,7 @@ describe("AgentSimulationComponent", () => {
   });
 
   it("handles simulation setup errors gracefully", () => {
-    // Mock eval to throw an error
-    const originalEval = global.eval;
+    // Override the global eval mock to throw an error for this test
     global.eval = jest.fn(() => {
       throw new Error("Syntax error in code");
     });
@@ -361,18 +374,10 @@ describe("AgentSimulationComponent", () => {
     );
 
     expect(screen.getByText("Error setting up simulation: Error: Syntax error in code")).toBeInTheDocument();
-
-    // Restore original eval
-    global.eval = originalEval;
   });
 
   it("cleans up simulation and listeners on unmount", () => {
     mockUseLinkedInteractiveId.mockReturnValue("linked-interactive-id");
-
-    // Mock eval to return a simple function that doesn't throw
-    const originalEval = global.eval;
-    const mockFunction = jest.fn();
-    global.eval = jest.fn(() => mockFunction);
 
     const { unmount } = render(
       <ObjectStorageProvider config={objectStorageConfig}>
@@ -388,9 +393,6 @@ describe("AgentSimulationComponent", () => {
 
     expect(mockRemoveLinkedInteractiveStateListener).toHaveBeenCalled();
     expect(mockAgentSimulation.destroy).toHaveBeenCalled();
-
-    // Restore original eval
-    global.eval = originalEval;
   });
 
   it("works in report mode", () => {
@@ -444,8 +446,7 @@ describe("AgentSimulationComponent", () => {
       blocklyCode: "// Existing blockly code"
     };
 
-    // Mock eval to capture the function code
-    const originalEval = global.eval;
+    // Override the global eval mock to capture the function code
     const mockFunction = jest.fn();
     global.eval = jest.fn((code) => {
       // Verify the code string contains the blockly code
@@ -471,13 +472,10 @@ describe("AgentSimulationComponent", () => {
       mockGlobals,
       expect.any(Function) // addWidget function
     );
-
-    global.eval = originalEval;
   });
 
   it("falls back to authored code when no blockly code exists", () => {
-    // Mock eval to capture the function code
-    const originalEval = global.eval;
+    // Override the global eval mock to capture the function code
     const mockFunction = jest.fn();
     global.eval = jest.fn((code) => {
       // Verify the code string contains the default code
@@ -503,7 +501,69 @@ describe("AgentSimulationComponent", () => {
       mockGlobals,
       expect.any(Function) // addWidget function
     );
+  });
 
-    global.eval = originalEval;
+  describe("simulation speed functionality", () => {
+    it("initializes simulation with default speed", () => {
+      render(
+        <ObjectStorageProvider config={objectStorageConfig}>
+          <AgentSimulationComponent
+            authoredState={defaultAuthoredState}
+            interactiveState={defaultInteractiveState}
+            setInteractiveState={mockSetInteractiveState}
+          />
+        </ObjectStorageProvider>
+      );
+
+      expect(screen.getByTestId("sim-speed-select")).toHaveValue("1");
+    });
+
+    it("initializes simulation with saved speed from interactive state", () => {
+      const stateWithSpeed: IInteractiveState = {
+        ...defaultInteractiveState,
+        simSpeed: 2
+      };
+
+      render(
+        <ObjectStorageProvider config={objectStorageConfig}>
+          <AgentSimulationComponent
+            authoredState={defaultAuthoredState}
+            interactiveState={stateWithSpeed}
+            setInteractiveState={mockSetInteractiveState}
+          />
+        </ObjectStorageProvider>
+      );
+
+      expect(screen.getByTestId("sim-speed-select")).toHaveValue("2");
+    });
+
+    it("updates simulation speed when changed", () => {
+      render(
+        <ObjectStorageProvider config={objectStorageConfig}>
+          <AgentSimulationComponent
+            authoredState={defaultAuthoredState}
+            interactiveState={defaultInteractiveState}
+            setInteractiveState={mockSetInteractiveState}
+          />
+        </ObjectStorageProvider>
+      );
+
+      const speedSelect = screen.getByTestId("sim-speed-select");
+      fireEvent.change(speedSelect, { target: { value: "2" } });
+
+      expect(mockSetInteractiveState).toHaveBeenCalledWith(expect.any(Function));
+
+      const updateFunction = mockSetInteractiveState.mock.calls[0][0];
+      const newState = updateFunction(defaultInteractiveState);
+
+      expect(newState).toEqual({
+        ...defaultInteractiveState,
+        answerType: "interactive_state",
+        version: 1,
+        simSpeed: 2,
+        recordings: [],
+        blocklyCode: "",
+      });
+    });
   });
 });

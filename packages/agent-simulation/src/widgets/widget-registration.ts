@@ -1,7 +1,8 @@
-import { WidgetComponent } from "../types/widgets";
+import { WidgetComponent, WidgetSize } from "../types/widgets";
 
 export interface WidgetData {
   component: WidgetComponent;
+  size: WidgetSize;
   type: string;
 }
 

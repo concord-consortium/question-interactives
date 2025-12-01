@@ -32,20 +32,23 @@ const SliderWidget = observer(function SliderWidget({ data, defaultValue, global
   };
 
   return (
-    <div>
+    <div className={css.sliderWidget}>
       {data?.label}
-      <Slider
-        className={css.rcSlider}
-        min={min}
-        max={max}
-        onChange={handleChange}
-        value={value}
-      />
+      <div className={css.sliderBody}>
+        <Slider
+          className={css.rcSlider}
+          min={min}
+          max={max}
+          onChange={handleChange}
+          value={value}
+        />
+      </div>
     </div>
   );
 });
 
 registerWidget({
   component: SliderWidget,
+  size: "tall",
   type: sliderWidgetType
 });

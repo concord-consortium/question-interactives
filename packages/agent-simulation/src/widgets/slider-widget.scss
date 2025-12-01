@@ -1,69 +1,84 @@
-// Taken from CLUE repo
-.rcSlider {
-  position: relative;
-  width: 100%;
-  height: 14px;
-  padding: 12px 0;
-  touch-action: none;
-  box-sizing: border-box;
-  margin-top: 2px;
+@import "../../../helpers/src/styles/helpers.scss";
 
-  :global(.rc-slider-handle) {
-    position: absolute;
-    top: 5px;
-    width: 15px;
-    height: 15px;
-    border: solid 2px;
-    background-color: #fff;
-    border-radius: 50%;
-    cursor: grab;
-    touch-action: pan-x;
-    z-index: 2;
+.sliderWidget {
+  color: #333;
+  font-size: 16px;
+  text-align: center;
 
-    &:focus {
-      outline: none;
-      box-shadow: none;
-    }
-
-    &:active {
-      cursor: grabbing;
-    }
+  // Wrapper for the slider element
+  .sliderBody {
+    background-color: var(--cc-teal-light-6);
+    border-radius: 17px;
+    margin-top: 5px;
+    padding: 12px 15px;
   }
 
-  :global(.rc-slider-rail) {
-    position: absolute;
-    width: 95%;
-    height: 2px;
-    background-color: #949494;
-  }
-
-  :global(.rc-slider-track) {
+  // Originally taken from CLUE repo, but modified
+  .rcSlider {
+    box-sizing: border-box;
+    height: 10px;
     position: relative;
-    width: 95%;
-    height: 4px;
-    top: -1px;
-    background-color: #545454;
-    border-radius: 1px;
-  }
-
-  :global(.rc-slider-mark) {
-    position: absolute;
-    top: 18px;
-    left: 0;
+    touch-action: none;
     width: 100%;
-    font-size: 12px;
-  }
 
-  :global(.rc-slider-mark-text) {
-    position: absolute;
-    display: inline-block;
-    color: #999;
-    text-align: center;
-    vertical-align: middle;
-    cursor: pointer;
-  }
+    :global(.rc-slider-handle) {
+      background-color: #fff;
+      border-radius: 50%;
+      border: solid 1.5px var(--cc-teal-dark-1);
+      cursor: grab;
+      height: 24px;
+      margin-left: 0;
+      margin-top: -7px;
+      position: absolute;
+      touch-action: pan-x;
+      width: 24px;
+      z-index: 2;
 
-  :global(.rc-slider-mark-text-active) {
-    color: #666;
+      &:focus {
+        box-shadow: none;
+        outline: none;
+      }
+
+      &:active {
+        cursor: grabbing;
+      }
+    }
+
+    :global(.rc-slider-rail) {
+      background-color: #949494;
+      height: 2px;
+      position: absolute;
+      top: 4px;
+      width: 100%;
+    }
+
+    :global(.rc-slider-track) {
+      background-color: var(--cc-teal-dark-1);
+      border-radius: 1px;
+      height: 4px;
+      position: absolute;
+      top: 3px;
+    }
+
+    :global(.rc-slider-mark) {
+      font-size: 12px;
+      left: 0;
+      position: absolute;
+      top: 18px;
+      width: 100%;
+    }
+
+    :global(.rc-slider-mark-text) {
+      color: #999;
+      cursor: pointer;
+      display: inline-block;
+      position: absolute;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    :global(.rc-slider-mark-text-active) {
+      color: #666;
+    }
   }
 }
