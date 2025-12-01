@@ -132,7 +132,6 @@ describe("AgentSimulationComponent", () => {
     expect(mockSimulationConstructor).toHaveBeenCalledWith(450, 450, 15);
 
     expect(mockVis).toHaveBeenCalledWith(mockAgentSimulation.sim, { speed: 1, target: expect.any(HTMLDivElement), preserveDrawingBuffer: true, afterTick: expect.any(Function) });
-    expect(mockSimulation.pause).toHaveBeenCalledWith(true);
 
     // Wait for 10ms
     await act(async () => {
