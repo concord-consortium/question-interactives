@@ -12,7 +12,7 @@ const sanitizeGlobalKey = (str: string) => {
   return str.replace(/[^a-zA-Z0-9\-_:.]/g, "_");
 };
 
-const ReadoutWidget = observer(function ReadoutWidget({ data, defaultValue, globalKey, sim }: IWidgetComponentProps) {
+export const ReadoutWidget = observer(function ReadoutWidget({ data, defaultValue, globalKey, sim }: IWidgetComponentProps) {
   const labelString = data?.label ? ` ${data.label}` : "";
   const sanitizedGlobalKey = sanitizeGlobalKey(globalKey);
   const style = {
