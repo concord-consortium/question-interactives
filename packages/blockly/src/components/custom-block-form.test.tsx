@@ -232,7 +232,7 @@ describe("CustomBlockForm", () => {
       const user = userEvent.setup();
       render(<CustomBlockForm {...defaultProps} blockType="setter" />);
 
-      await user.click(screen.getByRole("button", { name: "Add Block" }));
+      await user.click(screen.getByRole("button", { name: "Save Block" }));
 
       expect(mockOnSubmit).not.toHaveBeenCalled();
     });
@@ -243,7 +243,7 @@ describe("CustomBlockForm", () => {
 
       await user.type(screen.getByLabelText(/Property Name/), "test");
       await user.selectOptions(screen.getByRole("combobox"), "");
-      await user.click(screen.getByRole("button", { name: "Add Block" }));
+      await user.click(screen.getByRole("button", { name: "Save Block" }));
 
       expect(mockOnSubmit).not.toHaveBeenCalled();
     });
@@ -344,7 +344,7 @@ describe("CustomBlockForm", () => {
       
       await user.type(screen.getByLabelText(/Action Name/), "test");
       await user.selectOptions(screen.getByTestId("select-category"), "Properties");
-      await user.click(screen.getByRole("button", { name: "Add Block" }));
+      await user.click(screen.getByRole("button", { name: "Save Block" }));
       
       expect(mockOnSubmit).not.toHaveBeenCalled();
     });

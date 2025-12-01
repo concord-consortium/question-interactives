@@ -74,10 +74,10 @@ javascriptGenerator.forBlock.go = function(block) {
 };
 
 javascriptGenerator.forBlock.onclick = function(block) {
-  const statements = javascriptGenerator.statementToCode(block, "statements");
+  const _statements = javascriptGenerator.statementToCode(block, "statements");
 
   // If no statements have been specified, don't generate any code
-  if (!statements.trim()) return "";
+  const statements = _statements.trim() || "// noop\n";
 
   return `function onClick() {\n${statements}}\n`;
 };

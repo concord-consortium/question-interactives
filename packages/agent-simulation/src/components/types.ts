@@ -18,6 +18,7 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
   version: 1;
   blocklyCode?: string;
+  simSpeed?: number;
   submitted?: boolean;
   recordings: IRecordings;
 }

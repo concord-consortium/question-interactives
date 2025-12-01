@@ -137,6 +137,15 @@ addWidget({
   type: "readout"
 });
 
+// Agents added outside of the sim tick function (like onClick) do not get added to the renderer,
+// so instead of adding agents directly, we create a queue and add them in beforeTick.
+let actorsToAdd = [];
+
+sim.beforeTick = () => {
+  actorsToAdd.forEach(a => a.addTo(sim));
+  actorsToAdd = [];
+}
+
 // set up squares (patches)
 for (let x = 0; x < sim.width / sim.gridStep; x++) {
   for (let y = 0; y < sim.height / sim.gridStep; y++) {
@@ -161,10 +170,10 @@ function create_a_sheep(props) {
   agent.vis({ image: sheepImage, tint: color });
   agent.label("sheep", true);
   agent.state = { energy: energy ?? sheepEnergy };
-  agent.x = x ?? Math.random() * sim.width;
-  agent.y = y ?? Math.random() * sim.height;
+  agent.x = x ?? globals.get("mouseX") ?? Math.random() * sim.width;
+  agent.y = y ?? globals.get("mouseY") ?? Math.random() * sim.height;
 
-  agent.addTo(sim);
+  actorsToAdd.push(agent);
   globals.set("sheepCount", globals.get("sheepCount") + 1);
   return agent;
 }
@@ -184,10 +193,10 @@ function create_a_wolf(props) {
   agent.vis({ image: wolfImage, tint: color ?? "0x333333" });
   agent.label("wolves", true);
   agent.state = { energy: energy ?? wolfEnergy };
-  agent.x = x ?? Math.random() * sim.width;
-  agent.y = y ?? Math.random() * sim.height;
+  agent.x = x ?? globals.get("mouseX") ?? Math.random() * sim.width;
+  agent.y = y ?? globals.get("mouseY") ?? Math.random() * sim.height;
 
-  agent.addTo(sim);
+  actorsToAdd.push(agent);
   globals.set("wolfCount", globals.get("wolfCount") + 1);
   return agent;
 };
@@ -203,6 +212,17 @@ sim.interaction.set("boundary-bounce", {
   group1: sim,
   group2: sim.actors,
   behavior: "bounce"
+});
+
+function _onClick(event) {
+  globals.set("mouseX", event.data.global.x);
+  globals.set("mouseY", event.data.global.y);
+  onClick(event);
+}
+
+sim.vis({
+  background: true,
+  click: _onClick
 });
 
 setup();
