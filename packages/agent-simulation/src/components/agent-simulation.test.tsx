@@ -126,7 +126,7 @@ describe("AgentSimulationComponent", () => {
 
     expect(mockSimulationConstructor).toHaveBeenCalledWith(450, 450, 15);
 
-    expect(mockVis).toHaveBeenCalledWith(mockAgentSimulation.sim, { target: expect.any(HTMLDivElement), preserveDrawingBuffer: true });
+    expect(mockVis).toHaveBeenCalledWith(mockAgentSimulation.sim, { target: expect.any(HTMLDivElement), preserveDrawingBuffer: true, afterTick: expect.any(Function) });
     expect(mockSimulation.pause).toHaveBeenCalledWith(true);
 
     // Restore original eval
