@@ -1,4 +1,4 @@
-import { makeAutoObservable } from "mobx";
+import { makeAutoObservable, toJS } from "mobx";
 
 import { GlobalValue } from "../types/globals";
 
@@ -15,5 +15,9 @@ export class Globals {
 
   set(key: string, value: GlobalValue) {
     this.globals[key] = value;
+  }
+
+  values() {
+    return toJS(this.globals);
   }
 }

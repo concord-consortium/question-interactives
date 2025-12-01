@@ -109,7 +109,7 @@
     "@concord-consortium/atomic-agents-vis": "^0.4.5-cc.0",
     "@concord-consortium/dynamic-text": "^1.0.6",
     "@concord-consortium/lara-interactive-api": "^1.10.0",
-    "@concord-consortium/object-storage": "1.0.0-pre.2",
+    "@concord-consortium/object-storage": "1.0.0-pre.4",
     "@concord-consortium/question-interactives-helpers": "^1.16.0",
     "@gjmcn/atomic-agents": "^0.1.11",
     "@rjsf/utils": "^5.0.1",
