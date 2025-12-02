@@ -1,6 +1,7 @@
 import Slider from "rc-slider";
 import React from "react";
 import { observer } from "mobx-react-lite";
+import classNames from "classnames";
 
 import { IWidgetComponentProps, SliderWidgetData } from "../types/widgets";
 import { WidgetError } from "./widget-error";
@@ -10,7 +11,7 @@ import css from "./slider-widget.scss";
 
 export const sliderWidgetType = "slider";
 
-const SliderWidget = observer(function SliderWidget({ data, globalKey, sim }: IWidgetComponentProps<SliderWidgetData>) {
+const SliderWidget = observer(function SliderWidget({ data, globalKey, sim, isRecording }: IWidgetComponentProps<SliderWidgetData>) {
   if (!data) {
     return <WidgetError message="Slider widget is missing data configuration." />;
   }
@@ -33,7 +34,7 @@ const SliderWidget = observer(function SliderWidget({ data, globalKey, sim }: IW
   };
 
   return (
-    <div className={css.sliderWidget}>
+    <div className={classNames(css.sliderWidget, { [css.recording]: isRecording })}>
       {data?.label}
       <div className={css.sliderBody}>
         <Slider

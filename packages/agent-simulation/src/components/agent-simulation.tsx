@@ -538,7 +538,7 @@ export const AgentSimulationComponent = ({
           onFitAll={handleFitAll}
         />
       </div>
-      <Widgets sim={simRef.current} />
+      <Widgets sim={simRef.current} isRecording={isRecording} />
       {blocklyCode && (
         <>
           {showBlocklyCode &&

@@ -23,6 +23,7 @@ describe("ReadoutWidget", () => {
         globalKey="testValue"
         type={readoutWidgetType}
         sim={mockSim}
+        isRecording={false}
         {...props}
       />
     );
@@ -205,7 +206,7 @@ describe("ReadoutWidget", () => {
 
       const label = container.querySelector("label");
       const output = container.querySelector("output");
-      
+
       expect(label).toHaveAttribute("id", "label-temp");
       expect(output).toHaveAttribute("aria-labelledby", "label-temp");
     });

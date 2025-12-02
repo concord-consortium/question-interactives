@@ -9,6 +9,7 @@ import css from "./widgets.scss";
 
 interface IWidgetProps {
   sim: AgentSimulation | null;
+  isRecording: boolean;
 }
 
 const sizeToClass: Record<WidgetSize, string> = {
@@ -17,7 +18,7 @@ const sizeToClass: Record<WidgetSize, string> = {
   "very-tall": css.widgetVeryTall
 };
 
-export function Widgets({ sim }: IWidgetProps) {
+export function Widgets({ sim, isRecording }: IWidgetProps) {
   if (!sim) return null;
 
   const validWidgets = sim.widgets.filter(w => {
@@ -30,7 +31,7 @@ export function Widgets({ sim }: IWidgetProps) {
       console.warn(`Widget registration for type '${w.type}' is missing a 'size' property.`);
       return false;
     }
-  
+
     return true;
   });
 
@@ -61,7 +62,7 @@ export function Widgets({ sim }: IWidgetProps) {
             key={`${index}-${widget.globalKey}-${widget.type}`}
             className={widgetClassNames}
           >
-            <WidgetComponent {...widget} sim={sim} />
+            <WidgetComponent {...widget} sim={sim} isRecording={isRecording} />
           </div>
         );
       })}

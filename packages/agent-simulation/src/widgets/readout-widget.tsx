@@ -1,5 +1,6 @@
 import React from "react";
 import { observer } from "mobx-react-lite";
+import classNames from "classnames";
 
 import { IWidgetComponentProps, ReadoutWidgetData } from "../types/widgets";
 import { registerWidget } from "./widget-registration";
@@ -44,7 +45,7 @@ const formatValue = (value: number, formatType?: string, precision?: number): st
   }
 };
 
-export const ReadoutWidget = observer(function ReadoutWidget({ data, globalKey, sim }: IWidgetComponentProps<ReadoutWidgetData>) {
+export const ReadoutWidget = observer(function ReadoutWidget({ data, globalKey, sim, isRecording }: IWidgetComponentProps<ReadoutWidgetData>) {
   const labelString = data?.label ? ` ${data.label}` : "";
   const sanitizedGlobalKey = sanitizeGlobalKey(globalKey);
   const style = {
@@ -60,7 +61,7 @@ export const ReadoutWidget = observer(function ReadoutWidget({ data, globalKey, 
   const unit = formatType === "percent" ? "%" : (data?.unit ?? "");
 
   return (
-    <div className={css.readoutWidget} style={style}>
+    <div className={classNames(css.readoutWidget, { [css.recording]: isRecording })} style={style}>
       <label id={`label-${sanitizedGlobalKey}`} className={css.readoutWidget_label}>
         {labelString}
       </label>

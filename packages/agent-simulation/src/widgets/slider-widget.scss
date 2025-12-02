@@ -81,4 +81,14 @@
       color: #666;
     }
   }
+
+  &.recording {
+    :global(.rc-slider-handle) {
+      border: solid 1.5px var(--cc-orange-dark-1);
+    }
+
+    :global(.rc-slider-track) {
+      background-color: var(--cc-orange-dark-1);
+    }
+  }
 }
