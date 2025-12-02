@@ -11,6 +11,7 @@ import { registerWidget } from "./widget-registration";
 import css from "./slider-widget.scss";
 
 export const sliderWidgetType = "slider";
+const MAX_INPUT_WIDTH_CH = 5;
 
 export const SliderWidget = observer(function SliderWidget({ data, globalKey, sim, isRecording }: IWidgetComponentProps<SliderWidgetData>) {
   if (!data) {
@@ -49,12 +50,14 @@ export const SliderWidget = observer(function SliderWidget({ data, globalKey, si
 
   const formattedValue = formatValue(value, data.formatType, data.precision);
   const unit = formatType === "percent" ? "%" : (data?.unit ?? "");
-  const inputWidth = Math.min(formattedValue.length + 1, 5);
+  const inputWidth = Math.min(formattedValue.length + 1, MAX_INPUT_WIDTH_CH);
 
   return (
     <div className={classNames(css.sliderWidget, { [css.recording]: isRecording })} data-testid="slider-widget-root">
       <div className={css.sliderHeader} data-testid="slider-widget-header">
-        {label && <span className={css.labelText} data-testid="slider-widget-label">{label}</span>}
+        <span className={css.labelText} data-testid="slider-widget-label">
+          {label}
+        </span>
         {showReadout &&
           <div className={css.valueContainer} data-testid="slider-widget-value-container">
             <input
