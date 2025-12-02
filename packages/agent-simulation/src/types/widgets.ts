@@ -14,5 +14,6 @@ export interface IWidgetProps {
 
 export interface IWidgetComponentProps extends IWidgetProps {
   sim: AgentSimulation;
+  isRecording: boolean;
 }
 export type WidgetComponent = ComponentType<IWidgetComponentProps>;

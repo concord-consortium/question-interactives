@@ -1,5 +1,6 @@
 import React from "react";
 import { observer } from "mobx-react-lite";
+import classNames from "classnames";
 
 import { IWidgetComponentProps } from "../types/widgets";
 import { registerWidget } from "./widget-registration";
@@ -12,7 +13,7 @@ const sanitizeGlobalKey = (str: string) => {
   return str.replace(/[^a-zA-Z0-9\-_:.]/g, "_");
 };
 
-export const ReadoutWidget = observer(function ReadoutWidget({ data, defaultValue, globalKey, sim }: IWidgetComponentProps) {
+export const ReadoutWidget = observer(function ReadoutWidget({ data, defaultValue, globalKey, sim, isRecording }: IWidgetComponentProps) {
   const labelString = data?.label ? ` ${data.label}` : "";
   const sanitizedGlobalKey = sanitizeGlobalKey(globalKey);
   const style = {
@@ -21,7 +22,7 @@ export const ReadoutWidget = observer(function ReadoutWidget({ data, defaultValu
   };
 
   return (
-    <div className={css.readoutWidget} style={style}>
+    <div className={classNames(css.readoutWidget, { [css.recording]: isRecording })} style={style}>
       <label id={`label-${sanitizedGlobalKey}`} className={css.readoutWidget_label}>
         {labelString}
       </label>

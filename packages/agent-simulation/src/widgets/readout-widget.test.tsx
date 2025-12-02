@@ -14,6 +14,7 @@ function renderWidget(props: Partial<IWidgetComponentProps> = {}) {
       globalKey="energy"
       sim={mockSim as any}
       type={readoutWidgetType}
+      isRecording={props.isRecording ?? false}
       {...props}
     />
   );
