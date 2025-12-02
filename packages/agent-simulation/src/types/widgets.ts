@@ -14,9 +14,15 @@ export interface ReadoutWidgetData {
 }
 
 export interface SliderWidgetData {
-  label?: string;
+  formatType?: "decimal" | "integer" | "percent";
+  label: string;
   max: number;
   min: number;
+  precision?: number;
+  secondaryLabel?: string;
+  showReadout?: boolean;
+  step?: number;
+  unit?: string;
 }
 
 // TODO: Define more widget data types as they are added.
@@ -28,9 +34,10 @@ export interface IWidgetProps {
   type: string;
 }
 
-export interface IWidgetComponentProps<TData extends WidgetData = WidgetData> extends IWidgetProps {
+export interface IWidgetComponentProps<TData extends WidgetData = WidgetData> extends Omit<IWidgetProps, "type"> {
   data?: TData;
-  sim: AgentSimulation;
   isRecording: boolean;
+  sim: AgentSimulation;
+  type: string;
 }
 export type WidgetComponent = ComponentType<IWidgetComponentProps>;

@@ -65,15 +65,6 @@ This widget displays the value of the given global.
   - Ignored for integer format (always rounds to whole number)
 - `unit: string` - Optional. Unit text to display after the value (e.g., "°C", "m/s").
 
-**Notes:**
-- Values are automatically formatted based on `formatType` and `precision`
-- Non-numeric values are displayed as-is (converted to string)
-- For percentage format, the value is multiplied by 100 and "%" is displayed as the unit (e.g., 0.5 → "50 %"). Any `unit` value specified for a percent value will be ignored.
-- If `precision` is not specified:
-  - Decimal format defaults to 2 decimal places
-  - Percent format defaults to 0 decimal places (whole percentage)
-  - Integer format always rounds to whole numbers (precision parameter is ignored)
-
 #### `slider`
 
 This widget allows the user to change the value of the given global using a horizontal slider.
@@ -81,9 +72,26 @@ This widget allows the user to change the value of the given global using a hori
 The global value must be a number.
 
 `data`:
+- `formatType: "decimal" | "integer" | "percent"` - Optional. How to format the numeric value displayed in the optional readout.
 - `min: number` - The minimum value for the slider.
 - `max: number` - The maximum value for the slider.
-- `label: string` - Optional. Displayed before the slider if included.
+- `label: string` - Text displayed above the slider.
+- `precision: number` - Optional. Number of decimal places to show in the optional readout.
+  - Default: `2` for decimal format, `0` for percent format
+  - Ignored for integer format (always rounds to whole number)
+- `secondaryLabel: string` - Optional. Appears after the primary label and after the optional readout (when present).
+- `showReadout: boolean` - Optional. Show a readout that displays the value and which can be manually edited by the user.
+- `step: number` - Optional. Set a defined increment size for the slider.
+- `unit: string` - Optional. Unit text to display after the value in the optional readout (e.g., "°C", "m/s").
+
+**Numeric Value Format and Precision Notes:**
+- Values are automatically formatted based on `formatType` and `precision`
+- Non-numeric values are displayed as-is (converted to string)
+- For percentage format, the value is multiplied by 100 and "%" is displayed as the unit (e.g., 0.5 → "50 %"). Any `unit` value specified for a percent value will be ignored.
+- If `precision` is not specified:
+  - Decimal format defaults to 2 decimal places
+  - Percent format defaults to 0 decimal places (whole percentage)
+  - Integer format always rounds to whole numbers (precision parameter is ignored)
 
 Blockly code is added in two places: the simulation code, and then within individual block definitions.
 

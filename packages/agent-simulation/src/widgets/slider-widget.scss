@@ -5,6 +5,69 @@
   font-size: 16px;
   text-align: center;
 
+  .sliderHeader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+
+    .labelText {
+      display: inline-block;
+      flex-shrink: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  
+    .valueContainer {
+      border: solid 1.5px #949494;
+      border-radius: 4px;
+      display: flex;
+      flex-shrink: 0;
+      flex-wrap: nowrap;
+      height: 26px;
+      min-width: fit-content;
+      overflow: hidden;
+
+      /* Hide the up and down arrows for the input */
+      /* For Chrome, Safari, Edge, Opera */
+      input[type="number"]::-webkit-outer-spin-button,
+      input[type="number"]::-webkit-inner-spin-button {
+          -webkit-appearance: none;
+          margin: 0;
+      }
+      /* For Firefox */
+      input[type="number"] {
+          -moz-appearance: textfield;
+      }
+
+      .valueInput {
+        background-color: white;
+        border: none;
+        display: inline-block;
+        text-align: center;
+
+        &:hover {
+          background-color: var(--cc-teal-light-4);
+        }
+      }
+
+      .unit {
+        min-width: fit-content;
+        padding: 0 6px 0 3px;
+      }
+    }
+
+    .secondaryLabelText {
+      display: inline-block;
+      flex-shrink: 10; // Should shrink more aggressively than labelText
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
   // Wrapper for the slider element
   .sliderBody {
     background-color: var(--cc-teal-light-6);
@@ -25,6 +88,7 @@
       background-color: #fff;
       border-radius: 50%;
       border: solid 1.5px var(--cc-teal-dark-1);
+      box-shadow: 1px 1px 2px 0 rgba(0, 0, 0, 0.25);
       cursor: grab;
       height: 24px;
       margin-left: 0;
@@ -34,19 +98,26 @@
       width: 24px;
       z-index: 2;
 
+      &:hover {
+        background-color: var(--cc-teal-light-3);
+      }
+
       &:focus {
         box-shadow: none;
         outline: none;
       }
 
       &:active {
+        background-color: var(--cc-teal-dark-1);
+        border-color: white;
         cursor: grabbing;
       }
     }
 
     :global(.rc-slider-rail) {
       background-color: #949494;
-      height: 2px;
+      border-radius: 2px;
+      height: 3px;
       position: absolute;
       top: 4px;
       width: 100%;
@@ -54,8 +125,8 @@
 
     :global(.rc-slider-track) {
       background-color: var(--cc-teal-dark-1);
-      border-radius: 1px;
-      height: 4px;
+      border-radius: 2px;
+      height: 5px;
       position: absolute;
       top: 3px;
     }
@@ -83,8 +154,26 @@
   }
 
   &.recording {
+    .valueContainer {
+      background-color: var(--cc-orange-light-5);
+
+      .valueInput {
+        &:hover {
+          background-color: var(--cc-orange-light-1);
+        }
+      }
+    }
+
     :global(.rc-slider-handle) {
       border: solid 1.5px var(--cc-orange-dark-1);
+
+      &:hover {
+        background-color: var(--cc-orange-light-2);
+      }
+
+      &:active {
+        background-color: var(--cc-orange-dark-1);
+      }
     }
 
     :global(.rc-slider-track) {

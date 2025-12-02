@@ -98,7 +98,8 @@ addWidget({
   data: {
     label: "Sheep Energy from Grass",
     min: 1,
-    max: 50
+    max: 50,
+    showReadout: true
   },
   defaultValue: 3,
   globalKey: "sheepEnergyFromGrass",
