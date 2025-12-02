@@ -3,7 +3,7 @@ import React from "react";
 import { observer } from "mobx-react-lite";
 import classNames from "classnames";
 
-import { IWidgetComponentProps } from "../types/widgets";
+import { IWidgetComponentProps, SliderWidgetData } from "../types/widgets";
 import { WidgetError } from "./widget-error";
 import { registerWidget } from "./widget-registration";
 
@@ -11,11 +11,12 @@ import css from "./slider-widget.scss";
 
 export const sliderWidgetType = "slider";
 
-const SliderWidget = observer(function SliderWidget({ data, defaultValue, globalKey, sim, isRecording }: IWidgetComponentProps) {
-  if (!data) return <WidgetError message="Slider widget is missing data configuration." />;
+const SliderWidget = observer(function SliderWidget({ data, globalKey, sim, isRecording }: IWidgetComponentProps<SliderWidgetData>) {
+  if (!data) {
+    return <WidgetError message="Slider widget is missing data configuration." />;
+  }
 
   const { min, max } = data;
-
   if (typeof min !== "number" || typeof max !== "number") {
     return <WidgetError message="Slider widget requires numeric min and max values in its data configuration." />;
   }

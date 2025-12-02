@@ -4,7 +4,23 @@ import { GlobalValue } from "./globals";
 
 export type WidgetSize = "short" | "tall" | "very-tall";
 
-export type WidgetData = any;
+export interface ReadoutWidgetData {
+  backgroundColor?: string;
+  color?: string;
+  formatType?: "decimal" | "integer" | "percent";
+  label?: string;
+  precision?: number;
+  unit?: string;
+}
+
+export interface SliderWidgetData {
+  label?: string;
+  max: number;
+  min: number;
+}
+
+// TODO: Define more widget data types as they are added.
+export type WidgetData = ReadoutWidgetData | SliderWidgetData;
 export interface IWidgetProps {
   data?: WidgetData;
   defaultValue?: GlobalValue;
@@ -12,7 +28,8 @@ export interface IWidgetProps {
   type: string;
 }
 
-export interface IWidgetComponentProps extends IWidgetProps {
+export interface IWidgetComponentProps<TData extends WidgetData = WidgetData> extends IWidgetProps {
+  data?: TData;
   sim: AgentSimulation;
   isRecording: boolean;
 }
