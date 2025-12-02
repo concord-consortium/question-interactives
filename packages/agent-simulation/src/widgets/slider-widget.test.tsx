@@ -1,5 +1,6 @@
 import React from "react";
 import { render, screen, fireEvent } from "@testing-library/react";
+
 import { SliderWidget, sliderWidgetType } from "./slider-widget";
 
 
@@ -19,7 +20,7 @@ describe("SliderWidget", () => {
 		};
 	});
 
-	function renderWidget(props: Partial<any> = {}) {
+	function renderWidget(props: any = {}) {
 		return render(
 			<SliderWidget
 				data={{ ...defaultData, ...(props.data || {}) }}
@@ -39,12 +40,12 @@ describe("SliderWidget", () => {
 		});
 
 		it("shows error if min or max is non-numeric", () => {
-			renderWidget({ data: { min: NaN, max: 100 } });
+			renderWidget({ data: { label: "Test", min: NaN, max: 100 } });
 			expect(screen.getByText(/requires numeric min and max/i)).toBeInTheDocument();
 		});
 
 		it("shows error if min >= max", () => {
-			renderWidget({ data: { min: 10, max: 5 } });
+			renderWidget({ data: { label: "Test", min: 10, max: 5 } });
 			expect(screen.getByText(/min value to be less than max/i)).toBeInTheDocument();
 		});
 

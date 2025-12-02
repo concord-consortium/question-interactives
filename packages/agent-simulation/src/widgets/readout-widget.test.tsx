@@ -16,7 +16,7 @@ describe("ReadoutWidget", () => {
     };
   });
 
-  function renderWidget(props: Partial<any> = {}) {
+  function renderWidget(props: any = {}) {
     return render(
       <ReadoutWidget
         data={{}}
