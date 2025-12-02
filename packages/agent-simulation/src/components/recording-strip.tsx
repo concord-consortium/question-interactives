@@ -51,14 +51,14 @@ export const RecordingStrip = ({ isRecording, onNewRecording, recordings, curren
 
   const handleScrollLeft = () => {
     if (recordingsRef.current?.scrollBy) {
-      recordingsRef.current.scrollBy({ left: -48, behavior: "smooth" });
+      recordingsRef.current.scrollBy({ left: -40, behavior: "smooth" });
       setTimeout(checkScrollability, 300);
     }
   };
 
   const handleScrollRight = () => {
     if (recordingsRef.current?.scrollBy) {
-      recordingsRef.current.scrollBy({ left: 48, behavior: "smooth" });
+      recordingsRef.current.scrollBy({ left: 40, behavior: "smooth" });
       setTimeout(checkScrollability, 300);
     }
   };
