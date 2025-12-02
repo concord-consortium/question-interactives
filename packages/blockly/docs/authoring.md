@@ -55,7 +55,24 @@ This widget displays the value of the given global.
 `data`:
 - `backgroundColor: string` - Optional. The color for the widget background.
 - `color: string` - Optional. The color for the widget text.
-- `label: string` - Optional. Displayed after the global value if included.
+- `formatType: "decimal" | "integer" | "percent"` - Optional. How to format the numeric value.
+  - `"integer"` (default): Display as rounded integer (no decimals)
+  - `"decimal"`: Display as decimal number with specified precision
+  - `"percent"`: Multiply value by 100 and display with % symbol
+- `label: string` - Optional. Displayed before the value if included.
+- `precision: number` - Optional. Number of decimal places to show.
+  - Default: `2` for decimal format, `0` for percent format
+  - Ignored for integer format (always rounds to whole number)
+- `unit: string` - Optional. Unit text to display after the value (e.g., "°C", "m/s").
+
+**Notes:**
+- Values are automatically formatted based on `formatType` and `precision`
+- Non-numeric values are displayed as-is (converted to string)
+- For percentage format, the value is multiplied by 100 and "%" is displayed as the unit (e.g., 0.5 → "50 %"). Any `unit` value specified for a percent value will be ignored.
+- If `precision` is not specified:
+  - Decimal format defaults to 2 decimal places
+  - Percent format defaults to 0 decimal places (whole percentage)
+  - Integer format always rounds to whole numbers (precision parameter is ignored)
 
 #### `slider`
 
