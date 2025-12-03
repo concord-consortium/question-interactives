@@ -159,7 +159,7 @@
     }
 
     :global(.rc-slider-handle) {
-      border: solid 1.5px rgba(234, 109, 47, 0.35) !important;
+      border: solid 1.5px var(--cc-orange-dark-1-alpha-35) !important;
 
       &:hover, &:active {
         background-color: #fff !important;
@@ -167,7 +167,7 @@
     }
 
     :global(.rc-slider-track) {
-      background-color: rgba(234, 109, 47, 0.35) !important;
+      background-color: var(--cc-orange-dark-1-alpha-35) !important;
     }
   }
 
