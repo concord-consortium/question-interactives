@@ -4,16 +4,7 @@ import { GlobalValue } from "./globals";
 
 export type WidgetSize = "short" | "tall" | "very-tall";
 
-export interface ReadoutWidgetData {
-  backgroundColor?: string;
-  color?: string;
-  formatType?: "decimal" | "integer" | "percent";
-  label?: string;
-  precision?: number;
-  unit?: string;
-}
-
-export interface SliderWidgetData {
+export interface BaseSliderWidgetData {
   formatType?: "decimal" | "integer" | "percent";
   label: string;
   max: number;
@@ -25,8 +16,20 @@ export interface SliderWidgetData {
   unit?: string;
 }
 
+export interface CircularSliderWidgetData extends BaseSliderWidgetData {}
+export interface SliderWidgetData extends BaseSliderWidgetData {}
+
+export interface ReadoutWidgetData {
+  backgroundColor?: string;
+  color?: string;
+  formatType?: "decimal" | "integer" | "percent";
+  label?: string;
+  precision?: number;
+  unit?: string;
+}
+
 // TODO: Define more widget data types as they are added.
-export type WidgetData = ReadoutWidgetData | SliderWidgetData;
+export type WidgetData = CircularSliderWidgetData | ReadoutWidgetData | SliderWidgetData;
 export interface IWidgetProps {
   data?: WidgetData;
   defaultValue?: GlobalValue;
