@@ -38,5 +38,6 @@ export interface IWidgetComponentProps<TData extends WidgetData = WidgetData> ex
   data?: TData;
   sim: AgentSimulation;
   isRecording: boolean;
+  inRecordingMode: boolean;
 }
 export type WidgetComponent = ComponentType<IWidgetComponentProps>;

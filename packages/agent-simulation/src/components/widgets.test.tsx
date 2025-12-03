@@ -42,7 +42,7 @@ describe("Widgets", () => {
 
   describe("null sim handling", () => {
     it("returns null when sim is null", () => {
-      const { container } = render(<Widgets sim={null} isRecording={false} />);
+      const { container } = render(<Widgets sim={null} isRecording={false} inRecordingMode={false} />);
       expect(container.firstChild).toBeNull();
     });
   });
@@ -56,7 +56,7 @@ describe("Widgets", () => {
       const mockSim: MockSim = {
         widgets: [{ type: "test-widget", globalKey: "widget1", data: {} }]
       };
-      render(<Widgets sim={mockSim as AgentSimulation} isRecording={false} />);
+      render(<Widgets sim={mockSim as AgentSimulation} isRecording={false} inRecordingMode={false} />);
       expect(screen.getByTestId("widget-widget1")).toBeInTheDocument();
     });
 
@@ -73,7 +73,7 @@ describe("Widgets", () => {
           { type: "tall-widget", globalKey: "widget2", data: {} }
         ]
       };
-      render(<Widgets sim={mockSim as AgentSimulation} isRecording={false} />);
+      render(<Widgets sim={mockSim as AgentSimulation} isRecording={false} inRecordingMode={false} />);
       expect(screen.getByTestId("widget-widget1")).toBeInTheDocument();
       expect(screen.getByTestId("widget-widget2")).toBeInTheDocument();
     });
@@ -91,7 +91,7 @@ describe("Widgets", () => {
           { type: "invalid-widget", globalKey: "widget2", data: {} }
         ]
       };
-      render(<Widgets sim={mockSim as AgentSimulation} isRecording={false} />);
+      render(<Widgets sim={mockSim as AgentSimulation} isRecording={false} inRecordingMode={false} />);
       expect(screen.getByTestId("widget-widget1")).toBeInTheDocument();
       expect(screen.queryByTestId("widget-widget2")).not.toBeInTheDocument();
       expect(console.warn).toHaveBeenCalledWith("No widget registration found for type: 'invalid-widget'");
@@ -110,7 +110,7 @@ describe("Widgets", () => {
           { type: "no-size-widget", globalKey: "widget2", data: {} }
         ]
       };
-      render(<Widgets sim={mockSim as AgentSimulation} isRecording={false} />);
+      render(<Widgets sim={mockSim as AgentSimulation} isRecording={false} inRecordingMode={false} />);
       expect(screen.getByTestId("widget-widget1")).toBeInTheDocument();
       expect(screen.queryByTestId("widget-widget2")).not.toBeInTheDocument();
       expect(console.warn).toHaveBeenCalledWith("Widget registration for type 'no-size-widget' is missing a 'size' property.");
@@ -125,7 +125,7 @@ describe("Widgets", () => {
         { col: 0 as 0 | 1, gridRowStart: 0, gridRowEnd: 1, size: "short" as import("../types/widgets").WidgetSize, spansFullWidth: false }
       ]);
       const mockSim: MockSim = { widgets: [{ type: "short-widget", globalKey: "widget1", data: {} }] };
-      const { container } = render(<Widgets sim={mockSim as AgentSimulation} isRecording={false} />);
+      const { container } = render(<Widgets sim={mockSim as AgentSimulation} isRecording={false} inRecordingMode={false} />);
       const widgetDiv = container.querySelector('[data-testid="widget-widget1"]')?.parentElement;
       expect(widgetDiv?.className).toContain("widgetShort");
     });
@@ -136,7 +136,7 @@ describe("Widgets", () => {
         { col: 0 as 0 | 1, gridRowStart: 0, gridRowEnd: 2, size: "tall" as import("../types/widgets").WidgetSize, spansFullWidth: false }
       ]);
       const mockSim: MockSim = { widgets: [{ type: "tall-widget", globalKey: "widget1", data: {} }] };
-      const { container } = render(<Widgets sim={mockSim as AgentSimulation} isRecording={false} />);
+      const { container } = render(<Widgets sim={mockSim as AgentSimulation} isRecording={false} inRecordingMode={false} />);
       const widgetDiv = container.querySelector('[data-testid="widget-widget1"]')?.parentElement;
       expect(widgetDiv?.className).toContain("widgetTall");
     });
@@ -147,7 +147,7 @@ describe("Widgets", () => {
         { col: 0 as 0 | 1, gridRowStart: 0, gridRowEnd: 3, size: "very-tall" as import("../types/widgets").WidgetSize, spansFullWidth: true }
       ]);
       const mockSim: MockSim = { widgets: [{ type: "very-tall-widget", globalKey: "widget1", data: {} }] };
-      const { container } = render(<Widgets sim={mockSim as AgentSimulation} isRecording={false} />);
+      const { container } = render(<Widgets sim={mockSim as AgentSimulation} isRecording={false} inRecordingMode={false} />);
       const widgetDiv = container.querySelector('[data-testid="widget-widget1"]')?.parentElement;
       expect(widgetDiv?.className).toContain("widgetVeryTall");
     });
@@ -164,7 +164,7 @@ describe("Widgets", () => {
           { type: "short-widget", globalKey: "widget2", data: {} }
         ]
       };
-      const { container } = render(<Widgets sim={mockSim as AgentSimulation} isRecording={false} />);
+      const { container } = render(<Widgets sim={mockSim as AgentSimulation} isRecording={false} inRecordingMode={false} />);
       const widget1Div = container.querySelector('[data-testid="widget-widget1"]')?.parentElement;
       const widget2Div = container.querySelector('[data-testid="widget-widget2"]')?.parentElement;
       expect(widget1Div?.className).toContain("widgetFullWidth");
@@ -184,7 +184,7 @@ describe("Widgets", () => {
           { type: "short-widget", globalKey: "widget2", data: {} }
         ]
       };
-      const { container } = render(<Widgets sim={mockSim as AgentSimulation} isRecording={false} />);
+      const { container } = render(<Widgets sim={mockSim as AgentSimulation} isRecording={false} inRecordingMode={false} />);
       const widget2Div = container.querySelector('[data-testid="widget-widget2"]')?.parentElement;
       expect(widget2Div?.className).toContain("widgetMatchTallHeight");
     });
@@ -207,7 +207,7 @@ describe("Widgets", () => {
           { type: "very-tall-widget", globalKey: "widget3", data: {} }
         ]
       };
-      render(<Widgets sim={mockSim as AgentSimulation} isRecording={false} />);
+      render(<Widgets sim={mockSim as AgentSimulation} isRecording={false} inRecordingMode={false} />);
       expect(mockComputeLayout).toHaveBeenCalledWith(["short", "tall", "very-tall"]);
     });
 
@@ -228,7 +228,7 @@ describe("Widgets", () => {
           { type: "short-widget", globalKey: "widget4", data: {} }
         ]
       };
-      const { container } = render(<Widgets sim={mockSim as AgentSimulation} isRecording={false} />);
+      const { container } = render(<Widgets sim={mockSim as AgentSimulation} isRecording={false} inRecordingMode={false} />);
       const widgetDivs = [2, 3, 4].map(i => container.querySelector(`[data-testid="widget-widget${i}"]`)?.parentElement);
       // Only check the essential layout classes for each widget
       expect(container.querySelector('[data-testid="widget-widget1"]')?.parentElement?.className).not.toContain("widgetFullWidth");
@@ -259,7 +259,7 @@ describe("Widgets", () => {
         widgets: [{ type: "test-widget", globalKey: "widget1", data: { label: "Test" } }]
       };
 
-      render(<Widgets sim={mockSim as AgentSimulation} isRecording={true} />);
+      render(<Widgets sim={mockSim as AgentSimulation} isRecording={true} inRecordingMode={true} />);
 
       expect(TestWidget).toHaveBeenCalled();
       const callProps = TestWidget.mock.calls[0][0];
@@ -268,6 +268,7 @@ describe("Widgets", () => {
       expect(callProps.data).toEqual({ label: "Test" });
       expect(callProps.sim).toBe(mockSim as AgentSimulation);
       expect(callProps.isRecording).toBe(true);
+      expect(callProps.inRecordingMode).toBe(true);
       expect(screen.getByTestId("test-widget1")).toBeInTheDocument();
     });
   });

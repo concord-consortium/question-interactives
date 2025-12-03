@@ -13,7 +13,7 @@ import css from "./slider-widget.scss";
 export const sliderWidgetType = "slider";
 const MAX_INPUT_WIDTH_CH = 5;
 
-export const SliderWidget = observer(function SliderWidget({ data, globalKey, sim, isRecording }: IWidgetComponentProps<SliderWidgetData>) {
+export const SliderWidget = observer(function SliderWidget({ data, globalKey, sim, isRecording, inRecordingMode }: IWidgetComponentProps<SliderWidgetData>) {
   if (!data) {
     return <WidgetError message="Slider widget is missing data configuration." />;
   }
@@ -53,7 +53,7 @@ export const SliderWidget = observer(function SliderWidget({ data, globalKey, si
   const inputWidth = Math.min(formattedValue.length + 1, MAX_INPUT_WIDTH_CH);
 
   return (
-    <div className={classNames(css.sliderWidget, { [css.recording]: isRecording })} data-testid="slider-widget-root">
+    <div className={classNames(css.sliderWidget, { [css.recording]: isRecording, [css.inRecordingMode]: inRecordingMode })} data-testid="slider-widget-root">
       <div className={css.sliderHeader} data-testid="slider-widget-header">
         <span className={css.labelText} data-testid="slider-widget-label">
           {label}
@@ -70,6 +70,7 @@ export const SliderWidget = observer(function SliderWidget({ data, globalKey, si
               type="number"
               value={formattedValue}
               onChange={handleInputChange}
+              disabled={isRecording}
             />
             {unit && <span className={css.unit} data-testid="slider-widget-unit">{unit}</span>}
           </div>
@@ -84,6 +85,7 @@ export const SliderWidget = observer(function SliderWidget({ data, globalKey, si
           onChange={handleChange}
           step={step}
           value={value}
+          disabled={isRecording}
         />
       </div>
     </div>

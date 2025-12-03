@@ -10,6 +10,7 @@ import css from "./widgets.scss";
 interface IWidgetProps {
   sim: AgentSimulation | null;
   isRecording: boolean;
+  inRecordingMode: boolean;
 }
 
 const sizeToClass: Record<WidgetSize, string> = {
@@ -18,7 +19,7 @@ const sizeToClass: Record<WidgetSize, string> = {
   "very-tall": css.widgetVeryTall
 };
 
-export function Widgets({ sim, isRecording }: IWidgetProps) {
+export function Widgets({ sim, isRecording, inRecordingMode }: IWidgetProps) {
   if (!sim) return null;
 
   const validWidgets = sim.widgets.filter(w => {
@@ -62,7 +63,7 @@ export function Widgets({ sim, isRecording }: IWidgetProps) {
             key={`${index}-${widget.globalKey}-${widget.type}`}
             className={widgetClassNames}
           >
-            <WidgetComponent {...widget} sim={sim} isRecording={isRecording} />
+            <WidgetComponent {...widget} sim={sim} isRecording={isRecording} inRecordingMode={inRecordingMode} />
           </div>
         );
       })}

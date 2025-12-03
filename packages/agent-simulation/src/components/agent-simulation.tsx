@@ -127,6 +127,7 @@ export const AgentSimulationComponent = ({
     }
     return undefined;
   }, [currentRecordingIndex, recordings]);
+  const inRecordingMode = useMemo(() => !!currentRecording, [currentRecording]);
   const isRecording = useMemo(() => !!currentRecording && !paused, [currentRecording, paused]);
 
   const getRecordingInfo = useCallback(() => {
@@ -493,7 +494,7 @@ export const AgentSimulationComponent = ({
               </button>
             </div>
           )}
-          {currentRecording ? <RecordingIcon className={css.modelIcon} /> : <ModelIcon className={css.modelIcon} />}
+          {inRecordingMode ? <RecordingIcon className={css.modelIcon} /> : <ModelIcon className={css.modelIcon} />}
           <div className={css.modelInfo}>
             <div className={css.modelName}>{modelName}</div>
             <div>{renderRecordingInfo()}</div>
@@ -538,7 +539,7 @@ export const AgentSimulationComponent = ({
           onFitAll={handleFitAll}
         />
       </div>
-      <Widgets sim={simRef.current} isRecording={isRecording} />
+      <Widgets sim={simRef.current} isRecording={isRecording} inRecordingMode={inRecordingMode} />
       {blocklyCode && (
         <>
           {showBlocklyCode &&
