@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { IAuthoredState } from "./types";
 import {
   addLinkedInteractiveStateListener, IInteractiveStateWithDataset, removeLinkedInteractiveStateListener, IDataset
@@ -7,6 +7,8 @@ import { useLinkedInteractiveId } from "@concord-consortium/question-interactive
 import { Bar } from "react-chartjs-2";
 import { BarElement, CategoryScale, Chart, ChartOptions, Legend, LinearScale, Title, Tooltip } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
+import { TypedDataTableMetadata, TypedObject, useObjectStorage } from "@concord-consortium/object-storage";
+
 import { generateChartData, emptyChartData, CustomChartData } from "../generate-chart-data";
 
 import css from "./runtime.scss";
@@ -84,17 +86,25 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
   const dataSourceInteractive1 = useLinkedInteractiveId("dataSourceInteractive1");
   const dataSourceInteractive2 = useLinkedInteractiveId("dataSourceInteractive2");
   const dataSourceInteractive3 = useLinkedInteractiveId("dataSourceInteractive3");
+  const hasObjectStorageData = useRef(false);
 
-  useEffect(() => {
-    const linkedInteractives: string[] = [
-      dataSourceInteractive1,
+  const linkedInteractives = useMemo(() => {
+    return [ dataSourceInteractive1,
       dataSourceInteractive2,
       dataSourceInteractive3
     ].filter(intItemId => intItemId !== undefined) as string[];
+  }, [dataSourceInteractive1, dataSourceInteractive2, dataSourceInteractive3]);
+
+  useEffect(() => {
     const unsubscribeMethods = linkedInteractives.map((dataSourceInteractive, datasetIdx) => {
       const listener = (newLinkedIntState: IInteractiveStateWithDataset | undefined) => {
         const newDataset = newLinkedIntState && newLinkedIntState.dataset;
         const isValidDatasetVersion = newDataset && newDataset.type === "dataset" && Number(newDataset.version) === 1;
+
+        if (hasObjectStorageData.current) {
+          // if we are already using object storage data, ignore dataset updates from interactive state
+          return;
+        }
 
         // Accept null or undefined datasets too to clear them. If it's an object, make sure it follows specified format.
         if (!newDataset || isValidDatasetVersion) {
@@ -121,7 +131,51 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
     return () => {
       unsubscribeMethods.forEach(unsubscribeMethod => unsubscribeMethod());
     };
-  }, [dataSourceInteractive1, dataSourceInteractive2, dataSourceInteractive3]);
+  }, [linkedInteractives]);
+
+  const objectStorage = useObjectStorage();
+
+  useEffect(() => {
+    const unsubscribes = linkedInteractives.map((linkedInteractiveId, datasetIdx) => {
+      const unsubscribe = objectStorage.monitor(linkedInteractiveId, (objects) => {
+        // find the latest dataTable (objects are ordered from oldest to newest)
+        objects.reverse();
+        const latestTypedObject = objects.find(obj => TypedObject.IsSupportedTypedObjectMetadata(obj.metadata));
+        if (latestTypedObject && TypedObject.IsSupportedTypedObjectMetadata(latestTypedObject.metadata)) {
+          const dataTableEntry = Object.entries(latestTypedObject.metadata.items).find(([key, item]) => item.type === "dataTable") as [string, TypedDataTableMetadata] | undefined;
+          const [dataTableId, dataTableMetadata] = dataTableEntry || [];
+          if (dataTableId && dataTableMetadata) {
+            const loadDataTableObject = async () => {
+              const objectData = await objectStorage.readData(latestTypedObject.id);
+              const dataTableData = objectData?.[dataTableId];
+              if (dataTableData) {
+                // convert the dataTableObject to the IDataset format
+                const newDataset: IDataset = {
+                  type: "dataset",
+                  version: 1,
+                  properties: dataTableMetadata.cols,
+                  rows: Object.values(dataTableData.rows || {}).map((row: any) => row)
+                };
+                setDatasets(prevDatasets => {
+                  const newDatasets = prevDatasets.slice();
+                  newDatasets[datasetIdx] = newDataset;
+                  return newDatasets;
+                });
+                hasObjectStorageData.current = true;
+              }
+            };
+            loadDataTableObject();
+          }
+        }
+      });
+      return unsubscribe;
+    });
+
+    return () => {
+      unsubscribes.forEach(unsubscribe => unsubscribe());
+    };
+  }, [objectStorage, linkedInteractives]);
+
 
   const anyData = datasets.filter(d => d !== null).length > 0;
   const graphContainerClassName = css.graph + " " + css["graphLayout" + (authoredState.graphsPerRow || 1)];
