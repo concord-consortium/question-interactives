@@ -45,7 +45,8 @@
         background-color: white;
         border: none;
         display: inline-block;
-        text-align: center;
+        padding: 0 3px 0 0;
+        text-align: right;
 
         &:hover {
           background-color: var(--cc-teal-light-4);
@@ -54,7 +55,7 @@
 
       .unit {
         min-width: fit-content;
-        padding: 0 6px 0 3px;
+        padding: 1px 6px 0 3px;
       }
     }
 
@@ -90,12 +91,12 @@
       border: solid 1.5px var(--cc-teal-dark-1);
       box-shadow: 1px 1px 2px 0 rgba(0, 0, 0, 0.25);
       cursor: grab;
-      height: 24px;
+      height: 27px;
       margin-left: 0;
-      margin-top: -7px;
+      margin-top: -8.25px;
       position: absolute;
       touch-action: pan-x;
-      width: 24px;
+      width: 27px;
       z-index: 2;
 
       &:hover {
@@ -116,7 +117,7 @@
 
     :global(.rc-slider-rail) {
       background-color: #949494;
-      border-radius: 2px;
+      border-radius: 2.5px;
       height: 3px;
       position: absolute;
       top: 4px;
@@ -125,7 +126,7 @@
 
     :global(.rc-slider-track) {
       background-color: var(--cc-teal-dark-1);
-      border-radius: 2px;
+      border-radius: 2.5px;
       height: 5px;
       position: absolute;
       top: 3px;
