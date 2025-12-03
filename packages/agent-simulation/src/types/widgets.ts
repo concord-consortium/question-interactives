@@ -34,10 +34,9 @@ export interface IWidgetProps {
   type: string;
 }
 
-export interface IWidgetComponentProps<TData extends WidgetData = WidgetData> extends Omit<IWidgetProps, "type"> {
+export interface IWidgetComponentProps<TData extends WidgetData = WidgetData> extends IWidgetProps {
   data?: TData;
-  isRecording: boolean;
   sim: AgentSimulation;
-  type: string;
+  isRecording: boolean;
 }
 export type WidgetComponent = ComponentType<IWidgetComponentProps>;

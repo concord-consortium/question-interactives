@@ -19,6 +19,4 @@ describe("formatValue", () => {
 		expect(formatValue(0.1234, "percent", 2)).toBe("12.34");
 		expect(formatValue(0.5, "percent")).toBe("50");
 	});
-
-
 });
