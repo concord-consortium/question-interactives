@@ -65,9 +65,10 @@ This widget displays the value of the given global.
   - Ignored for integer format (always rounds to whole number)
 - `unit: string` - Optional. Unit text to display after the value (e.g., "°C", "m/s").
 
-#### `slider`
 
-This widget allows the user to change the value of the given global using a horizontal slider.
+#### `slider` and `circular-slider`
+
+These widgets allow the user to change the value of a global using either a horizontal slider (`slider`) or a circular slider (`circular-slider`).
 
 The global value must be a number.
 
