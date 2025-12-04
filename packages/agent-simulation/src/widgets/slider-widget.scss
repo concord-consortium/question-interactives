@@ -18,7 +18,7 @@
       text-overflow: ellipsis;
       white-space: nowrap;
     }
-  
+
     .valueContainer {
       border: solid 1.5px #949494;
       border-radius: 4px;
@@ -155,6 +155,30 @@
   }
 
   &.recording {
+    .valueContainer {
+      border: none;
+
+      .valueInput {
+        &:hover {
+          background-color: white !important;
+        }
+      }
+    }
+
+    :global(.rc-slider-handle) {
+      border: solid 1.5px var(--cc-orange-dark-1-alpha-35) !important;
+
+      &:hover, &:active {
+        background-color: #fff !important;
+      }
+    }
+
+    :global(.rc-slider-track) {
+      background-color: var(--cc-orange-dark-1-alpha-35) !important;
+    }
+  }
+
+  &.inRecordingMode {
     .valueContainer {
       background-color: var(--cc-orange-light-5);
 

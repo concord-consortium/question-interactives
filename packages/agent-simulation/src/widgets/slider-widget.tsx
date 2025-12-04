@@ -13,13 +13,13 @@ import css from "./slider-widget.scss";
 export const sliderWidgetType = "slider";
 const MAX_INPUT_WIDTH_CH = 5;
 
-export const SliderWidget = observer(function SliderWidget({ data, globalKey, sim, isRecording }: IWidgetComponentProps<SliderWidgetData>) {
+export const SliderWidget = observer(function SliderWidget({ data, globalKey, sim, isRecording, inRecordingMode }: IWidgetComponentProps<SliderWidgetData>) {
   const sliderBodyRef = React.useRef<HTMLDivElement>(null);
 
   // Clicks on the rc-slider element's container (not just the slider itself)
   // should move the slider handle to a position corresponding to the click.
   const handleSliderBodyClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!sliderBodyRef.current) return;
+    if (!sliderBodyRef.current || isRecording) return;
 
     const rect = sliderBodyRef.current.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
@@ -82,7 +82,7 @@ export const SliderWidget = observer(function SliderWidget({ data, globalKey, si
   const inputWidth = Math.min(max.toString().length + 1, MAX_INPUT_WIDTH_CH);
 
   return (
-    <div className={classNames(css.sliderWidget, { [css.recording]: isRecording })} data-testid="slider-widget-root">
+    <div className={classNames(css.sliderWidget, { [css.recording]: isRecording, [css.inRecordingMode]: inRecordingMode })} data-testid="slider-widget-root">
       <div className={css.sliderHeader} data-testid="slider-widget-header">
         <span className={css.labelText} data-testid="slider-widget-label">
           {label}
@@ -92,6 +92,7 @@ export const SliderWidget = observer(function SliderWidget({ data, globalKey, si
             <input
               className={css.valueInput}
               data-testid="slider-widget-input"
+              disabled={isRecording}
               min={min}
               max={max}
               step={step}
@@ -119,6 +120,7 @@ export const SliderWidget = observer(function SliderWidget({ data, globalKey, si
           onChange={handleChange}
           step={step}
           value={value}
+          disabled={isRecording}
         />
       </div>
     </div>
