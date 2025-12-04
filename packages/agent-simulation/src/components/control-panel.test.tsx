@@ -4,6 +4,7 @@ import { ControlPanel } from "./control-panel";
 
 describe("ControlPanel", () => {
   const defaultProps = {
+    canPlayOrReset: true,
     codeUpdateAvailable: false,
     hasBeenStarted: false,
     hasCodeSource: true,
@@ -149,6 +150,27 @@ describe("ControlPanel", () => {
 
         expect(screen.queryByTestId("update-code-button")).not.toBeInTheDocument();
       });
+    });
+  });
+
+  describe("Play/Reset button enable/disable logic", () => {
+    it("disables Play and Reset when `canPlayOrReset` is false", () => {
+      render(<ControlPanel {...defaultProps} canPlayOrReset={false} hasBeenStarted={true} />);
+      expect(screen.getByTestId("play-pause-button")).toBeDisabled();
+      expect(screen.getByTestId("reset-button")).toBeDisabled();
+    });
+
+    it("enables Play when `canPlayOrReset` is true", () => {
+      render(<ControlPanel {...defaultProps} canPlayOrReset={true} hasBeenStarted={true} />);
+      expect(screen.getByTestId("play-pause-button")).not.toBeDisabled();
+    });
+
+    it("enables Reset only when `hasBeenStarted` is true and `canPlayOrReset` is true", () => {
+      const { rerender } = render(<ControlPanel {...defaultProps} hasBeenStarted={true} canPlayOrReset={true} />);
+      expect(screen.getByTestId("reset-button")).not.toBeDisabled();
+
+      rerender(<ControlPanel {...defaultProps} hasBeenStarted={false} canPlayOrReset={true} />);
+      expect(screen.getByTestId("reset-button")).toBeDisabled();
     });
   });
 

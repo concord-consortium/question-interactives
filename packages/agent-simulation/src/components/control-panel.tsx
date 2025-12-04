@@ -26,6 +26,7 @@ interface IProps {
   onReset: () => void;
   onUpdateCode: () => void;
   onDeleteRecording: () => void;
+  canPlayOrReset: boolean;
 }
 
 export const ControlPanel = ({
@@ -39,7 +40,8 @@ export const ControlPanel = ({
   onPlayPause,
   onReset,
   onUpdateCode,
-  onDeleteRecording
+  onDeleteRecording,
+  canPlayOrReset
 }: IProps) => {
 
   const recording = !!currentRecording;
@@ -48,7 +50,7 @@ export const ControlPanel = ({
   const renderPlayPauseButton = () => {
     let label = paused ? "Play" : "Pause";
     let Icon: typeof RecordIcon = paused ? PlayIcon : PauseIcon;
-    let disabled = false;
+    let disabled = !canPlayOrReset;
     const className = classNames({
       [css.paused]: paused,
       [css.playing]: !paused,
@@ -58,7 +60,7 @@ export const ControlPanel = ({
     if (currentRecording) {
       Icon = paused ? RecordIcon : StopIcon;
       label = paused ? "Record" : "Stop";
-      disabled = recorded;
+      disabled = !canPlayOrReset || recorded;
     }
 
     return (
@@ -94,7 +96,7 @@ export const ControlPanel = ({
         aria-label="Reset"
         className={css.resetButton}
         data-testid="reset-button"
-        disabled={!hasBeenStarted || recording}
+        disabled={!canPlayOrReset || !hasBeenStarted || recording}
         title="Reset"
         onClick={onReset}
       >

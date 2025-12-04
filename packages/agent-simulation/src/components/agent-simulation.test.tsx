@@ -43,7 +43,8 @@ describe("AgentSimulationComponent", () => {
     getValue: jest.fn(),
     setValue: jest.fn(),
     get: jest.fn(),
-    set: jest.fn()
+    set: jest.fn(),
+    values: jest.fn()
   };
 
   const mockAddWidget = jest.fn();
@@ -129,7 +130,7 @@ describe("AgentSimulationComponent", () => {
       </ObjectStorageProvider>
     );
 
-    expect(mockSimulationConstructor).toHaveBeenCalledWith(450, 450, 15);
+    expect(mockSimulationConstructor).toHaveBeenCalledWith(450, 450, 15, undefined);
 
     expect(mockVis).toHaveBeenCalledWith(mockAgentSimulation.sim, { speed: 1, target: expect.any(HTMLDivElement), preserveDrawingBuffer: true, afterTick: expect.any(Function) });
 
@@ -212,6 +213,7 @@ describe("AgentSimulationComponent", () => {
   });
 
   it("handles reset button click", () => {
+    mockGlobals.values.mockReturnValue({});
     render(
       <ObjectStorageProvider config={objectStorageConfig}>
         <AgentSimulationComponent
@@ -317,6 +319,7 @@ describe("AgentSimulationComponent", () => {
   });
 
   it("updates blockly code when update button is clicked", () => {
+    mockGlobals.values.mockReturnValue({});
     mockUseLinkedInteractiveId.mockReturnValue("linked-interactive-id");
 
     render(
@@ -499,6 +502,40 @@ describe("AgentSimulationComponent", () => {
       AV,
       mockGlobals,
       expect.any(Function) // addWidget function
+    );
+  });
+
+  it("preserves globals across simulation resets and code uploads", () => {
+    mockGlobals.values.mockReturnValue({ slider1: 42, readout1: 99 });
+
+    render(
+      <ObjectStorageProvider config={objectStorageConfig}>
+        <AgentSimulationComponent
+          authoredState={defaultAuthoredState}
+          interactiveState={defaultInteractiveState}
+          setInteractiveState={mockSetInteractiveState}
+          report={false}
+        />
+      </ObjectStorageProvider>
+    );
+
+    // Start the simulation to enable the reset button.
+    const playButton = screen.getByTestId("play-pause-button");
+    fireEvent.click(playButton);
+
+    // Update the globals on the current simulation instance.
+    mockGlobals.values.mockReturnValue({ slider1: 77, readout1: 123 });
+
+    // Click reset button.
+    const resetButton = screen.getByTestId("reset-button");
+    fireEvent.click(resetButton);
+
+    // The constructor should be called twice: once on initial render, once on reset.
+    // The second call should preserve the updated globals.
+    expect(mockSimulationConstructor).toHaveBeenCalledTimes(2);
+    expect(mockSimulationConstructor).toHaveBeenNthCalledWith(
+      2, // Second call
+      450, 450, 15, { slider1: 77, readout1: 123 }
     );
   });
 

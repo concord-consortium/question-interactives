@@ -10,13 +10,19 @@ export class AgentSimulation {
   sim: AA.Simulation;
   widgets: IWidgetProps[] = [];
 
-  constructor(gridWidth: number, gridHeight: number, gridStep: number) {
+  constructor(gridWidth: number, gridHeight: number, gridStep: number, preservedGlobals?: Record<string, any>) {
     this.sim = new AA.Simulation({
       width: gridWidth,
       height: gridHeight,
       gridStep: gridStep
     });
     makeAutoObservable(this);
+
+    if (preservedGlobals) {
+      Object.entries(preservedGlobals).forEach(([key, value]) => {
+        this.globals.set(key, value);
+      });
+    }
   }
 
   addWidget(widget: IWidgetProps) {
