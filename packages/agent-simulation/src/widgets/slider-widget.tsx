@@ -19,7 +19,7 @@ export const SliderWidget = observer(function SliderWidget({ data, globalKey, si
   // Clicks on the rc-slider element's container (not just the slider itself)
   // should move the slider handle to a position corresponding to the click.
   const handleSliderBodyClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!sliderBodyRef.current) return;
+    if (!sliderBodyRef.current || isRecording) return;
 
     const rect = sliderBodyRef.current.getBoundingClientRect();
     const clickX = e.clientX - rect.left;
