@@ -405,7 +405,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
       await new Promise<void>((resolve) => {
         setTimeout(() => {
           const url = URL.createObjectURL(fileData);
-          console.log("AUDIO URL", url);
           setAudioUrl(url);
           setRecordingSaved(true);
           setRecordingDisabled(false);

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef } from "react";
 import { setSupportedFeatures, useAccessibility, useAuthoredState, useInitMessage } from "@concord-consortium/lara-interactive-api";
 import { DynamicTextContext, useDynamicTextProxy } from "@concord-consortium/dynamic-text";
+import { ObjectStorageConfig, ObjectStorageProvider } from "@concord-consortium/object-storage";
 
 import { useAutoHeight } from "../hooks/use-auto-height";
 import { useShutterbug } from "../hooks/use-shutterbug";
@@ -48,6 +49,7 @@ export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps
   const initMessage = useInitMessage();
   const isLoading = !initMessage;
   const isRuntimeView = initMessage?.mode === "runtime";
+  const objectStorageConfig = (initMessage?.mode === "runtime" || initMessage?.mode === "report" ? initMessage.objectStorageConfig : undefined) as any as ObjectStorageConfig | undefined;
 
   const dynamicTextProxy = useDynamicTextProxy();
 
@@ -86,9 +88,11 @@ export const BaseApp = <IAuthoredState extends IBaseAuthoredState>(props: IProps
       return "Authored state is missing.";
     }
     return (
-      <div className={css.runtime} data-font-family-override="true">
-        <Runtime authoredState={authoredState} />
-      </div>
+      <ObjectStorageProvider config={objectStorageConfig}>
+        <div className={css.runtime} data-font-family-override="true">
+          <Runtime authoredState={authoredState} />
+        </div>
+      </ObjectStorageProvider>
     );
   };
 

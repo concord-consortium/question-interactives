@@ -9,6 +9,7 @@ import { Bar } from "react-chartjs-2";
 import { IAuthoredState } from "./types";
 import { act } from "react-dom/test-utils";
 import css from "./runtime.scss";
+import { ObjectStorageConfig, ObjectStorageProvider } from "@concord-consortium/object-storage";
 
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
   addLinkedInteractiveStateListener: jest.fn(),
@@ -65,6 +66,11 @@ const initMessageWithoutDataSources = {
   linkedInteractives: []
 };
 
+const objectStorageConfig: ObjectStorageConfig = {
+  version: 1,
+  type: "demo",
+};
+
 describe("Graph runtime", () => {
   beforeEach(() => {
     addLinkedInteractiveStateListenerMock.mockClear();
@@ -74,7 +80,7 @@ describe("Graph runtime", () => {
 
   it("calls addLinkedInteractiveStateListener on mount and removeLinkedInteractiveStateListener for each observed source interactive", () => {
     useContextInitMessageMock.mockReturnValue(initMessageWithDataSources);
-    const wrapper = mount(<Runtime authoredState={authoredState} />);
+    const wrapper = mount(<ObjectStorageProvider config={objectStorageConfig}><Runtime authoredState={authoredState} /></ObjectStorageProvider>);
     expect(addLinkedInteractiveStateListenerMock).toHaveBeenCalledTimes(2);
     expect(addLinkedInteractiveStateListenerMock.mock.calls[0][1]).toEqual({interactiveItemId: "123-MwInteractive"});
     expect(addLinkedInteractiveStateListenerMock.mock.calls[1][1]).toEqual({interactiveItemId: "456-MwInteractive"});
@@ -89,13 +95,13 @@ describe("Graph runtime", () => {
 
   it("renders empty graph when there's no data available yet", () => {
     useContextInitMessageMock.mockReturnValue(initMessageWithoutDataSources);
-    const wrapper = mount(<Runtime authoredState={authoredState} />);
+    const wrapper = mount(<ObjectStorageProvider config={objectStorageConfig}><Runtime authoredState={authoredState} /></ObjectStorageProvider>);
     expect(wrapper.find(Bar).length).toEqual(1);
   });
 
   it("renders two separate graphs when datasets cannot be merged", () => {
     useContextInitMessageMock.mockReturnValue(initMessageWithDataSources);
-    const wrapper = mount(<Runtime authoredState={authoredState} />);
+    const wrapper = mount(<ObjectStorageProvider config={objectStorageConfig}><Runtime authoredState={authoredState} /></ObjectStorageProvider>);
     const intState1: IInteractiveStateWithDataset = {
       dataset: {
         type: "dataset",
@@ -127,7 +133,7 @@ describe("Graph runtime", () => {
 
   it("renders one graph when two datasets can be merged", () => {
     useContextInitMessageMock.mockReturnValue(initMessageWithDataSources);
-    const wrapper = mount(<Runtime authoredState={authoredState} />);
+    const wrapper = mount(<ObjectStorageProvider config={objectStorageConfig}><Runtime authoredState={authoredState} /></ObjectStorageProvider>);
     fakeDatasetUpdate(0, defaultLinkedState);
     fakeDatasetUpdate(1, defaultLinkedState);
     wrapper.update();
@@ -137,7 +143,7 @@ describe("Graph runtime", () => {
 
   it("ignores incompatible datasets", () => {
     useContextInitMessageMock.mockReturnValue(initMessageWithDataSources);
-    const wrapper = mount(<Runtime authoredState={authoredState} />);
+    const wrapper = mount(<ObjectStorageProvider config={objectStorageConfig}><Runtime authoredState={authoredState} /></ObjectStorageProvider>);
     const intStateWithWrongVersion = {
       dataset: {
         type: "dataset",
@@ -156,7 +162,7 @@ describe("Graph runtime", () => {
     const graphsPerRow = 2;
     const customAuthoredState = {...authoredState, graphsPerRow};
     useContextInitMessageMock.mockReturnValue(initMessageWithDataSources);
-    const wrapper = mount(<Runtime authoredState={customAuthoredState} />);
+    const wrapper = mount(<ObjectStorageProvider config={objectStorageConfig}><Runtime authoredState={customAuthoredState} /></ObjectStorageProvider>);
     fakeDatasetUpdate(0, defaultLinkedState);
     fakeDatasetUpdate(1, {
       dataset: {
