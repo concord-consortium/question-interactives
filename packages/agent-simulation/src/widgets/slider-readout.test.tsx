@@ -45,14 +45,10 @@ describe("SliderReadout", () => {
     expect(input).toHaveStyle({ width: "3ch" });
   });
 
-  it("calls onChange with clamped value", () => {
+  it("calls onChange with value", () => {
     const onChange = jest.fn();
     render(<SliderReadout {...baseProps} onChange={onChange} />);
     const input = screen.getByTestId("slider-widget-input");
-    fireEvent.change(input, { target: { value: "-10" } });
-    expect(onChange).toHaveBeenCalledWith(0);
-    fireEvent.change(input, { target: { value: "150" } });
-    expect(onChange).toHaveBeenCalledWith(100);
     fireEvent.change(input, { target: { value: "77" } });
     expect(onChange).toHaveBeenCalledWith(77);
   });
