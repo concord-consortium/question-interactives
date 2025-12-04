@@ -117,7 +117,7 @@
 
     :global(.rc-slider-rail) {
       background-color: #949494;
-      border-radius: 2.5px;
+      border-radius: 100px; // guarantees semicircle ends
       height: 3px;
       position: absolute;
       top: 4px;
@@ -126,7 +126,7 @@
 
     :global(.rc-slider-track) {
       background-color: var(--cc-teal-dark-1);
-      border-radius: 2.5px;
+      border-radius: 100px; // guarantees semicircle ends
       height: 5px;
       position: absolute;
       top: 3px;
