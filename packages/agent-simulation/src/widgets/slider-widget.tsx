@@ -14,6 +14,27 @@ export const sliderWidgetType = "slider";
 const MAX_INPUT_WIDTH_CH = 5;
 
 export const SliderWidget = observer(function SliderWidget({ data, globalKey, sim, isRecording }: IWidgetComponentProps<SliderWidgetData>) {
+  const sliderBodyRef = React.useRef<HTMLDivElement>(null);
+
+  // Clicks on the rc-slider element's container (not just the slider itself)
+  // should move the slider handle to a position corresponding to the click.
+  const handleSliderBodyClick = (e: React.MouseEvent<HTMLDivElement>) => {
+    if (!sliderBodyRef.current) return;
+
+    const rect = sliderBodyRef.current.getBoundingClientRect();
+    const clickX = e.clientX - rect.left;
+    const trackWidth = rect.width;
+    let percent = clickX / trackWidth;
+    percent = Math.max(0, Math.min(1, percent));
+    let newValue = min + percent * (max - min);
+    if (step && step > 0) {
+      newValue = Math.round((newValue - min) / step) * step + min;
+    }
+    newValue = Math.max(min, Math.min(max, newValue));
+
+    handleChange(newValue);
+  };
+
   if (!data) {
     return <WidgetError message="Slider widget is missing data configuration." />;
   }
@@ -44,13 +65,21 @@ export const SliderWidget = observer(function SliderWidget({ data, globalKey, si
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const newValue = parseFloat(e.target.value);
     if (!isNaN(newValue)) {
-      sim.globals.set(globalKey, newValue);
+      const clampedValue = Math.max(min, Math.min(max, newValue));
+      sim.globals.set(globalKey, clampedValue);
+    }
+  };
+
+  const handleInputKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === "Enter" || e.key === "Return") {
+      e.currentTarget.blur();
     }
   };
 
   const formattedValue = formatValue(value, data.formatType, data.precision);
   const unit = formatType === "percent" ? "%" : (data?.unit ?? "");
-  const inputWidth = Math.min(formattedValue.length + 1, MAX_INPUT_WIDTH_CH);
+  // Set input width based on max value length to prevent layout shifts.
+  const inputWidth = Math.min(max.toString().length + 1, MAX_INPUT_WIDTH_CH);
 
   return (
     <div className={classNames(css.sliderWidget, { [css.recording]: isRecording })} data-testid="slider-widget-root">
@@ -70,13 +99,19 @@ export const SliderWidget = observer(function SliderWidget({ data, globalKey, si
               type="number"
               value={formattedValue}
               onChange={handleInputChange}
+              onKeyDown={handleInputKeyDown}
             />
             {unit && <span className={css.unit} data-testid="slider-widget-unit">{unit}</span>}
           </div>
         }
         {secondaryLabel && <span className={css.secondaryLabelText} data-testid="slider-widget-secondary-label">{secondaryLabel}</span>}
       </div>
-      <div className={css.sliderBody} data-testid="slider-widget-slider-body">
+      <div
+        className={css.sliderBody}
+        data-testid="slider-widget-slider-body"
+        ref={sliderBodyRef}
+        onClick={handleSliderBodyClick}
+      >
         <Slider
           className={css.rcSlider}
           min={min}
