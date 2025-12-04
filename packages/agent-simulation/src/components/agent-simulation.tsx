@@ -80,6 +80,7 @@ export const AgentSimulationComponent = ({
   const [paused, setPaused] = useState(false);
   const [error, setError] = useState("");
   const [resetCount, setResetCount] = useState(0);
+  const [newRecordingCount, setNewRecordingCount] = useState(0);
   const simRef = useRef<AgentSimulation | null>(null);
   const [hasBeenStarted, setHasBeenStarted] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(ZOOM_DEFAULT);
@@ -236,7 +237,7 @@ export const AgentSimulationComponent = ({
       container?.replaceChildren();
       oldSim.destroy();
     };
-  }, [blocklyCode, code, gridHeight, gridStep, gridWidth, resetCount]);
+  }, [blocklyCode, code, gridHeight, gridStep, gridWidth, resetCount, newRecordingCount]);
 
   // Cleanup animation frames on unmount
   useEffect(() => {
@@ -343,7 +344,7 @@ export const AgentSimulationComponent = ({
 
               const { id } = typedObject;
               objectStorage.add(typedObject, { id });
-              notPausedRecordings[currentRecordingIndex] = { objectId: id, startedAt, duration, thumbnail };
+              notPausedRecordings[currentRecordingIndex] = { objectId: id, startedAt, duration, thumbnail, snapshot };
               setRecordings(notPausedRecordings);
 
               // Clear out the tick data for the next recording
@@ -371,9 +372,10 @@ export const AgentSimulationComponent = ({
   handlePlayPauseRef.current = handlePlayPause;
 
   const handleReset = () => {
-    const newResetCount = resetCount + 1;
-    log("reset-simulation", { resetCount: newResetCount });
-    setResetCount(newResetCount);
+    setResetCount(prev => {
+      log("reset-simulation", { resetCount: prev + 1 });
+      return prev + 1;
+    });
     setHasBeenStarted(false);
   };
 
@@ -456,6 +458,7 @@ export const AgentSimulationComponent = ({
     const newRecordings = [...recordings, newRecording];
     setRecordings(newRecordings);
     setCurrentRecordingIndex(newRecordings.length - 1);
+    setNewRecordingCount(prev => prev + 1);
   };
 
   const handleSelectRecording = (index: number) => {
@@ -479,6 +482,8 @@ export const AgentSimulationComponent = ({
           {info.formattedTime} ({info.durationString})
         </span>
       );
+    } else if (inRecordingMode) {
+      return <span className={css.recordingInfo}>(Start recording)</span>;
     }
     return null;
   };
@@ -529,15 +534,23 @@ export const AgentSimulationComponent = ({
           <div
             ref={containerRef}
             className={css.simContainer}
-            style={{ transform: `scale(${zoomLevel})` }}
+            style={{ transform: `scale(${zoomLevel})`, opacity: currentRecording?.snapshot ? 0 : 1 }}
+          />
+          {currentRecording?.snapshot && (
+            <img
+              src={currentRecording.snapshot}
+              alt="Simulation snapshot"
+              className={css.snapshot}
+              style={{ transform: `scale(${zoomLevel})` }}
+            />
+          )}
+          <ZoomControls
+            zoomLevel={zoomLevel}
+            onZoomIn={handleZoomIn}
+            onZoomOut={handleZoomOut}
+            onFitAll={handleFitAll}
           />
         </div>
-        <ZoomControls
-          zoomLevel={zoomLevel}
-          onZoomIn={handleZoomIn}
-          onZoomOut={handleZoomOut}
-          onFitAll={handleFitAll}
-        />
       </div>
       <Widgets sim={simRef.current} isRecording={isRecording} inRecordingMode={inRecordingMode} />
       {blocklyCode && (

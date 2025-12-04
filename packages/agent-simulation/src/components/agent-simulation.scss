@@ -42,6 +42,19 @@
 
         button {
           @include interactive-button-base;
+
+          &:hover:not([disabled]) {
+            background-color: var(--cc-teal-light-3);
+          }
+
+          &:active:not([disabled]) {
+            border-color: white;
+            background-color: var(--cc-teal);
+
+            path {
+              fill: white;
+            }
+          }
         }
       }
 
@@ -116,11 +129,21 @@
       overflow: auto;
       max-height: 100%;
       max-width: 100%;
+      position: relative;
     }
 
     .simContainer {
       transform-origin: left top;
       transition: transform 0.2s ease-out;
+    }
+
+    .snapshot {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 450px;
+      height: 450px;
+      object-fit: contain;
     }
   }
 
