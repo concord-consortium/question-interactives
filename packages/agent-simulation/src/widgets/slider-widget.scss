@@ -156,6 +156,12 @@
   &.recording {
     .valueContainer {
       border: none;
+
+      .valueInput {
+        &:hover {
+          background-color: white !important;
+        }
+      }
     }
 
     :global(.rc-slider-handle) {
