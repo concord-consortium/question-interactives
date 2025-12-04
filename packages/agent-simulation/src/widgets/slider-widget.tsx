@@ -49,6 +49,8 @@ export const SliderWidget = observer(function SliderWidget({ data, globalKey, si
   };
 
   const handleInputChange = (newValue: number) => {
+    if (isRecording) return;
+
     if (!isNaN(newValue)) {
       const clampedValue = Math.max(min, Math.min(max, newValue));
       sim.globals.set(globalKey, clampedValue);

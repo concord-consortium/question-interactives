@@ -66,7 +66,7 @@ const snapToStep = (value: number, min: number, max: number, step?: number): num
   return Math.max(min, Math.min(max, snapped));
 };
 
-export const CircularSliderWidget = observer(function SliderWidget(props: IWidgetComponentProps<CircularSliderWidgetData>) {
+export const CircularSliderWidget = observer(function CircularSliderWidget(props: IWidgetComponentProps<CircularSliderWidgetData>) {
   const { data, globalKey, inRecordingMode, isRecording, sim } = props;
   const min = data?.min ?? 0;
   const max = data?.max ?? 100;
@@ -215,9 +215,8 @@ export const CircularSliderWidget = observer(function SliderWidget(props: IWidge
 
   const handleInputChange = (newValue: number) => {
     if (isRecording) return;
-
     if (!isNaN(newValue)) {
-      sim.globals.set(globalKey, newValue);
+      handleValueChange(newValue);
     }
   };
 
@@ -246,7 +245,7 @@ export const CircularSliderWidget = observer(function SliderWidget(props: IWidge
 
   return (
     <div className={containerClasses} data-testid="circular-slider">
-      <div className={css.slideHeader}>
+      <div className={css.sliderHeader}>
         <div className={css.labelText} data-testid="circular-slider-label">
           {label}
         </div>

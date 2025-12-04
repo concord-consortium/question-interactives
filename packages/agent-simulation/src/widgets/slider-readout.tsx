@@ -32,8 +32,7 @@ export const SliderReadout: React.FC<IProps> = (props) => {
 
     const newValue = parseFloat(e.target.value);
     if (!isNaN(newValue)) {
-      const clampedValue = Math.max(min, Math.min(max, newValue));
-      onChange(clampedValue);
+      onChange(newValue);
     }
   };
 
