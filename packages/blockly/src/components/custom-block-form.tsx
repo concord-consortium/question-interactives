@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 
 import { availableChildBlocks } from "../utils/block-utils";
 import { extractCategoriesFromToolbox } from "../utils/toolbox-utils";
@@ -15,6 +15,7 @@ interface IProps {
   editingBlock?: ICustomBlock | null;
   existingBlocks?: ICustomBlock[];
   toolbox: string;
+  onDirtyChange?: (isDirty: boolean) => void;
   onSubmit: (block: ICustomBlock) => void;
 }
 
@@ -54,7 +55,7 @@ const blockOptionsFromConfig = (block: ICustomBlock) => {
   return [{ label: "", value: "" }];
 };
 
-export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, existingBlocks, onSubmit, toolbox }) => {
+export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, existingBlocks, onDirtyChange, onSubmit, toolbox }) => {
   const blockConfig = useMemo(() => BLOCK_TYPE_CONFIG[blockType], [blockType]);
   const optionTerm = blockConfig.optionTerm || "Options";
   const optionsLabelPlaceholder = blockConfig.optionLabelPlaceholder || "Display text (e.g., blue)";
@@ -92,6 +93,55 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
     return [];
   }, [formData.type, existingBlocks, editingBlock?.id]);
 
+  const [parameters, setParameters] = useState<IParameter[]>([]);
+
+  // Track if user has entered data that hasn't been saved (is "dirty").
+  const previousDirtyRef = useRef<boolean | null>(null);
+  useEffect(() => {
+    if (!onDirtyChange) return;
+
+    let isDirty = false;
+
+    if (editingBlock) {
+      // For editing: check if ANY field differs from the original block
+      const config = editingBlock.config;
+      isDirty =
+        formData.name !== editingBlock.name ||
+        formData.color !== editingBlock.color ||
+        formData.category !== editingBlock.category ||
+        formData.generatorTemplate !== (config.generatorTemplate || "") ||
+        formData.targetEntity !== (config.targetEntity || "") ||
+        formData.childrenEnabled !== !!config.canHaveChildren ||
+        formData.includeCount !== (config.defaultCount != null) ||
+        formData.minCount !== (config.minCount ?? 0) ||
+        formData.maxCount !== (config.maxCount ?? 500) ||
+        formData.defaultCount !== (config.defaultCount ?? 100) ||
+        formData.conditionInput !== !!config.conditionInput ||
+        formData.includeAllOption !== (config.includeAllOption ?? false) ||
+        formData.includeNumberInput !== !!config.includeNumberInput ||
+        formData.conditionLabelPosition !== (config.labelPosition ?? "prefix") ||
+        formData.showTargetEntityLabel !== (config.showTargetEntityLabel ?? true) ||
+        JSON.stringify(formData.options) !== JSON.stringify(blockOptionsFromConfig(editingBlock)) ||
+        JSON.stringify(formData.childBlocks) !== JSON.stringify(config.childBlocks || []) ||
+        JSON.stringify(parameters) !== JSON.stringify(config.parameters || []);
+    } else {
+      // For new block: check if ANY meaningful data has been entered
+      const hasName = formData.name.trim().length > 0;
+      const hasOptions = formData.options.some(opt => opt.label.trim() || opt.value.trim());
+      const hasGeneratorTemplate = (formData.generatorTemplate || "").trim().length > 0;
+      const hasTargetEntity = formData.targetEntity.trim().length > 0;
+      const hasChildBlocks = formData.childBlocks.length > 0;
+      const hasParameters = parameters.length > 0;
+
+      isDirty = hasName || hasOptions || hasGeneratorTemplate || hasTargetEntity || hasChildBlocks || hasParameters;
+    }
+
+    if (previousDirtyRef.current !== isDirty) {
+      previousDirtyRef.current = isDirty;
+      onDirtyChange(isDirty);
+    }
+  }, [formData, parameters, editingBlock, onDirtyChange]);
+
   const availableTargetEntities = useMemo(() => {
     // Get creator blocks from existing blocks to populate target entity dropdown
     return (existingBlocks || [])
@@ -103,7 +153,6 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
     setFormData(prev => ({ ...prev, childBlocks: nestedBlocks }));
   };
 
-  const [parameters, setParameters] = useState<IParameter[]>([]);
   // We create a stable scalar for the first category to use in the useEffect below to avoid
   // unnecessary re-runs of the effect due to new array references that can be created each render.
   const firstCategory = useMemo(() => (availableCategories[0] || ""), [availableCategories]);
