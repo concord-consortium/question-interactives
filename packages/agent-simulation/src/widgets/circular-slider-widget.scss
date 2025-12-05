@@ -1,0 +1,117 @@
+.circularSliderWidget {
+  align-items: center;
+  display: flex;
+  gap: 5px;
+  justify-content: center;
+
+  .sliderHeader {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+
+    .labelText {
+      margin-bottom: 5px;
+      flex-shrink: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    .readoutContainer {
+      display: flex;
+      justify-content: flex-end;
+    }
+  }
+
+  .sliderContainer {
+    flex-shrink: 0;
+    height: 70px;
+    position: relative;
+    width: 70px;
+
+    .sliderInner {
+      align-items: center;
+      background-color: var(--cc-teal-light-6);
+      border-radius: 50%;
+      display: flex;
+      height: 70px;
+      justify-content: center;
+      width: 70px;
+
+      .slider {
+        cursor: pointer;
+        height: 70px;
+        position: relative;
+        width: 70px;
+      }
+    }
+  }
+
+  .sliderCircle {
+    fill: none;
+    stroke: var(--cc-charcoal-light-1);
+    stroke-width: 3;
+  }
+
+  .sliderThumbContainer {
+    position: relative;
+
+    .thumb {
+      background-color: white;
+      border: solid 1.5px var(--cc-teal-dark-1);
+      border-radius: 50%;
+      box-shadow: 1px 1px 2px 0 rgba(0, 0, 0, 0.25);
+      cursor: grab;
+      position: absolute;
+
+      &:hover {
+        background-color: var(--cc-teal-light-3);
+      }
+
+      &:focus {
+        box-shadow: none;
+        outline: 2px solid var(--cc-teal-dark-1);
+        outline-offset: 2px;
+      }
+
+      &:active {
+        background-color: var(--cc-teal-dark-1);
+        border-color: white;
+        cursor: grabbing;
+      }
+    }
+  }
+
+  &.dragging .sliderThumbContainer {
+    .thumb {
+      cursor: grabbing;
+    }
+  }
+
+  &.recording {
+    .sliderContainer {
+      opacity: 0.35;
+      pointer-events: none;
+    }
+  }
+
+  &.inRecordingMode {
+    .sliderThumbContainer {
+      .thumb {
+        border-color: var(--cc-orange-dark-1);
+
+        &:hover {
+          background-color: var(--cc-orange-light-2);
+        }
+
+        &:active {
+          background-color: var(--cc-orange-dark-1);
+          border-color: white;
+        }
+
+        &:focus {
+          outline-color: var(--cc-orange-dark-1);
+        }
+      }
+    }
+  }
+}
