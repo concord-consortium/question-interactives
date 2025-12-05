@@ -1,4 +1,4 @@
-import React, { useState, useMemo } from "react";
+import React, { useCallback, useState, useMemo } from "react";
 
 import { CustomBlockForm } from "./custom-block-form";
 import { CustomBlockType, ICustomBlock } from "./types";
@@ -31,13 +31,23 @@ export const CustomBlockEditorSection: React.FC<IProps> = ({ blockType, toolbox,
   const [showForm, setShowForm] = useState<boolean>(false);
   const [editingBlock, setEditingBlock] = useState<ICustomBlock | null>(null);
   const [isExpanded, setIsExpanded] = useState<boolean>(false);
+  const [formIsDirty, setFormIsDirty] = useState<boolean>(false);
+
+  const handleFormDirtyChange = useCallback((isDirty: boolean) => {
+    setFormIsDirty(isDirty);
+  }, []);
+
+  const closeForm = useCallback(() => {
+    setShowForm(false);
+    setEditingBlock(null);
+    setFormIsDirty(false);
+  }, []);
 
   const addCustomBlock = (block: ICustomBlock) => {
     const newBlock = { ...block, id: generateBlockId(block) };
     const updatedBlocks = [...customBlocks, newBlock];
     onChange(updatedBlocks);
-    setShowForm(false);
-    setEditingBlock(null);
+    closeForm();
   };
 
   const editCustomBlock = (block: ICustomBlock) => {
@@ -49,9 +59,7 @@ export const CustomBlockEditorSection: React.FC<IProps> = ({ blockType, toolbox,
   const updateCustomBlock = (updatedBlock: ICustomBlock) => {
     const updatedBlocks = customBlocks.map(b => b.id === editingBlock?.id ? updatedBlock : b);
     onChange(updatedBlocks);
-
-    setShowForm(false);
-    setEditingBlock(null);
+    closeForm();
   };
 
   const handleFormSubmit = (block: ICustomBlock) => {
@@ -118,10 +126,14 @@ export const CustomBlockEditorSection: React.FC<IProps> = ({ blockType, toolbox,
           data-testid={`add-${blockType}`}
           type="button"
           onClick={() => {
-            setEditingBlock(null);
-            setShowForm(!showForm);
-            if (!isExpanded) {
-              setIsExpanded(true);
+            if (showForm) {
+              closeForm();
+            } else {
+              setEditingBlock(null);
+              setShowForm(true);
+              if (!isExpanded) {
+                setIsExpanded(true);
+              }
             }
           }}
         >
@@ -133,11 +145,17 @@ export const CustomBlockEditorSection: React.FC<IProps> = ({ blockType, toolbox,
         <div className={css.customBlocks_content}>
           {showForm && (
             <div className={css.customBlocks_formWrapper}>
+              {formIsDirty && (
+                <div className={css.unsavedWarning} data-testid="unsaved-warning">
+                  You have unsaved changes. Click &quot;Save Block&quot; before saving the activity, or your changes will be lost.
+                </div>
+              )}
               <CustomBlockForm
                 blockType={blockType}
                 editingBlock={editingBlock}
                 existingBlocks={customBlocks}
                 toolbox={toolbox}
+                onDirtyChange={handleFormDirtyChange}
                 onSubmit={handleFormSubmit}
               />
             </div>
