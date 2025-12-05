@@ -77,25 +77,42 @@ export const AgentSimulationComponent = ({
   const containerRef = useRef<HTMLDivElement>(null);
   const codeUpdateAvailable = !!(externalBlocklyCode && blocklyCode !== externalBlocklyCode);
   const hasCodeSource = !!dataSourceInteractive;
-
-  // If not linked to a data source interactive, Play and Reset are always enabled.
-  let canPlayOrReset = true;
-  if (hasCodeSource) {
-    // When linked, Play and Reset are disabled when...
-    if (!blocklyCode) {
-      // blocklyCode is not defined.
-      canPlayOrReset = false;
-    } else if (externalBlocklyCode && blocklyCode !== externalBlocklyCode) {
-      // blocklyCode does not match externalBlocklyCode.
-      canPlayOrReset = false;
-    }
-  }
-
   const [paused, setPaused] = useState(false);
   const [error, setError] = useState("");
   const [resetCount, setResetCount] = useState(0);
   const simRef = useRef<AgentSimulation | null>(null);
   const [hasBeenStarted, setHasBeenStarted] = useState(false);
+  const [hasBeenReset, setHasBeenReset] = useState(false);
+
+  // Determine when Play button should be enabled
+  let canPlay = true;
+  if (hasCodeSource) {
+    // When linked, Play is disabled when...
+    if (!blocklyCode) {
+      // blocklyCode is not defined.
+      canPlay = false;
+    } else if (externalBlocklyCode && blocklyCode !== externalBlocklyCode) {
+      // blocklyCode does not match externalBlocklyCode.
+      canPlay = false;
+    }
+  }
+
+  // Determine when Reset button should be enabled
+  let canReset = true;
+  if (hasCodeSource) {
+    // When linked, Reset is disabled when...
+    if (!blocklyCode) {
+      // blocklyCode is not defined.
+      canReset = false;
+    } else if (externalBlocklyCode && blocklyCode !== externalBlocklyCode) {
+      // blocklyCode does not match externalBlocklyCode.
+      canReset = false;
+    } else if (hasBeenReset) {
+      // Reset was clicked after starting - disable until code update.
+      canReset = false;
+    }
+  }
+
   const [zoomLevel, setZoomLevel] = useState(ZOOM_DEFAULT);
   const objectStorage = useObjectStorage();
   const recordStartTimeRef = useRef<number | null>(null);
@@ -196,12 +213,20 @@ export const AgentSimulationComponent = ({
     }
 
 
-    // Preserve global values across linked code updates.
+    // Preserve global values for interactive widgets across resets and code updates.
     const prevGlobals: Record<string, any> = {};
-    if (simRef.current && simRef.current.globals) {
+    if (simRef.current && simRef.current.globals && simRef.current.widgets.length > 0) {
       const values = simRef.current.globals.values();
+      // Only preserve globals for interactive widgets (sliders), not display widgets (readouts).
+      const interactiveWidgetKeys = new Set(
+        simRef.current.widgets
+          .filter(w => w.type === "slider" || w.type === "circular-slider")
+          .map(w => w.globalKey)
+      );
       Object.keys(values).forEach(key => {
-        prevGlobals[key] = values[key];
+        if (interactiveWidgetKeys.has(key)) {
+          prevGlobals[key] = values[key];
+        }
       });
     }
 
@@ -414,6 +439,9 @@ export const AgentSimulationComponent = ({
     const newResetCount = resetCount + 1;
     log("reset-simulation", { resetCount: newResetCount });
     setResetCount(newResetCount);
+    if (hasBeenStarted) {
+      setHasBeenReset(true);
+    }
     setHasBeenStarted(false);
   };
 
@@ -424,6 +452,7 @@ export const AgentSimulationComponent = ({
     });
     setBlocklyCode(externalBlocklyCode);
     setHasBeenStarted(false);
+    setHasBeenReset(false);
   };
 
   const handleChangeSimSpeed = (newSpeed: number) => {
@@ -552,7 +581,6 @@ export const AgentSimulationComponent = ({
       </div>
       <ControlPanel
         codeUpdateAvailable={codeUpdateAvailable}
-        hasBeenStarted={hasBeenStarted}
         hasCodeSource={hasCodeSource}
         paused={paused}
         currentRecording={currentRecording}
@@ -562,7 +590,8 @@ export const AgentSimulationComponent = ({
         onReset={handleReset}
         onUpdateCode={handleUpdateCode}
         onDeleteRecording={handleDeleteRecording}
-        canPlayOrReset={canPlayOrReset}
+        canPlay={canPlay}
+        canReset={canReset}
       />
       {error && <div className={css.error}>{error}</div>}
       <div className={css.simViewport}>

@@ -11,6 +11,7 @@ import * as AV from "@concord-consortium/atomic-agents-vis";
 import { useLinkedInteractiveId } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
 import { AgentSimulation } from "../models/agent-simulation";
 import { ObjectStorageConfig, ObjectStorageProvider } from "@concord-consortium/object-storage";
+import { IWidgetProps } from "../types/widgets";
 
 // Mock the dependencies
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
@@ -49,7 +50,13 @@ describe("AgentSimulationComponent", () => {
 
   const mockAddWidget = jest.fn();
 
-  const mockAgentSimulation = {
+  const mockAgentSimulation: {
+    addWidget: jest.Mock;
+    destroy: jest.Mock;
+    globals: typeof mockGlobals;
+    sim: typeof mockSimulation;
+    widgets: IWidgetProps[];
+  } = {
     addWidget: mockAddWidget,
     destroy: jest.fn(),
     globals: mockGlobals,
@@ -226,15 +233,8 @@ describe("AgentSimulationComponent", () => {
 
     const initialCallCount = mockSimulationConstructor.mock.calls.length;
 
-    // Reset button should be disabled initially
+    // Reset button should be enabled initially to allow for resetting random setups prior to starting.
     const resetButton = screen.getByTestId("reset-button");
-    expect(resetButton).toBeDisabled();
-
-    // Start the simulation first by clicking play
-    const playButton = screen.getByTestId("play-pause-button");
-    fireEvent.click(playButton);
-
-    // Now reset button should be enabled
     expect(resetButton).not.toBeDisabled();
 
     // Click reset button
@@ -243,8 +243,8 @@ describe("AgentSimulationComponent", () => {
     // Should create a new simulation instance
     expect(mockSimulationConstructor.mock.calls.length).toBeGreaterThan(initialCallCount);
 
-    // Reset button should be disabled again after reset
-    expect(resetButton).toBeDisabled();
+    // Reset button should still be enabled after reset
+    expect(resetButton).not.toBeDisabled();
   });
 
   it("shows blockly code toggle when blockly code exists", () => {
@@ -357,6 +357,78 @@ describe("AgentSimulationComponent", () => {
       version: 1,
       blocklyCode: "// Updated blockly code"
     });
+  });
+
+  it("disables Reset button after it is clicked when the simulation has been started, re-enables on code update.", () => {
+    mockGlobals.values.mockReturnValue({});
+    mockUseLinkedInteractiveId.mockReturnValue("linked-interactive-id");
+
+    render(
+      <ObjectStorageProvider config={objectStorageConfig}>
+        <AgentSimulationComponent
+          authoredState={defaultAuthoredState}
+          interactiveState={{ ...defaultInteractiveState, blocklyCode: "// Initial code" }}
+          setInteractiveState={mockSetInteractiveState}
+        />
+      </ObjectStorageProvider>
+    );
+
+    const resetButton = screen.getByTestId("reset-button");
+    const playButton = screen.getByTestId("play-pause-button");
+
+    // Initially, reset should be enabled
+    expect(resetButton).not.toBeDisabled();
+
+    fireEvent.click(playButton);
+    expect(resetButton).not.toBeDisabled();
+
+    fireEvent.click(resetButton);
+    expect(resetButton).toBeDisabled();
+
+    // Simulate receiving new code from linked interactive
+    const listenerCall = mockAddLinkedInteractiveStateListener.mock.calls[0];
+    const listener = listenerCall[0];
+    const newLinkedState = { code: "// New code" };
+
+    act(() => {
+      listener(newLinkedState);
+    });
+
+    const updateButton = screen.getByTestId("update-code-button");
+    expect(updateButton).not.toBeDisabled();
+    fireEvent.click(updateButton);
+
+    expect(resetButton).not.toBeDisabled();
+  });
+
+  it("can keep Play button enabled when Reset button is disabled", () => {
+    mockGlobals.values.mockReturnValue({});
+    mockUseLinkedInteractiveId.mockReturnValue("linked-interactive-id");
+
+    render(
+      <ObjectStorageProvider config={objectStorageConfig}>
+        <AgentSimulationComponent
+          authoredState={defaultAuthoredState}
+          interactiveState={{ ...defaultInteractiveState, blocklyCode: "// Initial code" }}
+          setInteractiveState={mockSetInteractiveState}
+        />
+      </ObjectStorageProvider>
+    );
+
+    const resetButton = screen.getByTestId("reset-button");
+    const playButton = screen.getByTestId("play-pause-button");
+
+    // Start the simulation
+    fireEvent.click(playButton);
+
+    // Click reset to disable it
+    fireEvent.click(resetButton);
+
+    // Reset should be disabled
+    expect(resetButton).toBeDisabled();
+
+    // But Play button should still be enabled
+    expect(playButton).not.toBeDisabled();
   });
 
   it("handles simulation setup errors gracefully", () => {
@@ -505,8 +577,16 @@ describe("AgentSimulationComponent", () => {
     );
   });
 
-  it("preserves globals across simulation resets and code uploads", () => {
+  it("preserves interactive widget globals (sliders) but not display widgets (readouts)", () => {
+    // Set up globals with both slider and readout values
     mockGlobals.values.mockReturnValue({ slider1: 42, readout1: 99 });
+    
+    // Set up both slider and readout widgets
+    const mockWidgets = [
+      { globalKey: "slider1", type: "slider" as const, defaultValue: 0 },
+      { globalKey: "readout1", type: "readout" as const }
+    ];
+    mockAgentSimulation.widgets = mockWidgets;
 
     render(
       <ObjectStorageProvider config={objectStorageConfig}>
@@ -531,11 +611,47 @@ describe("AgentSimulationComponent", () => {
     fireEvent.click(resetButton);
 
     // The constructor should be called twice: once on initial render, once on reset.
-    // The second call should preserve the updated globals.
+    // The second call should preserve only the slider value, not the readout.
     expect(mockSimulationConstructor).toHaveBeenCalledTimes(2);
     expect(mockSimulationConstructor).toHaveBeenNthCalledWith(
       2, // Second call
-      450, 450, 15, { slider1: 77, readout1: 123 }
+      450, 450, 15, { slider1: 77 }
+    );
+  });
+
+  it("does not preserve readout widget globals across resets", () => {
+    // Set up globals with both slider and readout values, plus a non-widget global
+    mockGlobals.values.mockReturnValue({ slider1: 50, Sheep: 100, someOtherValue: 42 });
+    
+    // Set up slider widget and readout widget
+    const mockWidgets = [
+      { globalKey: "slider1", type: "slider" as const, defaultValue: 0 },
+      { globalKey: "Sheep", type: "readout" as const }
+    ];
+    mockAgentSimulation.widgets = mockWidgets;
+
+    render(
+      <ObjectStorageProvider config={objectStorageConfig}>
+        <AgentSimulationComponent
+          authoredState={defaultAuthoredState}
+          interactiveState={defaultInteractiveState}
+          setInteractiveState={mockSetInteractiveState}
+          report={false}
+        />
+      </ObjectStorageProvider>
+    );
+
+    // Click reset button
+    const resetButton = screen.getByTestId("reset-button");
+    fireEvent.click(resetButton);
+
+    // The constructor should be called twice
+    // The second call should only preserve slider1 (interactive widget), 
+    // not Sheep (readout widget) or someOtherValue (non-widget)
+    expect(mockSimulationConstructor).toHaveBeenCalledTimes(2);
+    expect(mockSimulationConstructor).toHaveBeenNthCalledWith(
+      2, // Second call
+      450, 450, 15, { slider1: 50 } // Only the slider global is preserved
     );
   });
 

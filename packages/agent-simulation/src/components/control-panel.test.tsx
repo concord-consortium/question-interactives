@@ -4,9 +4,9 @@ import { ControlPanel } from "./control-panel";
 
 describe("ControlPanel", () => {
   const defaultProps = {
-    canPlayOrReset: true,
+    canPlay: true,
+    canReset: true,
     codeUpdateAvailable: false,
-    hasBeenStarted: false,
     hasCodeSource: true,
     paused: true,
     currentRecording: undefined,
@@ -81,23 +81,35 @@ describe("ControlPanel", () => {
       expect(button).toHaveClass("playing");
       expect(button).not.toHaveClass("paused");
     });
+
+    it("is enabled when `canPlay` is true", () => {
+      render(<ControlPanel {...defaultProps} canPlay={true} />);
+
+      expect(screen.getByTestId("play-pause-button")).not.toBeDisabled();
+    });
+
+    it("is disabled when `canPlay` is false", () => {
+      render(<ControlPanel {...defaultProps} canPlay={false} />);
+
+      expect(screen.getByTestId("play-pause-button")).toBeDisabled();
+    });
   });
 
   describe("reset button", () => {
-    it("is enabled when simulation has been started", () => {
-      render(<ControlPanel {...defaultProps} hasBeenStarted={true} />);
+    it("is enabled when `canReset` is true", () => {
+      render(<ControlPanel {...defaultProps} canReset={true} />);
 
       expect(screen.getByTestId("reset-button")).not.toBeDisabled();
     });
 
-    it("is disabled when simulation has not been started", () => {
-      render(<ControlPanel {...defaultProps} hasBeenStarted={false} />);
+    it("is disabled when `canReset` is false", () => {
+      render(<ControlPanel {...defaultProps} canReset={false} />);
 
       expect(screen.getByTestId("reset-button")).toBeDisabled();
     });
 
     it("calls `onReset` when clicked", () => {
-      render(<ControlPanel {...defaultProps} hasBeenStarted={true} />);
+      render(<ControlPanel {...defaultProps} />);
 
       fireEvent.click(screen.getByTestId("reset-button"));
 
@@ -153,24 +165,17 @@ describe("ControlPanel", () => {
     });
   });
 
-  describe("Play/Reset button enable/disable logic", () => {
-    it("disables Play and Reset when `canPlayOrReset` is false", () => {
-      render(<ControlPanel {...defaultProps} canPlayOrReset={false} hasBeenStarted={true} />);
-      expect(screen.getByTestId("play-pause-button")).toBeDisabled();
-      expect(screen.getByTestId("reset-button")).toBeDisabled();
-    });
-
-    it("enables Play when `canPlayOrReset` is true", () => {
-      render(<ControlPanel {...defaultProps} canPlayOrReset={true} hasBeenStarted={true} />);
+  describe("Play and Reset button independence", () => {
+    it("allows Play to be enabled while Reset is disabled", () => {
+      render(<ControlPanel {...defaultProps} canPlay={true} canReset={false} />);
       expect(screen.getByTestId("play-pause-button")).not.toBeDisabled();
+      expect(screen.getByTestId("reset-button")).toBeDisabled();
     });
 
-    it("enables Reset only when `hasBeenStarted` is true and `canPlayOrReset` is true", () => {
-      const { rerender } = render(<ControlPanel {...defaultProps} hasBeenStarted={true} canPlayOrReset={true} />);
+    it("allows Reset to be enabled while Play is disabled", () => {
+      render(<ControlPanel {...defaultProps} canPlay={false} canReset={true} />);
+      expect(screen.getByTestId("play-pause-button")).toBeDisabled();
       expect(screen.getByTestId("reset-button")).not.toBeDisabled();
-
-      rerender(<ControlPanel {...defaultProps} hasBeenStarted={false} canPlayOrReset={true} />);
-      expect(screen.getByTestId("reset-button")).toBeDisabled();
     });
   });
 
@@ -194,7 +199,7 @@ describe("ControlPanel", () => {
 
   describe("interaction scenarios", () => {
     it("handles multiple button clicks correctly", () => {
-      render(<ControlPanel {...defaultProps} hasCodeSource={true} codeUpdateAvailable={true} hasBeenStarted={true} />);
+      render(<ControlPanel {...defaultProps} hasCodeSource={true} codeUpdateAvailable={true} />);
 
       fireEvent.click(screen.getByTestId("play-pause-button"));
       fireEvent.click(screen.getByTestId("reset-button"));
@@ -206,7 +211,7 @@ describe("ControlPanel", () => {
     });
 
     it("does not call handlers for disabled buttons", () => {
-      render(<ControlPanel {...defaultProps} hasCodeSource={true} codeUpdateAvailable={false} hasBeenStarted={false} />);
+      render(<ControlPanel {...defaultProps} hasCodeSource={true} codeUpdateAvailable={false} canReset={false} />);
 
       fireEvent.click(screen.getByTestId("reset-button"));
       fireEvent.click(screen.getByTestId("update-code-button"));
