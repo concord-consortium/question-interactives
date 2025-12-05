@@ -19,6 +19,9 @@ export const RecordingStrip = ({ isRecording, onNewRecording, recordings, curren
   const [canScrollLeft, setCanScrollLeft] = React.useState(false);
   const [canScrollRight, setCanScrollRight] = React.useState(false);
 
+  const hasEmptyRecording = recordings.length > 0 && !!recordings.find((rec) => !rec.startedAt);
+  const newDisabled = isRecording || hasEmptyRecording;
+
   const checkScrollability = () => {
     if (recordingsRef.current) {
       const { scrollLeft, scrollWidth, clientWidth } = recordingsRef.current;
@@ -68,7 +71,7 @@ export const RecordingStrip = ({ isRecording, onNewRecording, recordings, curren
       <button className={css.leftButton} disabled={!canScrollLeft || isRecording} onClick={handleScrollLeft}>
         <ArrowIcon className={css.leftArrow} />
       </button>
-      <div className={css.recordings} ref={recordingsRef} onScroll={checkScrollability}>
+      <div className={classNames(css.recordings, { [css.noRecordings]: recordings.length === 0 })} ref={recordingsRef} onScroll={checkScrollability}>
         {recordings.map((recording, index) => {
           const style: CSSProperties = recording.thumbnail ? {
             backgroundImage: `url(${recording.thumbnail})`,
@@ -89,10 +92,15 @@ export const RecordingStrip = ({ isRecording, onNewRecording, recordings, curren
             </button>
           );
         })}
-        <button className={css.newRecordingButton} onClick={onNewRecording} disabled={isRecording}>
+        <button className={css.newRecordingButton} onClick={onNewRecording} disabled={newDisabled}>
           <AddNewIcon className={css.buttonIcon} />
           <span className={css.newRecordingLabel}>New</span>
         </button>
+        {recordings.length === 0 && (
+          <div className={css.noRecordingsMessage}>
+            Recordings
+          </div>
+        )}
       </div>
       <button className={css.rightButton} disabled={!canScrollRight || isRecording} onClick={handleScrollRight}>
         <ArrowIcon className={css.rightArrow} />

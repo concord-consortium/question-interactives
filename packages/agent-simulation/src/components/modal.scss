@@ -25,7 +25,7 @@
       align-items: center;
       justify-content: space-between;
       width: 100%;
-      border-radius: 4px;
+      border-radius: 4px 4px 0 0;
 
       &.teal {
         background: var(--cc-teal-light-5);
@@ -38,6 +38,7 @@
 
       .titleIcon {
         flex-shrink: 0;
+        margin-left: 5px;
       }
 
       .modalTitle {
@@ -60,6 +61,9 @@
         justify-content: center;
         color: #666;
         flex-shrink: 0;
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+        border-bottom-right-radius: 0;
 
         &.teal {
           svg {
