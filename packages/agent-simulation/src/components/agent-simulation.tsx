@@ -82,6 +82,25 @@ export const AgentSimulationComponent = ({
   const [resetCount, setResetCount] = useState(0);
   const simRef = useRef<AgentSimulation | null>(null);
   const [hasBeenStarted, setHasBeenStarted] = useState(false);
+  const [hasBeenReset, setHasBeenReset] = useState(false);
+
+  // Determine if Play button should be enabled
+  // Play button is disabled when there is a code source and either:
+  // - blocklyCode is not defined
+  // - blocklyCode does not match externalBlocklyCode
+  const canPlay = hasCodeSource
+    ? !!blocklyCode && (!externalBlocklyCode || blocklyCode === externalBlocklyCode)
+    : true;
+
+  // Determine if Reset button should be enabled
+  // Reset button is disabled when there is a code source and either:
+  // - blocklyCode is not defined
+  // - blocklyCode does not match externalBlocklyCode
+  // - Reset was clicked after starting (until code update)
+  const canReset = hasCodeSource
+    ? !!blocklyCode && (!externalBlocklyCode || blocklyCode === externalBlocklyCode) && !hasBeenReset
+    : true;
+
   const [zoomLevel, setZoomLevel] = useState(ZOOM_DEFAULT);
   const objectStorage = useObjectStorage();
   const recordStartTimeRef = useRef<number | null>(null);
@@ -100,6 +119,7 @@ export const AgentSimulationComponent = ({
   const simSpeedRef = useRef(interactiveState?.simSpeed ?? SIM_SPEED_DEFAULT);
   const animationFrameRef = useRef<number | null>(null);
   const visRef = useRef<AV.VisHandle | null>(null);
+  const pauseTimeoutRef = useRef<number | null>(null);
 
   const setBlocklyCode = (newCode: string) => {
     _setBlocklyCode(newCode);
@@ -180,8 +200,28 @@ export const AgentSimulationComponent = ({
       return;
     }
 
+
+    // Preserve global values for interactive widgets across resets and code updates.
+    const prevGlobals: Record<string, any> = {};
+    if (simRef.current && simRef.current.globals && simRef.current.widgets.length > 0) {
+      const globalValues = simRef.current.globals.values();
+      // Only preserve globals for interactive widgets (sliders), not display widgets (readouts).
+      const interactiveWidgetKeys = new Set(
+        simRef.current.widgets
+          .filter(w => w.type === "slider" || w.type === "circular-slider")
+          .map(w => w.globalKey)
+      );
+      Object.keys(globalValues).forEach(key => {
+        if (interactiveWidgetKeys.has(key)) {
+          prevGlobals[key] = globalValues[key];
+        }
+      });
+    }
+
+    const preservedGlobals = Object.keys(prevGlobals).length > 0 ? prevGlobals : undefined;
+
     // Set up the simulation
-    simRef.current = new AgentSimulation(gridWidth, gridHeight, gridStep);
+    simRef.current = new AgentSimulation(gridWidth, gridHeight, gridStep, preservedGlobals);
 
     const setupCode = blocklyCode || code;
     const usingCode = blocklyCode ? "blockly code" : "authored code";
@@ -222,7 +262,7 @@ export const AgentSimulationComponent = ({
 
     // Pause the sim after a frame.
     // We need to let the sim run for a frame so actors created in setup have a chance to get added to the sim.
-    setTimeout(() => {
+    pauseTimeoutRef.current = window.setTimeout(() => {
       simRef.current?.sim.pause(true);
       setPaused(true);
     }, 5);
@@ -232,18 +272,31 @@ export const AgentSimulationComponent = ({
     const oldSim = simRef.current;
     const container = containerRef.current;
     return () => {
+      // Clear the pause timeout if it hasn't fired yet
+      if (pauseTimeoutRef.current !== null) {
+        clearTimeout(pauseTimeoutRef.current);
+        pauseTimeoutRef.current = null;
+      }
       // Remove old sim when we're ready to update the sim
       container?.replaceChildren();
       oldSim.destroy();
     };
   }, [blocklyCode, code, gridHeight, gridStep, gridWidth, resetCount]);
 
-  // Cleanup animation frames on unmount
+  // Cleanup animation frames, recording intervals, and pause timeout on unmount
   useEffect(() => {
     return () => {
       if (animationFrameRef.current !== null) {
         cancelAnimationFrame(animationFrameRef.current);
         animationFrameRef.current = null;
+      }
+      if (recordUpdateDurationIntervalRef.current !== null) {
+        clearInterval(recordUpdateDurationIntervalRef.current);
+        recordUpdateDurationIntervalRef.current = null;
+      }
+      if (pauseTimeoutRef.current !== null) {
+        clearTimeout(pauseTimeoutRef.current);
+        pauseTimeoutRef.current = null;
       }
     };
   }, []);
@@ -374,6 +427,9 @@ export const AgentSimulationComponent = ({
     const newResetCount = resetCount + 1;
     log("reset-simulation", { resetCount: newResetCount });
     setResetCount(newResetCount);
+    if (hasBeenStarted) {
+      setHasBeenReset(true);
+    }
     setHasBeenStarted(false);
   };
 
@@ -384,6 +440,7 @@ export const AgentSimulationComponent = ({
     });
     setBlocklyCode(externalBlocklyCode);
     setHasBeenStarted(false);
+    setHasBeenReset(false);
   };
 
   const handleChangeSimSpeed = (newSpeed: number) => {
@@ -512,7 +569,6 @@ export const AgentSimulationComponent = ({
       </div>
       <ControlPanel
         codeUpdateAvailable={codeUpdateAvailable}
-        hasBeenStarted={hasBeenStarted}
         hasCodeSource={hasCodeSource}
         paused={paused}
         currentRecording={currentRecording}
@@ -522,6 +578,8 @@ export const AgentSimulationComponent = ({
         onReset={handleReset}
         onUpdateCode={handleUpdateCode}
         onDeleteRecording={handleDeleteRecording}
+        canPlay={canPlay}
+        canReset={canReset}
       />
       {error && <div className={css.error}>{error}</div>}
       <div className={css.simViewport}>
