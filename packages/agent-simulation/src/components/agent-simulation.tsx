@@ -19,7 +19,7 @@ import { ControlPanel } from "./control-panel";
 import { Widgets } from "./widgets";
 import { ZoomControls } from "./zoom-controls";
 import { RecordingStrip } from "./recording-strip";
-import { Modal } from "./modal";
+import { Modal } from "@concord-consortium/question-interactives-helpers/src/components/modal";
 
 import ModelIcon from "../assets/model-icon.svg";
 import ReturnToModelIcon from "../assets/return-to-model-icon.svg";
@@ -64,17 +64,15 @@ export const AgentSimulationComponent = ({
   // The blockly code we're using, which doesn't get updated until the user accepts newer code
   const [blocklyCode, _setBlocklyCode] = useState<string>(interactiveState?.blocklyCode || "");
   const [recordings, _setRecordings] = useState<IRecordings>(interactiveState?.recordings || []);
+  const [modelName, setModelName] = useState<string>(interactiveState?.name || "Model 1");
+  const [externalModelName, setExternalModelName] = useState<string>(modelName);
   const [currentRecordingIndex, setCurrentRecordingIndex] = useState<number>(-1);
   // The code we're receiving from blockly, which won't be used until the user accepts it
   const [externalBlocklyCode, setExternalBlocklyCode] = useState<string>("");
   const [showBlocklyCode, setShowBlocklyCode] = useState<boolean>(false);
   const dataSourceInteractive = useLinkedInteractiveId("dataSourceInteractive");
-  // TODO: Eventually, users will be able to name a saved Blockly program. For details,
-  // see https://concord-consortium.atlassian.net/browse/QI-57
-  // For now, we use a default name. This should be updated to use the name value from
-  // the Blockly interactive state when it's available.
-  const modelName = "Model 1";
   const containerRef = useRef<HTMLDivElement>(null);
+  const nameUpdateAvailable = modelName !== externalModelName;
   const codeUpdateAvailable = !!(externalBlocklyCode && blocklyCode !== externalBlocklyCode);
   const hasCodeSource = !!dataSourceInteractive;
   const [paused, setPaused] = useState(false);
@@ -126,11 +124,13 @@ export const AgentSimulationComponent = ({
   const pauseTimeoutRef = useRef<number | null>(null);
   const recordingResetCompleteRef = useRef(false);
 
-  const setBlocklyCode = (newCode: string) => {
+  const setBlocklyCodeAndName = (newCode: string, newName: string) => {
     _setBlocklyCode(newCode);
+    setModelName(newName);
     setInteractiveState?.(prev => ({
       answerType: "interactive_state",
       version: 1,
+      name: newName,
       blocklyCode: newCode,
       recordings: prev?.recordings ?? []
     }));
@@ -141,10 +141,11 @@ export const AgentSimulationComponent = ({
     setInteractiveState?.(prev => ({
       answerType: "interactive_state",
       version: 1,
+      name: prev?.name || modelName,
       blocklyCode: prev?.blocklyCode || "",
       recordings: newRecordings
     }));
-  }, [setInteractiveState]);
+  }, [modelName, setInteractiveState]);
 
   const currentRecording = useMemo(() => {
     if (currentRecordingIndex >= 0 && currentRecordingIndex < recordings.length) {
@@ -154,9 +155,9 @@ export const AgentSimulationComponent = ({
   }, [currentRecordingIndex, recordings]);
   const inRecordingMode = useMemo(() => !!currentRecording, [currentRecording]);
   const isRecording = useMemo(() => !!currentRecording && !paused, [currentRecording, paused]);
-  const isCompletedRecording = useMemo(() => 
-    !!currentRecording && 
-    currentRecording.startedAt !== undefined && 
+  const isCompletedRecording = useMemo(() =>
+    !!currentRecording &&
+    currentRecording.startedAt !== undefined &&
     currentRecording.duration !== undefined,
     [currentRecording]
   );
@@ -176,11 +177,17 @@ export const AgentSimulationComponent = ({
     if (!dataSourceInteractive) return;
 
     const listener = (newLinkedIntState: IInteractiveState | undefined) => {
+      console.log("linked-interactive-state-update", { newLinkedIntState });
+      const newName = newLinkedIntState && "name" in newLinkedIntState && newLinkedIntState.name;
       const newCode = newLinkedIntState && "code" in newLinkedIntState && newLinkedIntState.code;
       log("linked-interactive-state-update", {
         fromInteractive: dataSourceInteractive,
+        newName,
         newCode
       });
+      if (typeof newName === "string") {
+        setExternalModelName(newName);
+      }
       if (typeof newCode === "string") {
         setExternalBlocklyCode(newCode);
       } else {
@@ -281,10 +288,10 @@ export const AgentSimulationComponent = ({
     visRef.current = AV.vis(simRef.current.sim, { speed: simSpeedRef.current, target: containerRef.current, preserveDrawingBuffer: true, afterTick });
 
     setError("");
-    
+
     // Force a re-render so Widgets receives the updated simRef.current
     setSimVersion(v => v + 1);
-    
+
     return true;
   }, [blocklyCode, code, gridHeight, gridStep, gridWidth, resetCount]);
 
@@ -384,7 +391,7 @@ export const AgentSimulationComponent = ({
 
           const pausedRecordings = [...recordings];
           log("start-record-simulation", { startedAt, globalValues });
-          pausedRecordings[currentRecordingIndex] = { startedAt, globalValues };
+          pausedRecordings[currentRecordingIndex] = { modelName, startedAt, globalValues };
 
           // Update the recording duration every 1/2 second while recording
           recordUpdateDurationIntervalRef.current = window.setInterval(() => {
@@ -463,13 +470,13 @@ export const AgentSimulationComponent = ({
               const { id } = typedObject;
               objectStorage.add(typedObject, { id });
               // Preserve existing recording data (including globalValues) while adding new fields
-              notPausedRecordings[currentRecordingIndex] = { 
+              notPausedRecordings[currentRecordingIndex] = {
                 ...notPausedRecordings[currentRecordingIndex],
-                objectId: id, 
-                startedAt, 
-                duration, 
-                thumbnail, 
-                snapshot 
+                objectId: id,
+                startedAt,
+                duration,
+                thumbnail,
+                snapshot
               };
               setRecordings(notPausedRecordings);
 
@@ -491,7 +498,7 @@ export const AgentSimulationComponent = ({
         setHasBeenStarted(true);
       }
     }
-  }, [currentRecording, paused, hasBeenStarted, recordings, currentRecordingIndex, setRecordings, objectStorage, blocklyCode, code, getRecordingInfo, resetSimulationWithPreservedGlobals]);
+  }, [currentRecording, paused, hasBeenStarted, resetSimulationWithPreservedGlobals, recordings, currentRecordingIndex, modelName, setRecordings, getRecordingInfo, blocklyCode, code, objectStorage]);
 
   // a ref is used here as handlePlayPause is used in a setInterval in handlePlayPause above
   // to stop recording after maxRecordingTime
@@ -510,15 +517,17 @@ export const AgentSimulationComponent = ({
 
   const handleUpdateCode = () => {
     log("update-code", {
+      oldName: modelName,
+      newName: externalModelName,
       oldCode: blocklyCode,
       newCode: externalBlocklyCode
     });
-    setBlocklyCode(externalBlocklyCode);
+    setBlocklyCodeAndName(externalBlocklyCode, externalModelName);
     setHasBeenStarted(false);
     setHasBeenReset(false);
   };
 
-  const handleChangeSimSpeed = (newSpeed: number) => {
+  const handleChangeSimSpeed = useCallback((newSpeed: number) => {
     const oldSpeed = simSpeedRef.current;
     log("change-simulation-speed", { oldSpeed, newSpeed });
 
@@ -528,11 +537,12 @@ export const AgentSimulationComponent = ({
     setInteractiveState?.(prev => ({
       answerType: "interactive_state",
       version: 1,
+      name: prev?.name || modelName,
       simSpeed: newSpeed,
       blocklyCode: prev?.blocklyCode || "",
       recordings: prev?.recordings || []
     }));
-  };
+  }, [modelName, setInteractiveState]);
 
   const handleZoomIn = () => {
     const newZoomLevel = Math.min(zoomLevel + ZOOM_STEP, ZOOM_MAX);
@@ -585,7 +595,7 @@ export const AgentSimulationComponent = ({
 
   const handleNewRecording = () => {
     recordingResetCompleteRef.current = false;
-    const newRecording: IRecording = {};
+    const newRecording: IRecording = { modelName };
     const newRecordings = [...recordings, newRecording];
     setRecordings(newRecordings);
     setCurrentRecordingIndex(newRecordings.length - 1);
@@ -632,7 +642,7 @@ export const AgentSimulationComponent = ({
           )}
           {inRecordingMode ? <RecordingIcon className={css.modelIcon} /> : <ModelIcon className={css.modelIcon} />}
           <div className={css.modelInfo}>
-            <div className={css.modelName}>{modelName}</div>
+            <div className={css.modelName}>{currentRecording?.modelName ?? modelName}</div>
             <div>{renderRecordingInfo()}</div>
           </div>
         </div>
@@ -647,7 +657,7 @@ export const AgentSimulationComponent = ({
         </div>
       </div>
       <ControlPanel
-        codeUpdateAvailable={codeUpdateAvailable}
+        updateAvailable={codeUpdateAvailable || nameUpdateAvailable}
         hasCodeSource={hasCodeSource}
         paused={paused}
         currentRecording={currentRecording}

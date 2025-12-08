@@ -17,6 +17,7 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
 
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
   version: 1;
+  name?: string;
   blocklyCode?: string;
   simSpeed?: number;
   submitted?: boolean;
@@ -47,6 +48,7 @@ export const DemoAuthoredState: IAuthoredState = {
 };
 
 export interface IRecording {
+  modelName: string;
   objectId?: string;
   startedAt?: number;
   duration?: number;

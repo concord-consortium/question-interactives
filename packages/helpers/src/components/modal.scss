@@ -19,6 +19,7 @@
     box-shadow: 0 2px 16px rgba(0, 0, 0, 0.2);
     display: flex;
     flex-direction: column;
+    font-family: Lato, sans-serif;
 
     .titleBar {
       display: flex;
@@ -64,12 +65,22 @@
         border-top-left-radius: 0;
         border-bottom-left-radius: 0;
         border-bottom-right-radius: 0;
+        border-top-right-radius: 4px;
 
         &.teal {
           svg {
             path {
               fill: var(--cc-teal-dark-1);
             }
+          }
+
+          &:active {
+            background-color: var(--cc-teal-light-3);
+            border-top-right-radius: 4px;
+          }
+          &:hover, &:focus {
+            background-color: var(--cc-teal-light-4);
+            border-top-right-radius: 4px;
           }
         }
         &.orange {
@@ -81,9 +92,11 @@
 
           &:active {
             background-color: var(--cc-orange-light-2);
+            border-top-right-radius: 4px;
           }
           &:hover, &:focus {
             background-color: var(--cc-orange-light-3);
+            border-top-right-radius: 4px;
           }
         }
       }
@@ -108,31 +121,31 @@
           box-sizing: border-box;
           display: flex;
           justify-content: center;
+          border-radius: 4px;
+          background: white;
+          cursor: pointer;
 
           &.teal {
+            &.modalConfirmButton {
+              background: var(--cc-teal-light-5);
+            }
             &:active {
-              background: var(--cc-teal-light-3);
+              background: var(--cc-teal-light-3) !important;
             }
             &:hover, &:focus {
-              background: var(--cc-teal-light-3);
+              background: var(--cc-teal-light-4) !important;
             }
           }
           &.orange {
+            &.modalConfirmButton {
+              background: var(--cc-orange-light-4);
+            }
             &:active {
-              background: var(--cc-orange-light-2);
+              background: var(--cc-orange-light-2) !important;
             }
             &:hover, &:focus {
-              background: var(--cc-orange-light-3);
+              background: var(--cc-orange-light-3) !important;
             }
-          }
-        }
-
-        .modalConfirmButton {
-          &.teal {
-            background: var(--cc-teal-light-4);
-          }
-          &.orange {
-            background: var(--cc-orange-light-4);
           }
         }
       }

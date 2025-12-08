@@ -27,7 +27,9 @@ export const Modal = ({ variant, title, Icon, message, confirmLabel, onConfirm, 
           </button>
         </div>
         <div className={css.modalBody}>
-          <div className={css.modalMessage}>{message}</div>
+          <form onSubmit={onConfirm}>
+            <div className={css.modalMessage}>{message}</div>
+          </form>
           <div className={css.modalActions}>
             <button onClick={onCancel} className={classnames(css[variant])}>
               Cancel

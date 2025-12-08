@@ -6,7 +6,7 @@ describe("ControlPanel", () => {
   const defaultProps = {
     canPlay: true,
     canReset: true,
-    codeUpdateAvailable: false,
+    updateAvailable: false,
     hasCodeSource: true,
     paused: true,
     currentRecording: undefined,
@@ -31,7 +31,7 @@ describe("ControlPanel", () => {
     });
 
     it("renders update code button when `hasCodeSource` is true", () => {
-      render(<ControlPanel {...defaultProps} codeUpdateAvailable={true} />);
+      render(<ControlPanel {...defaultProps} updateAvailable={true} />);
 
       expect(screen.getByTestId("update-code-button")).toBeInTheDocument();
     });
@@ -128,19 +128,19 @@ describe("ControlPanel", () => {
   describe("update code button", () => {
     describe("when `hasCodeSource` is true", () => {
       it("is enabled when code update is available", () => {
-        render(<ControlPanel {...defaultProps} hasCodeSource={true} codeUpdateAvailable={true} />);
+        render(<ControlPanel {...defaultProps} hasCodeSource={true} updateAvailable={true} />);
 
         expect(screen.getByTestId("update-code-button")).not.toBeDisabled();
       });
 
       it("is disabled when code update is not available", () => {
-        render(<ControlPanel {...defaultProps} hasCodeSource={true} codeUpdateAvailable={false} />);
+        render(<ControlPanel {...defaultProps} hasCodeSource={true} updateAvailable={false} />);
 
         expect(screen.getByTestId("update-code-button")).toBeDisabled();
       });
 
       it("calls `onUpdateCode` when clicked", () => {
-        render(<ControlPanel {...defaultProps} hasCodeSource={true} codeUpdateAvailable={true} />);
+        render(<ControlPanel {...defaultProps} hasCodeSource={true} updateAvailable={true} />);
 
         fireEvent.click(screen.getByTestId("update-code-button"));
 
@@ -199,7 +199,7 @@ describe("ControlPanel", () => {
 
   describe("interaction scenarios", () => {
     it("handles multiple button clicks correctly", () => {
-      render(<ControlPanel {...defaultProps} hasCodeSource={true} codeUpdateAvailable={true} />);
+      render(<ControlPanel {...defaultProps} hasCodeSource={true} updateAvailable={true} />);
 
       fireEvent.click(screen.getByTestId("play-pause-button"));
       fireEvent.click(screen.getByTestId("reset-button"));
@@ -211,7 +211,7 @@ describe("ControlPanel", () => {
     });
 
     it("does not call handlers for disabled buttons", () => {
-      render(<ControlPanel {...defaultProps} hasCodeSource={true} codeUpdateAvailable={false} canReset={false} />);
+      render(<ControlPanel {...defaultProps} hasCodeSource={true} updateAvailable={false} canReset={false} />);
 
       fireEvent.click(screen.getByTestId("reset-button"));
       fireEvent.click(screen.getByTestId("update-code-button"));

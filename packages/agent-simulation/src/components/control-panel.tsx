@@ -15,7 +15,7 @@ import DeleteRecordingIcon from "../assets/delete-recording-icon.svg";
 import css from "./control-panel.scss";
 
 interface IProps {
-  codeUpdateAvailable: boolean;
+  updateAvailable: boolean;
   hasCodeSource: boolean;
   paused: boolean;
   currentRecording: IRecording | undefined;
@@ -30,7 +30,7 @@ interface IProps {
 }
 
 export const ControlPanel = ({
-  codeUpdateAvailable,
+  updateAvailable,
   hasCodeSource,
   paused,
   currentRecording,
@@ -84,7 +84,7 @@ export const ControlPanel = ({
           aria-label="Update Code"
           className={css.updateButton}
           data-testid="update-code-button"
-          disabled={!codeUpdateAvailable || recording}
+          disabled={!updateAvailable || recording}
           title="Update Code"
           onClick={onUpdateCode}
         >
