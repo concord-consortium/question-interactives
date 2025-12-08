@@ -309,8 +309,9 @@ export const AgentSimulationComponent = ({
     };
   }, [resetSimulationWithPreservedGlobals, newRecordingCount]);
 
-  // Cleanup animation frames, recording intervals, and pause timeout on unmount
+  // Cleanup animation frames, recording intervals, pause timeout, and simulation on unmount
   useEffect(() => {
+    const container = containerRef.current;
     return () => {
       if (animationFrameRef.current !== null) {
         cancelAnimationFrame(animationFrameRef.current);
@@ -323,6 +324,13 @@ export const AgentSimulationComponent = ({
       if (pauseTimeoutRef.current !== null) {
         clearTimeout(pauseTimeoutRef.current);
         pauseTimeoutRef.current = null;
+      }
+
+      // Cleanup simulation and visualization on unmount
+      visRef.current?.destroy();
+      if (simRef.current) {
+        container?.replaceChildren();
+        simRef.current.destroy();
       }
     };
   }, []);
