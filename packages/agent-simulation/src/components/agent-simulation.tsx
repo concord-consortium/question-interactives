@@ -80,7 +80,6 @@ export const AgentSimulationComponent = ({
   const [paused, setPaused] = useState(false);
   const [error, setError] = useState("");
   const [resetCount, setResetCount] = useState(0);
-  const [newRecordingCount, setNewRecordingCount] = useState(0);
   const simRef = useRef<AgentSimulation | null>(null);
   const [hasBeenStarted, setHasBeenStarted] = useState(false);
   const [hasBeenReset, setHasBeenReset] = useState(false);
@@ -150,6 +149,12 @@ export const AgentSimulationComponent = ({
   }, [currentRecordingIndex, recordings]);
   const inRecordingMode = useMemo(() => !!currentRecording, [currentRecording]);
   const isRecording = useMemo(() => !!currentRecording && !paused, [currentRecording, paused]);
+  const isCompletedRecording = useMemo(() => 
+    !!currentRecording && 
+    currentRecording.startedAt !== undefined && 
+    currentRecording.duration !== undefined,
+    [currentRecording]
+  );
 
   const getRecordingInfo = useCallback(() => {
     const startedAt = currentRecording?.startedAt;
@@ -282,7 +287,7 @@ export const AgentSimulationComponent = ({
       container?.replaceChildren();
       oldSim.destroy();
     };
-  }, [blocklyCode, code, gridHeight, gridStep, gridWidth, resetCount, newRecordingCount]);
+  }, [blocklyCode, code, gridHeight, gridStep, gridWidth, resetCount]);
 
   // Cleanup animation frames, recording intervals, and pause timeout on unmount
   useEffect(() => {
@@ -515,7 +520,6 @@ export const AgentSimulationComponent = ({
     const newRecordings = [...recordings, newRecording];
     setRecordings(newRecordings);
     setCurrentRecordingIndex(newRecordings.length - 1);
-    setNewRecordingCount(prev => prev + 1);
   };
 
   const handleSelectRecording = (index: number) => {
@@ -610,7 +614,7 @@ export const AgentSimulationComponent = ({
           />
         </div>
       </div>
-      <Widgets sim={simRef.current} isRecording={isRecording} inRecordingMode={inRecordingMode} />
+      <Widgets sim={simRef.current} isRecording={isRecording} inRecordingMode={inRecordingMode} isCompletedRecording={isCompletedRecording} />
       {blocklyCode && (
         <>
           {showBlocklyCode &&

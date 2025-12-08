@@ -26,6 +26,7 @@ describe("SliderWidget", () => {
         data={{ ...defaultData, ...(props.data || {}) }}
         globalKey={props.globalKey || "foo"}
         isRecording={props.isRecording ?? false}
+        isCompletedRecording={props.isCompletedRecording ?? false}
         sim={mockSim}
         type={sliderWidgetType}
         {...props}
@@ -109,6 +110,13 @@ describe("SliderWidget", () => {
       const input = screen.getByTestId("slider-widget-input");
       fireEvent.change(input, { target: { value: "15" } });
       expect(mockGlobals.get("foo")).toBe(15);
+    });
+
+    it("disables slider when isCompletedRecording is true", () => {
+      mockGlobals.set("foo", 50);
+      const { container } = renderWidget({ isCompletedRecording: true });
+      const slider = container.querySelector(".rc-slider");
+      expect(slider).toHaveClass("rc-slider-disabled");
     });
   });
 });

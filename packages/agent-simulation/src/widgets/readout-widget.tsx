@@ -14,7 +14,7 @@ const sanitizeGlobalKey = (str: string) => {
   return str.replace(/[^a-zA-Z0-9\-_:.]/g, "_");
 };
 
-export const ReadoutWidget = observer(function ReadoutWidget({ data, globalKey, sim, isRecording, inRecordingMode }: IWidgetComponentProps<ReadoutWidgetData>) {
+export const ReadoutWidget = observer(function ReadoutWidget({ data, globalKey, sim, isCompletedRecording, isRecording, inRecordingMode }: IWidgetComponentProps<ReadoutWidgetData>) {
   const labelString = data?.label ? ` ${data.label}` : "";
   const sanitizedGlobalKey = sanitizeGlobalKey(globalKey);
   const style = {
@@ -29,8 +29,14 @@ export const ReadoutWidget = observer(function ReadoutWidget({ data, globalKey, 
     : String(value);
   const unit = formatType === "percent" ? "%" : (data?.unit ?? "");
 
+  const containerClasses = classNames(css.readoutWidget, {
+    [css.recording]: isRecording,
+    [css.completedRecording]: isCompletedRecording,
+    [css.inRecordingMode]: inRecordingMode
+  });
+
   return (
-    <div className={classNames(css.readoutWidget, { [css.recording]: isRecording, [css.inRecordingMode]: inRecordingMode })} style={style}>
+    <div className={containerClasses} style={style}>
       <label id={`label-${sanitizedGlobalKey}`} className={css.readoutWidget_label}>
         {labelString}
       </label>

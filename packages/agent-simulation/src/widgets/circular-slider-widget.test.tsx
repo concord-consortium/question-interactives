@@ -30,6 +30,7 @@ describe("CircularSliderWidget", () => {
         data={{ ...defaultData, ...(props.data || {}) }}
         globalKey={props.globalKey || "foo"}
         isRecording={props.isRecording ?? false}
+        isCompletedRecording={props.isCompletedRecording ?? false}
         sim={mockSim}
         type={"circular-slider"}
         {...props}
@@ -109,6 +110,15 @@ describe("CircularSliderWidget", () => {
       renderWidget({ isRecording: true });
       const input = screen.getByTestId("slider-widget-input");
       expect(input).toBeDisabled();
+    });
+
+    it("prevents interaction when isCompletedRecording is true", () => {
+      mockGlobals.set("foo", 50);
+      renderWidget({ isCompletedRecording: true });
+      const container = screen.getByTestId("circular-slider-container");
+
+      fireEvent.mouseDown(container, { clientX: 100, clientY: 100 });
+      expect(mockGlobals.get("foo")).toBe(50);
     });
   });
 });

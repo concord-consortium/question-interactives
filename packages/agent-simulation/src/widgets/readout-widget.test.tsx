@@ -24,6 +24,7 @@ describe("ReadoutWidget", () => {
         type={readoutWidgetType}
         sim={mockSim}
         isRecording={false}
+        isCompletedRecording={false}
         {...props}
       />
     );
