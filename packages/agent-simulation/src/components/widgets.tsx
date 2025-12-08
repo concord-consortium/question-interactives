@@ -12,6 +12,7 @@ interface IWidgetProps {
   isCompletedRecording: boolean;
   isRecording: boolean;
   inRecordingMode: boolean;
+  recordedGlobalValues?: Record<string, any>;
 }
 
 const sizeToClass: Record<WidgetSize, string> = {
@@ -20,7 +21,7 @@ const sizeToClass: Record<WidgetSize, string> = {
   "very-tall": css.widgetVeryTall
 };
 
-export function Widgets({ sim, isCompletedRecording, isRecording, inRecordingMode }: IWidgetProps) {
+export function Widgets({ sim, isCompletedRecording, isRecording, inRecordingMode, recordedGlobalValues }: IWidgetProps) {
   if (!sim) return null;
 
   const validWidgets = sim.widgets.filter(w => {
@@ -70,6 +71,7 @@ export function Widgets({ sim, isCompletedRecording, isRecording, inRecordingMod
               isCompletedRecording={isCompletedRecording}
               isRecording={isRecording}
               inRecordingMode={inRecordingMode}
+              recordedGlobalValues={recordedGlobalValues}
             />
           </div>
         );

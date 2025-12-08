@@ -13,7 +13,7 @@ import css from "./slider-widget.scss";
 
 export const sliderWidgetType = "slider";
 
-export const SliderWidget = observer(function SliderWidget({ data, globalKey, sim, isRecording, inRecordingMode, isCompletedRecording }: IWidgetComponentProps<SliderWidgetData>) {
+export const SliderWidget = observer(function SliderWidget({ data, globalKey, sim, isRecording, inRecordingMode, isCompletedRecording, recordedGlobalValues }: IWidgetComponentProps<SliderWidgetData>) {
   const sliderBodyRef = React.useRef<HTMLDivElement>(null);
 
   // Clicks on the rc-slider element's container (not just the slider itself)
@@ -40,7 +40,10 @@ export const SliderWidget = observer(function SliderWidget({ data, globalKey, si
   }
 
   const { formatType, label, min, max, secondaryLabel, showReadout, step } = data;
-  const value = sim.globals.get(globalKey);
+  // Use recorded values when viewing a completed recording, otherwise use current sim values
+  const value = isCompletedRecording && recordedGlobalValues?.[globalKey] !== undefined
+    ? recordedGlobalValues[globalKey]
+    : sim.globals.get(globalKey);
   const error = validateSliderWidgetData(data, value, "Slider widget");
   if (error) return <WidgetError message={error} />;
 

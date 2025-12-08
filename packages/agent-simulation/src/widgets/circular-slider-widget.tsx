@@ -67,14 +67,17 @@ const snapToStep = (value: number, min: number, max: number, step?: number): num
 };
 
 export const CircularSliderWidget = observer(function CircularSliderWidget(props: IWidgetComponentProps<CircularSliderWidgetData>) {
-  const { data, globalKey, isCompletedRecording, inRecordingMode, isRecording, sim } = props;
+  const { data, globalKey, isCompletedRecording, inRecordingMode, isRecording, sim, recordedGlobalValues } = props;
   const min = data?.min ?? 0;
   const max = data?.max ?? 100;
   const step = data?.step;
   const label = data?.label ?? "";
   const showReadout = data?.showReadout ?? false;
   const formatType = data?.formatType;
-  const value = sim.globals.get(globalKey) ?? min;
+  // Use recorded values when viewing a completed recording, otherwise use current sim values
+  const value = isCompletedRecording && recordedGlobalValues?.[globalKey] !== undefined
+    ? recordedGlobalValues[globalKey]
+    : (sim.globals.get(globalKey) ?? min);
   const [thumbAngle, setThumbAngle] = useState(() => valueToAngle(value, min, max));
   const sliderRef = useRef<SVGSVGElement | null>(null);
   const [dragging, setDragging] = useState(false);

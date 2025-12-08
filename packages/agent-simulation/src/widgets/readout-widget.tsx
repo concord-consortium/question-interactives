@@ -14,7 +14,7 @@ const sanitizeGlobalKey = (str: string) => {
   return str.replace(/[^a-zA-Z0-9\-_:.]/g, "_");
 };
 
-export const ReadoutWidget = observer(function ReadoutWidget({ data, globalKey, sim, isCompletedRecording, isRecording, inRecordingMode }: IWidgetComponentProps<ReadoutWidgetData>) {
+export const ReadoutWidget = observer(function ReadoutWidget({ data, globalKey, sim, isCompletedRecording, isRecording, inRecordingMode, recordedGlobalValues }: IWidgetComponentProps<ReadoutWidgetData>) {
   const labelString = data?.label ? ` ${data.label}` : "";
   const sanitizedGlobalKey = sanitizeGlobalKey(globalKey);
   const style = {
@@ -22,7 +22,10 @@ export const ReadoutWidget = observer(function ReadoutWidget({ data, globalKey, 
     color: data?.color
   };
 
-  const value = sim.globals.get(globalKey);
+  // Use recorded values when viewing a completed recording, otherwise use current sim values
+  const value = isCompletedRecording && recordedGlobalValues?.[globalKey] !== undefined
+    ? recordedGlobalValues[globalKey]
+    : sim.globals.get(globalKey);
   const formatType = data?.formatType ?? "integer";
   const formattedValue = typeof value === "number"
     ? formatValue(value, formatType, data?.precision)

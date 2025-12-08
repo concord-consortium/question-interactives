@@ -358,9 +358,25 @@ export const AgentSimulationComponent = ({
         const duration = Date.now() - startedAt;
 
         if (paused) {
+          // Capture current global values for interactive widgets
+          const globalValues: Record<string, any> = {};
+          if (simRef.current && simRef.current.widgets.length > 0) {
+            const currentGlobals = simRef.current.globals.values();
+            const interactiveWidgetKeys = new Set(
+              simRef.current.widgets
+                .filter(w => w.type === "slider" || w.type === "circular-slider")
+                .map(w => w.globalKey)
+            );
+            Object.keys(currentGlobals).forEach(key => {
+              if (interactiveWidgetKeys.has(key)) {
+                globalValues[key] = currentGlobals[key];
+              }
+            });
+          }
+
           const pausedRecordings = [...recordings];
-          log("start-record-simulation", { startedAt });
-          pausedRecordings[currentRecordingIndex] = { startedAt };
+          log("start-record-simulation", { startedAt, globalValues });
+          pausedRecordings[currentRecordingIndex] = { startedAt, globalValues };
 
           // Update the recording duration every 1/2 second while recording
           recordUpdateDurationIntervalRef.current = window.setInterval(() => {
@@ -438,7 +454,15 @@ export const AgentSimulationComponent = ({
 
               const { id } = typedObject;
               objectStorage.add(typedObject, { id });
-              notPausedRecordings[currentRecordingIndex] = { objectId: id, startedAt, duration, thumbnail, snapshot };
+              // Preserve existing recording data (including globalValues) while adding new fields
+              notPausedRecordings[currentRecordingIndex] = { 
+                ...notPausedRecordings[currentRecordingIndex],
+                objectId: id, 
+                startedAt, 
+                duration, 
+                thumbnail, 
+                snapshot 
+              };
               setRecordings(notPausedRecordings);
 
               // Clear out the tick data for the next recording
@@ -652,7 +676,13 @@ export const AgentSimulationComponent = ({
           />
         </div>
       </div>
-      <Widgets sim={simRef.current} isRecording={isRecording} inRecordingMode={inRecordingMode} isCompletedRecording={isCompletedRecording} />
+      <Widgets
+        sim={simRef.current}
+        isRecording={isRecording}
+        inRecordingMode={inRecordingMode}
+        isCompletedRecording={isCompletedRecording}
+        recordedGlobalValues={currentRecording?.globalValues}
+      />
       {blocklyCode && (
         <>
           {showBlocklyCode &&
