@@ -718,4 +718,103 @@ describe("AgentSimulationComponent", () => {
       });
     });
   });
+
+  describe("recording functionality", () => {
+    beforeEach(() => {
+      mockAgentSimulation.widgets = [
+        { globalKey: "speed", type: "slider", defaultValue: 10 },
+        { globalKey: "count", type: "circular-slider", defaultValue: 5 }
+      ];
+      mockGlobals.values.mockReturnValue({ speed: 20, count: 8 });
+    });
+
+    it("captures global values when starting a recording", async () => {
+      render(
+        <ObjectStorageProvider config={objectStorageConfig}>
+          <AgentSimulationComponent
+            authoredState={defaultAuthoredState}
+            interactiveState={defaultInteractiveState}
+            setInteractiveState={mockSetInteractiveState}
+          />
+        </ObjectStorageProvider>
+      );
+
+      // Wait for initial pause
+      await act(async () => {
+        await new Promise(resolve => setTimeout(resolve, 10));
+      });
+
+      const newButton = screen.getByText("New");
+      fireEvent.click(newButton);
+
+      // Wait for recording mode setup
+      await act(async () => {
+        await new Promise(resolve => setTimeout(resolve, 10));
+      });
+
+      const playButton = screen.getByTestId("play-pause-button");
+      fireEvent.click(playButton);
+
+      // Wait for the reset and recording to start
+      await act(async () => {
+        await new Promise(resolve => setTimeout(resolve, 20));
+      });
+
+      expect(mockSetInteractiveState).toHaveBeenCalled();
+      
+      // Find the call that includes recordings with globalValues
+      const calls = mockSetInteractiveState.mock.calls;
+      const recordingCall = calls.find(call => {
+        if (typeof call[0] === "function") {
+          const result = call[0]({ recordings: [] });
+          return result.recordings && result.recordings.length > 0 && result.recordings[0].globalValues;
+        }
+        return false;
+      });
+
+      expect(recordingCall).toBeDefined();
+      if (recordingCall) {
+        const result = recordingCall[0]({ recordings: [] });
+        expect(result.recordings[0].globalValues).toEqual({ speed: 20, count: 8 });
+      }
+    });
+
+    it("preserves global values when resetting simulation before starting recording", async () => {
+      render(
+        <ObjectStorageProvider config={objectStorageConfig}>
+          <AgentSimulationComponent
+            authoredState={defaultAuthoredState}
+            interactiveState={defaultInteractiveState}
+            setInteractiveState={mockSetInteractiveState}
+          />
+        </ObjectStorageProvider>
+      );
+
+      // Wait for initial pause
+      await act(async () => {
+        await new Promise(resolve => setTimeout(resolve, 10));
+      });
+
+      const newButton = screen.getByText("New");
+      fireEvent.click(newButton);
+
+      // Wait for recording mode setup
+      await act(async () => {
+        await new Promise(resolve => setTimeout(resolve, 10));
+      });
+
+      const callsBeforePlay = mockSimulationConstructor.mock.calls.length;
+      const playButton = screen.getByTestId("play-pause-button");
+      fireEvent.click(playButton);
+
+      // Wait for the reset
+      await act(async () => {
+        await new Promise(resolve => setTimeout(resolve, 20));
+      });
+
+      expect(mockSimulationConstructor.mock.calls.length).toBeGreaterThan(callsBeforePlay);
+      const lastCall = mockSimulationConstructor.mock.calls[mockSimulationConstructor.mock.calls.length - 1];
+      expect(lastCall[3]).toEqual({ speed: 20, count: 8 });
+    });
+  });
 });
