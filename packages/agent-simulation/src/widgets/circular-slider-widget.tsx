@@ -17,7 +17,7 @@ const HALF_SLIDER_SIZE = SLIDER_SIZE / 2;
 const SLIDER_RADIUS = 18;
 const TWO_PI = Math.PI * 2;
 const HALF_PI = Math.PI / 2;
-const THUMB_SIZE = 24;
+const THUMB_SIZE = 27;
 const HALF_THUMB_SIZE = THUMB_SIZE / 2;
 const VALUE_UPDATE_THROTTLE_MS = 50; // 50ms = ~20 updates/sec
 
