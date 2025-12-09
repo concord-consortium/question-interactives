@@ -23,7 +23,6 @@ const MAX_INPUT_WIDTH_CH = 8;
 
 // Determines input width based on the maximum possible formatted value length.
 const calculateInputWidth = (min: number, max: number, currentValue: number, formatType: string, precision?: number): number => {
-  const breathingRoom = formatType === "integer" ? 1 : 0;
   const formattedMin = formatValue(min, formatType, precision);
   const formattedMax = formatValue(max, formatType, precision);
   const formattedCurrent = formatValue(currentValue, formatType, precision);
@@ -33,7 +32,11 @@ const calculateInputWidth = (min: number, max: number, currentValue: number, for
     formattedCurrent.length
   );
 
-  return Math.min(maxLength + breathingRoom, MAX_INPUT_WIDTH_CH);
+  // Integer values need an extra 1ch to prevent visual cropping, while decimal and percent values
+  // render correctly without it.
+  const widthCorrection = formatType === "integer" ? 1 : 0;
+
+  return Math.min(maxLength + widthCorrection, MAX_INPUT_WIDTH_CH);
 };
 
 export const SliderReadout: React.FC<IProps> = (props) => {
