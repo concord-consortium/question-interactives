@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useMemo } from "react";
 import classNames from "classnames";
 
 import { formatValue } from "../utils/format-utils";
@@ -38,9 +38,15 @@ const calculateInputWidth = (min: number, max: number, currentValue: number, for
 
 export const SliderReadout: React.FC<IProps> = (props) => {
   const { formatType = "integer", isCompletedRecording, inRecordingMode, isRecording, min, max, onChange, precision, step, unit: _unit, value } = props;
-  const formattedValue = formatValue(value, formatType, precision);
   const unit = formatType === "percent" ? "%" : (_unit ?? "");
-  const inputWidth = calculateInputWidth(min, max, value, formatType, precision);
+  
+  const formattedValue = useMemo(() => {
+    return formatValue(value, formatType, precision);
+  }, [value, formatType, precision]);
+  
+  const inputWidth = useMemo(() => {
+    return calculateInputWidth(min, max, value, formatType, precision);
+  }, [min, max, value, formatType, precision]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isRecording || isCompletedRecording) return;
