@@ -9,6 +9,12 @@
   overflow: hidden;
   width: fit-content;
 
+  /* Apply focus outline to container when input is focused */
+  &:focus-within {
+    border-color: #007aff;
+    outline: 1px solid #007aff;
+  }
+
   /* Hide the up and down arrows for the input */
   /* For Chrome, Safari, Edge, Opera */
   input[type="number"]::-webkit-outer-spin-button,
@@ -27,6 +33,11 @@
     display: inline-block;
     padding: 0 3px 0 0;
     text-align: right;
+
+    /* Remove default focus outline. Container handles focus styling. */
+    &:focus {
+      outline: none;
+    }
 
     &:hover {
       background-color: var(--cc-teal-light-4);

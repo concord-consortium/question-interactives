@@ -7,7 +7,8 @@
   .sliderHeader {
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    padding-right: 2px;
+    padding-bottom: 2px;
 
     .labelText {
       margin-bottom: 5px;
