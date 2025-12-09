@@ -19,14 +19,28 @@ interface IProps {
   onChange: (newValue: number) => void;
 }
 
-const MAX_INPUT_WIDTH_CH = 5;
+const MAX_INPUT_WIDTH_CH = 8;
+
+// Determines input width based on the maximum possible formatted value length.
+const calculateInputWidth = (min: number, max: number, currentValue: number, formatType: string, precision?: number): number => {
+  const breathingRoom = formatType === "integer" ? 1 : 0;
+  const formattedMin = formatValue(min, formatType, precision);
+  const formattedMax = formatValue(max, formatType, precision);
+  const formattedCurrent = formatValue(currentValue, formatType, precision);
+  const maxLength = Math.max(
+    formattedMin.length,
+    formattedMax.length,
+    formattedCurrent.length
+  );
+
+  return Math.min(maxLength + breathingRoom, MAX_INPUT_WIDTH_CH);
+};
 
 export const SliderReadout: React.FC<IProps> = (props) => {
   const { formatType = "integer", isCompletedRecording, inRecordingMode, isRecording, min, max, onChange, precision, step, unit: _unit, value } = props;
   const formattedValue = formatValue(value, formatType, precision);
   const unit = formatType === "percent" ? "%" : (_unit ?? "");
-  // Set input width based on max value length to prevent layout shifts.
-  const inputWidth = Math.min(max.toString().length + 1, MAX_INPUT_WIDTH_CH);
+  const inputWidth = calculateInputWidth(min, max, value, formatType, precision);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (isRecording || isCompletedRecording) return;
