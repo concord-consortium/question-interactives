@@ -68,14 +68,17 @@ const snapToStep = (value: number, min: number, max: number, step?: number): num
 };
 
 export const CircularSliderWidget = observer(function CircularSliderWidget(props: IWidgetComponentProps<CircularSliderWidgetData>) {
-  const { data, globalKey, inRecordingMode, isRecording, sim } = props;
+  const { data, globalKey, isCompletedRecording, inRecordingMode, isRecording, sim, recordedGlobalValues } = props;
   const min = data?.min ?? 0;
   const max = data?.max ?? 100;
   const step = data?.step;
   const label = data?.label ?? "";
   const showReadout = data?.showReadout ?? false;
   const formatType = data?.formatType;
-  const value = sim.globals.get(globalKey) ?? min;
+  // Use recorded values when viewing a completed recording, otherwise use current sim values
+  const value = isCompletedRecording && recordedGlobalValues?.[globalKey] !== undefined
+    ? recordedGlobalValues[globalKey]
+    : (sim.globals.get(globalKey) ?? min);
   const [thumbAngle, setThumbAngle] = useState(() => valueToAngle(value, min, max));
   const sliderRef = useRef<SVGSVGElement | null>(null);
   const [dragging, setDragging] = useState(false);
@@ -111,7 +114,7 @@ export const CircularSliderWidget = observer(function CircularSliderWidget(props
   );
 
   const handleMouseDownOrTouchStart = useCallback((eDown: React.MouseEvent<HTMLDivElement> | React.TouchEvent<HTMLDivElement>) => {
-    if (isRecording) return;
+    if (isRecording || isCompletedRecording) return;
 
     eDown.preventDefault();
     eDown.stopPropagation();
@@ -200,10 +203,10 @@ export const CircularSliderWidget = observer(function CircularSliderWidget(props
         window.addEventListener("touchend", handleUp, true);
       }
     }
-  }, [getBounds, min, max, handleValueChange, thumbAngle, isRecording]);
+  }, [getBounds, min, max, handleValueChange, thumbAngle, isRecording, isCompletedRecording]);
 
   const handleSliderThumbnailKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (isRecording) return;
+    if (isRecording || isCompletedRecording) return;
 
     const key = e.key;
     const stepSize = step ?? (max - min) / 20; // Default to 5% of range
@@ -220,10 +223,10 @@ export const CircularSliderWidget = observer(function CircularSliderWidget(props
       e.preventDefault();
       e.stopPropagation();
     }
-  }, [value, handleValueChange, step, min, max, isRecording]);
+  }, [value, handleValueChange, step, min, max, isRecording, isCompletedRecording]);
 
   const handleInputChange = (newValue: number) => {
-    if (isRecording) return;
+    if (isRecording || isCompletedRecording) return;
     if (!isNaN(newValue)) {
       handleValueChange(newValue);
     }
@@ -248,6 +251,7 @@ export const CircularSliderWidget = observer(function CircularSliderWidget(props
     css.circularSliderWidget,
     {
       [css.recording]: isRecording,
+      [css.completedRecording]: isCompletedRecording,
       [css.inRecordingMode]: inRecordingMode
     }
   );
@@ -262,6 +266,7 @@ export const CircularSliderWidget = observer(function CircularSliderWidget(props
           <div className={css.readoutContainer}>
             <SliderReadout 
               formatType={formatType}
+              isCompletedRecording={isCompletedRecording}
               inRecordingMode={inRecordingMode}
               isRecording={isRecording}
               min={min}

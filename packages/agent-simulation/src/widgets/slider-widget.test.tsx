@@ -26,6 +26,7 @@ describe("SliderWidget", () => {
         data={{ ...defaultData, ...(props.data || {}) }}
         globalKey={props.globalKey || "foo"}
         isRecording={props.isRecording ?? false}
+        isCompletedRecording={props.isCompletedRecording ?? false}
         sim={mockSim}
         type={sliderWidgetType}
         {...props}
@@ -109,6 +110,64 @@ describe("SliderWidget", () => {
       const input = screen.getByTestId("slider-widget-input");
       fireEvent.change(input, { target: { value: "15" } });
       expect(mockGlobals.get("foo")).toBe(15);
+    });
+
+    it("disables slider when isCompletedRecording is true", () => {
+      mockGlobals.set("foo", 50);
+      const { container } = renderWidget({ isCompletedRecording: true });
+      const slider = container.querySelector(".rc-slider");
+      expect(slider).toHaveClass("rc-slider-disabled");
+    });
+  });
+
+  describe("recorded global values", () => {
+    it("uses recorded value when viewing a completed recording", () => {
+      // Current sim value is 50, but recorded value was 25
+      mockGlobals.set("foo", 50);
+      renderWidget({
+        data: { ...defaultData, showReadout: true },
+        isCompletedRecording: true,
+        recordedGlobalValues: { foo: 25 }
+      });
+
+      const input = screen.getByTestId("slider-widget-input");
+      expect(input).toHaveValue(25);
+    });
+
+    it("uses sim value when not viewing a completed recording", () => {
+      mockGlobals.set("foo", 50);
+      renderWidget({
+        data: { ...defaultData, showReadout: true },
+        isCompletedRecording: false,
+        recordedGlobalValues: { foo: 25 }
+      });
+
+      const input = screen.getByTestId("slider-widget-input");
+      expect(input).toHaveValue(50);
+    });
+
+    it("uses sim value when recordedGlobalValues is undefined", () => {
+      mockGlobals.set("foo", 50);
+      renderWidget({
+        data: { ...defaultData, showReadout: true },
+        isCompletedRecording: true,
+        recordedGlobalValues: undefined
+      });
+
+      const input = screen.getByTestId("slider-widget-input");
+      expect(input).toHaveValue(50);
+    });
+
+    it("uses sim value when recorded value for this key is undefined", () => {
+      mockGlobals.set("foo", 50);
+      renderWidget({
+        data: { ...defaultData, showReadout: true },
+        isCompletedRecording: true,
+        recordedGlobalValues: { bar: 25 } // Different key
+      });
+
+      const input = screen.getByTestId("slider-widget-input");
+      expect(input).toHaveValue(50);
     });
   });
 });

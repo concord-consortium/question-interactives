@@ -52,5 +52,6 @@ export interface IRecording {
   duration?: number;
   thumbnail?: string;
   snapshot?: string;
+  globalValues?: Record<string, any>;
 }
 export type IRecordings = IRecording[];

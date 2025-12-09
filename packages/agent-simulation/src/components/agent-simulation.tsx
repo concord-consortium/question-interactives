@@ -82,6 +82,9 @@ export const AgentSimulationComponent = ({
   const [resetCount, setResetCount] = useState(0);
   const [newRecordingCount, setNewRecordingCount] = useState(0);
   const simRef = useRef<AgentSimulation | null>(null);
+  // This state is used to force a re-render when the simulation changes,
+  // ensuring Widgets receives the updated simRef.current.
+  const [, setSimVersion] = useState(0);
   const [hasBeenStarted, setHasBeenStarted] = useState(false);
   const [hasBeenReset, setHasBeenReset] = useState(false);
 
@@ -121,6 +124,7 @@ export const AgentSimulationComponent = ({
   const animationFrameRef = useRef<number | null>(null);
   const visRef = useRef<AV.VisHandle | null>(null);
   const pauseTimeoutRef = useRef<number | null>(null);
+  const recordingResetCompleteRef = useRef(false);
 
   const setBlocklyCode = (newCode: string) => {
     _setBlocklyCode(newCode);
@@ -150,6 +154,12 @@ export const AgentSimulationComponent = ({
   }, [currentRecordingIndex, recordings]);
   const inRecordingMode = useMemo(() => !!currentRecording, [currentRecording]);
   const isRecording = useMemo(() => !!currentRecording && !paused, [currentRecording, paused]);
+  const isCompletedRecording = useMemo(() => 
+    !!currentRecording && 
+    currentRecording.startedAt !== undefined && 
+    currentRecording.duration !== undefined,
+    [currentRecording]
+  );
 
   const getRecordingInfo = useCallback(() => {
     const startedAt = currentRecording?.startedAt;
@@ -186,21 +196,24 @@ export const AgentSimulationComponent = ({
     };
   }, [dataSourceInteractive]);
 
-  // Setup and display the simulation
-  useEffect(() => {
+  const resetSimulationWithPreservedGlobals = useCallback(() => {
     if (
       gridHeight <= 0 || !Number.isInteger(gridHeight) ||
       gridWidth <= 0 || !Number.isInteger(gridWidth) ||
       gridStep <= 0 || !Number.isInteger(gridStep)
     ) {
       setError("Grid height, width, and step must be positive integers.");
-      return;
+      return false;
     }
     if (gridHeight % gridStep !== 0 || gridWidth % gridStep !== 0) {
       setError("Grid height and width must be divisible by the grid step.");
-      return;
+      return false;
     }
 
+    if (pauseTimeoutRef.current !== null) {
+      clearTimeout(pauseTimeoutRef.current);
+      pauseTimeoutRef.current = null;
+    }
 
     // Preserve global values for interactive widgets across resets and code updates.
     const prevGlobals: Record<string, any> = {};
@@ -220,6 +233,13 @@ export const AgentSimulationComponent = ({
     }
 
     const preservedGlobals = Object.keys(prevGlobals).length > 0 ? prevGlobals : undefined;
+
+    // Cleanup old simulation and visualization
+    visRef.current?.destroy();
+    if (simRef.current) {
+      containerRef.current?.replaceChildren();
+      simRef.current.destroy();
+    }
 
     // Set up the simulation
     simRef.current = new AgentSimulation(gridWidth, gridHeight, gridStep, preservedGlobals);
@@ -243,7 +263,7 @@ export const AgentSimulationComponent = ({
       simFunction?.(sim, AA, AV, globals, simRef.current.addWidget.bind(simRef.current));
     } catch (e) {
       setError(`Error setting up simulation: ${String(e)}`);
-      return;
+      return false;
     }
 
     // save the globals at each tick for recording
@@ -257,9 +277,21 @@ export const AgentSimulationComponent = ({
       }
     };
 
-    // Visualize and start the simulation after disposing any existing vis first.
-    visRef.current?.destroy();
+    // Visualize the simulation
     visRef.current = AV.vis(simRef.current.sim, { speed: simSpeedRef.current, target: containerRef.current, preserveDrawingBuffer: true, afterTick });
+
+    setError("");
+    
+    // Force a re-render so Widgets receives the updated simRef.current
+    setSimVersion(v => v + 1);
+    
+    return true;
+  }, [blocklyCode, code, gridHeight, gridStep, gridWidth, resetCount]);
+
+  // Setup and display the simulation on mount and when dependencies change
+  useEffect(() => {
+    const success = resetSimulationWithPreservedGlobals();
+    if (!success) return;
 
     // Pause the sim after a frame.
     // We need to let the sim run for a frame so actors created in setup have a chance to get added to the sim.
@@ -268,24 +300,18 @@ export const AgentSimulationComponent = ({
       setPaused(true);
     }, 5);
 
-    setError("");
-
-    const oldSim = simRef.current;
-    const container = containerRef.current;
     return () => {
       // Clear the pause timeout if it hasn't fired yet
       if (pauseTimeoutRef.current !== null) {
         clearTimeout(pauseTimeoutRef.current);
         pauseTimeoutRef.current = null;
       }
-      // Remove old sim when we're ready to update the sim
-      container?.replaceChildren();
-      oldSim.destroy();
     };
-  }, [blocklyCode, code, gridHeight, gridStep, gridWidth, resetCount, newRecordingCount]);
+  }, [resetSimulationWithPreservedGlobals, newRecordingCount]);
 
-  // Cleanup animation frames, recording intervals, and pause timeout on unmount
+  // Cleanup animation frames, recording intervals, pause timeout, and simulation on unmount
   useEffect(() => {
+    const container = containerRef.current;
     return () => {
       if (animationFrameRef.current !== null) {
         cancelAnimationFrame(animationFrameRef.current);
@@ -299,6 +325,13 @@ export const AgentSimulationComponent = ({
         clearTimeout(pauseTimeoutRef.current);
         pauseTimeoutRef.current = null;
       }
+
+      // Cleanup simulation and visualization on unmount
+      visRef.current?.destroy();
+      if (simRef.current) {
+        container?.replaceChildren();
+        simRef.current.destroy();
+      }
     };
   }, []);
 
@@ -310,6 +343,22 @@ export const AgentSimulationComponent = ({
           recordUpdateDurationIntervalRef.current = null;
         }
 
+        // When starting a recording for the first time, reset the simulation first.
+        // This captures the user's current global values in the simulation's initial state.
+        if (paused && !currentRecording.startedAt && !recordingResetCompleteRef.current) {
+          const success = resetSimulationWithPreservedGlobals();
+          if (!success) return;
+          // Let the sim run briefly for setup, then continue starting the recording
+          pauseTimeoutRef.current = window.setTimeout(() => {
+            simRef.current?.sim.pause(true);
+            recordingResetCompleteRef.current = true;
+            handlePlayPauseRef.current();
+          }, 5);
+          return;
+        }
+
+        recordingResetCompleteRef.current = false;
+
         if (paused) {
           recordStartTimeRef.current = Date.now();
         }
@@ -317,9 +366,25 @@ export const AgentSimulationComponent = ({
         const duration = Date.now() - startedAt;
 
         if (paused) {
+          // Capture current global values for interactive widgets
+          const globalValues: Record<string, any> = {};
+          if (simRef.current && simRef.current.widgets.length > 0) {
+            const currentGlobals = simRef.current.globals.values();
+            const interactiveWidgetKeys = new Set(
+              simRef.current.widgets
+                .filter(w => w.type === "slider" || w.type === "circular-slider")
+                .map(w => w.globalKey)
+            );
+            Object.keys(currentGlobals).forEach(key => {
+              if (interactiveWidgetKeys.has(key)) {
+                globalValues[key] = currentGlobals[key];
+              }
+            });
+          }
+
           const pausedRecordings = [...recordings];
-          log("start-record-simulation", { startedAt });
-          pausedRecordings[currentRecordingIndex] = { startedAt };
+          log("start-record-simulation", { startedAt, globalValues });
+          pausedRecordings[currentRecordingIndex] = { startedAt, globalValues };
 
           // Update the recording duration every 1/2 second while recording
           recordUpdateDurationIntervalRef.current = window.setInterval(() => {
@@ -397,7 +462,15 @@ export const AgentSimulationComponent = ({
 
               const { id } = typedObject;
               objectStorage.add(typedObject, { id });
-              notPausedRecordings[currentRecordingIndex] = { objectId: id, startedAt, duration, thumbnail, snapshot };
+              // Preserve existing recording data (including globalValues) while adding new fields
+              notPausedRecordings[currentRecordingIndex] = { 
+                ...notPausedRecordings[currentRecordingIndex],
+                objectId: id, 
+                startedAt, 
+                duration, 
+                thumbnail, 
+                snapshot 
+              };
               setRecordings(notPausedRecordings);
 
               // Clear out the tick data for the next recording
@@ -418,7 +491,7 @@ export const AgentSimulationComponent = ({
         setHasBeenStarted(true);
       }
     }
-  }, [currentRecording, paused, hasBeenStarted, recordings, currentRecordingIndex, setRecordings, objectStorage, blocklyCode, code, getRecordingInfo]);
+  }, [currentRecording, paused, hasBeenStarted, recordings, currentRecordingIndex, setRecordings, objectStorage, blocklyCode, code, getRecordingInfo, resetSimulationWithPreservedGlobals]);
 
   // a ref is used here as handlePlayPause is used in a setInterval in handlePlayPause above
   // to stop recording after maxRecordingTime
@@ -511,6 +584,7 @@ export const AgentSimulationComponent = ({
   };
 
   const handleNewRecording = () => {
+    recordingResetCompleteRef.current = false;
     const newRecording: IRecording = {};
     const newRecordings = [...recordings, newRecording];
     setRecordings(newRecordings);
@@ -610,7 +684,13 @@ export const AgentSimulationComponent = ({
           />
         </div>
       </div>
-      <Widgets sim={simRef.current} isRecording={isRecording} inRecordingMode={inRecordingMode} />
+      <Widgets
+        sim={simRef.current}
+        isRecording={isRecording}
+        inRecordingMode={inRecordingMode}
+        isCompletedRecording={isCompletedRecording}
+        recordedGlobalValues={currentRecording?.globalValues}
+      />
       {blocklyCode && (
         <>
           {showBlocklyCode &&

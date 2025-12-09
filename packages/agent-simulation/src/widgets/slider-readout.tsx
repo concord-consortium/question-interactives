@@ -7,6 +7,7 @@ import css from "./slider-readout.scss";
 
 interface IProps {
   formatType?: string;
+  isCompletedRecording?: boolean;
   inRecordingMode?: boolean;
   isRecording?: boolean;
   max: number;
@@ -21,14 +22,14 @@ interface IProps {
 const MAX_INPUT_WIDTH_CH = 5;
 
 export const SliderReadout: React.FC<IProps> = (props) => {
-  const { formatType = "integer", inRecordingMode, isRecording, min, max, onChange, precision, step, unit: _unit, value } = props;
+  const { formatType = "integer", isCompletedRecording, inRecordingMode, isRecording, min, max, onChange, precision, step, unit: _unit, value } = props;
   const formattedValue = formatValue(value, formatType, precision);
   const unit = formatType === "percent" ? "%" : (_unit ?? "");
   // Set input width based on max value length to prevent layout shifts.
   const inputWidth = Math.min(max.toString().length + 1, MAX_INPUT_WIDTH_CH);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (isRecording) return;
+    if (isRecording || isCompletedRecording) return;
 
     const newValue = parseFloat(e.target.value);
     if (!isNaN(newValue)) {
@@ -45,6 +46,7 @@ export const SliderReadout: React.FC<IProps> = (props) => {
   const containerClasses = classNames(
     css.valueContainer,
     {
+      [css.completedRecording]: isCompletedRecording,
       [css.recording]: isRecording,
       [css.inRecordingMode]: inRecordingMode
     }
@@ -55,7 +57,7 @@ export const SliderReadout: React.FC<IProps> = (props) => {
       <input
         className={css.valueInput}
         data-testid="slider-widget-input"
-        disabled={isRecording}
+        disabled={isRecording || isCompletedRecording}
         min={min}
         max={max}
         step={step}

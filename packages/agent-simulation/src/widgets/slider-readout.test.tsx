@@ -58,6 +58,11 @@ describe("SliderReadout", () => {
     expect(screen.getByTestId("slider-widget-input")).toBeDisabled();
   });
 
+  it("disables input when `isCompletedRecording` is true", () => {
+    render(<SliderReadout {...baseProps} isCompletedRecording={true} />);
+    expect(screen.getByTestId("slider-widget-input")).toBeDisabled();
+  });
+
   it("blurs input on Enter key", () => {
     render(<SliderReadout {...baseProps} />);
     const input = screen.getByTestId("slider-widget-input");

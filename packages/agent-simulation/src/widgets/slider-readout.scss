@@ -59,7 +59,8 @@
     }
   }
 
-  &.recording {
+  &.recording,
+  &.completedRecording {
     background-color: white;
     border-color: white;
 
