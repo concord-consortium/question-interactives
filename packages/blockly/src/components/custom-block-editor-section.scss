@@ -84,6 +84,16 @@
     margin-bottom: $spacing-lg;
   }
 
+  .unsavedWarning {
+    background: #fff3cd;
+    border: 1px solid #ffc107;
+    border-radius: $border-radius-md;
+    color: #856404;
+    font-size: $font-size-sm;
+    margin-bottom: $spacing-lg;
+    padding: $spacing-lg;
+  }
+
   .customBlocks_current {
     display: flex;
     flex-direction: column;
