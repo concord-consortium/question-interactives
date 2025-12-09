@@ -11,7 +11,7 @@ interface Props {
   Icon: React.FC<React.SVGProps<SVGSVGElement>>;
   message: string | ReactNode;
   confirmLabel: string;
-  onConfirm: () => void;
+  onConfirm: (e: React.FormEvent<HTMLFormElement>|React.MouseEvent<HTMLButtonElement>) => void;
   onCancel: () => void;
 }
 

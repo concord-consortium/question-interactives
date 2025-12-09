@@ -177,7 +177,6 @@ export const AgentSimulationComponent = ({
     if (!dataSourceInteractive) return;
 
     const listener = (newLinkedIntState: IInteractiveState | undefined) => {
-      console.log("linked-interactive-state-update", { newLinkedIntState });
       const newName = newLinkedIntState && "name" in newLinkedIntState && newLinkedIntState.name;
       const newCode = newLinkedIntState && "code" in newLinkedIntState && newLinkedIntState.code;
       log("linked-interactive-state-update", {

@@ -27,7 +27,7 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
   }, [customBlocks]);
   const [savedBlocklyStates, setSavedBlocklyStates] = useState(interactiveState?.savedBlocklyStates ?? []);
   const modelNames = useMemo(() => savedBlocklyStates.map(s => s.name), [savedBlocklyStates]);
-  const [name, setName] = useState("Model 1");
+  const [name, setName] = useState(interactiveState?.name ?? "Model 1");
   const [error, setError] = useState<Error | null>(null);
   const blocklyDivRef = useRef<HTMLDivElement>(null);
   const workspaceRef = useRef<WorkspaceSvg | null>(null);
