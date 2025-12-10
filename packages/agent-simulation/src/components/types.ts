@@ -2,6 +2,9 @@ import { IAuthoringInteractiveMetadata, IRuntimeInteractiveMetadata } from "@con
 
 import { predatorPreyCode } from "../sims/predator-prey-model";
 
+export const defaultMaxRecordingTime = 90; // 90 seconds
+export const maxMaxRecordingTime = 300; // 5 minutes
+
 // Note that TS interfaces should match JSON schema. Currently there's no way to generate one from the other.
 // TS interfaces are not available in runtime in contrast to JSON schema.
 
@@ -13,6 +16,7 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   gridWidth: number;
   hint?: string;
   version: number;
+  maxRecordingTime: number;
 }
 
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
@@ -32,6 +36,7 @@ export const DefaultAuthoredState: Omit<Required<IAuthoredState>, "questionSubTy
   hint: "",
   questionType: "iframe_interactive",
   version: 1,
+  maxRecordingTime: defaultMaxRecordingTime,
 };
 
 export const DemoAuthoredState: IAuthoredState = {
@@ -44,6 +49,7 @@ export const DemoAuthoredState: IAuthoredState = {
   prompt: "",
   questionType: "iframe_interactive",
   version: 1,
+  maxRecordingTime: defaultMaxRecordingTime,
 };
 
 export interface IRecording {
