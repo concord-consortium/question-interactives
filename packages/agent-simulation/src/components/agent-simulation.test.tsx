@@ -77,6 +77,7 @@ describe("AgentSimulationComponent", () => {
   const defaultInteractiveState: IInteractiveState = {
     version: 1,
     answerType: "interactive_state",
+    name: "Model 1",
     recordings: [],
   };
 

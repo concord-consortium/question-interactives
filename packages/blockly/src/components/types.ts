@@ -97,10 +97,17 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   version: number;
 }
 
+export interface ISavedBlocklyState {
+  name: string;
+  blocklyState: string;
+}
+
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
+  name?: string;
   code?: string;
   blocklyState?: string;
   submitted?: boolean;
+  savedBlocklyStates?: ISavedBlocklyState[];
 }
 
 const defaultToolbox = {
