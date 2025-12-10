@@ -14,7 +14,7 @@ import {
 } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
 import { SIM_SPEED_DEFAULT, ZOOM_ANIMATION_DURATION, ZOOM_DEFAULT, ZOOM_MAX, ZOOM_MIN, ZOOM_STEP } from "../constants";
 import { AgentSimulation } from "../models/agent-simulation";
-import { IAuthoredState, IInteractiveState, IRecording, IRecordings } from "./types";
+import { IAuthoredState, IInteractiveState, IRecording, IRecordings, maxMaxRecordingTime } from "./types";
 import { ControlPanel } from "./control-panel";
 import { Widgets } from "./widgets";
 import { ZoomControls } from "./zoom-controls";
@@ -53,14 +53,12 @@ const getThumbnail = (snapshot?: string): Promise<string | undefined> => {
   });
 };
 
-const maxRecordingTime = 90 * 1000; // 90 seconds
-
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> { }
 
 export const AgentSimulationComponent = ({
   authoredState, interactiveState, setInteractiveState, report
 }: IProps) => {
-  const { code, gridHeight, gridStep, gridWidth } = authoredState;
+  const { code, gridHeight, gridStep, gridWidth, maxRecordingTime } = authoredState;
   // The blockly code we're using, which doesn't get updated until the user accepts newer code
   const [blocklyCode, _setBlocklyCode] = useState<string>(interactiveState?.blocklyCode || "");
   const [recordings, _setRecordings] = useState<IRecordings>(interactiveState?.recordings || []);
@@ -87,6 +85,7 @@ export const AgentSimulationComponent = ({
   const [, setSimVersion] = useState(0);
   const [hasBeenStarted, setHasBeenStarted] = useState(false);
   const [hasBeenReset, setHasBeenReset] = useState(false);
+  const maxRecordingTimeInMs = Math.max(1, Math.min(maxRecordingTime, maxMaxRecordingTime)) * 1000;
 
   // Determine if Play button should be enabled
   // Play button is disabled when there is a code source and either:
@@ -389,7 +388,7 @@ export const AgentSimulationComponent = ({
           // Update the recording duration every 1/2 second while recording
           recordUpdateDurationIntervalRef.current = window.setInterval(() => {
             const updatedDuration = Date.now() - startedAt;
-            if (updatedDuration <= maxRecordingTime) {
+            if (updatedDuration <= maxRecordingTimeInMs) {
               const updatedRecordings = [...pausedRecordings];
               updatedRecordings[currentRecordingIndex] = {
                 ...updatedRecordings[currentRecordingIndex],
@@ -491,7 +490,8 @@ export const AgentSimulationComponent = ({
         setHasBeenStarted(true);
       }
     }
-  }, [currentRecording, paused, hasBeenStarted, recordings, currentRecordingIndex, setRecordings, objectStorage, blocklyCode, code, getRecordingInfo, resetSimulationWithPreservedGlobals]);
+  }, [currentRecording, paused, hasBeenStarted, resetSimulationWithPreservedGlobals, recordings, currentRecordingIndex, setRecordings,
+      getRecordingInfo, blocklyCode, code, objectStorage, maxRecordingTimeInMs]);
 
   // a ref is used here as handlePlayPause is used in a setInterval in handlePlayPause above
   // to stop recording after maxRecordingTime

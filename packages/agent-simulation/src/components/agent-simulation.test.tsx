@@ -70,7 +70,8 @@ describe("AgentSimulationComponent", () => {
     code: "// Default simulation code",
     gridHeight: 450,
     gridWidth: 450,
-    gridStep: 15
+    gridStep: 15,
+    maxRecordingTime: 90,
   };
 
   const defaultInteractiveState: IInteractiveState = {
@@ -580,7 +581,7 @@ describe("AgentSimulationComponent", () => {
   it("preserves interactive widget globals (sliders) but not display widgets (readouts)", () => {
     // Set up globals with both slider and readout values
     mockGlobals.values.mockReturnValue({ slider1: 42, readout1: 99 });
-    
+
     // Set up both slider and readout widgets
     const mockWidgets = [
       { globalKey: "slider1", type: "slider" as const, defaultValue: 0 },
@@ -622,7 +623,7 @@ describe("AgentSimulationComponent", () => {
   it("does not preserve readout widget globals across resets", () => {
     // Set up globals with both slider and readout values, plus a non-widget global
     mockGlobals.values.mockReturnValue({ slider1: 50, Sheep: 100, someOtherValue: 42 });
-    
+
     // Set up slider widget and readout widget
     const mockWidgets = [
       { globalKey: "slider1", type: "slider" as const, defaultValue: 0 },
@@ -646,7 +647,7 @@ describe("AgentSimulationComponent", () => {
     fireEvent.click(resetButton);
 
     // The constructor should be called twice
-    // The second call should only preserve slider1 (interactive widget), 
+    // The second call should only preserve slider1 (interactive widget),
     // not Sheep (readout widget) or someOtherValue (non-widget)
     expect(mockSimulationConstructor).toHaveBeenCalledTimes(2);
     expect(mockSimulationConstructor).toHaveBeenNthCalledWith(
@@ -761,7 +762,7 @@ describe("AgentSimulationComponent", () => {
       });
 
       expect(mockSetInteractiveState).toHaveBeenCalled();
-      
+
       // Find the call that includes recordings with globalValues
       const calls = mockSetInteractiveState.mock.calls;
       const recordingCall = calls.find(call => {
