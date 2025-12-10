@@ -53,7 +53,7 @@ const getThumbnail = (snapshot?: string): Promise<string | undefined> => {
   });
 };
 
-const maxRecordingTime = 20 * 1000; // 20 seconds
+const maxRecordingTime = 90 * 1000; // 90 seconds
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> { }
 
@@ -154,9 +154,9 @@ export const AgentSimulationComponent = ({
   }, [currentRecordingIndex, recordings]);
   const inRecordingMode = useMemo(() => !!currentRecording, [currentRecording]);
   const isRecording = useMemo(() => !!currentRecording && !paused, [currentRecording, paused]);
-  const isCompletedRecording = useMemo(() => 
-    !!currentRecording && 
-    currentRecording.startedAt !== undefined && 
+  const isCompletedRecording = useMemo(() =>
+    !!currentRecording &&
+    currentRecording.startedAt !== undefined &&
     currentRecording.duration !== undefined,
     [currentRecording]
   );
@@ -281,10 +281,10 @@ export const AgentSimulationComponent = ({
     visRef.current = AV.vis(simRef.current.sim, { speed: simSpeedRef.current, target: containerRef.current, preserveDrawingBuffer: true, afterTick });
 
     setError("");
-    
+
     // Force a re-render so Widgets receives the updated simRef.current
     setSimVersion(v => v + 1);
-    
+
     return true;
   }, [blocklyCode, code, gridHeight, gridStep, gridWidth, resetCount]);
 
@@ -463,13 +463,13 @@ export const AgentSimulationComponent = ({
               const { id } = typedObject;
               objectStorage.add(typedObject, { id });
               // Preserve existing recording data (including globalValues) while adding new fields
-              notPausedRecordings[currentRecordingIndex] = { 
+              notPausedRecordings[currentRecordingIndex] = {
                 ...notPausedRecordings[currentRecordingIndex],
-                objectId: id, 
-                startedAt, 
-                duration, 
-                thumbnail, 
-                snapshot 
+                objectId: id,
+                startedAt,
+                duration,
+                thumbnail,
+                snapshot
               };
               setRecordings(notPausedRecordings);
 
