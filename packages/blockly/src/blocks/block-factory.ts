@@ -59,22 +59,98 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         const input = this.appendDummyInput();
     
         if (blockHasDisclosure(blockDef, blockConfig)) {
-          const statementsInput = this.appendStatementInput("statements");
-          
+
+          // Helper to dispose all connected child blocks
+          const disposeChildren = (block: BlockSvg) => {
+            const stmt = block.getInput("statements");
+            if (!stmt?.connection) return;
+            const targetBlock = stmt.connection.targetBlock() as BlockSvg | null;
+            if (!targetBlock) return;
+
+            const blocksToDispose: BlockSvg[] = [];
+            let currentBlock: BlockSvg | null = targetBlock;
+            while (currentBlock) {
+              blocksToDispose.push(currentBlock);
+              currentBlock = currentBlock.getNextBlock();
+            }
+
+            // Dispose in reverse order to avoid connection issues.
+            blocksToDispose.reverse().forEach(b => {
+              try {
+                b.dispose(false); // false = don't animate
+              } catch (e) {
+                console.warn("Error disposing child block:", e);
+              }
+            });
+          };
+
+          // Helper to serialize connected blocks to XML string
+          const serializeChildren = (block: BlockSvg): string => {
+            const stmt = block.getInput("statements");
+            if (!stmt?.connection) return "";
+            const targetBlock = stmt.connection.targetBlock();
+            if (!targetBlock) return "";
+
+            try {
+              const dom = Blockly.Xml.blockToDom(targetBlock as any, true);
+              return Blockly.Xml.domToText(dom);
+            } catch (e) {
+              console.warn("Failed to serialize children:", e);
+              return "";
+            }
+          };
+
+          // Helper to restore blocks from XML string
+          const restoreChildren = (block: BlockSvg, xml: string) => {
+            if (!xml) return;
+            const stmt = block.getInput("statements");
+            const conn = stmt?.connection;
+            if (!conn) return;
+
+            try {
+              const dom = Blockly.utils.xml.textToDom(`<xml>${xml}</xml>`);
+              const blockDom = dom.firstElementChild;
+              if (blockDom && block.workspace) {
+                const restoredBlock = Blockly.Xml.domToBlock(blockDom, block.workspace as any);
+                if (restoredBlock.previousConnection) {
+                  conn.connect(restoredBlock.previousConnection);
+                }
+              }
+            } catch (e) {
+              console.warn("Failed to restore children:", e);
+            }
+          };
+
           // Add open/close toggle button
           const icon = new Blockly.FieldImage(PLUS_ICON, 16, 16, "+/-");
           icon.setOnClickHandler?.(() => {
-            const open = !this.__disclosureOpen;
+            const wasOpen = this.__disclosureOpen;
+            const open = !wasOpen;
             this.__disclosureOpen = open;
-            statementsInput.setVisible(open);
+
+            if (open) {
+              // Opening: add statement input and restore saved children.
+              this.appendStatementInput("statements");
+              if (this.__savedChildrenXml) {
+                restoreChildren(this, this.__savedChildrenXml);
+                this.__savedChildrenXml = "";
+              }
+            } else {
+              // Closing: save children XML, dispose them, then remove statement input.
+              this.__savedChildrenXml = serializeChildren(this);
+              disposeChildren(this);
+              this.removeInput("statements", true);
+            }
+
             icon.setValue(open ? MINUS_ICON : PLUS_ICON);
             this.render();
           });
           input.insertFieldAt(0, icon, "__disclosure_icon");
           
-          // Initialize as closed
+          // Initialize as closed (no statement input).
           this.__disclosureOpen = false;
-          statementsInput.setVisible(false);
+          this.__savedChildrenXml = "";
+          // Don't create statement input initially. It will be added when opened.
           
           // One-time seeding of child blocks on first creation/attach.
           const hasChildren = Array.isArray(blockConfig.childBlocks) && blockConfig.childBlocks.length > 0;
@@ -82,10 +158,14 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
           if (hasChildren) {
             this.__childrenSeeded = false;
             this.setOnChange(() => {
-              if (this.__childrenSeeded || !this.workspace || this.isInFlyout) return;
+              if (this.__childrenSeeded || !this.workspace || this.workspace.isFlyout) return;
     
-              const stmt = this.getInput("statements");
-              if (!stmt) return;
+              // Temporarily add statement input for seeding.
+              let stmt = this.getInput("statements");
+              const wasOpen = this.__disclosureOpen;
+              if (!stmt) {
+                stmt = this.appendStatementInput("statements");
+              }
     
               try {
                 // Clean up existing child blocks first to avoid connection conflicts
@@ -98,7 +178,7 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
                     blocksToDispose.push(currentBlock);
                     currentBlock = currentBlock.getNextBlock();
                   }
-                  
+
                   // Dispose blocks in reverse order to avoid connection issues
                   blocksToDispose.reverse().forEach(block => {
                     try {
@@ -140,7 +220,16 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
                   
                   createNestedBlocks(blockConfig.childBlocks, stmt.connection);
                 }
+                
                 this.__childrenSeeded = true;
+                
+                // If was closed, save children, dispose them, and remove input.
+                if (!wasOpen) {
+                  this.__savedChildrenXml = serializeChildren(this);
+                  disposeChildren(this);
+                  this.removeInput("statements", true);
+                  this.render();
+                }
               } catch (error) {
                 console.warn("Failed to auto-seed child blocks for", blockDef.id, error);
               }
@@ -267,12 +356,34 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         }
       },
 
-      // Persist open/closed state for blocks that have a disclosure toggle.
+      // Persist open/closed state and children for blocks that have a disclosure toggle.
       mutationToDom() {
         const el = document.createElement("mutation");
         const hasDisclosure = blockHasDisclosure(blockDef, blockConfig);
         const open = hasDisclosure ? (this.__disclosureOpen ?? false) : true;
         el.setAttribute("open", String(open));
+        
+        // If closed, save current savedChildrenXml. If open, serialize current children.
+        if (hasDisclosure && !open) {
+          const savedXml = (this as any).__savedChildrenXml || "";
+          if (savedXml) {
+            el.setAttribute("children", savedXml);
+          }
+        } else if (hasDisclosure && open) {
+          // Serialize currently connected children.
+          const stmt = this.getInput("statements");
+          if (stmt?.connection) {
+            const targetBlock = stmt.connection.targetBlock();
+            if (targetBlock) {
+              try {
+                const dom = Blockly.Xml.blockToDom(targetBlock as any, true);
+                el.setAttribute("children", Blockly.Xml.domToText(dom));
+              } catch (e) {
+                console.warn("Failed to serialize children in mutationToDom:", e);
+              }
+            }
+          }
+        }
         return el;
       },
       domToMutation(el: Element) {
@@ -280,18 +391,26 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         const hasDisclosure = blockHasDisclosure(blockDef, blockConfig);
         if (hasDisclosure) {
           const open = el.getAttribute("open") !== "false";
+          const childrenXml = el.getAttribute("children") || "";
+          
           (b as any).__disclosureOpen = open;
-          const stmt = b.getInput("statements");
-          if (stmt) stmt.setVisible(open);
+          (b as any).__savedChildrenXml = childrenXml;
+          
+          // Add or remove statement input based on state.
+          const existingStmt = b.getInput("statements");
+          if (open && !existingStmt) {
+            b.appendStatementInput("statements");
+          } else if (!open && existingStmt) {
+            b.removeInput("statements", true);
+          }
+          
           const iconField = b.getField("__disclosure_icon");
           if (iconField) {
             iconField.setValue(open ? MINUS_ICON : PLUS_ICON);
           }
-        } else {
-          // Ensure statement input is visible for blocks without disclosure toggle
-          const stmt = b.getInput("statements");
-          if (stmt) stmt.setVisible(true);
         }
+        // Note: blocks without disclosure don't need statement inputs added here.
+        // If a block type needs a statement input, it should be added in its init().
         b.render();
       }
     };
@@ -338,13 +457,59 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         // For now, though, we just return a simple create command.
         const count = block.getFieldValue("count");
         const type = block.getFieldValue("type").toLowerCase().replace(/\s+/g, "_");
-        const statements = javascriptGenerator.statementToCode(block, "statements");
+        
+        // Handle collapsed blocks -- statements input may not exist.
+        let statements = "";
+        if (block.getInput("statements")) {
+          statements = javascriptGenerator.statementToCode(block, "statements");
+        } else {
+          // Block is collapsed -- restore children temporarily to generate code.
+          const savedXml = (block as any).__savedChildrenXml;
+          if (savedXml && block.workspace) {
+            try {
+              const dom = Blockly.utils.xml.textToDom(`<xml>${savedXml}</xml>`);
+              const blockDom = dom.firstElementChild;
+              if (blockDom) {
+                const tempBlock = Blockly.Xml.domToBlock(blockDom, block.workspace);
+                const codeResult = javascriptGenerator.blockToCode(tempBlock);
+                // blockToCode can return string or [string, number] tuple.
+                statements = Array.isArray(codeResult) ? codeResult[0] : codeResult;
+                tempBlock.dispose();
+              }
+            } catch (e) {
+              console.warn("Failed to generate code from saved children:", e);
+            }
+          }
+        }
         const callback = statements ? `(agent) => {\n${statements}\n}` : "";
 
         return `create_${type}(${count}, ${callback});\n`;
       } else if (blockDef.type === "ask") {
         const target = block.getFieldValue("target");
-        const statements = javascriptGenerator.statementToCode(block, "statements");
+        
+        // Handle collapsed blocks -- statements input may not exist.
+        let statements = "";
+        if (block.getInput("statements")) {
+          statements = javascriptGenerator.statementToCode(block, "statements");
+        } else {
+          // Block is collapsed -- restore children temporarily to generate code.
+          const savedXml = (block as any).__savedChildrenXml;
+          if (savedXml && block.workspace) {
+            try {
+              const dom = Blockly.utils.xml.textToDom(`<xml>${savedXml}</xml>`);
+              const blockDom = dom.firstElementChild;
+              if (blockDom) {
+                const tempBlock = Blockly.Xml.domToBlock(blockDom, block.workspace);
+                const codeResult = javascriptGenerator.blockToCode(tempBlock);
+                // blockToCode can return string or [string, number] tuple
+                statements = Array.isArray(codeResult) ? codeResult[0] : codeResult;
+                tempBlock.dispose();
+              }
+            } catch (e) {
+              console.warn("Failed to generate code from saved children:", e);
+            }
+          }
+        }
         const agents = target === "all" ? "sim.actors" : `sim.withLabel("${target}")`;
         return `${agents}.forEach(agent => {\n${statements}\n});\n`;
       } else if (blockDef.type === "condition") {
