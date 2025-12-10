@@ -46,7 +46,7 @@ const baseAuthoringProps = {
         default: 10,
       },
       maxRecordingTime: {
-        title: "Maximum Recording Time (seconds)",
+        title: `Maximum Recording Time (in seconds, max of ${maxMaxRecordingTime})`,
         type: "number",
         minimum: 1,
         maximum: maxMaxRecordingTime,
