@@ -1,9 +1,10 @@
 import React, { useState, useRef } from "react";
 import classNames from "classnames";
 
+import { ISavedBlocklyState } from "./types";
+
 import ArrowIcon from "../assets/arrow-icon.svg";
 import ModelIcon from "../assets/model-icon.svg";
-
 import NewModelIcon from "../assets/new-model-icon.svg";
 import OpenModelIcon from "../assets/open-model-icon.svg";
 import CopyModelIcon from "../assets/copy-model-icon.svg";
@@ -11,7 +12,6 @@ import RenameModelIcon from "../assets/rename-model-icon.svg";
 import DeleteModelIcon from "../assets/delete-model-icon.svg";
 
 import css from "./header.scss";
-import { ISavedBlocklyState } from "./types";
 
 interface IProps {
   name: string;
