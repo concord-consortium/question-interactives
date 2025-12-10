@@ -3,7 +3,7 @@ import { RJSFSchema } from "@rjsf/utils";
 import { BaseQuestionApp } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
 
 import { predatorPreyCode } from "../sims/predator-prey-model";
-import { IAuthoredState, IInteractiveState } from "./types";
+import { IAuthoredState, IInteractiveState, defaultMaxRecordingTime, maxMaxRecordingTime } from "./types";
 import { Runtime } from "./runtime";
 
 const baseAuthoringProps = {
@@ -45,6 +45,13 @@ const baseAuthoringProps = {
         type: "number",
         default: 10,
       },
+      maxRecordingTime: {
+        title: `Maximum Recording Time (in seconds, max of ${maxMaxRecordingTime})`,
+        type: "number",
+        minimum: 1,
+        maximum: maxMaxRecordingTime,
+        default: defaultMaxRecordingTime
+      },
       code: {
         title: "Simulation Code",
         type: "string",
@@ -55,7 +62,7 @@ const baseAuthoringProps = {
         type: "string",
         enum: ["none"],
         enumNames: ["No linked interactives available"]
-      }
+      },
     },
     dependencies: {
       dataSourceInteractive: {
@@ -94,6 +101,9 @@ const baseAuthoringProps = {
       "ui:widget": "updown"
     },
     gridStep: {
+      "ui:widget": "updown"
+    },
+    maxRecordingTime: {
       "ui:widget": "updown"
     },
     code: {

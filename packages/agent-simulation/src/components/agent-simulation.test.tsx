@@ -70,7 +70,8 @@ describe("AgentSimulationComponent", () => {
     code: "// Default simulation code",
     gridHeight: 450,
     gridWidth: 450,
-    gridStep: 15
+    gridStep: 15,
+    maxRecordingTime: 90,
   };
 
   const defaultInteractiveState: IInteractiveState = {
