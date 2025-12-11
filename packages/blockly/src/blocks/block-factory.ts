@@ -121,6 +121,34 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
             }
           };
 
+          // Helper to create nested blocks from config (used for seeding).
+          const createNestedBlocksFromConfig = (nestedBlocks: INestedBlock[], parentConnection: Connection) => {
+            let previousChild: BlockSvg | null = null;
+
+            for (const nestedBlock of nestedBlocks) {
+              const child = this.workspace.newBlock(nestedBlock.blockId) as BlockSvg;
+              child.initSvg();
+
+              const targetConnection = previousChild?.nextConnection ?? parentConnection;
+              if (targetConnection && child.previousConnection) {
+                targetConnection.connect(child.previousConnection);
+              }
+
+              child.render();
+              previousChild = child;
+
+              if (nestedBlock.children && nestedBlock.children.length > 0) {
+                const childStmt = child.getInput("statements");
+                if (childStmt?.connection) {
+                  createNestedBlocksFromConfig(nestedBlock.children, childStmt.connection);
+                }
+              }
+            }
+          };
+
+          // Check if this block type has child blocks configured for seeding.
+          const hasChildBlocksConfig = Array.isArray(blockConfig.childBlocks) && blockConfig.childBlocks.length > 0;
+
           // Add open/close toggle button
           const icon = new Blockly.FieldImage(PLUS_ICON, 16, 16, "+/-");
           icon.setOnClickHandler?.(() => {
@@ -129,15 +157,29 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
             this.__disclosureOpen = open;
 
             if (open) {
-              // Opening: add statement input and restore saved children.
+              // Opening: add statement input.
               this.appendStatementInput("statements");
-              if (this.__savedChildrenXml) {
+
+              if (!this.__childrenSeeded && hasChildBlocksConfig && !this.__savedChildrenXml) {
+                this.__childrenSeeded = true;
+                const stmtConnection = this.getInput("statements")?.connection;
+                if (stmtConnection && this.workspace && !this.workspace.isFlyout && blockConfig.childBlocks) {
+                  createNestedBlocksFromConfig(blockConfig.childBlocks, stmtConnection);
+                }
+              } else if (this.__savedChildrenXml) {
                 restoreChildren(this, this.__savedChildrenXml);
                 this.__savedChildrenXml = "";
               }
+
+              // Clear cached code since children are now editable.
+              this.__cachedChildrenCode = "";
             } else {
-              // Closing: save children XML, dispose them, then remove statement input.
+              // Closing: save children XML and cache generated code.
               this.__savedChildrenXml = serializeChildren(this);
+              const stmt = this.getInput("statements");
+              if (stmt) {
+                this.__cachedChildrenCode = javascriptGenerator.statementToCode(this, "statements") || "";
+              }
               disposeChildren(this);
               this.removeInput("statements", true);
             }
@@ -149,91 +191,39 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
           
           // Initialize as closed (no statement input).
           this.__disclosureOpen = false;
-          this.__savedChildrenXml = "";
-          // Don't create statement input initially. It will be added when opened.
-          
-          // One-time seeding of child blocks on first creation/attach.
-          const hasChildren = Array.isArray(blockConfig.childBlocks) && blockConfig.childBlocks.length > 0;
-          
-          if (hasChildren) {
-            this.__childrenSeeded = false;
-            this.setOnChange(() => {
-              if (this.__childrenSeeded || !this.workspace || this.workspace.isFlyout) return;
-    
-              // Temporarily add statement input for seeding.
-              let stmt = this.getInput("statements");
-              const wasOpen = this.__disclosureOpen;
-              if (!stmt) {
-                stmt = this.appendStatementInput("statements");
-              }
-    
-              try {
-                // Clean up existing child blocks first to avoid connection conflicts
-                const existingBlock = stmt.connection.targetBlock();
-                if (existingBlock) {
-                  // Collect existing child blocks and their connections to dispose of them below
-                  const blocksToDispose: BlockSvg[] = [];
-                  let currentBlock: BlockSvg | null = existingBlock;
-                  while (currentBlock) {
-                    blocksToDispose.push(currentBlock);
-                    currentBlock = currentBlock.getNextBlock();
-                  }
+          this.__cachedChildrenCode = "";
+          this.__childrenSeeded = false;
 
-                  // Dispose blocks in reverse order to avoid connection issues
-                  blocksToDispose.reverse().forEach(block => {
-                    try {
-                      block.dispose();
-                    } catch (error) {
-                      console.warn("Error disposing block:", error);
-                    }
-                  });
-                }
+          // Pre-generate XML for configured child blocks so code generation works even before opening.
+          if (hasChildBlocksConfig) {
+            // Build XML for a single block with its nested children.
+            const buildBlockXml = (child: INestedBlock): string => {
+              const nestedXml = child.children?.length 
+                ? `<statement name="statements">${buildSiblingChain(child.children)}</statement>` 
+                : "";
+              return `<block type="${child.blockId}">${nestedXml}</block>`;
+            };
 
-                if (Array.isArray(blockConfig.childBlocks) && blockConfig.childBlocks.length > 0) {
-                  const createNestedBlocks = (nestedBlocks: INestedBlock[], parentConnection: Connection) => {
-                    let previousChild = null;
-                    
-                    for (const nestedBlock of nestedBlocks) {
-                      const child = this.workspace.newBlock(nestedBlock.blockId);
-                      child.initSvg();
-                      
-                      // Connect to previous sibling or parent
-                      const nextConnection = previousChild ? previousChild.nextConnection : parentConnection;
-                      if (nextConnection && child.previousConnection) {
-                        nextConnection.connect(child.previousConnection);
-                      }
-                      
-                      child.render();
-                      previousChild = child;
-                      
-                      // Recursively create children of this block
-                      if (nestedBlock.children && nestedBlock.children.length > 0) {
-                        const childStmt = child.getInput("statements");
-                        if (childStmt && childStmt.connection) {
-                          createNestedBlocks(nestedBlock.children, childStmt.connection);
-                        }
-                      }
-                    }
-                    
-                    return previousChild;
-                  };
-                  
-                  createNestedBlocks(blockConfig.childBlocks, stmt.connection);
-                }
-                
-                this.__childrenSeeded = true;
-                
-                // If was closed, save children, dispose them, and remove input.
-                if (!wasOpen) {
-                  this.__savedChildrenXml = serializeChildren(this);
-                  disposeChildren(this);
-                  this.removeInput("statements", true);
-                  this.render();
-                }
-              } catch (error) {
-                console.warn("Failed to auto-seed child blocks for", blockDef.id, error);
+            // Build XML for a chain of sibling blocks connected via <next>.
+            const buildSiblingChain = (children: INestedBlock[]): string => {
+              if (children.length === 0) return "";
+              if (children.length === 1) return buildBlockXml(children[0]);
+              
+              // Build from last to first, wrapping in <next> tags.
+              let xml = buildBlockXml(children[children.length - 1]);
+              for (let i = children.length - 2; i >= 0; i--) {
+                const child = children[i];
+                const nestedXml = child.children?.length 
+                  ? `<statement name="statements">${buildSiblingChain(child.children)}</statement>` 
+                  : "";
+                xml = `<block type="${child.blockId}">${nestedXml}<next>${xml}</next></block>`;
               }
-            });
+              return xml;
+            };
+
+            this.__savedChildrenXml = buildSiblingChain(blockConfig.childBlocks || []);
+          } else {
+            this.__savedChildrenXml = "";
           }
         }
 
@@ -463,23 +453,8 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         if (block.getInput("statements")) {
           statements = javascriptGenerator.statementToCode(block, "statements");
         } else {
-          // Block is collapsed -- restore children temporarily to generate code.
-          const savedXml = (block as any).__savedChildrenXml;
-          if (savedXml && block.workspace) {
-            try {
-              const dom = Blockly.utils.xml.textToDom(`<xml>${savedXml}</xml>`);
-              const blockDom = dom.firstElementChild;
-              if (blockDom) {
-                const tempBlock = Blockly.Xml.domToBlock(blockDom, block.workspace);
-                const codeResult = javascriptGenerator.blockToCode(tempBlock);
-                // blockToCode can return string or [string, number] tuple.
-                statements = Array.isArray(codeResult) ? codeResult[0] : codeResult;
-                tempBlock.dispose();
-              }
-            } catch (e) {
-              console.warn("Failed to generate code from saved children:", e);
-            }
-          }
+          // Block is collapsed -- use cached code.
+          statements = (block as any).__cachedChildrenCode || "";
         }
         const callback = statements ? `(agent) => {\n${statements}\n}` : "";
 
@@ -492,23 +467,8 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         if (block.getInput("statements")) {
           statements = javascriptGenerator.statementToCode(block, "statements");
         } else {
-          // Block is collapsed -- restore children temporarily to generate code.
-          const savedXml = (block as any).__savedChildrenXml;
-          if (savedXml && block.workspace) {
-            try {
-              const dom = Blockly.utils.xml.textToDom(`<xml>${savedXml}</xml>`);
-              const blockDom = dom.firstElementChild;
-              if (blockDom) {
-                const tempBlock = Blockly.Xml.domToBlock(blockDom, block.workspace);
-                const codeResult = javascriptGenerator.blockToCode(tempBlock);
-                // blockToCode can return string or [string, number] tuple
-                statements = Array.isArray(codeResult) ? codeResult[0] : codeResult;
-                tempBlock.dispose();
-              }
-            } catch (e) {
-              console.warn("Failed to generate code from saved children:", e);
-            }
-          }
+          // Block is collapsed -- use cached code.
+          statements = (block as any).__cachedChildrenCode || "";
         }
         const agents = target === "all" ? "sim.actors" : `sim.withLabel("${target}")`;
         return `${agents}.forEach(agent => {\n${statements}\n});\n`;

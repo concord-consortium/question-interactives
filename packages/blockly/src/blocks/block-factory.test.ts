@@ -324,7 +324,7 @@ describe("block-factory", () => {
 
       expect(mockBlock.appendStatementInput).not.toHaveBeenCalled();
       expect(mockBlock.__disclosureOpen).toBe(false);
-      expect(mockBlock.__savedChildrenXml).toBe("");
+      expect(mockBlock.__savedChildrenXml).toBe('<block type="custom_set_color_123"></block>');
     });
 
     it("adds toggle icon and initializes as closed", () => {
@@ -415,7 +415,7 @@ describe("block-factory", () => {
       Blocks["custom_action_move_789"].init.call(mockBlock);
       expect(mockBlock.appendStatementInput).not.toHaveBeenCalled();
       expect(mockBlock.__disclosureOpen).toBe(false);
-      expect(mockBlock.__savedChildrenXml).toBe("");
+      expect(mockBlock.__savedChildrenXml).toBe('<block type="custom_set_color_123"></block>');
     });
 
     it("adds fields in correct order for action blocks", () => {
