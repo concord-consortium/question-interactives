@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { act, render, screen, fireEvent } from "@testing-library/react";
 import { SliderReadout } from "./slider-readout";
 
 describe("SliderReadout", () => {
@@ -45,12 +45,47 @@ describe("SliderReadout", () => {
     expect(input).toHaveStyle({ width: "3ch" });
   });
 
-  it("calls onChange with value", () => {
+  it("calls onChange with value after debounce delay", () => {
+    jest.useFakeTimers();
     const onChange = jest.fn();
     render(<SliderReadout {...baseProps} onChange={onChange} />);
     const input = screen.getByTestId("slider-widget-input");
     fireEvent.change(input, { target: { value: "77" } });
+    // onChange should not be called immediately due to debouncing
+    expect(onChange).not.toHaveBeenCalled();
+    // Advance timers past the debounce delay (500ms).
+    act(() => {
+      jest.advanceTimersByTime(500);
+    });
     expect(onChange).toHaveBeenCalledWith(77);
+    jest.useRealTimers();
+  });
+
+  it("calls onChange immediately on blur", () => {
+    const onChange = jest.fn();
+    render(<SliderReadout {...baseProps} onChange={onChange} />);
+    const input = screen.getByTestId("slider-widget-input");
+    fireEvent.focus(input);
+    fireEvent.change(input, { target: { value: "77" } });
+    expect(onChange).not.toHaveBeenCalled();
+    fireEvent.blur(input);
+    expect(onChange).toHaveBeenCalledWith(77);
+  });
+
+  it("updates input to clamped value after debounce when value exceeds max", () => {
+    jest.useFakeTimers();
+    const onChange = jest.fn();
+    render(<SliderReadout {...baseProps} onChange={onChange} />);
+    const input = screen.getByTestId("slider-widget-input") as HTMLInputElement;
+    fireEvent.focus(input);
+    fireEvent.change(input, { target: { value: "150" } });
+    expect(input.value).toBe("150");
+    act(() => {
+      jest.advanceTimersByTime(500);
+    });
+    expect(onChange).toHaveBeenCalledWith(150);
+    expect(input.value).toBe("100");
+    jest.useRealTimers();
   });
 
   it("disables input when `isRecording` is true", () => {
