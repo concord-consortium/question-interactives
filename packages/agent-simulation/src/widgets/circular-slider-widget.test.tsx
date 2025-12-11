@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, fireEvent } from "@testing-library/react";
+import { act, render, screen, fireEvent } from "@testing-library/react";
 
 import { CircularSliderWidget } from "./circular-slider-widget";
 
@@ -95,14 +95,34 @@ describe("CircularSliderWidget", () => {
   });
 
   describe("functionality", () => {
-    it("clamps input value to min/max", () => {
+    it("clamps input value to min/max after blur", () => {
       mockGlobals.set("foo", 10);
       renderWidget();
       const input = screen.getByTestId("slider-widget-input");
+      // Value updates are debounced. Blur triggers immediate commit.
+      fireEvent.focus(input);
       fireEvent.change(input, { target: { value: "-5" } });
+      fireEvent.blur(input);
       expect(mockGlobals.get("foo")).toBe(0);
+      fireEvent.focus(input);
       fireEvent.change(input, { target: { value: "150" } });
+      fireEvent.blur(input);
       expect(mockGlobals.get("foo")).toBe(100);
+    });
+
+    it("clamps input value to min/max after debounce delay", () => {
+      jest.useFakeTimers();
+      mockGlobals.set("foo", 10);
+      renderWidget();
+      const input = screen.getByTestId("slider-widget-input");
+      fireEvent.change(input, { target: { value: "150" } });
+      // Value should not update immediately due to debouncing.
+      expect(mockGlobals.get("foo")).toBe(10);
+      act(() => {
+        jest.advanceTimersByTime(500);
+      });
+      expect(mockGlobals.get("foo")).toBe(100);
+      jest.useRealTimers();
     });
 
     it("disables input when isRecording is true", () => {
