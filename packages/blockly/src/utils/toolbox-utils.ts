@@ -1,5 +1,25 @@
 import { ICustomBlock } from "../components/types";
-import { BLOCK_TYPE_ORDER } from "../blocks/block-constants";
+import { ALL_BUILT_IN_BLOCKS, BLOCK_TYPE_ORDER } from "../blocks/block-constants";
+
+// Collects `toolboxConfig` from all built-in blocks that define one.
+const BLOCK_TOOLBOX_CONFIGS: Record<string, object> = ALL_BUILT_IN_BLOCKS.reduce(
+  (acc, block) => {
+    if (block.toolboxConfig) {
+      acc[block.id] = block.toolboxConfig;
+    }
+    return acc;
+  },
+  {} as Record<string, object>
+);
+
+// Constructs the toolbox entry for a block, including any special configuration.
+const toolboxBlockEntry = (blockId: string) => {
+  const config = BLOCK_TOOLBOX_CONFIGS[blockId];
+  if (config) {
+    return { kind: "block", type: blockId, ...config };
+  }
+  return { kind: "block", type: blockId };
+};
 
 export const extractCategoriesFromToolbox = (toolboxJson: string): string[] => {
   if (!toolboxJson || !toolboxJson.trim()) return [];
@@ -63,7 +83,7 @@ export const injectCustomBlocksIntoToolbox = (toolboxJson: string, customBlocks:
 
         // Add custom blocks to this category
         blocksByCategory[item.name].forEach(block => {
-          item.contents.push({ kind: "block", type: block.id });
+          item.contents.push(toolboxBlockEntry(block.id));
         });
       }
     });

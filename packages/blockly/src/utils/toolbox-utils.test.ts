@@ -1,3 +1,4 @@
+import { ALL_BUILT_IN_BLOCKS } from "../blocks/block-constants";
 import { ICustomBlock } from "../components/types";
 import { extractCategoriesFromToolbox, injectCustomBlocksIntoToolbox } from "./toolbox-utils";
 
@@ -345,6 +346,55 @@ describe("toolbox-utils", () => {
       expect(parsed.contents[0].contents[1]).toEqual({
         kind: "block",
         type: "custom_set_color_123"
+      });
+    });
+
+    it("should include toolboxConfig for all built-in blocks that define one", () => {
+      const blocksWithToolboxConfig = ALL_BUILT_IN_BLOCKS.filter(b => b.toolboxConfig);
+
+      if (blocksWithToolboxConfig.length === 0) {
+        console.warn("No built-in blocks with toolboxConfig found - test is not exercising any blocks.");
+        return;
+      }
+
+      const customBlocks: ICustomBlock[] = blocksWithToolboxConfig.map(b => ({
+        category: "Controls",
+        color: b.color,
+        config: { canHaveChildren: b.canHaveChildren },
+        id: b.id,
+        name: b.name,
+        type: "builtIn"
+      }));
+
+      const toolboxJson = JSON.stringify({
+        contents: [
+          {
+            contents: [],
+            kind: "category",
+            name: "Controls"
+          }
+        ],
+        kind: "categoryToolbox"
+      });
+
+      const result = injectCustomBlocksIntoToolbox(toolboxJson, customBlocks);
+      const parsed = JSON.parse(result);
+
+      expect(parsed.contents[0].contents).toHaveLength(blocksWithToolboxConfig.length);
+
+      // Verify each block's toolboxConfig is included in the toolbox entry
+      blocksWithToolboxConfig.forEach((blockInfo) => {
+        const injectedBlock = parsed.contents[0].contents.find((b: any) => b.type === blockInfo.id);
+        expect(injectedBlock).toBeDefined();
+
+        expect(injectedBlock.kind).toBe("block");
+        expect(injectedBlock.type).toBe(blockInfo.id);
+
+        // The toolboxConfig properties should be spread into the toolbox entry
+        const expectedConfig = blockInfo.toolboxConfig as Record<string, unknown>;
+        Object.keys(expectedConfig).forEach(key => {
+          expect(injectedBlock[key]).toEqual(expectedConfig[key]);
+        });
       });
     });
   });
