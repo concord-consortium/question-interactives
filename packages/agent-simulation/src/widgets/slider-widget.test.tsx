@@ -104,11 +104,16 @@ describe("SliderWidget", () => {
   });
 
   describe("functionality", () => {
-    it("updates value on input change", () => {
+    it("updates value on input change after blur", () => {
       mockGlobals.set("foo", 10);
       renderWidget({ data: { ...defaultData, showReadout: true } });
       const input = screen.getByTestId("slider-widget-input");
+      fireEvent.focus(input);
       fireEvent.change(input, { target: { value: "15" } });
+      // Value should not update immediately due to debouncing
+      expect(mockGlobals.get("foo")).toBe(10);
+      // Value updates after blur
+      fireEvent.blur(input);
       expect(mockGlobals.get("foo")).toBe(15);
     });
 
