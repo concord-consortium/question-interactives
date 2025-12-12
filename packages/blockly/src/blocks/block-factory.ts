@@ -77,7 +77,10 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
             // Dispose in reverse order to avoid connection issues.
             blocksToDispose.reverse().forEach(b => {
               try {
-                b.dispose(false); // false = don't animate
+                // false = do not "heal stack", i.e., don't reconnect remaining blocks when
+                // one is removed. We skip healing because we're disposing all children.
+                // See https://developers.google.com/blockly/reference/js/blockly.blocksvg_class.dispose_1_method.md
+                b.dispose(false);
               } catch (e) {
                 console.warn("Error disposing child block:", e);
               }
@@ -160,11 +163,18 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
               // Opening: add statement input.
               this.appendStatementInput("statements");
 
-              if (!this.__childrenSeeded && hasChildBlocksConfig && !this.__savedChildrenXml) {
+              if (!this.__childrenSeeded && hasChildBlocksConfig) {
                 this.__childrenSeeded = true;
-                const stmtConnection = this.getInput("statements")?.connection;
-                if (stmtConnection && this.workspace && !this.workspace.isFlyout && blockConfig.childBlocks) {
-                  createNestedBlocksFromConfig(blockConfig.childBlocks, stmtConnection);
+                // If we have pre-generated XML, use restoration (more efficient).
+                // Otherwise, create programmatically.
+                if (this.__savedChildrenXml) {
+                  restoreChildren(this, this.__savedChildrenXml);
+                  this.__savedChildrenXml = "";
+                } else {
+                  const stmtConnection = this.getInput("statements")?.connection;
+                  if (stmtConnection && this.workspace && !this.workspace.isFlyout && blockConfig.childBlocks) {
+                    createNestedBlocksFromConfig(blockConfig.childBlocks, stmtConnection);
+                  }
                 }
               } else if (this.__savedChildrenXml) {
                 restoreChildren(this, this.__savedChildrenXml);
