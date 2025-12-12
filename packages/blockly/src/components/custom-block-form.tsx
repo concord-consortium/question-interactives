@@ -27,6 +27,7 @@ interface ICustomBlockFormState {
   conditionLabelPosition?: "prefix" | "suffix";
   conditionInput: boolean;
   defaultCount: number;
+  defaultOptionValue?: string;
   generatorTemplate?: string;
   globalName: string;
   globalValueType: GlobalValueType;
@@ -70,6 +71,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
     color: blockConfig.color,
     conditionInput: false,
     defaultCount: 100,
+    defaultOptionValue: undefined,
     generatorTemplate: "",
     globalName: "",
     globalValueType: "number",
@@ -177,6 +179,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       color: editingBlock.color,
       conditionInput: !!config.conditionInput,
       defaultCount: config.defaultCount ?? 100,
+      defaultOptionValue: config.defaultOptionValue ?? undefined,
       generatorTemplate: config.generatorTemplate || "",
       globalName: config.globalName || "",
       globalValueType: config.globalValueType ?? "number",
@@ -272,6 +275,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
             options: formData.options
               .filter(opt => opt.label && opt.value)
               .map(opt => [opt.label, opt.value] as [string, string]),
+            defaultOptionValue: formData.defaultOptionValue,
             labelPosition: formData.conditionLabelPosition || "prefix",
             targetEntity: formData.targetEntity
           }
@@ -283,6 +287,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
             typeOptions: formData.options
               .filter(opt => opt.label && opt.value)
               .map(opt => [opt.label, opt.value] as [string, string]),
+            defaultOptionValue: formData.defaultOptionValue,
             ...(formData.includeCount
               ? {
                   defaultCount: formData.defaultCount,
@@ -305,6 +310,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
               : formData.options
                   .filter(opt => opt.label && opt.value)
                   .map(opt => [opt.label, opt.value] as [string, string]),
+            defaultOptionValue: formData.defaultOptionValue,
             includeNumberInput: formData.includeNumberInput
           };
 
@@ -515,9 +521,11 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
           </label>
           <CustomBlockFormOptionList
             dataTestIdPrefix="option"
+            defaultOptionValue={formData.defaultOptionValue}
             labelPlaceholder={optionsLabelPlaceholder}
             options={formData.options}
             valuePlaceholder={optionsValuePlaceholder}
+            onDefaultChange={(value) => setFormData(prev => ({ ...prev, defaultOptionValue: value }))}
             onOptionsChange={(newOptions) => setFormData(prev => ({ ...prev, options: newOptions }))}
           />
         </div>
@@ -616,7 +624,10 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
               data-testid="toggle-canHaveChildren"
               id="can-have-children"
               type="checkbox"
-              onChange={(e) => setFormData(prev => ({ ...prev, childrenEnabled: e.target.checked }))}
+              onChange={(e) => {
+                const checked = e.currentTarget.checked;
+                setFormData(prev => ({ ...prev, childrenEnabled: checked }));
+              }}
             />
             Contains Child Blocks
           </label>
@@ -626,6 +637,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       {((formData.type === "creator" || formData.type === "action") && formData.childrenEnabled) && (
         <CustomBlockFormNestedBlocks
           availableBlocks={childOptions}
+          existingBlocks={existingBlocks}
           nestedBlocks={formData.childBlocks}
           parentBlockId={editingBlock?.id || "new-block"}
           onChange={handleNestedBlocksChange}

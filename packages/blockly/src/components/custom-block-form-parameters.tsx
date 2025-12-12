@@ -131,9 +131,11 @@ export const CustomBlockFormParameters: React.FC<IProps> = ({ parameters, onPara
                   <label htmlFor="options">Options</label>
                   <CustomBlockFormOptionList
                     dataTestIdPrefix={`param-option-${i}`}
+                    defaultOptionValue={p.defaultOptionValue}
                     labelPlaceholder="Display text (e.g., forward)"
                     options={p.options || []}
                     valuePlaceholder="Value (e.g., FORWARD)"
+                    onDefaultChange={(value) => updateParameter(i, { defaultOptionValue: value })}
                     onOptionsChange={(newOptions) => updateParameterOptions(i, newOptions)}
                   />
                 </div>

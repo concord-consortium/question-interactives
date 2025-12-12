@@ -132,6 +132,11 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
               const child = this.workspace.newBlock(nestedBlock.blockId) as BlockSvg;
               child.initSvg();
 
+              // If an override for a dropdown is specified, apply it.
+              if (nestedBlock.defaultOptionValue) {
+                child.setFieldValue(nestedBlock.defaultOptionValue, "value");
+              }
+
               const targetConnection = previousChild?.nextConnection ?? parentConnection;
               if (targetConnection && child.previousConnection) {
                 targetConnection.connect(child.previousConnection);
@@ -208,23 +213,25 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
           if (hasChildBlocksConfig) {
             // Build XML for a single block with its nested children.
             const buildBlockXml = (child: INestedBlock): string => {
+              const defaultFieldXml = child.defaultOptionValue
+                ? `<field name="value">${child.defaultOptionValue}</field>`
+                : "";
               const nestedXml = child.children?.length 
                 ? `<statement name="statements">${buildSiblingChain(child.children)}</statement>` 
                 : "";
-              return `<block type="${child.blockId}">${nestedXml}</block>`;
+              return `<block type="${child.blockId}">${defaultFieldXml}${nestedXml}</block>`;
             };
 
             // Build XML for a chain of sibling blocks connected via <next>.
             const buildSiblingChain = (children: INestedBlock[]): string => {
               if (children.length === 0) return "";
               if (children.length === 1) return buildBlockXml(children[0]);
-              
-              // Build from last to first, wrapping in <next> tags.
+
               let xml = buildBlockXml(children[children.length - 1]);
               for (let i = children.length - 2; i >= 0; i--) {
                 const child = children[i];
-                const nestedXml = child.children?.length 
-                  ? `<statement name="statements">${buildSiblingChain(child.children)}</statement>` 
+                const nestedXml = child.children?.length
+                  ? `<statement name="statements">${buildSiblingChain(child.children)}</statement>`
                   : "";
                 xml = `<block type="${child.blockId}">${nestedXml}<next>${xml}</next></block>`;
               }
@@ -268,8 +275,10 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
                   : [];
                 if (opts.length > 0) {
                   input.appendField(new FieldDropdown(opts), param.name);
-                  if (param.defaultValue) {
-                    try { this.setFieldValue(param.defaultValue, param.name); } catch (e) {
+                  // Use parameter-level defaultOptionValue if present, otherwise fallback to defaultValue
+                  const paramDefault = (param as any).defaultOptionValue ?? (param as any).defaultValue;
+                  if (paramDefault !== undefined && paramDefault !== null) {
+                    try { this.setFieldValue(paramDefault, param.name); } catch (e) {
                       console.warn("Failed to set default value for parameter", param.name, e);
                     }
                   }
@@ -282,6 +291,24 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
                 input.appendField(param.labelText);
               }
             });
+            // After appending parameter fields, apply any parameter-level defaults
+            try {
+              blockConfig.parameters.forEach((param: IParameter) => {
+                if (param.kind === "select") {
+                  const paramDefault = (param as any).defaultOptionValue ?? (param as any).defaultValue;
+                  if (paramDefault !== undefined && paramDefault !== null) {
+                    try { this.setFieldValue(paramDefault, (param as any).name); } catch (e) { console.debug("Failed to apply param default", param.name, e); }
+                  }
+                } else if (param.kind === "number") {
+                  const p: any = param;
+                  if (p.defaultValue !== undefined && p.defaultValue !== null) {
+                    try { this.setFieldValue(p.defaultValue, p.name); } catch (e) { console.debug("Failed to apply numeric param default", p.name, e); }
+                  }
+                }
+              });
+            } catch (e) {
+              console.debug("Error applying parameter defaults", e);
+            }
           }
         } else if (blockDef.type === "creator") {
           appendDropdownFromTypeOptions(input, blockConfig, "type");
@@ -296,7 +323,15 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
           askOptions = askOptions.filter(opt => Array.isArray(opt) && opt.length === 2 && typeof opt[0] === "string" && typeof opt[1] === "string");
           if (askOptions.length > 0) {
             if (blockConfig.includeAllOption) askOptions.push(["all", "all"]);
-            input.appendField(new FieldDropdown(askOptions), "target");
+              input.appendField(new FieldDropdown(askOptions), "target");
+              // Apply default selection for ask target dropdown if provided
+              try {
+                if ((blockConfig as any).defaultOptionValue) {
+                  this.setFieldValue((blockConfig as any).defaultOptionValue, "target");
+                }
+              } catch (e) {
+                console.debug("Failed to apply ask default", e);
+              }
           }
           // Add entity name as static label after dropdown if showTargetEntityLabel is true (default true)
           if (blockConfig.targetEntity && (blockConfig.showTargetEntityLabel !== false)) {
@@ -315,12 +350,26 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
             input.appendField(displayName);
             if (blockOptions) {
               input.appendField(new FieldDropdown(blockOptions), "condition");
+              try {
+                if ((blockConfig as any).defaultOptionValue) {
+                  this.setFieldValue((blockConfig as any).defaultOptionValue, "condition");
+                }
+              } catch (e) {
+                console.debug("Failed to apply condition default", e);
+              }
             }
           } else {
             // Dropdown first, then display name.
             const dropdownInput = this.appendDummyInput();
             if (blockOptions) {
               dropdownInput.appendField(new FieldDropdown(blockOptions), "condition");
+              try {
+                if ((blockConfig as any).defaultOptionValue) {
+                  this.setFieldValue((blockConfig as any).defaultOptionValue, "condition");
+                }
+              } catch (e) {
+                console.debug("Failed to apply condition default", e);
+              }
             }
             dropdownInput.appendField(blockDef.name);
           }
@@ -341,6 +390,20 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         }
 
         // Color and inline/connection flags
+        // Apply default dropdown selections from config (do this after all fields are appended)
+        try {
+          const def = (blockConfig as any).defaultOptionValue;
+          if (def !== undefined && def !== null) {
+            // Try common field names where dropdowns are used.
+            try { this.setFieldValue(def, "type"); } catch (e) { console.debug("Failed to set default for 'type'", def, e); }
+            try { this.setFieldValue(def, "value"); } catch (e) { console.debug("Failed to set default for 'value'", def, e); }
+            try { this.setFieldValue(def, "target"); } catch (e) { console.debug("Failed to set default for 'target'", def, e); }
+            try { this.setFieldValue(def, "condition"); } catch (e) { console.debug("Failed to set default for 'condition'", def, e); }
+          }
+        } catch (e) {
+          // ignore
+        }
+
         this.setColour(blockDef.color);
 
         // For all blocks except condition and globalValue blocks, set previous/next statement connections.
