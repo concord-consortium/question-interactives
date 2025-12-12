@@ -18,7 +18,8 @@ export const ALL_BUILT_IN_BLOCKS: IBuiltInBlockInfo[] = [
  */
 export const BLOCK_TYPE_ORDER: CustomBlockType[] = [
   "creator",
-  "setter", 
+  "setter",
+  "globalValue",
   "ask",
   "action",
   "condition",

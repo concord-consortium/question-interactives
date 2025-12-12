@@ -20,6 +20,8 @@
 
   .customBlockForm_basicFields label,
   .customBlockForm_category label,
+  .customBlockForm_globalName label,
+  .customBlockForm_valueType label,
   .customBlockForm_typeLabel label,
   .customBlockForm_countFields > div label,
   .customBlockForm_targetEntity label,
@@ -39,6 +41,7 @@
   }
 
   .customBlockForm_category select,
+  .customBlockForm_valueType select,
   .customBlockForm_targetEntity select,
   .conditionLabelPosition {
     @include form-input-sm();
@@ -107,6 +110,20 @@
 
   .customBlockForm_category {
     @include form-field-group();
+  }
+
+  .customBlockForm_globalName {
+    @include form-field-group();
+  }
+
+  .customBlockForm_valueType {
+    @include form-field-group();
+  }
+
+  .helpText {
+    color: $text-light;
+    font-size: $font-size-xs;
+    margin-top: $spacing-xs;
   }
 
   .customBlockForm_inputs {

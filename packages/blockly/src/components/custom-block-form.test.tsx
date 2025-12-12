@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import React from "react";
 
@@ -367,6 +367,91 @@ describe("CustomBlockForm", () => {
       render(<CustomBlockForm {...defaultProps} />);
       expect(screen.getByText("Properties")).toBeInTheDocument();
       expect(screen.getByText("General")).toBeInTheDocument();
+    });
+  });
+
+  describe("Global Value Block specific configuration", () => {
+    it("shows common custom block fields", () => {
+      render(<CustomBlockForm {...defaultProps} blockType="globalValue" />);
+      expect(screen.getByTestId("field-name")).toBeInTheDocument();
+      expect(screen.getByTestId("field-color")).toBeInTheDocument();
+      expect(screen.getByTestId("field-category")).toBeInTheDocument();
+    });
+
+    it("uses correct configuration for globalValue blocks", () => {
+      render(<CustomBlockForm {...defaultProps} blockType="globalValue" />);
+      
+      const fieldGlobalName = screen.getByTestId("field-name");
+      const label = within(fieldGlobalName).getByText("Display Name");
+      expect(label.tagName).toBe("LABEL");
+      expect(screen.getByTestId("input-name")).toHaveAttribute("placeholder", "e.g., light-intensity, temperature");
+      expect(screen.getByTestId("field-global-name")).toBeInTheDocument();
+      expect(screen.getByTestId("field-value-type")).toBeInTheDocument();
+    });
+
+    it("shows global variable name field with help text", () => {
+      render(<CustomBlockForm {...defaultProps} blockType="globalValue" />);
+      
+      const fieldGlobalName = screen.getByTestId("field-global-name");
+      const label = within(fieldGlobalName).getByText("Global Variable Name");
+      expect(label.tagName).toBe("LABEL");
+      expect(screen.getByTestId("input-globalName")).toHaveAttribute("placeholder", "e.g., lightIntensity, temperature");
+      expect(screen.getByText(/globals.get/)).toBeInTheDocument();
+    });
+
+    it("shows value type selector with Number and String options", () => {
+      render(<CustomBlockForm {...defaultProps} blockType="globalValue" />);
+      
+      expect(screen.getByText("Value Type")).toBeInTheDocument();
+      const valueTypeSelect = screen.getByTestId("select-valueType");
+      expect(valueTypeSelect).toHaveValue("number");
+      expect(screen.getByText("Number")).toBeInTheDocument();
+      expect(screen.getByText("String")).toBeInTheDocument();
+    });
+
+    it("does not show options, parameters, or other block-specific fields", () => {
+      render(<CustomBlockForm {...defaultProps} blockType="globalValue" />);
+      
+      expect(screen.queryByTestId("section-options")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("section-parameters")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("section-generator-template")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("section-target-entity")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("section-can-have-children")).not.toBeInTheDocument();
+    });
+
+    it("validates required global variable name value", async () => {
+      const user = userEvent.setup();
+      render(<CustomBlockForm {...defaultProps} blockType="globalValue" />);
+      
+      await user.type(screen.getByLabelText(/Display Name/), "light-intensity");
+      await user.selectOptions(screen.getByTestId("select-category"), "Properties");
+      await user.click(screen.getByRole("button", { name: "Save Block" }));
+      
+      expect(mockOnSubmit).not.toHaveBeenCalled();
+    });
+
+  });
+
+  describe("Editing Existing Global Value Block", () => {
+    const editingGlobalValueBlock: ICustomBlock = {
+      id: "custom_globalValue_temp_123",
+      type: "globalValue",
+      name: "temperature",
+      color: "#c4a000",
+      category: "Properties",
+      config: {
+        canHaveChildren: false,
+        globalName: "currentTemp",
+        globalValueType: "number"
+      }
+    };
+
+    it("populates form with existing globalValue block data", () => {
+      render(<CustomBlockForm {...defaultProps} blockType="globalValue" editingBlock={editingGlobalValueBlock} />);
+      
+      expect(screen.getByDisplayValue("temperature")).toBeInTheDocument();
+      expect(screen.getByDisplayValue("currentTemp")).toBeInTheDocument();
+      expect(screen.getByTestId("select-valueType")).toHaveValue("number");
     });
   });
 

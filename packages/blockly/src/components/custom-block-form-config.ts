@@ -7,6 +7,8 @@ export interface IBlockTypeConfig {
   hasCountFields?: boolean;
   hasConditionInput?: boolean;
   hasGeneratorTemplate: boolean;
+  hasGlobalName?: boolean;
+  hasGlobalValueType?: boolean;
   hasLabelPosition?: boolean;
   hasNumberInput?: boolean;
   hasOptions: boolean;
@@ -82,6 +84,17 @@ export const BLOCK_TYPE_CONFIG: Record<CustomBlockType, IBlockTypeConfig> = {
     optionTerm: "Types",
     optionValuePlaceholder: "Value (e.g., WATER)",
     placeholder: "e.g., molecules, people"
+  },
+  globalValue: {
+    childrenEnabled: false,
+    color: "#c4a000",
+    hasGeneratorTemplate: false,
+    hasGlobalName: true,
+    hasOptions: false,
+    hasParameters: false,
+    hasGlobalValueType: true,
+    label: "Display Name",
+    placeholder: "e.g., light-intensity, temperature"
   },
   setter: {
     childrenEnabled: false,

@@ -12,6 +12,7 @@ export const VALID_BLOCK_TYPES = [
   "builtIn",
   "condition",
   "creator",
+  "globalValue",
   "setter"
 ] as const;
 export const REQUIRED_BLOCK_FIELDS = [
@@ -48,12 +49,17 @@ export interface IParameterNumber extends IParameterBase {
 }
 export type IParameter = IParameterSelect | IParameterNumber;
 
+export type GlobalValueType = "number" | "string";
+
 export interface IBlockConfig {
   canHaveChildren: boolean;
   childBlocks?: INestedBlock[];
   conditionInput?: boolean;
   defaultCount?: number;
   generatorTemplate?: string;
+  globalName?: string; // For globalValue blocks: the key used with globals.get()
+  globalValueType?: GlobalValueType; // For globalValue blocks: the output type
+  includeAllOption?: boolean;
   includeNumberInput?: boolean;
   inputsInline?: boolean;
   labelPosition?: "prefix" | "suffix";
@@ -64,7 +70,6 @@ export interface IBlockConfig {
   parameters?: IParameter[];
   previousStatement?: boolean;
   showTargetEntityLabel?: boolean;
-  includeAllOption?: boolean;
   targetEntity?: string;
   typeOptions?: MenuOption[];
 }
