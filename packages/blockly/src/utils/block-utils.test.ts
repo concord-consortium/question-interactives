@@ -21,8 +21,9 @@ describe("block-utils", () => {
       ];
       
       const result = availableChildBlocks(customBlocks);
+      const builtInCount = CUSTOM_BUILT_IN_BLOCKS.length + BLOCKLY_BUILT_IN_BLOCKS.length;
 
-      expect(result).toHaveLength(9); // 1 creator + 1 setter + 1 action + 3 custom built-in + 3 Blockly built-in
+      expect(result).toHaveLength(customBlocks.length + builtInCount);
     });
 
     it("should exclude the block currently being edited from results", () => {
@@ -32,8 +33,9 @@ describe("block-utils", () => {
       ];
 
       const result = availableChildBlocks(customBlocks, "custom_action_test");
+      const builtInCount = CUSTOM_BUILT_IN_BLOCKS.length + BLOCKLY_BUILT_IN_BLOCKS.length;
 
-      expect(result).toHaveLength(7); // 1 setter + 0 action + 3 custom built-in + 3 Blockly built-in
+      expect(result).toHaveLength(customBlocks.length - 1 + builtInCount);
     });
 
     it("should categorize blocks by type correctly", () => {
@@ -46,8 +48,9 @@ describe("block-utils", () => {
       ];
 
       const result = availableChildBlocks(customBlocks);
+      const builtInCount = CUSTOM_BUILT_IN_BLOCKS.length + BLOCKLY_BUILT_IN_BLOCKS.length;
 
-      expect(result).toHaveLength(11); // 1 creator + 2 setter + 2 action + 3 custom built-in + 3 Blockly built-in
+      expect(result).toHaveLength(customBlocks.length + builtInCount);
     });
   });
 

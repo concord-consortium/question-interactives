@@ -86,6 +86,7 @@ export interface IBuiltInBlockInfo {
   hasStatements: boolean;
   id: string;
   name: string;
+  toolboxConfig?: object;
   type: "built-in";
 }
 
