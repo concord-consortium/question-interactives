@@ -1,10 +1,11 @@
 import { FieldSlider } from "@blockly/field-slider";
 import type { BlockSvg } from "blockly";
-import { javascriptGenerator, Order } from "blockly/javascript";
+import { javascriptGenerator } from "blockly/javascript";
 import Blockly, { Blocks, Connection, FieldDropdown, FieldNumber } from "blockly/core";
 
-import { ICustomBlock, INestedBlock, IParameter, IBlockConfig } from "../components/types";
-import { replaceParameters } from "../utils/block-utils";
+import { ICustomBlock, INestedBlock, IBlockConfig } from "../components/types";
+import { createGenerator } from "./generators";
+import { appendParameterFields, applyParameterDefaults } from "./params";
 
 const PLUS_ICON  = "data:image/svg+xml;utf8," +
   "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>" +
@@ -14,12 +15,12 @@ const MINUS_ICON = "data:image/svg+xml;utf8," +
   "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>" +
   "<text fill='white' x='8' y='12' text-anchor='middle' font-size='14'>−</text></svg>";
 
-function blockHasDisclosure(blockDef: ICustomBlock, blockConfig: IBlockConfig): boolean {
+const blockHasDisclosure = (blockDef: ICustomBlock, blockConfig: IBlockConfig): boolean => {
   return blockDef.type === "creator" ||
     (blockDef.type === "action" && !!blockConfig.canHaveChildren);
-}
+};
 
-function appendDropdownFromTypeOptions(input: Blockly.Input, blockConfig: IBlockConfig, fieldName: string) {
+const appendDropdownFromTypeOptions = (input: Blockly.Input, blockConfig: IBlockConfig, fieldName: string) => {
   if (Array.isArray(blockConfig.typeOptions) && blockConfig.typeOptions.length > 0) {
     const opts = blockConfig.typeOptions.filter(
       opt => Array.isArray(opt) && opt.length === 2 && typeof opt[0] === "string" && typeof opt[1] === "string"
@@ -28,9 +29,16 @@ function appendDropdownFromTypeOptions(input: Blockly.Input, blockConfig: IBlock
       input.appendField(new FieldDropdown(opts), fieldName);
     }
   }
-}
+};
 
-export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
+const displayNameForBlock = (blockDef: ICustomBlock): string => {
+  return blockDef.type === "ask" ? "ask" :
+         blockDef.type === "creator" ? "create" :
+         blockDef.type === "setter" ? `set ${blockDef.name}` :
+         blockDef.name;
+};
+
+export const registerCustomBlocks = (customBlocks: ICustomBlock[]) => {
   if (!Array.isArray(customBlocks)) {
     console.warn("registerCustomBlocks: customBlocks is not an array:", customBlocks);
     return;
@@ -49,12 +57,7 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
 
     Blocks[blockType] = {
       init() {
-        // Display block name with appropriate prefix based on block type
-        const displayName = blockDef.type === "action" ? blockDef.name :
-                            blockDef.type === "creator" ? "create" :
-                            blockDef.type === "ask" ? "ask" :
-                            blockDef.type === "setter" ? `set ${blockDef.name}` :
-                            blockDef.name;
+        const displayName = displayNameForBlock(blockDef);
         // Create input without immediately appending the name so we can control placement as needed.
         const input = this.appendDummyInput();
     
@@ -257,55 +260,9 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
 
         if (blockDef.type === "action") {
           if (Array.isArray(blockConfig.parameters) && blockConfig.parameters.length > 0) {
-            blockConfig.parameters.forEach((param: IParameter) => {
-              if (param.labelText && (param.labelPosition ?? "prefix") === "prefix") {
-                input.appendField(param.labelText);
-              }
-              if (param.kind === "select") {
-                let opts = (param as any).options || [];
-                // Convert {label, value}[] to [label, value][] as needed to satisfy FieldDropdown which expects the latter format (equivalent to Blockly's MenuOption[])
-                if (Array.isArray(opts)) {
-                  opts = opts.map(opt => [opt?.label, opt?.value]);
-                  opts = opts.filter((opt: any) => typeof opt[0] === "string" && typeof opt[1] === "string");
-                } else {
-                  opts = [];
-                }
-                opts = Array.isArray(opts)
-                  ? opts.filter(opt => Array.isArray(opt) && opt.length === 2 && typeof opt[0] === "string" && typeof opt[1] === "string")
-                  : [];
-                if (opts.length > 0) {
-                  input.appendField(new FieldDropdown(opts), param.name);
-                  // Use parameter-level defaultOptionValue if present, otherwise fallback to defaultValue
-                  const paramDefault = (param as any).defaultOptionValue ?? (param as any).defaultValue;
-                  if (paramDefault !== undefined && paramDefault !== null) {
-                    try { this.setFieldValue(paramDefault, param.name); } catch (e) {
-                      console.warn("Failed to set default value for parameter", param.name, e);
-                    }
-                  }
-                }
-              } else if (param.kind === "number") {
-                const p: any = param;
-                input.appendField(new FieldNumber(p.defaultValue ?? 0), param.name);
-              }
-              if (param.labelText && (param.labelPosition ?? "prefix") === "suffix") {
-                input.appendField(param.labelText);
-              }
-            });
-            // After appending parameter fields, apply any parameter-level defaults
+            appendParameterFields(input, blockConfig.parameters, this);
             try {
-              blockConfig.parameters.forEach((param: IParameter) => {
-                if (param.kind === "select") {
-                  const paramDefault = (param as any).defaultOptionValue ?? (param as any).defaultValue;
-                  if (paramDefault !== undefined && paramDefault !== null) {
-                    try { this.setFieldValue(paramDefault, (param as any).name); } catch (e) { console.debug("Failed to apply param default", param.name, e); }
-                  }
-                } else if (param.kind === "number") {
-                  const p: any = param;
-                  if (p.defaultValue !== undefined && p.defaultValue !== null) {
-                    try { this.setFieldValue(p.defaultValue, p.name); } catch (e) { console.debug("Failed to apply numeric param default", p.name, e); }
-                  }
-                }
-              });
+              applyParameterDefaults(this, blockConfig.parameters);
             } catch (e) {
               console.debug("Error applying parameter defaults", e);
             }
@@ -482,89 +439,7 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
       }
     };
 
-    // Generator: include available values
-    javascriptGenerator.forBlock[blockType] = function(block) {
-      if (blockDef.type === "action") {
-        // If a generatorTemplate is provided, interpolate parameter fields
-        const actionName = blockDef.name.toLowerCase().replace(/\s+/g, "_");
-
-        if (blockConfig.generatorTemplate) {
-          let code = String(blockConfig.generatorTemplate);
-          code = replaceParameters(code, blockConfig.parameters || [], block);
-          // Also allow ${ACTION} for the action name
-          code = code.replace(/\$\{ACTION\}/g, actionName);
-          return code.endsWith("\n") ? code : code + "\n";
-        }
-
-        // Fallback: build from parameters
-        const parts: string[] = [actionName];
-        if (Array.isArray(blockConfig.parameters) && blockConfig.parameters.length > 0) {
-          blockConfig.parameters.forEach((param: IParameter) => {
-            if (param.labelText && (param.labelPosition ?? "prefix") === "prefix") {
-              parts.push(String(param.labelText));
-            }
-            const v = block.getFieldValue(param.name);
-            if (v) parts.push(String(v));
-            if (param.labelText && (param.labelPosition ?? "prefix") === "suffix") {
-              parts.push(String(param.labelText));
-            }
-          });
-        }
-
-        return parts.join(" ") + "\n";
-      } else if (blockDef.type === "setter") {
-        // This is probably at least close to what we want.
-        const attributeName = blockDef.name.toLowerCase().replace(/\s+/g, "_");
-        const value = block.getFieldValue("value");
-
-        return `set_${attributeName}(agent, "${value}");\n`;
-      } else if (blockDef.type === "creator") {
-        // This is probaly NOT close to what we want. There can be other parameters
-        // to take into consideration and statements to process, e.g. child setter blocks.
-        // For now, though, we just return a simple create command.
-        const count = block.getFieldValue("count");
-        const type = block.getFieldValue("type").toLowerCase().replace(/\s+/g, "_");
-        
-        // Handle collapsed blocks -- statements input may not exist.
-        let statements = "";
-        if (block.getInput("statements")) {
-          statements = javascriptGenerator.statementToCode(block, "statements");
-        } else {
-          // Block is collapsed -- use cached code.
-          statements = (block as any).__cachedChildrenCode || "";
-        }
-        const callback = statements ? `(agent) => {\n${statements}\n}` : "";
-
-        return `create_${type}(${count}, ${callback});\n`;
-      } else if (blockDef.type === "ask") {
-        const target = block.getFieldValue("target");
-        
-        // Handle collapsed blocks -- statements input may not exist.
-        let statements = "";
-        if (block.getInput("statements")) {
-          statements = javascriptGenerator.statementToCode(block, "statements");
-        } else {
-          // Block is collapsed -- use cached code.
-          statements = (block as any).__cachedChildrenCode || "";
-        }
-        const agents = target === "all" ? "sim.actors" : `sim.withLabel("${target}")`;
-        return `${agents}.forEach(agent => {\n${statements}\n});\n`;
-      } else if (blockDef.type === "condition") {
-        const condition = block.getFieldValue("condition");
-
-        if (blockConfig.generatorTemplate) {
-          let code = replaceParameters(blockConfig.generatorTemplate, blockConfig.parameters || [], block);
-          code = code.replace(/\$\{CONDITION\}/g, condition);
-          return [code, Order.ATOMIC];
-        }
-
-        return condition;
-      } else if (blockDef.type === "globalValue") {
-        const globalName = blockConfig.globalName || blockDef.name;
-        return [`globals.get("${globalName}")`, Order.ATOMIC];
-      }
-
-      return "";
-    };
+    // Generator
+    javascriptGenerator.forBlock[blockType] = createGenerator(blockDef, blockConfig);
   });
-}
+};
