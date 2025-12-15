@@ -29,6 +29,7 @@ interface ICustomBlockFormState {
   defaultCount: number;
   generatorTemplate?: string;
   globalName: string;
+  globalValueType: GlobalValueType;
   includeAllOption?: boolean;
   includeCount: boolean;
   includeNumberInput: boolean;
@@ -42,7 +43,6 @@ interface ICustomBlockFormState {
   showTargetEntityLabel: boolean;
   targetEntity: string;
   type: CustomBlockType;
-  valueType: GlobalValueType;
 }
 
 const blockOptionsFromConfig = (block: ICustomBlock) => {
@@ -72,6 +72,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
     defaultCount: 100,
     generatorTemplate: "",
     globalName: "",
+    globalValueType: "number",
     includeAllOption: false,
     includeCount: true,
     includeNumberInput: false,
@@ -86,7 +87,6 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
     conditionLabelPosition: "prefix",
     showTargetEntityLabel: true,
     type: blockType,
-    valueType: "number"
   });
 
   const availableCategories = useMemo(() => extractCategoriesFromToolbox(toolbox), [toolbox]);
@@ -116,7 +116,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         formData.generatorTemplate !== (config.generatorTemplate || "") ||
         formData.globalName !== (config.globalName || "") ||
         formData.targetEntity !== (config.targetEntity || "") ||
-        formData.valueType !== (config.globalValueType ?? "number") ||
+        formData.globalValueType !== (config.globalValueType ?? "number") ||
         formData.childrenEnabled !== !!config.canHaveChildren ||
         formData.includeCount !== (config.defaultCount != null) ||
         formData.minCount !== (config.minCount ?? 0) ||
@@ -179,6 +179,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       defaultCount: config.defaultCount ?? 100,
       generatorTemplate: config.generatorTemplate || "",
       globalName: config.globalName || "",
+      globalValueType: config.globalValueType ?? "number",
       includeAllOption: config.includeAllOption ?? false,
       includeCount: config.defaultCount != null,
       includeNumberInput: !!config.includeNumberInput,
@@ -192,8 +193,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       targetEntity: config.targetEntity ?? "",
       conditionLabelPosition: config.labelPosition ?? "prefix",
       showTargetEntityLabel: config.showTargetEntityLabel ?? true,
-      type: editingBlock.type,
-      valueType: config.globalValueType ?? "number"
+      type: editingBlock.type
     });
 
     if (editingBlock.type === "action") {
@@ -295,7 +295,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         ? {
             canHaveChildren: false,
             globalName: formData.globalName.trim(),
-            valueType: formData.valueType
+            globalValueType: formData.globalValueType
           }
         : {
             ...base,
@@ -401,13 +401,13 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       )}
 
       {blockConfig.hasGlobalValueType && (
-        <div className={css.customBlockForm_valueType} data-testid="field-value-type">
-          <label htmlFor="value-type">Value Type</label>
+        <div className={css.customBlockForm_globalValueType} data-testid="field-global-value-type">
+          <label htmlFor="global-value-type">Value Type</label>
           <select
-            data-testid="select-valueType"
-            id="value-type"
-            value={formData.valueType}
-            onChange={(e) => setFormData(prev => ({ ...prev, valueType: e.target.value as GlobalValueType }))}
+            data-testid="select-globalValueType"
+            id="global-value-type"
+            value={formData.globalValueType}
+            onChange={(e) => setFormData(prev => ({ ...prev, globalValueType: e.target.value as GlobalValueType }))}
           >
             <option value="number">Number</option>
             <option value="string">String</option>

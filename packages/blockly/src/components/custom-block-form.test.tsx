@@ -386,7 +386,7 @@ describe("CustomBlockForm", () => {
       expect(label.tagName).toBe("LABEL");
       expect(screen.getByTestId("input-name")).toHaveAttribute("placeholder", "e.g., light-intensity, temperature");
       expect(screen.getByTestId("field-global-name")).toBeInTheDocument();
-      expect(screen.getByTestId("field-value-type")).toBeInTheDocument();
+      expect(screen.getByTestId("field-global-value-type")).toBeInTheDocument();
     });
 
     it("shows global variable name field with help text", () => {
@@ -403,7 +403,7 @@ describe("CustomBlockForm", () => {
       render(<CustomBlockForm {...defaultProps} blockType="globalValue" />);
       
       expect(screen.getByText("Value Type")).toBeInTheDocument();
-      const valueTypeSelect = screen.getByTestId("select-valueType");
+      const valueTypeSelect = screen.getByTestId("select-globalValueType");
       expect(valueTypeSelect).toHaveValue("number");
       expect(screen.getByText("Number")).toBeInTheDocument();
       expect(screen.getByText("String")).toBeInTheDocument();
@@ -451,7 +451,7 @@ describe("CustomBlockForm", () => {
       
       expect(screen.getByDisplayValue("temperature")).toBeInTheDocument();
       expect(screen.getByDisplayValue("currentTemp")).toBeInTheDocument();
-      expect(screen.getByTestId("select-valueType")).toHaveValue("number");
+      expect(screen.getByTestId("select-globalValueType")).toHaveValue("number");
     });
   });
 

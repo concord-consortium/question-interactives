@@ -21,7 +21,7 @@
   .customBlockForm_basicFields label,
   .customBlockForm_category label,
   .customBlockForm_globalName label,
-  .customBlockForm_valueType label,
+  .customBlockForm_globalValueType label,
   .customBlockForm_typeLabel label,
   .customBlockForm_countFields > div label,
   .customBlockForm_targetEntity label,
@@ -41,7 +41,7 @@
   }
 
   .customBlockForm_category select,
-  .customBlockForm_valueType select,
+  .customBlockForm_globalValueType select,
   .customBlockForm_targetEntity select,
   .conditionLabelPosition {
     @include form-input-sm();
@@ -116,7 +116,7 @@
     @include form-field-group();
   }
 
-  .customBlockForm_valueType {
+  .customBlockForm_globalValueType {
     @include form-field-group();
   }
 

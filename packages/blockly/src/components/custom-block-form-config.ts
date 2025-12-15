@@ -90,9 +90,9 @@ export const BLOCK_TYPE_CONFIG: Record<CustomBlockType, IBlockTypeConfig> = {
     color: "#c4a000",
     hasGeneratorTemplate: false,
     hasGlobalName: true,
+    hasGlobalValueType: true,
     hasOptions: false,
     hasParameters: false,
-    hasGlobalValueType: true,
     label: "Display Name",
     placeholder: "e.g., light-intensity, temperature"
   },
