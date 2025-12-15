@@ -20,7 +20,7 @@ export const BuiltInBlockEditorSection: React.FC<IProps> = ({availableCategories
       .filter(block => Blocks[block.id])
       .map(block => ({
         id: block.id,
-        name: block.id
+        name: block.name || block.id
       }));
   }, []);
 
