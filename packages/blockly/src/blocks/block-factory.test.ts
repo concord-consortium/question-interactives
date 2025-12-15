@@ -319,10 +319,12 @@ describe("block-factory", () => {
       expect(mockInput.appendField).toHaveBeenCalledWith("molecules");
     });
 
-    it("adds statement input for child blocks", () => {
+    it("starts closed with no statement input (input is added when opened)", () => {
       Blocks["custom_create_molecules_456"].init.call(mockBlock);
 
-      expect(mockBlock.appendStatementInput).toHaveBeenCalledWith("statements");
+      expect(mockBlock.appendStatementInput).not.toHaveBeenCalled();
+      expect(mockBlock.__disclosureOpen).toBe(false);
+      expect(mockBlock.__savedChildrenXml).toBe('<block type="custom_set_color_123"></block>');
     });
 
     it("adds toggle icon and initializes as closed", () => {
@@ -409,10 +411,11 @@ describe("block-factory", () => {
       expect(mockInput.appendField).toHaveBeenCalledWith(expect.any(Object), "SPEED");
     });
 
-    it("adds statement input for child blocks when `canHaveChildren` is true", () => {
+    it("starts closed with no statement input when `canHaveChildren` is true (input is added when opened)", () => {
       Blocks["custom_action_move_789"].init.call(mockBlock);
-
-      expect(mockBlock.appendStatementInput).toHaveBeenCalledWith("statements");
+      expect(mockBlock.appendStatementInput).not.toHaveBeenCalled();
+      expect(mockBlock.__disclosureOpen).toBe(false);
+      expect(mockBlock.__savedChildrenXml).toBe('<block type="custom_set_color_123"></block>');
     });
 
     it("adds fields in correct order for action blocks", () => {
