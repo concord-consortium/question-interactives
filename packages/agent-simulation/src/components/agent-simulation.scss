@@ -28,36 +28,6 @@
       border-right: solid 1px var(--cc-teal);
       width: 50%;
 
-      .returnToTinker {
-        border-right: solid 1px var(--cc-teal);
-        border-left: none;
-        border-top: none;
-        border-bottom: none;
-        border-radius: 0;
-        flex-grow: 0;
-        height: 100%;
-        padding: 0 8px;
-        display: flex;
-        align-items: center;
-
-        button {
-          @include interactive-button-base;
-
-          &:hover:not([disabled]) {
-            background-color: var(--cc-teal-light-3);
-          }
-
-          &:active:not([disabled]) {
-            border-color: white;
-            background-color: var(--cc-teal);
-
-            path {
-              fill: white;
-            }
-          }
-        }
-      }
-
       .modelIcon {
         margin-left: 8px;
         flex-grow: 0;
@@ -111,6 +81,42 @@
       }
       .rightSide {
         width: 100%;
+      }
+    }
+  }
+
+  .controlPanelContainer {
+    background: var(--cc-teal-light-5);
+    display: flex;
+    overflow: hidden;
+
+    .returnToTinker {
+      border-right: solid 1px var(--cc-teal);
+      border-left: none;
+      border-top: none;
+      border-bottom: none;
+      border-radius: 0;
+      flex-grow: 0;
+      height: 100%;
+      padding: 8px;
+      display: flex;
+      align-items: center;
+
+      button {
+        @include interactive-button-base;
+
+        &:hover:not([disabled]) {
+          background-color: var(--cc-teal-light-3);
+        }
+
+        &:active:not([disabled]) {
+          border-color: white;
+          background-color: var(--cc-teal);
+
+          path {
+            fill: white;
+          }
+        }
       }
     }
   }

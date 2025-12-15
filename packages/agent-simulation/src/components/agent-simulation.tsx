@@ -632,13 +632,6 @@ export const AgentSimulationComponent = ({
     <div className={css.agentSimulationComponent}>
       <div className={css.topBar}>
         <div className={css.leftSide}>
-          {currentRecordingIndex !== -1 && (
-            <div className={css.returnToTinker}>
-              <button onClick={() => handleSelectRecording(-1)} disabled={isRecording}>
-                <ReturnToModelIcon />
-              </button>
-            </div>
-          )}
           {inRecordingMode ? <RecordingIcon className={css.modelIcon} /> : <ModelIcon className={css.modelIcon} />}
           <div className={css.modelInfo}>
             <div className={css.modelName}>{currentRecording?.modelName ?? modelName}</div>
@@ -655,20 +648,29 @@ export const AgentSimulationComponent = ({
           />
         </div>
       </div>
-      <ControlPanel
-        updateAvailable={codeUpdateAvailable || nameUpdateAvailable}
-        hasCodeSource={hasCodeSource}
-        paused={paused}
-        currentRecording={currentRecording}
-        simSpeed={simSpeedRef.current}
-        onChangeSimSpeed={handleChangeSimSpeed}
-        onPlayPause={handlePlayPause}
-        onReset={handleReset}
-        onUpdateCode={handleUpdateCode}
-        onDeleteRecording={handleDeleteRecording}
-        canPlay={canPlay}
-        canReset={canReset}
-      />
+      <div className={css.controlPanelContainer}>
+        {currentRecordingIndex !== -1 && (
+          <div className={css.returnToTinker}>
+            <button onClick={() => handleSelectRecording(-1)} disabled={isRecording}>
+              <ReturnToModelIcon />
+            </button>
+          </div>
+        )}
+        <ControlPanel
+          updateAvailable={codeUpdateAvailable || nameUpdateAvailable}
+          hasCodeSource={hasCodeSource}
+          paused={paused}
+          currentRecording={currentRecording}
+          simSpeed={simSpeedRef.current}
+          onChangeSimSpeed={handleChangeSimSpeed}
+          onPlayPause={handlePlayPause}
+          onReset={handleReset}
+          onUpdateCode={handleUpdateCode}
+          onDeleteRecording={handleDeleteRecording}
+          canPlay={canPlay}
+          canReset={canReset}
+        />
+      </div>
       {error && <div className={css.error}>{error}</div>}
       <div className={css.simViewport}>
         <div className={css.simScrollArea}>
