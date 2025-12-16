@@ -106,7 +106,7 @@
   },
   "dependencies": {
     "@concord-consortium/lara-interactive-api": "^1.10.0",
-    "@concord-consortium/object-storage": "1.0.0-pre.6",
+    "@concord-consortium/object-storage": "1.0.0-pre.7",
     "@concord-consortium/question-interactives-helpers": "^1.16.0",
     "@rjsf/utils": "^5.0.1",
     "chart.js": "^3.9.1",

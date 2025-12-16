@@ -7,7 +7,7 @@ import { useLinkedInteractiveId } from "@concord-consortium/question-interactive
 import { Bar } from "react-chartjs-2";
 import { BarElement, CategoryScale, Chart, ChartOptions, Legend, LinearScale, Title, Tooltip } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
-import { TypedDataTableMetadata, TypedObject, useObjectStorage } from "@concord-consortium/object-storage";
+import { StoredObjectDataTableMetadata, useObjectStorage } from "@concord-consortium/object-storage";
 
 import { generateChartData, emptyChartData, CustomChartData } from "../generate-chart-data";
 
@@ -139,15 +139,13 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
     const unsubscribes = linkedInteractives.map((linkedInteractiveId, datasetIdx) => {
       const unsubscribe = objectStorage.monitor(linkedInteractiveId, (objects) => {
         // find the latest dataTable (objects are ordered from oldest to newest)
-        objects.reverse();
-        const latestTypedObject = objects.find(obj => TypedObject.IsSupportedTypedObjectMetadata(obj.metadata));
-        if (latestTypedObject && TypedObject.IsSupportedTypedObjectMetadata(latestTypedObject.metadata)) {
-          const dataTableEntry = Object.entries(latestTypedObject.metadata.items).find(([key, item]) => item.type === "dataTable") as [string, TypedDataTableMetadata] | undefined;
+        const latest = objects[objects.length - 1];
+        if (latest) {
+          const dataTableEntry = Object.entries(latest.metadata.items).find(([key, item]) => item.type === "dataTable") as [string, StoredObjectDataTableMetadata] | undefined;
           const [dataTableId, dataTableMetadata] = dataTableEntry || [];
           if (dataTableId && dataTableMetadata) {
             const loadDataTableObject = async () => {
-              const objectData = await objectStorage.readData(latestTypedObject.id);
-              const dataTableData = objectData?.[dataTableId];
+              const dataTableData = await objectStorage.readDataItem(latest.id, dataTableId);
               if (dataTableData) {
                 // convert the dataTableObject to the IDataset format
                 const newDataset: IDataset = {
