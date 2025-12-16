@@ -9,7 +9,9 @@ const defaultProps = {
     { label: "red", value: "RED" },
     { label: "blue", value: "BLUE" }
   ],
-  onOptionsChange: jest.fn()
+  onOptionsChange: jest.fn(),
+  defaultOptionValue: undefined,
+  onDefaultChange: jest.fn()
 };
 
 describe("CustomBlockFormOptionList", () => {
@@ -20,7 +22,9 @@ describe("CustomBlockFormOptionList", () => {
   describe("Options Display", () => {
     it("renders existing options with correct values", () => {
       render(<CustomBlockFormOptionList {...defaultProps} />);
-      
+
+      expect(screen.getByTestId("default-option-0")).toBeInTheDocument();
+      expect(screen.getByTestId("default-option-1")).toBeInTheDocument();
       expect(screen.getByDisplayValue("red")).toBeInTheDocument();
       expect(screen.getByDisplayValue("RED")).toBeInTheDocument();
       expect(screen.getByDisplayValue("blue")).toBeInTheDocument();

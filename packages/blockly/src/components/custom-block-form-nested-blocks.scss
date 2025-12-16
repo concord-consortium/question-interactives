@@ -71,6 +71,32 @@
     min-height: 24px;
   }
 
+  .nestedBlock_override {
+    align-items: center;
+    display: flex;
+    flex-shrink: 0;
+    gap: $spacing-sm;
+    margin-left: 12px;
+
+    label {
+      color: $text-medium;
+      font-size: $font-size-xs;
+      line-height: 1;
+      margin-bottom: 0;
+      margin-right: 6px;
+      vertical-align: middle;
+      white-space: nowrap;
+    }
+
+    select, input[type="text"] {
+      @include form-input-sm();
+      font-size: $font-size-xs;
+      margin-bottom: 0;
+      min-width: 180px;
+      vertical-align: middle;
+    }
+  }
+
   .nestedBlock_info {
     align-items: center;
     display: flex;

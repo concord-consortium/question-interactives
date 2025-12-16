@@ -31,6 +31,7 @@ export interface INestedBlock {
   blockId: string;
   canHaveChildren?: boolean;
   children?: INestedBlock[];
+  defaultOptionValue?: string;
 }
 
 export interface IParameterBase {
@@ -41,6 +42,7 @@ export interface IParameterBase {
   name: string;
 }
 export interface IParameterSelect extends IParameterBase {
+  defaultOptionValue?: string;
   kind: "select";
   options: { label: string; value: string }[];
 }
@@ -56,6 +58,7 @@ export interface IBlockConfig {
   childBlocks?: INestedBlock[];
   conditionInput?: boolean;
   defaultCount?: number;
+  defaultOptionValue?: string;
   generatorTemplate?: string;
   globalName?: string; // For globalValue blocks: the key used with globals.get()
   globalValueType?: GlobalValueType; // For globalValue blocks: the output type
@@ -159,171 +162,81 @@ export const DefaultAuthoredState: Omit<Required<IAuthoredState>, "questionSubTy
 export const DemoAuthoredState: IAuthoredState = {
   customBlocks: [
     {
-      "category": "Properties",
-      "color": "#312b84",
-      "config": {
-        "canHaveChildren": false,
-        "inputsInline": true,
-        "nextStatement": true,
-        "previousStatement": true,
-        "typeOptions": [
+      category: "Properties",
+      color: "#312b84",
+      config: {
+        canHaveChildren: false,
+        inputsInline: true,
+        nextStatement: true,
+        previousStatement: true,
+        typeOptions: [
           ["blue", "BLUE"],
           ["red", "RED"]
         ]
       },
-      "id": "custom_setter_color_1759159837671",
-      "name": "color",
-      "type": "setter"
+      id: "custom_setter_color_1759159837671",
+      name: "color",
+      type: "setter"
     },
     {
-      "category": "Properties",
-      "color": "#312b84",
-      "config": {
-        "canHaveChildren": true,
-        "inputsInline": true,
-        "nextStatement": true,
-        "previousStatement": true,
-        "childBlocks": [
+      category: "Properties",
+      color: "#312b84",
+      config: {
+        canHaveChildren: true,
+        inputsInline: true,
+        nextStatement: true,
+        previousStatement: true,
+        childBlocks: [
           {
-            "blockId": "custom_setter_color_1759159837671"
+            blockId: "custom_setter_color_1759159837671"
           }
         ],
-        "typeOptions": [
+        typeOptions: [
           ["water", "WATER"],
           ["ink", "INK"]
         ],
-        "defaultCount": 100,
-        "minCount": 0,
-        "maxCount": 500
+        defaultCount: 100,
+        minCount: 0,
+        maxCount: 500
       },
-      "id": "custom_creator_molecules_1759159855002",
-      "name": "molecules",
-      "type": "creator"
+      id: "custom_creator_molecules_1759159855002",
+      name: "molecules",
+      type: "creator"
     },
     {
-      "category": "Action",
-      "color": "#004696",
-      "config": {
-        "inputsInline": true,
-        "nextStatement": true,
-        "previousStatement": true,
-        "canHaveChildren": false,
-        "childBlocks": [],
-        "generatorTemplate": "${ACTION} ${DIRECTION}\nspeed=${MAGNITUDE}\n",
-        "parameters": [
+      category: "Action",
+      color: "#004696",
+      config: {
+        inputsInline: true,
+        nextStatement: true,
+        previousStatement: true,
+        canHaveChildren: false,
+        childBlocks: [],
+        generatorTemplate: "${ACTION} ${DIRECTION}\nspeed=${MAGNITUDE}\n",
+        parameters: [
           {
-            "kind": "select",
-            "name": "DIRECTION",
-            "labelPosition": "prefix",
-            "options": [
-              { "label": "forward", "value": "FORWARD" },
-              { "label": "backward", "value": "BACKWARD" }
+            kind: "select",
+            name: "DIRECTION",
+            labelPosition: "prefix",
+            options: [
+              { label: "forward", value: "FORWARD" },
+              { label: "backward", value: "BACKWARD" }
             ]
           },
           {
-            "kind": "select",
-            "name": "MAGNITUDE",
-            "labelPosition": "prefix",
-            "options": [
-              { "label": "the same", "value": "SAME" },
-              { "label": "at wind speed", "value": "WIND_SPEED" }
+            kind: "select",
+            name: "MAGNITUDE",
+            labelPosition: "prefix",
+            options: [
+              { label: "the same", value: "SAME" },
+              { label: "at wind speed", value: "WIND_SPEED" }
             ]
           }
         ]
       },
-      "id": "custom_action_move_1759267234848",
-      "name": "move",
-      "type": "action"
-    },
-    {
-      "category": "Controls",
-      "color": "#0089b8",
-      "config": {
-        "inputsInline": true,
-        "nextStatement": true,
-        "previousStatement": true,
-        "canHaveChildren": true,
-        "childBlocks": [],
-        "conditionInput": false,
-        "options": [
-          [
-            "water",
-            "WATER"
-          ],
-          [
-            "ink",
-            "INK"
-          ]
-        ],
-        "targetEntity": "molecules"
-      },
-      "id": "custom_statement_ask_molecules_1759854843519",
-      "name": "ask molecules",
-      "type": "ask"
-    },
-    {
-      "category": "Controls",
-      "color": "#0089b8",
-      "config": {
-        "inputsInline": true,
-        "nextStatement": true,
-        "previousStatement": true,
-        "canHaveChildren": false,
-        "options": [
-          [
-            "high",
-            "HIGH"
-          ],
-          [
-            "low",
-            "low"
-          ]
-        ],
-        "labelPosition": "prefix"
-      },
-      "id": "custom_condition_temperature_is_1759786425875",
-      "name": "temperature is",
-      "type": "condition"
-    },
-    {
-      "category": "Controls",
-      "color": "#0089b8",
-      "config": {
-        "inputsInline": true,
-        "nextStatement": true,
-        "previousStatement": true,
-        "canHaveChildren": false,
-        "options": [],
-        "labelPosition": "prefix"
-      },
-      "id": "custom_condition_no_more_energy_1759786582708",
-      "name": "no more energy",
-      "type": "condition"
-    },
-    {
-      "category": "Controls",
-      "color": "#0089b8",
-      "config": {
-        "inputsInline": true,
-        "nextStatement": true,
-        "previousStatement": true,
-        "canHaveChildren": false,
-        "options": [
-          [
-            "healthy",
-            "HEALTHY"
-          ],
-          [
-            "sick",
-            "SICK"
-          ]
-        ],
-        "labelPosition": "prefix",
-        "targetEntity": "molecules"
-      },
-      "id": "custom_condition_near_1759786656575",
-      "name": "near",
-      "type": "condition"
+      id: "custom_action_move_1759267234848",
+      name: "move",
+      type: "action"
     }
   ],
   hint: "",

@@ -1,16 +1,42 @@
 @import "./variables";
 
 .optionList {
+  .optionHeader {
+    align-items: center;
+    display: flex;
+    margin-bottom: $spacing-xs;
+
+    .defaultHeader {
+      color: $text-medium;
+      flex: 0 0 40px;
+      font-size: $font-size-xs;
+      padding-right: $spacing-sm;
+      text-align: center;
+    }
+  }
+
   .optionRow {
     align-items: center;
     display: flex;
     gap: $spacing-sm;
     margin-bottom: $spacing-sm;
 
+    .defaultRadio {
+      align-items: center;
+      display: flex;
+      flex: 0 0 40px;
+      justify-content: center;
+
+      input[type="radio"] {
+        height: 16px;
+        width: 16px;
+      }
+    }
+
     input {
       border: solid 1px $border-light;
       border-radius: $border-radius-sm;
-      flex: 1;
+      flex: 1 1 auto;
       font-size: $font-size-sm;
       min-width: 0;
       padding: $spacing-xs $spacing-sm;

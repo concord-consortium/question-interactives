@@ -2,12 +2,13 @@ import React, { useState, useMemo } from "react";
 
 import { DEFAULT_MAX_NESTING_DEPTH } from "../blocks/block-constants";
 import { wouldCreateCircularReference } from "../utils/nested-block-utils";
-import { INestedBlock } from "./types";
+import { INestedBlock, ICustomBlock } from "./types";
 
 import css from "./custom-block-form-nested-blocks.scss";
 
 interface IProps {
   availableBlocks: Array<{ id: string; name: string; type: string; canHaveChildren: boolean }>;
+  existingBlocks?: ICustomBlock[];
   maxDepth?: number;
   nestedBlocks: INestedBlock[];
   parentBlockId: string;
@@ -16,6 +17,7 @@ interface IProps {
 
 export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
   availableBlocks,
+  existingBlocks,
   maxDepth = DEFAULT_MAX_NESTING_DEPTH,
   nestedBlocks,
   parentBlockId,
@@ -53,7 +55,7 @@ export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
     
     // Add the new child
     const childBlockInfo = availableBlocks.find(b => b.id === blockId);
-    const newChild: INestedBlock = { blockId, canHaveChildren: childBlockInfo?.canHaveChildren };
+    const newChild: INestedBlock = { blockId, canHaveChildren: childBlockInfo?.canHaveChildren, defaultOptionValue: undefined };
     target.push(newChild);
     onChange(newBlocks);
     
@@ -139,6 +141,10 @@ export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
     return availableBlocksMap.get(blockId) || { id: blockId, name: blockId, type: "unknown", canHaveChildren: false };
   };
 
+  const getCustomBlockById = (id: string) => {
+    return (existingBlocks || []).find(b => b.id === id);
+  };
+
   const renderNestedBlock = (block: INestedBlock, path: number[], depth: number) => {
     const blockInfo = getBlockInfo(block.blockId);
     const isExpanded = expandedBlocks.has(block.blockId);
@@ -164,6 +170,67 @@ export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
             {!hasChildren && <span className={css.nestedBlock_spacer}></span>}
             <span className={css.nestedBlock_name}>{blockInfo.name}</span>
             <span className={css.nestedBlock_depth}>Level {depth + 1}</span>
+          </div>
+          <div className={css.nestedBlock_override}>
+            <label htmlFor={`nested-override-${path.join("-")}`}>Default override</label>
+            {/* Render a select populated from the child's configured options if available. */}
+            {(() => {
+              const cb = getCustomBlockById(block.blockId);
+              let opts: Array<{ label: string; value: string }> | null = null;
+              if (cb && cb.config) {
+                const raw = (cb.config.typeOptions as any) || (cb.config.options as any) || [];
+                opts = Array.isArray(raw)
+                  ? raw.map((opt: any) => (Array.isArray(opt) ? { label: String(opt[0]), value: String(opt[1]) } : { label: String(opt?.label || ""), value: String(opt?.value || "") }))
+                      .filter(o => o.label && o.value)
+                  : null;
+              }
+
+              if (opts && opts.length > 0) {
+                return (
+                  <select
+                    id={`nested-override-${path.join("-")}`}
+                    data-testid={`nested-override-${path.join("-")}`}
+                    value={block.defaultOptionValue ?? ""}
+                    onChange={(e) => {
+                      const newBlocks = JSON.parse(JSON.stringify(nestedBlocks)) as INestedBlock[];
+                      let targetArr: INestedBlock[] = newBlocks;
+                      for (let i = 0; i < path.length - 1; i++) {
+                        targetArr = targetArr[path[i]].children as INestedBlock[];
+                      }
+                      const idx = path[path.length - 1];
+                      targetArr[idx].defaultOptionValue = e.target.value || undefined;
+                      onChange(newBlocks);
+                    }}
+                  >
+                    <option value="">(inherit parent default)</option>
+                    {opts.map(o => (
+                      <option key={o.value} value={o.value}>{o.label}</option>
+                    ))}
+                  </select>
+                );
+              }
+
+              // Fallback to text input if we can't determine options for this child block
+              return (
+                <input
+                  id={`nested-override-${path.join("-")}`}
+                  data-testid={`nested-override-${path.join("-")}`}
+                  placeholder="Override default value (optional)"
+                  type="text"
+                  value={block.defaultOptionValue ?? ""}
+                  onChange={(e) => {
+                    const newBlocks = JSON.parse(JSON.stringify(nestedBlocks)) as INestedBlock[];
+                    let targetArr: INestedBlock[] = newBlocks;
+                    for (let i = 0; i < path.length - 1; i++) {
+                      targetArr = targetArr[path[i]].children as INestedBlock[];
+                    }
+                    const idx = path[path.length - 1];
+                    targetArr[idx].defaultOptionValue = e.target.value || undefined;
+                    onChange(newBlocks);
+                  }}
+                />
+              );
+            })()}
           </div>
           <div className={css.nestedBlock_actions}>
             <button
