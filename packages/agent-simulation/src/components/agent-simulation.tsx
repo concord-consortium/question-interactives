@@ -1,7 +1,7 @@
 import * as AA from "@gjmcn/atomic-agents";
 import * as AV from "@concord-consortium/atomic-agents-vis";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { useObjectStorage, TypedObject } from "@concord-consortium/object-storage";
+import { useObjectStorage, StoredObject } from "@concord-consortium/object-storage";
 
 import {
   addLinkedInteractiveStateListener, removeLinkedInteractiveStateListener, log
@@ -423,13 +423,15 @@ export const AgentSimulationComponent = ({
               // save the recording data in a TypedObject
               const info = getRecordingInfo();
               const description = info ? `${modelName}: ${info.formattedTime} (${info.durationString})` : modelName;
-              const typedObject = new TypedObject({
+              const storedObject = new StoredObject({
                 name: "Simulation Recording",
+                type: "simulation-recording",
+                subType: "agent-simulation",
                 description,
               });
 
               if (snapshot && canvas) {
-                typedObject.addImage({
+                storedObject.addImage({
                   name: "Final Simulation Screenshot",
                   subType: "simulation-screenshot",
                   url: snapshot,
@@ -439,7 +441,7 @@ export const AgentSimulationComponent = ({
               }
 
               if (thumbnail) {
-                typedObject.addImage({
+                storedObject.addImage({
                   name: "Final Simulation Thumbnail",
                   subType: "simulation-thumbnail",
                   url: thumbnail,
@@ -450,7 +452,7 @@ export const AgentSimulationComponent = ({
 
               const cols = Object.keys(tickDataRef.current[0] || simRef.current?.globals.values() || {});
               const rows = tickDataRef.current.length > 0 ? tickDataRef.current.map(tickEntry => Object.values(tickEntry)) : [];
-              typedObject.addDataTable({
+              storedObject.addDataTable({
                 name: "Simulation Tick Data",
                 description,
                 subType: "simulation-tick-data",
@@ -459,18 +461,18 @@ export const AgentSimulationComponent = ({
               });
 
               const finalCode = blocklyCode || code;
-              typedObject.addText({
+              storedObject.addText({
                 name: "Simulation Code",
                 subType: "simulation-code",
                 text: finalCode
               });
 
-              const { id } = typedObject;
-              objectStorage.add(typedObject, { id });
+              objectStorage.add(storedObject);
+
               // Preserve existing recording data (including globalValues) while adding new fields
               notPausedRecordings[currentRecordingIndex] = {
                 ...notPausedRecordings[currentRecordingIndex],
-                objectId: id,
+                objectId: storedObject.id,
                 startedAt,
                 duration,
                 thumbnail,
