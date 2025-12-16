@@ -242,6 +242,52 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[]) => {
             };
 
             this.__savedChildrenXml = buildSiblingChain(blockConfig.childBlocks || []);
+ 
+            // Generate cached code from the XML so code generation works even before opening.
+            // We temporarily create the blocks, generate code, then dispose them.
+            if (this.__savedChildrenXml && this.workspace && !this.workspace.isFlyout) {
+              try {
+                // Temporarily add statement input to connect blocks
+                const tempStmt = this.appendStatementInput("__temp_statements");
+                const tempConn = tempStmt.connection;
+                
+                if (tempConn) {
+                  // Create blocks from XML
+                  const dom = Blockly.utils.xml.textToDom(`<xml>${this.__savedChildrenXml}</xml>`);
+                  const blockDom = dom.firstElementChild;
+                  if (blockDom) {
+                    const tempBlock = Blockly.Xml.domToBlock(blockDom, this.workspace as any) as BlockSvg;
+                    if (tempBlock.previousConnection) {
+                      tempConn.connect(tempBlock.previousConnection);
+                    }
+                    
+                    // Generate code from the temporary blocks
+                    this.__cachedChildrenCode = javascriptGenerator.statementToCode(this, "__temp_statements") || "";
+                    
+                    // Clean up: dispose temp blocks manually
+                    const blocksToDispose: BlockSvg[] = [];
+                    let currentBlock: BlockSvg | null = tempBlock;
+                    while (currentBlock) {
+                      blocksToDispose.push(currentBlock);
+                      currentBlock = currentBlock.getNextBlock();
+                    }
+                    blocksToDispose.reverse().forEach(b => {
+                      try {
+                        b.dispose(false);
+                      } catch (e) {
+                        console.warn("Error disposing temp block:", e);
+                      }
+                    });
+                  }
+                }
+                
+                // Remove temporary input
+                this.removeInput("__temp_statements", true);
+              } catch (e) {
+                console.warn("Failed to pre-generate cached code for child blocks:", e);
+                this.__cachedChildrenCode = "";
+              }
+            }
           } else {
             this.__savedChildrenXml = "";
           }
