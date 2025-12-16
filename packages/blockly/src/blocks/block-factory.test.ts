@@ -42,6 +42,9 @@ jest.mock("blockly/javascript", () => ({
     statementToCode: jest.fn().mockReturnValue("// statement code"),
     valueToCode: jest.fn().mockReturnValue("test_value"),
     ORDER_NONE: 0
+  },
+  Order: {
+    ATOMIC: 0
   }
 }));
 
@@ -987,6 +990,115 @@ describe("block-factory", () => {
 
       const code = javascriptGenerator.forBlock["custom_condition_touching_404"].call(mockBlock, mockBlock);
       expect(code).toBe("touching?");
+    });
+
+    it("generates code for globalValue block", () => {
+      const globalValueBlock: ICustomBlock = {
+        category: "Properties",
+        color: "#c4a000",
+        config: {
+          canHaveChildren: false,
+          globalName: "lightIntensity",
+          globalValueType: "number"
+        },
+        id: "custom_globalValue_light_123",
+        name: "light-intensity",
+        type: "globalValue"
+      };
+
+      registerCustomBlocks([globalValueBlock]);
+
+      const code = javascriptGenerator.forBlock["custom_globalValue_light_123"].call(mockBlock, mockBlock);
+      expect(code).toEqual(['globals.get("lightIntensity")', expect.any(Number)]);
+    });
+
+    it("generates code for globalValue block with string type", () => {
+      const globalValueBlock: ICustomBlock = {
+        category: "Properties",
+        color: "#c4a000",
+        config: {
+          canHaveChildren: false,
+          globalName: "userName",
+          globalValueType: "string"
+        },
+        id: "custom_globalValue_user_456",
+        name: "user-name",
+        type: "globalValue"
+      };
+
+      registerCustomBlocks([globalValueBlock]);
+
+      const code = javascriptGenerator.forBlock["custom_globalValue_user_456"].call(mockBlock, mockBlock);
+      expect(code).toEqual(['globals.get("userName")', expect.any(Number)]);
+    });
+
+    it("uses block name as globalName fallback when not provided", () => {
+      const globalValueBlock: ICustomBlock = {
+        category: "Properties",
+        color: "#c4a000",
+        config: {
+          canHaveChildren: false,
+          globalValueType: "number"
+        },
+        id: "custom_globalValue_temp_789",
+        name: "temperature",
+        type: "globalValue"
+      };
+
+      registerCustomBlocks([globalValueBlock]);
+
+      const code = javascriptGenerator.forBlock["custom_globalValue_temp_789"].call(mockBlock, mockBlock);
+      expect(code).toEqual(['globals.get("temperature")', expect.any(Number)]);
+    });
+  });
+
+  describe("Global Value Block Initialization", () => {
+    let globalValueBlock: ICustomBlock;
+
+    beforeEach(() => {
+      globalValueBlock = {
+        category: "Properties",
+        color: "#c4a000",
+        config: {
+          canHaveChildren: false,
+          globalName: "lightIntensity",
+          globalValueType: "number"
+        },
+        id: "custom_globalValue_light_123",
+        name: "light-intensity",
+        type: "globalValue"
+      };
+
+      registerCustomBlocks([globalValueBlock]);
+    });
+
+    it("initializes globalValue block with correct display name", () => {
+      Blocks["custom_globalValue_light_123"].init.call(mockBlock);
+
+      expect(mockBlock.appendDummyInput).toHaveBeenCalled();
+      expect(mockInput.appendField).toHaveBeenCalledWith("light-intensity");
+    });
+
+    it("sets output type to Number for number valueType", () => {
+      Blocks["custom_globalValue_light_123"].init.call(mockBlock);
+
+      expect(mockBlock.setOutput).toHaveBeenCalledWith(true, "Number");
+    });
+
+    it("sets output type to String for string valueType", () => {
+      globalValueBlock.config.globalValueType = "string";
+      registerCustomBlocks([globalValueBlock]);
+
+      Blocks["custom_globalValue_light_123"].init.call(mockBlock);
+
+      expect(mockBlock.setOutput).toHaveBeenCalledWith(true, "String");
+    });
+
+    it("does not set previous/next statement connections (value block)", () => {
+      Blocks["custom_globalValue_light_123"].init.call(mockBlock);
+
+      expect(mockBlock.setPreviousStatement).not.toHaveBeenCalled();
+      expect(mockBlock.setNextStatement).not.toHaveBeenCalled();
     });
   });
 });

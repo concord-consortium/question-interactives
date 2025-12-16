@@ -6,7 +6,7 @@ import { BLOCK_TYPE_CONFIG } from "./custom-block-form-config";
 import { CustomBlockFormNestedBlocks } from "./custom-block-form-nested-blocks";
 import { CustomBlockFormOptionList } from "./custom-block-form-option-list";
 import { CustomBlockFormParameters } from "./custom-block-form-parameters";
-import { CustomBlockType, IBlockConfig, ICustomBlock, INestedBlock, IParameter } from "./types";
+import { CustomBlockType, GlobalValueType, IBlockConfig, ICustomBlock, INestedBlock, IParameter } from "./types";
 
 import css from "./custom-block-form.scss";
 
@@ -28,6 +28,8 @@ interface ICustomBlockFormState {
   conditionInput: boolean;
   defaultCount: number;
   generatorTemplate?: string;
+  globalName: string;
+  globalValueType: GlobalValueType;
   includeAllOption?: boolean;
   includeCount: boolean;
   includeNumberInput: boolean;
@@ -69,6 +71,8 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
     conditionInput: false,
     defaultCount: 100,
     generatorTemplate: "",
+    globalName: "",
+    globalValueType: "number",
     includeAllOption: false,
     includeCount: true,
     includeNumberInput: false,
@@ -82,7 +86,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
     targetEntity: "",
     conditionLabelPosition: "prefix",
     showTargetEntityLabel: true,
-    type: blockType
+    type: blockType,
   });
 
   const availableCategories = useMemo(() => extractCategoriesFromToolbox(toolbox), [toolbox]);
@@ -110,7 +114,9 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         formData.color !== editingBlock.color ||
         formData.category !== editingBlock.category ||
         formData.generatorTemplate !== (config.generatorTemplate || "") ||
+        formData.globalName !== (config.globalName || "") ||
         formData.targetEntity !== (config.targetEntity || "") ||
+        formData.globalValueType !== (config.globalValueType ?? "number") ||
         formData.childrenEnabled !== !!config.canHaveChildren ||
         formData.includeCount !== (config.defaultCount != null) ||
         formData.minCount !== (config.minCount ?? 0) ||
@@ -129,11 +135,12 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       const hasName = formData.name.trim().length > 0;
       const hasOptions = formData.options.some(opt => opt.label.trim() || opt.value.trim());
       const hasGeneratorTemplate = (formData.generatorTemplate || "").trim().length > 0;
+      const hasGlobalName = formData.globalName.trim().length > 0;
       const hasTargetEntity = formData.targetEntity.trim().length > 0;
       const hasChildBlocks = formData.childBlocks.length > 0;
       const hasParameters = parameters.length > 0;
 
-      isDirty = hasName || hasOptions || hasGeneratorTemplate || hasTargetEntity || hasChildBlocks || hasParameters;
+      isDirty = hasName || hasOptions || hasGeneratorTemplate || hasGlobalName || hasTargetEntity || hasChildBlocks || hasParameters;
     }
 
     if (previousDirtyRef.current !== isDirty) {
@@ -171,6 +178,8 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       conditionInput: !!config.conditionInput,
       defaultCount: config.defaultCount ?? 100,
       generatorTemplate: config.generatorTemplate || "",
+      globalName: config.globalName || "",
+      globalValueType: config.globalValueType ?? "number",
       includeAllOption: config.includeAllOption ?? false,
       includeCount: config.defaultCount != null,
       includeNumberInput: !!config.includeNumberInput,
@@ -209,6 +218,10 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
     }
     if (formData.type === "action" && (!formData.generatorTemplate || !formData.generatorTemplate.trim())) {
       alert("Please provide the code template for the action block.");
+      return;
+    }
+    if (formData.type === "globalValue" && (!formData.globalName || !formData.globalName.trim())) {
+      alert("Please provide the global variable name.");
       return;
     }
 
@@ -278,6 +291,12 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
                 }
               : {})
           }
+        : formData.type === "globalValue"
+        ? {
+            canHaveChildren: false,
+            globalName: formData.globalName.trim(),
+            globalValueType: formData.globalValueType
+          }
         : {
             ...base,
             canHaveChildren: false,
@@ -302,6 +321,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
     setFormData(prev => ({
       ...prev,
       name: "",
+      globalName: "",
       options: [{ label: "", value: "" }],
       childBlocks: []
     }));
@@ -358,6 +378,42 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
           ))}
         </select>
       </div>
+
+      {blockConfig.hasGlobalName && (
+        <div className={css.customBlockForm_globalName} data-testid="field-global-name">
+          <label htmlFor="global-name">
+            Global Variable Name
+            <span className={css.required}>*</span>
+          </label>
+          <input
+            data-testid="input-globalName"
+            id="global-name"
+            placeholder="e.g., lightIntensity, temperature"
+            required
+            type="text"
+            value={formData.globalName}
+            onChange={(e) => setFormData(prev => ({ ...prev, globalName: e.target.value }))}
+          />
+          <div className={css.helpText}>
+            The variable name used in code (e.g., globals.get(&quot;variableName&quot;))
+          </div>
+        </div>
+      )}
+
+      {blockConfig.hasGlobalValueType && (
+        <div className={css.customBlockForm_globalValueType} data-testid="field-global-value-type">
+          <label htmlFor="global-value-type">Value Type</label>
+          <select
+            data-testid="select-globalValueType"
+            id="global-value-type"
+            value={formData.globalValueType}
+            onChange={(e) => setFormData(prev => ({ ...prev, globalValueType: e.target.value as GlobalValueType }))}
+          >
+            <option value="number">Number</option>
+            <option value="string">String</option>
+          </select>
+        </div>
+      )}
 
       {/* TODO: Determine if authors will need access to these options. For now, they are hidden by CSS. */}
       <div className={css.customBlockForm_inputs}>

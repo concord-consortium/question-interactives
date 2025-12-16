@@ -329,6 +329,10 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
           if (blockConfig.targetEntity) {
             input.appendField(blockConfig.targetEntity);
           }
+        } else if (blockDef.type === "globalValue") {
+          // Global value blocks are value blocks that return the value of a global variable.
+          const outputType = blockConfig.globalValueType === "string" ? "String" : "Number";
+          this.setOutput(true, outputType);
         }
 
         // Add object name at the end for creator blocks
@@ -339,9 +343,9 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         // Color and inline/connection flags
         this.setColour(blockDef.color);
 
-        // For all blocks except condition blocks, set previous/next statement connections. Use config value
-        // if defined, otherwise default to true.
-        if (blockDef.type !== "condition") {
+        // For all blocks except condition and globalValue blocks, set previous/next statement connections.
+        // Use config value if defined, otherwise default to true.
+        if (blockDef.type !== "condition" && blockDef.type !== "globalValue") {
           this.setPreviousStatement(
             blockConfig.previousStatement !== undefined ? !!blockConfig.previousStatement : true
           );
@@ -492,6 +496,9 @@ export function registerCustomBlocks(customBlocks: ICustomBlock[]) {
         }
 
         return condition;
+      } else if (blockDef.type === "globalValue") {
+        const globalName = blockConfig.globalName || blockDef.name;
+        return [`globals.get("${globalName}")`, Order.ATOMIC];
       }
 
       return "";
