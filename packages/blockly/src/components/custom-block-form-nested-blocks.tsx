@@ -172,7 +172,7 @@ export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
             <span className={css.nestedBlock_depth}>Level {depth + 1}</span>
           </div>
           <div className={css.nestedBlock_override}>
-            <label htmlFor={`nested-override-${path.join("-")}`}>Default override</label>
+            <label htmlFor={`nested-override-${path.join("-")}`}>Default</label>
             {/* Render a select populated from the child's configured options if available. */}
             {(() => {
               const cb = getCustomBlockById(block.blockId);
@@ -202,7 +202,7 @@ export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
                       onChange(newBlocks);
                     }}
                   >
-                    <option value="">(inherit parent default)</option>
+                    <option value="">(inherit)</option>
                     {opts.map(o => (
                       <option key={o.value} value={o.value}>{o.label}</option>
                     ))}
