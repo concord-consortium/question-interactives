@@ -1,7 +1,7 @@
 import { FieldSlider } from "@blockly/field-slider";
 import type { BlockSvg } from "blockly";
 import { javascriptGenerator } from "blockly/javascript";
-import Blockly, { Blocks, Connection, FieldDropdown, FieldNumber } from "blockly/core";
+import Blockly, { Blocks, Connection, FieldDropdown, FieldNumber, MenuOption } from "blockly/core";
 
 import { ICustomBlock, INestedBlock, IBlockConfig } from "../components/types";
 import { createGenerator } from "./generators";
@@ -20,22 +20,209 @@ const blockHasDisclosure = (blockDef: ICustomBlock, blockConfig: IBlockConfig): 
     (blockDef.type === "action" && !!blockConfig.canHaveChildren);
 };
 
+
+// Filters and validates dropdown options to Blockly MenuOption format.
+const filterDropdownOptions = (options: unknown[]): MenuOption[] => {
+  if (!Array.isArray(options)) return [];
+  return options.filter(
+    opt => Array.isArray(opt) && opt.length === 2 && typeof opt[0] === "string" && typeof opt[1] === "string"
+  ) as [string, string][];
+};
+
+// Appends a dropdown field to an input based on type options in block config.
 const appendDropdownFromTypeOptions = (input: Blockly.Input, blockConfig: IBlockConfig, fieldName: string) => {
-  if (Array.isArray(blockConfig.typeOptions) && blockConfig.typeOptions.length > 0) {
-    const opts = blockConfig.typeOptions.filter(
-      opt => Array.isArray(opt) && opt.length === 2 && typeof opt[0] === "string" && typeof opt[1] === "string"
-    );
-    if (opts.length > 0) {
-      input.appendField(new FieldDropdown(opts), fieldName);
-    }
+  const opts = filterDropdownOptions(blockConfig.typeOptions || []);
+  if (opts.length > 0) {
+    input.appendField(new FieldDropdown(opts), fieldName);
   }
 };
 
+// Determines display name for a block based on its type.
 const displayNameForBlock = (blockDef: ICustomBlock): string => {
   return blockDef.type === "ask" ? "ask" :
          blockDef.type === "creator" ? "create" :
          blockDef.type === "setter" ? `set ${blockDef.name}` :
          blockDef.name;
+};
+
+// Collects all blocks in a chain starting from a given block.
+const collectBlockChain = (startBlock: BlockSvg | null): BlockSvg[] => {
+  const blocks: BlockSvg[] = [];
+  let current: BlockSvg | null = startBlock;
+  while (current) {
+    blocks.push(current);
+    current = current.getNextBlock();
+  }
+  return blocks;
+};
+
+// Disposes all connected child blocks from a statement input.
+const disposeChildBlocks = (block: BlockSvg, inputName = "statements"): void => {
+  const stmt = block.getInput(inputName);
+  if (!stmt?.connection) return;
+  
+  const targetBlock = stmt.connection.targetBlock() as BlockSvg | null;
+  if (!targetBlock) return;
+
+  const blocksToDispose = collectBlockChain(targetBlock);
+  // Dispose in reverse order to avoid connection issues
+  blocksToDispose.reverse().forEach(b => {
+    try {
+      // false = do not "heal stack", i.e., don't reconnect remaining blocks when
+      // one is removed. We skip healing because we're disposing all children.
+      // See https://developers.google.com/blockly/reference/js/blockly.blocksvg_class.dispose_1_method.md
+      b.dispose(false);
+    } catch (e) {
+      console.warn("Error disposing child block:", e);
+    }
+  });
+};
+
+// Serializes connected blocks to XML string.
+const serializeChildBlocks = (block: BlockSvg, inputName = "statements"): string => {
+  const stmt = block.getInput(inputName);
+  if (!stmt?.connection) return "";
+  
+  const targetBlock = stmt.connection.targetBlock();
+  if (!targetBlock) return "";
+
+  try {
+    const dom = Blockly.Xml.blockToDom(targetBlock, true);
+    return Blockly.Xml.domToText(dom);
+  } catch (e) {
+    console.warn("Failed to serialize children:", e);
+    return "";
+  }
+};
+
+// Restores blocks from XML string to a connection.
+const restoreChildBlocks = (block: BlockSvg, xml: string, inputName = "statements"): void => {
+  if (!xml) return;
+  
+  const stmt = block.getInput(inputName);
+  const conn = stmt?.connection;
+  if (!conn || !block.workspace) return;
+
+  try {
+    const dom = Blockly.utils.xml.textToDom(`<xml>${xml}</xml>`);
+    const blockDom = dom.firstElementChild;
+    if (blockDom) {
+      const restoredBlock = Blockly.Xml.domToBlock(blockDom, block.workspace);
+      if (restoredBlock.previousConnection) {
+        conn.connect(restoredBlock.previousConnection);
+      }
+    }
+  } catch (e) {
+    console.warn("Failed to restore children:", e);
+  }
+};
+
+// Builds XML for a single block with its nested children.
+const buildBlockXml = (child: INestedBlock): string => {
+  const defaultFieldXml = child.defaultOptionValue
+    ? `<field name="value">${child.defaultOptionValue}</field>`
+    : "";
+  const nestedXml = child.children?.length 
+    ? `<statement name="statements">${buildSiblingChainXml(child.children)}</statement>` 
+    : "";
+  return `<block type="${child.blockId}">${defaultFieldXml}${nestedXml}</block>`;
+};
+
+// Builds XML for a chain of sibling blocks connected via <next>.
+const buildSiblingChainXml = (children: INestedBlock[]): string => {
+  if (children.length === 0) return "";
+  if (children.length === 1) return buildBlockXml(children[0]);
+  
+  // Build from last to first, wrapping in <next> tags
+  let xml = buildBlockXml(children[children.length - 1]);
+  for (let i = children.length - 2; i >= 0; i--) {
+    const child = children[i];
+    const defaultFieldXml = child.defaultOptionValue
+      ? `<field name="value">${child.defaultOptionValue}</field>`
+      : "";
+    const nestedXml = child.children?.length 
+      ? `<statement name="statements">${buildSiblingChainXml(child.children)}</statement>` 
+      : "";
+    xml = `<block type="${child.blockId}">${defaultFieldXml}${nestedXml}<next>${xml}</next></block>`;
+  }
+  return xml;
+};
+
+// Generates code from XML by temporarily creating blocks.
+const generateCodeFromXml = (block: BlockSvg, xml: string, inputName: string): string => {
+  if (!xml || !block.workspace || block.workspace.isFlyout) return "";
+
+  try {
+    // Temporarily add statement input
+    const tempStmt = block.appendStatementInput(inputName);
+    const tempConn = tempStmt.connection;
+    
+    if (!tempConn) return "";
+
+    // Create blocks from XML
+    const dom = Blockly.utils.xml.textToDom(`<xml>${xml}</xml>`);
+    const blockDom = dom.firstElementChild;
+    if (!blockDom) return "";
+
+    const tempBlock = Blockly.Xml.domToBlock(blockDom, block.workspace) as BlockSvg;
+    if (tempBlock.previousConnection) {
+      tempConn.connect(tempBlock.previousConnection);
+    }
+    
+    // Generate code from the temporary blocks
+    const code = javascriptGenerator.statementToCode(block, inputName) || "";
+    
+    // Clean up: dispose temp blocks
+    const blocksToDispose = collectBlockChain(tempBlock);
+    blocksToDispose.reverse().forEach(b => {
+      try {
+        // false = do not "heal stack", i.e., don't reconnect remaining blocks when
+        // one is removed. We skip healing because we're disposing all children.
+        // See https://developers.google.com/blockly/reference/js/blockly.blocksvg_class.dispose_1_method.md
+        b.dispose(false);
+      } catch (e) {
+        console.warn("Error disposing temp block:", e);
+      }
+    });
+    
+    // Remove temporary input
+    block.removeInput(inputName, true);
+    
+    return code;
+  } catch (e) {
+    console.warn("Failed to generate code from XML:", e);
+    return "";
+  }
+};
+
+// Creates nested blocks from config (used for seeding).
+const createNestedBlocksFromConfig = (workspace: Blockly.WorkspaceSvg, nestedBlocks: INestedBlock[], parentConnection: Connection): void => {
+  let previousChild: BlockSvg | null = null;
+
+  for (const nestedBlock of nestedBlocks) {
+    const child = workspace.newBlock(nestedBlock.blockId) as BlockSvg;
+    child.initSvg();
+
+    // If an override for a dropdown is specified, apply it
+    if (nestedBlock.defaultOptionValue) {
+      child.setFieldValue(nestedBlock.defaultOptionValue, "value");
+    }
+
+    const targetConnection = previousChild?.nextConnection ?? parentConnection;
+    if (targetConnection && child.previousConnection) {
+      targetConnection.connect(child.previousConnection);
+    }
+
+    child.render();
+    previousChild = child;
+
+    if (nestedBlock.children && nestedBlock.children.length > 0) {
+      const childStmt = child.getInput("statements");
+      if (childStmt?.connection) {
+        createNestedBlocksFromConfig(workspace, nestedBlock.children, childStmt.connection);
+      }
+    }
+  }
 };
 
 export const registerCustomBlocks = (customBlocks: ICustomBlock[]) => {
@@ -62,130 +249,33 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[]) => {
         const input = this.appendDummyInput();
     
         if (blockHasDisclosure(blockDef, blockConfig)) {
-
-          // Helper to dispose all connected child blocks
-          const disposeChildren = (block: BlockSvg) => {
-            const stmt = block.getInput("statements");
-            if (!stmt?.connection) return;
-            const targetBlock = stmt.connection.targetBlock() as BlockSvg | null;
-            if (!targetBlock) return;
-
-            const blocksToDispose: BlockSvg[] = [];
-            let currentBlock: BlockSvg | null = targetBlock;
-            while (currentBlock) {
-              blocksToDispose.push(currentBlock);
-              currentBlock = currentBlock.getNextBlock();
-            }
-
-            // Dispose in reverse order to avoid connection issues.
-            blocksToDispose.reverse().forEach(b => {
-              try {
-                // false = do not "heal stack", i.e., don't reconnect remaining blocks when
-                // one is removed. We skip healing because we're disposing all children.
-                // See https://developers.google.com/blockly/reference/js/blockly.blocksvg_class.dispose_1_method.md
-                b.dispose(false);
-              } catch (e) {
-                console.warn("Error disposing child block:", e);
-              }
-            });
-          };
-
-          // Helper to serialize connected blocks to XML string
-          const serializeChildren = (block: BlockSvg): string => {
-            const stmt = block.getInput("statements");
-            if (!stmt?.connection) return "";
-            const targetBlock = stmt.connection.targetBlock();
-            if (!targetBlock) return "";
-
-            try {
-              const dom = Blockly.Xml.blockToDom(targetBlock as any, true);
-              return Blockly.Xml.domToText(dom);
-            } catch (e) {
-              console.warn("Failed to serialize children:", e);
-              return "";
-            }
-          };
-
-          // Helper to restore blocks from XML string
-          const restoreChildren = (block: BlockSvg, xml: string) => {
-            if (!xml) return;
-            const stmt = block.getInput("statements");
-            const conn = stmt?.connection;
-            if (!conn) return;
-
-            try {
-              const dom = Blockly.utils.xml.textToDom(`<xml>${xml}</xml>`);
-              const blockDom = dom.firstElementChild;
-              if (blockDom && block.workspace) {
-                const restoredBlock = Blockly.Xml.domToBlock(blockDom, block.workspace as any);
-                if (restoredBlock.previousConnection) {
-                  conn.connect(restoredBlock.previousConnection);
-                }
-              }
-            } catch (e) {
-              console.warn("Failed to restore children:", e);
-            }
-          };
-
-          // Helper to create nested blocks from config (used for seeding).
-          const createNestedBlocksFromConfig = (nestedBlocks: INestedBlock[], parentConnection: Connection) => {
-            let previousChild: BlockSvg | null = null;
-
-            for (const nestedBlock of nestedBlocks) {
-              const child = this.workspace.newBlock(nestedBlock.blockId) as BlockSvg;
-              child.initSvg();
-
-              // If an override for a dropdown is specified, apply it.
-              if (nestedBlock.defaultOptionValue) {
-                child.setFieldValue(nestedBlock.defaultOptionValue, "value");
-              }
-
-              const targetConnection = previousChild?.nextConnection ?? parentConnection;
-              if (targetConnection && child.previousConnection) {
-                targetConnection.connect(child.previousConnection);
-              }
-
-              child.render();
-              previousChild = child;
-
-              if (nestedBlock.children && nestedBlock.children.length > 0) {
-                const childStmt = child.getInput("statements");
-                if (childStmt?.connection) {
-                  createNestedBlocksFromConfig(nestedBlock.children, childStmt.connection);
-                }
-              }
-            }
-          };
-
           // Check if this block type has child blocks configured for seeding.
           const hasChildBlocksConfig = Array.isArray(blockConfig.childBlocks) && blockConfig.childBlocks.length > 0;
 
-          // Add open/close toggle button
+          // Add open/close toggle button.
           const icon = new Blockly.FieldImage(PLUS_ICON, 16, 16, "+/-");
           icon.setOnClickHandler?.(() => {
-            const wasOpen = this.__disclosureOpen;
-            const open = !wasOpen;
+            const open = !this.__disclosureOpen;
             this.__disclosureOpen = open;
 
             if (open) {
-              // Opening: add statement input.
+              // Opening: add statement input
               this.appendStatementInput("statements");
 
+              // Seed child blocks on first open if configured
               if (!this.__childrenSeeded && hasChildBlocksConfig) {
                 this.__childrenSeeded = true;
-                // If we have pre-generated XML, use restoration (more efficient).
-                // Otherwise, create programmatically.
                 if (this.__savedChildrenXml) {
-                  restoreChildren(this, this.__savedChildrenXml);
+                  restoreChildBlocks(this, this.__savedChildrenXml);
                   this.__savedChildrenXml = "";
-                } else {
+                } else if (this.workspace && !this.workspace.isFlyout && blockConfig.childBlocks) {
                   const stmtConnection = this.getInput("statements")?.connection;
-                  if (stmtConnection && this.workspace && !this.workspace.isFlyout && blockConfig.childBlocks) {
-                    createNestedBlocksFromConfig(blockConfig.childBlocks, stmtConnection);
+                  if (stmtConnection) {
+                    createNestedBlocksFromConfig(this.workspace, blockConfig.childBlocks, stmtConnection);
                   }
                 }
               } else if (this.__savedChildrenXml) {
-                restoreChildren(this, this.__savedChildrenXml);
+                restoreChildBlocks(this, this.__savedChildrenXml);
                 this.__savedChildrenXml = "";
               }
 
@@ -193,12 +283,12 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[]) => {
               this.__cachedChildrenCode = "";
             } else {
               // Closing: save children XML and cache generated code.
-              this.__savedChildrenXml = serializeChildren(this);
+              this.__savedChildrenXml = serializeChildBlocks(this);
               const stmt = this.getInput("statements");
               if (stmt) {
                 this.__cachedChildrenCode = javascriptGenerator.statementToCode(this, "statements") || "";
               }
-              disposeChildren(this);
+              disposeChildBlocks(this);
               this.removeInput("statements", true);
             }
 
@@ -212,36 +302,10 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[]) => {
           this.__cachedChildrenCode = "";
           this.__childrenSeeded = false;
 
-          // Pre-generate XML for configured child blocks so code generation works even before opening.
+          // Pre-generate XML and cached code for configured child blocks.
           if (hasChildBlocksConfig) {
-            // Build XML for a single block with its nested children.
-            const buildBlockXml = (child: INestedBlock): string => {
-              const defaultFieldXml = child.defaultOptionValue
-                ? `<field name="value">${child.defaultOptionValue}</field>`
-                : "";
-              const nestedXml = child.children?.length 
-                ? `<statement name="statements">${buildSiblingChain(child.children)}</statement>` 
-                : "";
-              return `<block type="${child.blockId}">${defaultFieldXml}${nestedXml}</block>`;
-            };
-
-            // Build XML for a chain of sibling blocks connected via <next>.
-            const buildSiblingChain = (children: INestedBlock[]): string => {
-              if (children.length === 0) return "";
-              if (children.length === 1) return buildBlockXml(children[0]);
-
-              let xml = buildBlockXml(children[children.length - 1]);
-              for (let i = children.length - 2; i >= 0; i--) {
-                const child = children[i];
-                const nestedXml = child.children?.length
-                  ? `<statement name="statements">${buildSiblingChain(child.children)}</statement>`
-                  : "";
-                xml = `<block type="${child.blockId}">${nestedXml}<next>${xml}</next></block>`;
-              }
-              return xml;
-            };
-
-            this.__savedChildrenXml = buildSiblingChain(blockConfig.childBlocks || []);
+            this.__savedChildrenXml = buildSiblingChainXml(blockConfig.childBlocks || []);
+            this.__cachedChildrenCode = generateCodeFromXml(this, this.__savedChildrenXml, "__temp_statements");
           } else {
             this.__savedChildrenXml = "";
           }
@@ -276,15 +340,16 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[]) => {
             appendDropdownFromTypeOptions(input, blockConfig, "value");
           }
         } else if (blockDef.type === "ask") {
-          let askOptions = Array.isArray(blockConfig.options) ? [...blockConfig.options] : [];
-          askOptions = askOptions.filter(opt => Array.isArray(opt) && opt.length === 2 && typeof opt[0] === "string" && typeof opt[1] === "string");
+          const askOptions = filterDropdownOptions(blockConfig.options || []);
           if (askOptions.length > 0) {
-            if (blockConfig.includeAllOption) askOptions.push(["all", "all"]);
-              input.appendField(new FieldDropdown(askOptions), "target");
+            if (blockConfig.includeAllOption) {
+              askOptions.push(["all", "all"]);
+            }
+            input.appendField(new FieldDropdown(askOptions), "target");
               // Apply default selection for ask target dropdown if provided
               try {
-                if ((blockConfig as any).defaultOptionValue) {
-                  this.setFieldValue((blockConfig as any).defaultOptionValue, "target");
+                if (blockConfig.defaultOptionValue) {
+                  this.setFieldValue(blockConfig.defaultOptionValue, "target");
                 }
               } catch (e) {
                 console.debug("Failed to apply ask default", e);
@@ -308,8 +373,8 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[]) => {
             if (blockOptions) {
               input.appendField(new FieldDropdown(blockOptions), "condition");
               try {
-                if ((blockConfig as any).defaultOptionValue) {
-                  this.setFieldValue((blockConfig as any).defaultOptionValue, "condition");
+                if (blockConfig.defaultOptionValue) {
+                  this.setFieldValue(blockConfig.defaultOptionValue, "condition");
                 }
               } catch (e) {
                 console.debug("Failed to apply condition default", e);
@@ -321,8 +386,8 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[]) => {
             if (blockOptions) {
               dropdownInput.appendField(new FieldDropdown(blockOptions), "condition");
               try {
-                if ((blockConfig as any).defaultOptionValue) {
-                  this.setFieldValue((blockConfig as any).defaultOptionValue, "condition");
+                if (blockConfig.defaultOptionValue) {
+                  this.setFieldValue(blockConfig.defaultOptionValue, "condition");
                 }
               } catch (e) {
                 console.debug("Failed to apply condition default", e);
@@ -349,7 +414,7 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[]) => {
         // Color and inline/connection flags
         // Apply default dropdown selections from config (do this after all fields are appended)
         try {
-          const def = (blockConfig as any).defaultOptionValue;
+          const def = blockConfig.defaultOptionValue;
           if (def !== undefined && def !== null) {
             // Try common field names where dropdowns are used.
             try { this.setFieldValue(def, "type"); } catch (e) { console.debug("Failed to set default for 'type'", def, e); }
@@ -400,7 +465,7 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[]) => {
             const targetBlock = stmt.connection.targetBlock();
             if (targetBlock) {
               try {
-                const dom = Blockly.Xml.blockToDom(targetBlock as any, true);
+                const dom = Blockly.Xml.blockToDom(targetBlock, true);
                 el.setAttribute("children", Blockly.Xml.domToText(dom));
               } catch (e) {
                 console.warn("Failed to serialize children in mutationToDom:", e);

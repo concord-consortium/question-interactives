@@ -325,7 +325,9 @@ describe("block-factory", () => {
     it("starts closed with no statement input (input is added when opened)", () => {
       Blocks["custom_create_molecules_456"].init.call(mockBlock);
 
-      expect(mockBlock.appendStatementInput).not.toHaveBeenCalled();
+      // Should create temporary input for code generation, but not the user-visible "statements" input
+      expect(mockBlock.appendStatementInput).toHaveBeenCalledWith("__temp_statements");
+      expect(mockBlock.appendStatementInput).not.toHaveBeenCalledWith("statements");
       expect(mockBlock.__disclosureOpen).toBe(false);
       expect(mockBlock.__savedChildrenXml).toBe('<block type="custom_set_color_123"></block>');
     });
@@ -416,7 +418,9 @@ describe("block-factory", () => {
 
     it("starts closed with no statement input when `canHaveChildren` is true (input is added when opened)", () => {
       Blocks["custom_action_move_789"].init.call(mockBlock);
-      expect(mockBlock.appendStatementInput).not.toHaveBeenCalled();
+      // Should create temporary input for code generation, but not the user-visible "statements" input
+      expect(mockBlock.appendStatementInput).toHaveBeenCalledWith("__temp_statements");
+      expect(mockBlock.appendStatementInput).not.toHaveBeenCalledWith("statements");
       expect(mockBlock.__disclosureOpen).toBe(false);
       expect(mockBlock.__savedChildrenXml).toBe('<block type="custom_set_color_123"></block>');
     });
