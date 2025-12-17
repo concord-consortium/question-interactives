@@ -116,6 +116,10 @@
 
   &.recording,
   &.completedRecording {
+    .sliderBody {
+      background-color: #fffaf5;
+    }
+
     :global(.rc-slider-handle) {
       border: solid 1.5px var(--cc-orange-dark-1-alpha-35) !important;
 
@@ -130,6 +134,10 @@
   }
 
   &.inRecordingMode {
+    .sliderBody {
+      background-color: #fffaf5;
+    }
+
     :global(.rc-slider-handle) {
       border: solid 1.5px var(--cc-orange-dark-1);
 
