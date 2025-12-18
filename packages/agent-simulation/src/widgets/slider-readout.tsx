@@ -67,7 +67,7 @@ export const SliderReadout: React.FC<IProps> = (props) => {
       }
     };
   }, []);
-  
+
   const inputWidth = useMemo(() => {
     return calculateInputWidth(min, max, value, formatType, precision);
   }, [min, max, value, formatType, precision]);
