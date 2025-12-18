@@ -20,7 +20,7 @@ interface IProps {
 }
 
 const MAX_INPUT_WIDTH_CH = 8;
-const DEBOUNCE_DELAY_MS = 750;
+const DEBOUNCE_DELAY_MS = 1000;
 
 // Determines input width based on the maximum possible formatted value length.
 const calculateInputWidth = (min: number, max: number, currentValue: number, formatType: string, precision?: number): number => {

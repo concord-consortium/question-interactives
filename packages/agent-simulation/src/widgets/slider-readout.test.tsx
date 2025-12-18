@@ -53,9 +53,9 @@ describe("SliderReadout", () => {
     fireEvent.change(input, { target: { value: "77" } });
     // onChange should not be called immediately due to debouncing
     expect(onChange).not.toHaveBeenCalled();
-    // Advance timers past the debounce delay (750ms).
+    // Advance timers past the debounce delay (1000ms).
     act(() => {
-      jest.advanceTimersByTime(750);
+      jest.advanceTimersByTime(1000);
     });
     expect(onChange).toHaveBeenCalledWith(77);
     jest.useRealTimers();
@@ -81,7 +81,7 @@ describe("SliderReadout", () => {
     fireEvent.change(input, { target: { value: "150" } });
     expect(input.value).toBe("150");
     act(() => {
-      jest.advanceTimersByTime(750);
+      jest.advanceTimersByTime(1000);
     });
     expect(onChange).toHaveBeenCalledWith(150);
     expect(input.value).toBe("100");

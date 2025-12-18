@@ -119,7 +119,7 @@ describe("CircularSliderWidget", () => {
       // Value should not update immediately due to debouncing.
       expect(mockGlobals.get("foo")).toBe(10);
       act(() => {
-        jest.advanceTimersByTime(750);
+        jest.advanceTimersByTime(1000);
       });
       expect(mockGlobals.get("foo")).toBe(100);
       jest.useRealTimers();
