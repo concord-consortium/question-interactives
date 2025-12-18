@@ -91,12 +91,20 @@
   &.recording,
   &.completedRecording {
     .sliderContainer {
-      opacity: 0.35;
       pointer-events: none;
+
+      .slider {
+        opacity: 0.35;
+      }
     }
   }
 
   &.inRecordingMode {
+    .sliderContainer {
+      .sliderInner {
+        background-color: #fffaf5;
+      }
+    }
     .sliderThumbContainer {
       .thumb {
         border-color: var(--cc-orange-dark-1);
