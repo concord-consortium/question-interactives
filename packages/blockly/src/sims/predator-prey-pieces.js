@@ -138,7 +138,8 @@ addWidget({
 });
 
 sim.beforeTick = () => {
-  // Execute queued onClick actions
+  // Execute queued onClick actions. We handle mouse clicks here because
+  // Atomic Agents Vis can't handle adding/removing agents outside of a tick function.
   if (onClickPendingEvent) {
     onClick(onClickPendingEvent);
     onClickPendingEvent = undefined;
