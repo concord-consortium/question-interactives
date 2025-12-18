@@ -128,6 +128,10 @@
       }
     }
 
+    :global(.rc-slider-rail) {
+      opacity: 0.35;
+    }
+
     :global(.rc-slider-track) {
       background-color: var(--cc-orange-dark-1-alpha-35) !important;
     }
