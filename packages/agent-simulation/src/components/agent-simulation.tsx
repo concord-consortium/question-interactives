@@ -120,8 +120,6 @@ export const AgentSimulationComponent = ({
   const simSpeedRef = useRef(interactiveState?.simSpeed ?? SIM_SPEED_DEFAULT);
   const animationFrameRef = useRef<number | null>(null);
   const visRef = useRef<AV.VisHandle | null>(null);
-  const pauseTimeoutRef = useRef<number | null>(null);
-  const recordingResetCompleteRef = useRef(false);
 
   const setBlocklyCodeAndName = (newCode: string, newName: string) => {
     _setBlocklyCode(newCode);
@@ -215,11 +213,6 @@ export const AgentSimulationComponent = ({
       return false;
     }
 
-    if (pauseTimeoutRef.current !== null) {
-      clearTimeout(pauseTimeoutRef.current);
-      pauseTimeoutRef.current = null;
-    }
-
     // Preserve global values for interactive widgets across resets and code updates.
     const prevGlobals: Record<string, any> = {};
     if (simRef.current && simRef.current.globals && simRef.current.widgets.length > 0) {
@@ -298,20 +291,8 @@ export const AgentSimulationComponent = ({
     const success = resetSimulationWithPreservedGlobals();
     if (!success) return;
 
-    // Pause the sim after a frame.
-    // We need to let the sim run for a frame so actors created in setup have a chance to get added to the sim.
-    pauseTimeoutRef.current = window.setTimeout(() => {
-      simRef.current?.sim.pause(true);
-      setPaused(true);
-    }, 5);
-
-    return () => {
-      // Clear the pause timeout if it hasn't fired yet
-      if (pauseTimeoutRef.current !== null) {
-        clearTimeout(pauseTimeoutRef.current);
-        pauseTimeoutRef.current = null;
-      }
-    };
+    simRef.current?.sim.pause(true);
+    setPaused(true);
   }, [resetSimulationWithPreservedGlobals, newRecordingCount]);
 
   // Cleanup animation frames, recording intervals, pause timeout, and simulation on unmount
@@ -325,10 +306,6 @@ export const AgentSimulationComponent = ({
       if (recordUpdateDurationIntervalRef.current !== null) {
         clearInterval(recordUpdateDurationIntervalRef.current);
         recordUpdateDurationIntervalRef.current = null;
-      }
-      if (pauseTimeoutRef.current !== null) {
-        clearTimeout(pauseTimeoutRef.current);
-        pauseTimeoutRef.current = null;
       }
 
       // Cleanup simulation and visualization on unmount
@@ -350,19 +327,10 @@ export const AgentSimulationComponent = ({
 
         // When starting a recording for the first time, reset the simulation first.
         // This captures the user's current global values in the simulation's initial state.
-        if (paused && !currentRecording.startedAt && !recordingResetCompleteRef.current) {
+        if (paused && !currentRecording.startedAt) {
           const success = resetSimulationWithPreservedGlobals();
           if (!success) return;
-          // Let the sim run briefly for setup, then continue starting the recording
-          pauseTimeoutRef.current = window.setTimeout(() => {
-            simRef.current?.sim.pause(true);
-            recordingResetCompleteRef.current = true;
-            handlePlayPauseRef.current();
-          }, 5);
-          return;
         }
-
-        recordingResetCompleteRef.current = false;
 
         if (paused) {
           recordStartTimeRef.current = Date.now();
@@ -595,7 +563,6 @@ export const AgentSimulationComponent = ({
   };
 
   const handleNewRecording = () => {
-    recordingResetCompleteRef.current = false;
     const newRecording: IRecording = { modelName };
     const newRecordings = [...recordings, newRecording];
     setRecordings(newRecordings);
