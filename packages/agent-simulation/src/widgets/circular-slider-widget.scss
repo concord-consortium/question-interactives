@@ -97,6 +97,11 @@
   }
 
   &.inRecordingMode {
+    .sliderContainer {
+      .sliderInner {
+        background-color: #fffaf5;
+      }
+    }
     .sliderThumbContainer {
       .thumb {
         border-color: var(--cc-orange-dark-1);
