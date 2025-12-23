@@ -99,7 +99,7 @@
     "webpack-dev-server": "^4.7.4"
   },
   "dependencies": {
-    "@concord-consortium/lara-interactive-api": "^1.10.0",
+    "@concord-consortium/lara-interactive-api": "1.11.0-pre.0",
     "@concord-consortium/question-interactives-helpers": "^1.16.0",
     "@rjsf/utils": "^5.0.1",
     "query-string": "^7.1.1",

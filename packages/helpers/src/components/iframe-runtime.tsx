@@ -175,6 +175,9 @@ export const IframeRuntime: React.FC<IProps> =
         // This is a trick not to depend on interactiveState.
         interactiveState: interactiveStateRef.current,
         linkedInteractives,
+        interactive: {
+          id: id || "demo-interactive"
+        },
         objectStorageConfig: {
           version: 1,
           type: "demo",
@@ -200,7 +203,7 @@ export const IframeRuntime: React.FC<IProps> =
         phoneRef.current.disconnect();
       }
     };
-  },[addLocalLinkedDataListener, authoredState, logRequestData, report, setHint, url, initMessage, flushOnSave, accessibility]);
+  },[addLocalLinkedDataListener, authoredState, logRequestData, report, setHint, url, initMessage, flushOnSave, accessibility, id]);
 
   let scaledIframeStyle = undefined;
   if (scale && report) {
