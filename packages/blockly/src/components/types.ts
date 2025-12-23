@@ -1,5 +1,5 @@
 import { IAuthoringInteractiveMetadata, IRuntimeInteractiveMetadata } from "@concord-consortium/lara-interactive-api";
-import { MenuOption } from "blockly";
+import { MenuOption, serialization } from "blockly";
 
 import { predatorPreyCode } from "../sims/predator-prey-string";
 
@@ -55,7 +55,8 @@ export type GlobalValueType = "number" | "string";
 
 export interface IBlockConfig {
   canHaveChildren: boolean;
-  childBlocks?: INestedBlock[];
+  childBlocks?: INestedBlock[]; // DEPRECATED
+  childBlocksTemplate?: serialization.blocks.State;
   conditionInput?: boolean;
   defaultCount?: number;
   defaultOptionValue?: string;

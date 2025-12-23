@@ -13,9 +13,9 @@ const BLOCK_TOOLBOX_CONFIGS: Record<string, object> = ALL_BUILT_IN_BLOCKS.reduce
 );
 
 // Constructs the toolbox entry for a block, including any special configuration.
-const toolboxBlockEntry = (blockId: string) => {
+const toolboxBlockEntry = (blockId: string, basic = false) => {
   const config = BLOCK_TOOLBOX_CONFIGS[blockId];
-  if (config) {
+  if (config && !basic) {
     return { kind: "block", type: blockId, ...config };
   }
   return { kind: "block", type: blockId };
@@ -43,7 +43,9 @@ export const extractCategoriesFromToolbox = (toolboxJson: string): string[] => {
   }
 };
 
-export const injectCustomBlocksIntoToolbox = (toolboxJson: string, customBlocks: ICustomBlock[]): string => {
+export const injectCustomBlocksIntoToolbox = (
+  toolboxJson: string, customBlocks: ICustomBlock[], basic = false
+): string => {
   try {
     const toolbox = JSON.parse(toolboxJson);
 
@@ -83,7 +85,7 @@ export const injectCustomBlocksIntoToolbox = (toolboxJson: string, customBlocks:
 
         // Add custom blocks to this category
         blocksByCategory[item.name].forEach(block => {
-          item.contents.push(toolboxBlockEntry(block.id));
+          item.contents.push(toolboxBlockEntry(block.id, basic));
         });
       }
     });
