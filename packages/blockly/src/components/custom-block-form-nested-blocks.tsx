@@ -1,4 +1,5 @@
 import { Events, inject, serialization } from "blockly";
+import classNames from "classnames";
 import React, { useEffect, useRef, useState } from "react";
 
 import { registerCustomBlocks } from "../blocks/block-factory";
@@ -64,17 +65,20 @@ export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
     }
   };
 
+  const containerClassName = classNames({ [css.nestedBlocks_container]: isEditing });
+
   return (
     <div className={css.nestedBlocks} data-testid="nested-blocks">
-      <div className={css.nestedBlocks_header}>
-        <h6>Child Blocks</h6>
+      <div className={css.nestedBlocks_headerContainer}>
+        <div className={css.nestedBlocks_header}>
+          <h6>Child Blocks</h6>
+        </div>
+        <button onClick={handleClick}>
+          {isEditing ? "Save Child Blocks" : "Edit Child Blocks"}
+        </button>
       </div>
 
-      <button className={css.nestedBlocks_editingButton} onClick={handleClick}>
-        {isEditing ? "Save Child Blocks" : "Edit Child Blocks"}
-      </button>
-
-      <div className={css.nestedBlocks_container} ref={childBlocksContainerRef} />
+      <div className={containerClassName} ref={childBlocksContainerRef} />
     </div>
   );
 };
