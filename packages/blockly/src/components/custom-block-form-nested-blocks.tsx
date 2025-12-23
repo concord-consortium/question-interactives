@@ -29,10 +29,10 @@ export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
 
     childBlocksContainerRef.current.innerHTML = "";
 
-    registerCustomBlocks(existingBlocks ?? []);
+    registerCustomBlocks(existingBlocks ?? [], false);
 
     // Inject custom blocks into toolbox based on their assigned categories
-    const enhancedToolbox = injectCustomBlocksIntoToolbox(toolbox, existingBlocks ?? [], true);
+    const enhancedToolbox = injectCustomBlocksIntoToolbox(toolbox, existingBlocks ?? []);
     const newWorkspace = inject(childBlocksContainerRef.current, {
       readOnly: false, toolbox: JSON.parse(enhancedToolbox), trashcan: true
     });

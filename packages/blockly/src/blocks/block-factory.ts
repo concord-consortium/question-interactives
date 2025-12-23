@@ -241,7 +241,7 @@ const createNestedBlocksFromConfig = (
   }
 };
 
-export const registerCustomBlocks = (customBlocks: ICustomBlock[]) => {
+export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaultChildBlocks = true) => {
   if (!Array.isArray(customBlocks)) {
     console.warn("registerCustomBlocks: customBlocks is not an array:", customBlocks);
     return;
@@ -268,7 +268,7 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[]) => {
           // Check if this block type has child blocks configured for seeding.
           const { childBlocks, childBlocksTemplate } = blockConfig;
           const hasChildBlocksOld = childBlocks && childBlocks.length > 0;
-          const hasChildBlocksConfig = childBlocksTemplate || hasChildBlocksOld;
+          const hasChildBlocksConfig = includeDefaultChildBlocks && (childBlocksTemplate || hasChildBlocksOld);
 
           // Add open/close toggle button.
           const icon = new FieldImage(PLUS_ICON, 16, 16, "+/-");
