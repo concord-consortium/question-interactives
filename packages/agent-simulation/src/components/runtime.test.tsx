@@ -3,13 +3,14 @@ import { mount } from "enzyme";
 import { Runtime } from "./runtime";
 import { DemoAuthoredState } from "./types";
 import { InitMessageContext } from "@concord-consortium/question-interactives-helpers/src/hooks/use-context-init-message";
-import { useInitMessage } from "@concord-consortium/lara-interactive-api";
+import { useInitMessage, createPubSubChannel } from "@concord-consortium/lara-interactive-api";
 import { DynamicTextTester } from "@concord-consortium/question-interactives-helpers/src/utilities/dynamic-text-tester";
 import { ObjectStorageConfig, ObjectStorageProvider } from "@concord-consortium/object-storage";
 
 import { AgentSimulationComponent } from "./agent-simulation";
 
 const useInitMessageMock = useInitMessage as jest.Mock;
+const createPubSubChannelMock = createPubSubChannel as jest.Mock;
 
 // TODO: It would be better to not mock these libraries.
 // When you figure out how to do that, make sure you remove the __mocks__/@gjmcn directory.
@@ -22,10 +23,14 @@ jest.mock("@concord-consortium/lara-interactive-api", () => ({
   getClient: jest.fn().mockReturnValue({
     addListener: jest.fn()
   }),
+  createPubSubChannel: jest.fn(),
 }));
 
 const initMessage = {
   mode: "runtime" as const,
+  interactive: {
+    id: "test-interactive-id"
+  }
 };
 useInitMessageMock.mockReturnValue(initMessage);
 
@@ -37,6 +42,14 @@ const objectStorageConfig: ObjectStorageConfig = {
 describe("Agent Simulation runtime", () => {
   beforeEach(() => {
     useInitMessageMock.mockClear();
+
+    // Mock createPubSubChannel to return a mock channel
+    const mockPubSubChannel = {
+      publish: jest.fn(),
+      subscribe: jest.fn(),
+      unsubscribe: jest.fn()
+    };
+    createPubSubChannelMock.mockReturnValue(mockPubSubChannel);
   });
 
   it("renders a agent simulation component with the correct props", () => {

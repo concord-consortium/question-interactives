@@ -4,7 +4,8 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { useObjectStorage, StoredObject } from "@concord-consortium/object-storage";
 
 import {
-  addLinkedInteractiveStateListener, removeLinkedInteractiveStateListener, log
+  addLinkedInteractiveStateListener, removeLinkedInteractiveStateListener, log, createPubSubChannel,
+  useInitMessage, PubSubChannel
 } from "@concord-consortium/lara-interactive-api";
 import {
   IRuntimeQuestionComponentProps
@@ -120,6 +121,15 @@ export const AgentSimulationComponent = ({
   const simSpeedRef = useRef(interactiveState?.simSpeed ?? SIM_SPEED_DEFAULT);
   const animationFrameRef = useRef<number | null>(null);
   const visRef = useRef<AV.VisHandle | null>(null);
+
+  const initMessage = useInitMessage();
+  const recordingChannelRef = useRef<PubSubChannel|undefined>(undefined);
+  useEffect(() => {
+    if (initMessage?.mode === "runtime" && initMessage.interactive.id) {
+      recordingChannelRef.current = createPubSubChannel(initMessage.interactive.id);
+    }
+    return undefined;
+  }, [initMessage]);
 
   const setBlocklyCodeAndName = (newCode: string, newName: string) => {
     _setBlocklyCode(newCode);
@@ -270,8 +280,12 @@ export const AgentSimulationComponent = ({
     const afterTick = () => {
       if (simRef.current) {
         const { globals } = simRef.current;
-        tickDataRef.current.push({ tick, ...globals.values() });
+        const values = { tick, ...globals.values() };
+
+        tickDataRef.current.push(values);
         tick++;
+
+        recordingChannelRef.current?.publish({topic: "recording-tick", values});
       }
     };
 
@@ -376,8 +390,15 @@ export const AgentSimulationComponent = ({
           }, 500);
 
           setRecordings(pausedRecordings);
+
+          if (recordingChannelRef.current) {
+            const cols = ["tick", ...Object.keys(simRef.current?.globals.values() || {})];
+            recordingChannelRef.current.publish({topic: "recording-started", cols});
+          }
         } else {
           log("stop-record-simulation", { startedAt, duration });
+
+          recordingChannelRef.current?.publish({topic: "recording-stopped"});
 
           if (!currentRecording.objectId) {
             const notPausedRecordings = [...recordings];

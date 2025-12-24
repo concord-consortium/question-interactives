@@ -2,7 +2,9 @@ import React from "react";
 import { render, screen, fireEvent, act } from "@testing-library/react";
 import {
   addLinkedInteractiveStateListener,
-  removeLinkedInteractiveStateListener
+  removeLinkedInteractiveStateListener,
+  useInitMessage,
+  createPubSubChannel
 } from "@concord-consortium/lara-interactive-api";
 import { AgentSimulationComponent } from "./agent-simulation";
 import { IAuthoredState, IInteractiveState } from "./types";
@@ -18,6 +20,8 @@ jest.mock("@concord-consortium/lara-interactive-api", () => ({
   addLinkedInteractiveStateListener: jest.fn(),
   removeLinkedInteractiveStateListener: jest.fn(),
   log: jest.fn(),
+  useInitMessage: jest.fn(),
+  createPubSubChannel: jest.fn(),
 }));
 
 jest.mock("@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id", () => ({
@@ -31,6 +35,8 @@ jest.mock("../models/agent-simulation", () => ({
 const mockUseLinkedInteractiveId = useLinkedInteractiveId as jest.Mock;
 const mockAddLinkedInteractiveStateListener = addLinkedInteractiveStateListener as jest.Mock;
 const mockRemoveLinkedInteractiveStateListener = removeLinkedInteractiveStateListener as jest.Mock;
+const mockUseInitMessage = useInitMessage as jest.Mock;
+const mockCreatePubSubChannel = createPubSubChannel as jest.Mock;
 const mockSimulationConstructor = AgentSimulation as jest.Mock;
 const mockVis = AV.vis as jest.Mock;
 
@@ -102,6 +108,20 @@ describe("AgentSimulationComponent", () => {
     mockSimulationConstructor.mockReturnValue(mockAgentSimulation);
 
     mockUseLinkedInteractiveId.mockReturnValue(null);
+    mockUseInitMessage.mockReturnValue({
+      mode: "runtime",
+      interactive: {
+        id: "test-interactive-id"
+      }
+    });
+
+    // Mock createPubSubChannel to return a mock channel
+    const mockPubSubChannel = {
+      publish: jest.fn(),
+      subscribe: jest.fn(),
+      unsubscribe: jest.fn()
+    };
+    mockCreatePubSubChannel.mockReturnValue(mockPubSubChannel);
 
     // Mock eval to return a simple function that doesn't throw
     const mockFunction = jest.fn();

@@ -1,7 +1,8 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { IAuthoredState } from "./types";
 import {
-  addLinkedInteractiveStateListener, IInteractiveStateWithDataset, removeLinkedInteractiveStateListener, IDataset
+  addLinkedInteractiveStateListener, IInteractiveStateWithDataset, removeLinkedInteractiveStateListener, IDataset, PubSubChannel,
+  createPubSubChannel
 } from "@concord-consortium/lara-interactive-api";
 import { useLinkedInteractiveId } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
 import { Bar } from "react-chartjs-2";
@@ -87,6 +88,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
   const dataSourceInteractive2 = useLinkedInteractiveId("dataSourceInteractive2");
   const dataSourceInteractive3 = useLinkedInteractiveId("dataSourceInteractive3");
   const hasObjectStorageData = useRef(false);
+  const pubSubChannelMapRef = useRef<Record<string, PubSubChannel>>({});
+  const pubSubDatasetsRef = useRef<Array<IDataset | null | undefined>>([]);
+  const [pubSubDataUpdatedAt, setPubSubDataUpdatedAt] = useState<number>(0);
 
   const linkedInteractives = useMemo(() => {
     return [ dataSourceInteractive1,
@@ -160,6 +164,10 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
                   return newDatasets;
                 });
                 hasObjectStorageData.current = true;
+
+                // clear any existing pubsub dataset when we get object storage data
+                pubSubDatasetsRef.current[datasetIdx] = null;
+                setPubSubDataUpdatedAt(0);
               }
             };
             loadDataTableObject();
@@ -174,6 +182,39 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
     };
   }, [objectStorage, linkedInteractives]);
 
+  useEffect(() => {
+    linkedInteractives.forEach((linkedInteractiveId, datasetIdx) => {
+      const channel = createPubSubChannel(linkedInteractiveId);
+      channel.subscribe((message: any) => {
+        switch (message.topic) {
+          case "recording-started":
+            setPubSubDataUpdatedAt(Date.now());
+            pubSubDatasetsRef.current[datasetIdx] = {
+              type: "dataset",
+              version: 1,
+              properties: message.cols,
+              rows: []
+            };
+            break;
+          case "recording-stopped":
+            // ignored - the object storage will clear the pubsub data when new object storage data arrives
+            break;
+          case "recording-tick":
+            setPubSubDataUpdatedAt(Date.now());
+            if (message.values) {
+              pubSubDatasetsRef.current[datasetIdx]?.rows.push(Object.values(message.values));
+            }
+            break;
+        }
+      });
+      pubSubChannelMapRef.current[linkedInteractiveId] = channel;
+    });
+
+    return () => {
+      Object.values(pubSubChannelMapRef.current).forEach(channel => channel.dispose());
+      pubSubChannelMapRef.current = {};
+    };
+  }, [linkedInteractives]);
 
   const anyData = datasets.filter(d => d !== null).length > 0;
   const graphContainerClassName = css.graph + " " + css["graphLayout" + (authoredState.graphsPerRow || 1)];
@@ -182,12 +223,21 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
     authoredState.dataSourceInteractive2Name,
     authoredState.dataSourceInteractive3Name
   ];
+
   return (
     <div>
       {
+        pubSubDataUpdatedAt ?
+          generateChartData(pubSubDatasetsRef.current, datasetNames, authoredState).map((chartData, idx: number) =>
+            <div key={`pubSub-${idx}`} className={graphContainerClassName}>
+              <Bar data={chartData} options={getGraphOptions(authoredState, chartData)}
+                plugins={[ChartDataLabels]}
+              />
+            </div>
+          ):
         anyData ?
           generateChartData(datasets, datasetNames, authoredState).map((chartData, idx: number) =>
-            <div key={idx} className={graphContainerClassName}>
+            <div key={`dataset-${idx}`} className={graphContainerClassName}>
               <Bar data={chartData} options={getGraphOptions(authoredState, chartData)}
                 plugins={[ChartDataLabels]}
               />
