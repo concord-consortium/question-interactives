@@ -637,6 +637,7 @@ export const CustomBlockForm: React.FC<IProps> = ({
       {((formData.type === "creator" || formData.type === "action") && formData.childrenEnabled) && (
         <CustomBlockFormNestedBlocks
           childBlocksTemplate={formData.childBlocksTemplate}
+          editingBlock={editingBlock}
           existingBlocks={existingBlocks}
           onChangeTemplate={handleChildBlocksTemplateChange}
           toolbox={toolbox}

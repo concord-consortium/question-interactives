@@ -26,9 +26,18 @@
       color: white;
       padding: 5px 10px;
 
+      &.nestedBlocks_changeWarning {
+        background-color: rgb(255, 193, 7);
+        color: black;
+      }
+
       &:hover {
         background-color: rgb(32, 136, 56);
         cursor: pointer;
+
+        &.nestedBlocks_changeWarning {
+          background-color: rgb(245, 175, 0);
+        }
       }
     }
   }

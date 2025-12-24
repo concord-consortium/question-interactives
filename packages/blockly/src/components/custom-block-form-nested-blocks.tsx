@@ -3,6 +3,7 @@ import classNames from "classnames";
 import React, { useEffect, useRef, useState } from "react";
 
 import { registerCustomBlocks } from "../blocks/block-factory";
+import { stateContainsType } from "../utils/block-utils";
 import { injectCustomBlocksIntoToolbox } from "../utils/toolbox-utils";
 import { ICustomBlock } from "./types";
 
@@ -13,27 +14,38 @@ const saveEvents: string[] = [Events.BLOCK_CREATE, Events.BLOCK_DELETE, Events.B
 
 interface IProps {
   childBlocksTemplate?: serialization.blocks.State;
+  editingBlock?: ICustomBlock | null;
   existingBlocks?: ICustomBlock[];
   onChangeTemplate: (childBlocksTemplate?: serialization.blocks.State) => void;
   toolbox: string;
 }
 
 export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
-  childBlocksTemplate, existingBlocks, onChangeTemplate, toolbox
+  childBlocksTemplate, editingBlock, existingBlocks, onChangeTemplate, toolbox
 }) => {
   const childBlocksTemplateRef = useRef<serialization.blocks.State | undefined>(childBlocksTemplate);
   const childBlocksContainerRef = useRef<HTMLDivElement>(null);
   const [isEditing, setIsEditing] = useState(false);
+  const [hasChange, setHasChange] = useState(false);
 
   useEffect(() => {
     if (!(isEditing && childBlocksContainerRef.current)) return;
 
     childBlocksContainerRef.current.innerHTML = "";
 
-    registerCustomBlocks(existingBlocks ?? [], false);
+    // Prevent cycles
+    const safeBlocks = (existingBlocks ?? []).filter(block => {
+      if (!editingBlock) return true;
+      if (block.id === editingBlock.id) return false;
+      if (block.config.childBlocksTemplate && stateContainsType(block.config.childBlocksTemplate, editingBlock.id)) {
+        return false;
+      }
+      return true;
+    });
+    registerCustomBlocks(safeBlocks, false);
 
     // Inject custom blocks into toolbox based on their assigned categories
-    const enhancedToolbox = injectCustomBlocksIntoToolbox(toolbox, existingBlocks ?? []);
+    const enhancedToolbox = injectCustomBlocksIntoToolbox(toolbox, safeBlocks);
     const newWorkspace = inject(childBlocksContainerRef.current, {
       readOnly: false, toolbox: JSON.parse(enhancedToolbox), trashcan: true
     });
@@ -44,7 +56,13 @@ export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
       if (saveEvents.includes(event.type)) {
         const topBlock = newWorkspace.getTopBlocks(true)[0];
         const template = topBlock ? serialization.blocks.save(topBlock) : undefined;
-        if (template) childBlocksTemplateRef.current = template;
+        if (template) {
+          if (childBlocksTemplateRef.current &&
+            JSON.stringify(childBlocksTemplateRef.current) !== JSON.stringify(template)) {
+            setHasChange(true);
+          }
+          childBlocksTemplateRef.current = template;
+        }
       }
     };
     newWorkspace.addChangeListener(saveState);
@@ -54,7 +72,7 @@ export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
       newWorkspace.removeChangeListener(saveState);
       if (childBlocksContainer) childBlocksContainer.innerHTML = "";
     };
-  }, [existingBlocks, isEditing, onChangeTemplate, toolbox]);
+  }, [editingBlock, existingBlocks, isEditing, onChangeTemplate, toolbox]);
 
   const handleClick = () => {
     if (!isEditing) {
@@ -62,10 +80,12 @@ export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
     } else {
       onChangeTemplate(childBlocksTemplateRef.current);
       setIsEditing(false);
+      setHasChange(false);
     }
   };
 
   const containerClassName = classNames({ [css.nestedBlocks_container]: isEditing });
+  const buttonClassName = classNames({ [css.nestedBlocks_changeWarning]: hasChange });
 
   return (
     <div className={css.nestedBlocks} data-testid="nested-blocks">
@@ -73,7 +93,7 @@ export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
         <div className={css.nestedBlocks_header}>
           <h6>Child Blocks</h6>
         </div>
-        <button onClick={handleClick}>
+        <button className={buttonClassName} onClick={handleClick}>
           {isEditing ? "Save Child Blocks" : "Edit Child Blocks"}
         </button>
       </div>
