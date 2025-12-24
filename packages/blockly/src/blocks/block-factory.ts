@@ -106,14 +106,10 @@ const restoreChildBlocks = (block: BlockSvg, xml: string, inputName = "statement
   if (!conn || !block.workspace) return;
 
   try {
-    console.log(`>>> text to dom`);
     const dom = utils.xml.textToDom(`<xml>${xml}</xml>`);
-    console.log(` >> dom`, dom);
     const blockDom = dom.firstElementChild;
-    console.log(` >> blockDom`, blockDom);
     if (blockDom) {
       const restoredBlock = Xml.domToBlock(blockDom, block.workspace);
-      console.log(` >> restoredBlock`, restoredBlock);
       if (restoredBlock.previousConnection) {
         conn.connect(restoredBlock.previousConnection);
       }
