@@ -49,9 +49,12 @@ export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
     const newWorkspace = inject(childBlocksContainerRef.current, {
       readOnly: false, toolbox: JSON.parse(enhancedToolbox), trashcan: true
     });
-    if (childBlocksTemplateRef.current) serialization.blocks.append(childBlocksTemplateRef.current, newWorkspace);
 
-    // Set up automatic saving
+    // Add the current template to the workspace and render it
+    if (childBlocksTemplate) serialization.blocks.append(childBlocksTemplate, newWorkspace);
+    newWorkspace.render();
+
+    // Set up saving changes
     const saveState = (event: Events.Abstract) => {
       if (saveEvents.includes(event.type)) {
         const topBlock = newWorkspace.getTopBlocks(true)[0];
@@ -72,7 +75,7 @@ export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
       newWorkspace.removeChangeListener(saveState);
       if (childBlocksContainer) childBlocksContainer.innerHTML = "";
     };
-  }, [editingBlock, existingBlocks, isEditing, onChangeTemplate, toolbox]);
+  }, [childBlocksTemplate,editingBlock, existingBlocks, isEditing, onChangeTemplate, toolbox]);
 
   const handleClick = () => {
     if (!isEditing) {
