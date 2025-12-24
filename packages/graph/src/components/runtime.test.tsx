@@ -1,6 +1,7 @@
 import React from "react";
 import {
-  addLinkedInteractiveStateListener, IInteractiveStateWithDataset, removeLinkedInteractiveStateListener
+  addLinkedInteractiveStateListener, IInteractiveStateWithDataset, removeLinkedInteractiveStateListener,
+  createPubSubChannel
 } from "@concord-consortium/lara-interactive-api";
 import { useContextInitMessage } from "@concord-consortium/question-interactives-helpers/src/hooks/use-context-init-message";
 import { mount } from "enzyme";
@@ -13,11 +14,13 @@ import { ObjectStorageConfig, ObjectStorageProvider } from "@concord-consortium/
 
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
   addLinkedInteractiveStateListener: jest.fn(),
-  removeLinkedInteractiveStateListener: jest.fn()
+  removeLinkedInteractiveStateListener: jest.fn(),
+  createPubSubChannel: jest.fn(),
 }));
 
 const addLinkedInteractiveStateListenerMock = addLinkedInteractiveStateListener as jest.Mock;
 const removeLinkedInteractiveStateListenerMock = removeLinkedInteractiveStateListener as jest.Mock;
+const createPubSubChannelMock = createPubSubChannel as jest.Mock;
 
 jest.mock("@concord-consortium/question-interactives-helpers/src/hooks/use-context-init-message", () => ({
   useContextInitMessage: jest.fn()
@@ -76,6 +79,14 @@ describe("Graph runtime", () => {
     addLinkedInteractiveStateListenerMock.mockClear();
     removeLinkedInteractiveStateListenerMock.mockClear();
     useContextInitMessageMock.mockClear();
+
+    // Mock createPubSubChannel to return a mock channel
+    const mockPubSubChannel = {
+      publish: jest.fn(),
+      subscribe: jest.fn(),
+      unsubscribe: jest.fn()
+    };
+    createPubSubChannelMock.mockReturnValue(mockPubSubChannel);
   });
 
   it("calls addLinkedInteractiveStateListener on mount and removeLinkedInteractiveStateListener for each observed source interactive", () => {
