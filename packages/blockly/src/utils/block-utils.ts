@@ -89,15 +89,17 @@ export function replaceParameters(code: string, params: IParameter[], block: Blo
   return code;
 }
 
+// Returns true if a serialization.blocks.State (default child block structure) contains a block of the given type.
 export function stateContainsType(block: any, type: string) {
   if (!block) return false;
   if (block.type === type) return true;
 
   const { inputs, next } = block;
+  let input: any;
   if (inputs) {
-    for (const input of Object.values(inputs)) {
-      if (stateContainsType((input as any).block, type)) return true;
-      if (stateContainsType((input as any).shadow, type)) return true;
+    for (input of Object.values(inputs)) {
+      if (stateContainsType(input.block, type)) return true;
+      if (stateContainsType(input.shadow, type)) return true;
     }
   }
 

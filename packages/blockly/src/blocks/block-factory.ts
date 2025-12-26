@@ -283,7 +283,7 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaul
                   restoreChildBlocks(this, this.__savedChildrenXml);
                   this.__savedChildrenXml = "";
                 } else if (this.workspace && !this.workspace.isFlyout && childBlocks) {
-                  // TODO Is this ever reached?
+                  // TODO Determine if this is ever reached, and remove it if not.
                   const stmtConnection = this.getInput("statements")?.connection;
                   if (stmtConnection) {
                     createNestedBlocksFromConfig(this.workspace, childBlocks, stmtConnection);

@@ -7,27 +7,28 @@ import { stateContainsType } from "../utils/block-utils";
 import { injectCustomBlocksIntoToolbox } from "../utils/toolbox-utils";
 import { ICustomBlock } from "./types";
 
-import css from "./custom-block-form-nested-blocks.scss";
+import css from "./custom-block-form-child-blocks.scss";
 
 // Update when any of these events occur
 const saveEvents: string[] = [Events.BLOCK_CREATE, Events.BLOCK_DELETE, Events.BLOCK_CHANGE, Events.BLOCK_MOVE];
 
 interface IProps {
-  childBlocksTemplate?: serialization.blocks.State;
+  childBlocks?: serialization.blocks.State;
   editingBlock?: ICustomBlock | null;
   existingBlocks?: ICustomBlock[];
-  onChangeTemplate: (childBlocksTemplate?: serialization.blocks.State) => void;
+  onChange: (childBlocksTemplate?: serialization.blocks.State) => void;
   toolbox: string;
 }
 
-export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
-  childBlocksTemplate, editingBlock, existingBlocks, onChangeTemplate, toolbox
-}) => {
-  const childBlocksTemplateRef = useRef<serialization.blocks.State | undefined>(childBlocksTemplate);
+export const CustomBlockFormChildBlocks = ({
+  childBlocks, editingBlock, existingBlocks, onChange, toolbox
+}: IProps) => {
+  const childBlocksRef = useRef<serialization.blocks.State | undefined>(childBlocks);
   const childBlocksContainerRef = useRef<HTMLDivElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [hasChange, setHasChange] = useState(false);
 
+  // Set up Blockly workspace for editing child blocks
   useEffect(() => {
     if (!(isEditing && childBlocksContainerRef.current)) return;
 
@@ -51,7 +52,7 @@ export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
     });
 
     // Add the current template to the workspace and render it
-    if (childBlocksTemplate) serialization.blocks.append(childBlocksTemplate, newWorkspace);
+    if (childBlocks) serialization.blocks.append(childBlocks, newWorkspace);
     newWorkspace.render();
 
     // Set up saving changes
@@ -60,11 +61,11 @@ export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
         const topBlock = newWorkspace.getTopBlocks(true)[0];
         const template = topBlock ? serialization.blocks.save(topBlock) : undefined;
         if (template) {
-          if (childBlocksTemplateRef.current &&
-            JSON.stringify(childBlocksTemplateRef.current) !== JSON.stringify(template)) {
+          if (childBlocksRef.current &&
+            JSON.stringify(childBlocksRef.current) !== JSON.stringify(template)) {
             setHasChange(true);
           }
-          childBlocksTemplateRef.current = template;
+          childBlocksRef.current = template;
         }
       }
     };
@@ -75,25 +76,25 @@ export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
       newWorkspace.removeChangeListener(saveState);
       if (childBlocksContainer) childBlocksContainer.innerHTML = "";
     };
-  }, [childBlocksTemplate,editingBlock, existingBlocks, isEditing, onChangeTemplate, toolbox]);
+  }, [childBlocks,editingBlock, existingBlocks, isEditing, onChange, toolbox]);
 
   const handleClick = () => {
     if (!isEditing) {
       setIsEditing(true);
     } else {
-      onChangeTemplate(childBlocksTemplateRef.current);
+      onChange(childBlocksRef.current);
       setIsEditing(false);
       setHasChange(false);
     }
   };
 
-  const containerClassName = classNames({ [css.nestedBlocks_container]: isEditing });
-  const buttonClassName = classNames({ [css.nestedBlocks_changeWarning]: hasChange });
+  const containerClassName = classNames({ [css.childBlocks_container]: isEditing });
+  const buttonClassName = classNames({ [css.childBlocks_changeWarning]: hasChange });
 
   return (
-    <div className={css.nestedBlocks} data-testid="nested-blocks">
-      <div className={css.nestedBlocks_headerContainer}>
-        <div className={css.nestedBlocks_header}>
+    <div className={css.childBlocks} data-testid="child-blocks">
+      <div className={css.childBlocks_headerContainer}>
+        <div className={css.childBlocks_header}>
           <h6>Child Blocks</h6>
         </div>
         <button className={buttonClassName} onClick={handleClick}>
@@ -105,4 +106,3 @@ export const CustomBlockFormNestedBlocks: React.FC<IProps> = ({
     </div>
   );
 };
-

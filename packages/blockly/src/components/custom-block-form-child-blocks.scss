@@ -1,0 +1,62 @@
+@import "./variables.scss";
+
+.childBlocks {
+  border: 1px solid $border-medium;
+  border-radius: $border-radius-md;
+  margin-top: $spacing-lg;
+  padding: $spacing-md;
+
+  .childBlocks_headerContainer {
+    align-items: center;
+    display: flex;
+    justify-content: space-between;
+
+    .childBlocks_header {
+      h6 {
+        font-size: $font-size-md;
+        font-weight: $font-weight-medium;
+        margin: 0;
+      }
+    }
+
+    button {
+      background-color: rgb(40, 167, 69);
+      border: none;
+      border-radius: 4px;
+      color: white;
+      padding: 5px 10px;
+
+      &.childBlocks_changeWarning {
+        background-color: rgb(255, 193, 7);
+        color: black;
+      }
+
+      &:hover {
+        background-color: rgb(32, 136, 56);
+        cursor: pointer;
+
+        &.childBlocks_changeWarning {
+          background-color: rgb(245, 175, 0);
+        }
+      }
+    }
+  }
+
+  .childBlocks_container {
+    height: 400px;
+    margin-top: $spacing-md;
+  }
+}
+
+.nestedBlock {
+  border: 1px solid $border-light;
+  border-radius: $border-radius-sm;
+  margin-bottom: $spacing-sm;
+  padding: 10px;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background-color: $background-light;
+  }
+}
+
