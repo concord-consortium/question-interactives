@@ -55,9 +55,9 @@ export type GlobalValueType = "number" | "string";
 
 export interface IBlockConfig {
   canHaveChildren: boolean;
-  childBlocks?: INestedBlock[]; // DEPRECATED
-  childBlocksTemplate?: serialization.blocks.State;
+  childBlocks?: INestedBlock[]; // DEPRECATED, use defaultChildBlocks instead
   conditionInput?: boolean;
+  defaultChildBlocks?: serialization.blocks.State;
   defaultCount?: number;
   defaultOptionValue?: string;
   generatorTemplate?: string;

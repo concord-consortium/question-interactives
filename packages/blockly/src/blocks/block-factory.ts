@@ -150,8 +150,8 @@ const buildSiblingChainXml = (children: INestedBlock[]): string => {
   return xml;
 };
 
-const getXmlFromTemplate = (childBlocksTemplate: serialization.blocks.State, workspace: WorkspaceSvg) => {
-  const innerRoot = serialization.blocks.append(childBlocksTemplate, workspace);
+const getXmlFromTemplate = (childBlocks: serialization.blocks.State, workspace: WorkspaceSvg) => {
+  const innerRoot = serialization.blocks.append(childBlocks, workspace);
   const dom = Xml.blockToDom(innerRoot, true);
   const xml = Xml.domToText(dom);
   innerRoot.dispose(false);
@@ -262,9 +262,9 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaul
     
         if (blockHasDisclosure(blockDef, blockConfig)) {
           // Check if this block type has child blocks configured for seeding.
-          const { childBlocks, childBlocksTemplate } = blockConfig;
+          const { childBlocks, defaultChildBlocks } = blockConfig;
           const hasChildBlocksOld = childBlocks && childBlocks.length > 0;
-          const hasChildBlocksConfig = includeDefaultChildBlocks && (childBlocksTemplate || hasChildBlocksOld);
+          const hasChildBlocksConfig = includeDefaultChildBlocks && (defaultChildBlocks || hasChildBlocksOld);
 
           // Add open/close toggle button.
           const icon = new FieldImage(PLUS_ICON, 16, 16, "+/-");
@@ -319,8 +319,8 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaul
 
           // Pre-generate XML and cached code for configured child blocks.
           if (hasChildBlocksConfig) {
-            if (childBlocksTemplate) {
-              this.__savedChildrenXml = getXmlFromTemplate(childBlocksTemplate, this.workspace);
+            if (defaultChildBlocks) {
+              this.__savedChildrenXml = getXmlFromTemplate(defaultChildBlocks, this.workspace);
             } else {
               this.__savedChildrenXml = buildSiblingChainXml(childBlocks || []);
             }

@@ -13,7 +13,7 @@ interface IProps {
   childBlocks?: serialization.blocks.State;
   editingBlock?: ICustomBlock | null;
   existingBlocks?: ICustomBlock[];
-  onChange: (childBlocksTemplate?: serialization.blocks.State) => void;
+  onChange: (childBlocks?: serialization.blocks.State) => void;
   toolbox: string;
 }
 
@@ -35,7 +35,7 @@ export const CustomBlockFormChildBlocks = ({
     const safeBlocks = (existingBlocks ?? []).filter(block => {
       if (!editingBlock) return true;
       if (block.id === editingBlock.id) return false;
-      if (block.config.childBlocksTemplate && stateContainsType(block.config.childBlocksTemplate, editingBlock.id)) {
+      if (block.config.defaultChildBlocks && stateContainsType(block.config.defaultChildBlocks, editingBlock.id)) {
         return false;
       }
       return true;

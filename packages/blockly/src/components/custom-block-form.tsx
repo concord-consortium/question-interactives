@@ -22,7 +22,7 @@ interface IProps {
 interface ICustomBlockFormState {
   childrenEnabled: boolean;
   category: string;
-  childBlocksTemplate?: serialization.blocks.State;
+  defaultChildBlocks?: serialization.blocks.State;
   color: string;
   conditionLabelPosition?: "prefix" | "suffix";
   conditionInput: boolean;
@@ -68,7 +68,7 @@ export const CustomBlockForm: React.FC<IProps> = ({
   
   const [formData, setFormData] = useState<ICustomBlockFormState>({
     category: "",
-    childBlocksTemplate: undefined,
+    defaultChildBlocks: undefined,
     childrenEnabled: blockConfig.childrenEnabled,
     color: blockConfig.color,
     conditionInput: false,
@@ -126,7 +126,7 @@ export const CustomBlockForm: React.FC<IProps> = ({
         formData.conditionLabelPosition !== (config.labelPosition ?? "prefix") ||
         formData.showTargetEntityLabel !== (config.showTargetEntityLabel ?? true) ||
         JSON.stringify(formData.options) !== JSON.stringify(blockOptionsFromConfig(editingBlock)) ||
-        JSON.stringify(formData.childBlocksTemplate) !== JSON.stringify(config.childBlocksTemplate) ||
+        JSON.stringify(formData.defaultChildBlocks) !== JSON.stringify(config.defaultChildBlocks) ||
         JSON.stringify(parameters) !== JSON.stringify(config.parameters || []);
     } else {
       // For new block: check if ANY meaningful data has been entered
@@ -135,7 +135,7 @@ export const CustomBlockForm: React.FC<IProps> = ({
       const hasGeneratorTemplate = (formData.generatorTemplate || "").trim().length > 0;
       const hasGlobalName = formData.globalName.trim().length > 0;
       const hasTargetEntity = formData.targetEntity.trim().length > 0;
-      const hasChildBlocks = formData.childBlocksTemplate != null;
+      const hasChildBlocks = formData.defaultChildBlocks != null;
       const hasParameters = parameters.length > 0;
 
       isDirty = hasName || hasOptions || hasGeneratorTemplate || hasGlobalName || hasTargetEntity || hasChildBlocks || hasParameters;
@@ -154,8 +154,8 @@ export const CustomBlockForm: React.FC<IProps> = ({
       .map(block => ({ value: block.name, label: block.name }));
   }, [existingBlocks]);
 
-  const handleChildBlocksChange = (childBlocksTemplate: serialization.blocks.State | undefined) => {
-    setFormData(prev => ({ ...prev, childBlocksTemplate }));
+  const handleChildBlocksChange = (defaultChildBlocks: serialization.blocks.State | undefined) => {
+    setFormData(prev => ({ ...prev, defaultChildBlocks }));
   };
 
   // We create a stable scalar for the first category to use in the useEffect below to avoid
@@ -170,7 +170,7 @@ export const CustomBlockForm: React.FC<IProps> = ({
 
     setFormData({
       category: editingBlock.category || firstCategory || "",
-      childBlocksTemplate: config.childBlocksTemplate,
+      defaultChildBlocks: config.defaultChildBlocks,
       childrenEnabled: !!config.canHaveChildren,
       color: editingBlock.color,
       conditionInput: !!config.conditionInput,
@@ -230,7 +230,7 @@ export const CustomBlockForm: React.FC<IProps> = ({
       previousStatement: formData.previousStatement
     };
 
-    const childBlocksTemplate = formData.childrenEnabled ? formData.childBlocksTemplate : undefined;
+    const defaultChildBlocks = formData.childrenEnabled ? formData.defaultChildBlocks : undefined;
 
     // Compute statement options for statement blocks with a target entity
     let statementOptions: [string, string][] | undefined = undefined;
@@ -248,7 +248,7 @@ export const CustomBlockForm: React.FC<IProps> = ({
         ? {
             ...base,
             canHaveChildren: formData.childrenEnabled,
-            childBlocksTemplate,
+            defaultChildBlocks,
             parameters: parameters.length ? parameters : undefined,
             generatorTemplate: formData.generatorTemplate?.trim() ? formData.generatorTemplate : undefined
           }
@@ -256,7 +256,7 @@ export const CustomBlockForm: React.FC<IProps> = ({
         ? {
             ...base,
             canHaveChildren: true,
-            childBlocksTemplate,
+            defaultChildBlocks,
             conditionInput: formData.conditionInput,
             includeAllOption: formData.includeAllOption,
             options: statementOptions,
@@ -279,7 +279,7 @@ export const CustomBlockForm: React.FC<IProps> = ({
         ? {
             ...base,
             canHaveChildren: formData.childrenEnabled,
-            childBlocksTemplate,
+            defaultChildBlocks,
             typeOptions: formData.options
               .filter(opt => opt.label && opt.value)
               .map(opt => [opt.label, opt.value] as [string, string]),
@@ -325,7 +325,7 @@ export const CustomBlockForm: React.FC<IProps> = ({
       name: "",
       globalName: "",
       options: [{ label: "", value: "" }],
-      childBlocks: []
+      defaultChildBlocks: undefined
     }));
     setParameters([]);
   };
@@ -632,7 +632,7 @@ export const CustomBlockForm: React.FC<IProps> = ({
 
       {((formData.type === "creator" || formData.type === "action") && formData.childrenEnabled) && (
         <CustomBlockFormChildBlocks
-          childBlocks={formData.childBlocksTemplate}
+          childBlocks={formData.defaultChildBlocks}
           editingBlock={editingBlock}
           existingBlocks={existingBlocks}
           onChange={handleChildBlocksChange}
