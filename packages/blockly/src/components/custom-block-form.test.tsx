@@ -133,12 +133,12 @@ describe("CustomBlockForm", () => {
 
       const childrenCheckbox = screen.getByTestId("toggle-canHaveChildren");
       expect(childrenCheckbox).toBeChecked();
-      expect(screen.queryByTestId("nested-blocks")).toBeInTheDocument();
+      expect(screen.queryByTestId("child-blocks")).toBeInTheDocument();
 
       await user.click(childrenCheckbox);
 
       expect(childrenCheckbox).not.toBeChecked();
-      expect(screen.queryByTestId("nested-blocks")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("child-blocks")).not.toBeInTheDocument();
     });
   });
 
