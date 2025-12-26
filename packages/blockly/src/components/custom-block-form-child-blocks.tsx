@@ -3,14 +3,11 @@ import classNames from "classnames";
 import React, { useEffect, useRef, useState } from "react";
 
 import { registerCustomBlocks } from "../blocks/block-factory";
-import { stateContainsType } from "../utils/block-utils";
+import { saveEvents, stateContainsType } from "../utils/block-utils";
 import { injectCustomBlocksIntoToolbox } from "../utils/toolbox-utils";
 import { ICustomBlock } from "./types";
 
 import css from "./custom-block-form-child-blocks.scss";
-
-// Update when any of these events occur
-const saveEvents: string[] = [Events.BLOCK_CREATE, Events.BLOCK_DELETE, Events.BLOCK_CHANGE, Events.BLOCK_MOVE];
 
 interface IProps {
   childBlocks?: serialization.blocks.State;
@@ -34,7 +31,7 @@ export const CustomBlockFormChildBlocks = ({
 
     childBlocksContainerRef.current.innerHTML = "";
 
-    // Prevent cycles
+    // Do not include blocks that would enable cycles
     const safeBlocks = (existingBlocks ?? []).filter(block => {
       if (!editingBlock) return true;
       if (block.id === editingBlock.id) return false;
@@ -78,7 +75,7 @@ export const CustomBlockFormChildBlocks = ({
     };
   }, [childBlocks,editingBlock, existingBlocks, isEditing, onChange, toolbox]);
 
-  const handleClick = () => {
+  const handleButtonClick = () => {
     if (!isEditing) {
       setIsEditing(true);
     } else {
@@ -97,7 +94,7 @@ export const CustomBlockFormChildBlocks = ({
         <div className={css.childBlocks_header}>
           <h6>Child Blocks</h6>
         </div>
-        <button className={buttonClassName} onClick={handleClick}>
+        <button className={buttonClassName} onClick={handleButtonClick}>
           {isEditing ? "Save Child Blocks" : "Edit Child Blocks"}
         </button>
       </div>

@@ -1,7 +1,10 @@
-import { Block } from "blockly";
+import { Block, Events } from "blockly";
 import { BLOCKLY_BUILT_IN_BLOCKS } from "../blocks/blockly-built-in-registry";
 import { CUSTOM_BUILT_IN_BLOCKS } from "../blocks/custom-built-in-blocks";
 import { ICustomBlock, IParameter, REQUIRED_BLOCK_FIELDS, VALID_BLOCK_TYPES } from "../components/types";
+
+// Save when any of these events occur while editing a blockly workspace
+export const saveEvents: string[] = [Events.BLOCK_CREATE, Events.BLOCK_DELETE, Events.BLOCK_CHANGE, Events.BLOCK_MOVE];
 
 const validateString = (value: unknown): boolean => {
   return typeof value === "string" && value.length > 0;
