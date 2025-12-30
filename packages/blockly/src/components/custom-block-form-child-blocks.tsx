@@ -1,6 +1,5 @@
 import { Events, inject, serialization } from "blockly";
-import classNames from "classnames";
-import React, { MutableRefObject, useEffect, useRef, useState } from "react";
+import React, { MutableRefObject, useEffect, useRef } from "react";
 
 import { registerCustomBlocks } from "../blocks/block-factory";
 import { saveEvents, stateContainsType } from "../utils/block-utils";
@@ -22,11 +21,10 @@ export const CustomBlockFormChildBlocks = ({
 }: IProps) => {
   const childBlocks = editingBlock?.config.defaultChildBlocks;
   const childBlocksContainerRef = useRef<HTMLDivElement>(null);
-  const [isEditing, setIsEditing] = useState(false);
 
   // Set up Blockly workspace for editing child blocks
   useEffect(() => {
-    if (!(isEditing && childBlocksContainerRef.current)) return;
+    if (!childBlocksContainerRef.current) return;
 
     childBlocksContainerRef.current.innerHTML = "";
 
@@ -72,15 +70,7 @@ export const CustomBlockFormChildBlocks = ({
       newWorkspace.removeChangeListener(saveState);
       if (childBlocksContainer) childBlocksContainer.innerHTML = "";
     };
-  }, [childBlocks, childBlocksRef, editingBlock, existingBlocks, isEditing, setHasChange, toolbox]);
-
-  const handleButtonClick = () => {
-    if (!isEditing) {
-      setIsEditing(true);
-    }
-  };
-
-  const containerClassName = classNames({ [css.childBlocks_container]: isEditing });
+  }, [childBlocks, childBlocksRef, editingBlock, existingBlocks, setHasChange, toolbox]);
 
   return (
     <div className={css.childBlocks} data-testid="child-blocks">
@@ -88,14 +78,9 @@ export const CustomBlockFormChildBlocks = ({
         <div className={css.childBlocks_header}>
           <h6>Child Blocks</h6>
         </div>
-        {!isEditing && (
-          <button onClick={handleButtonClick}>
-            Edit Child Blocks
-          </button>
-        )}
       </div>
 
-      <div className={containerClassName} ref={childBlocksContainerRef} />
+      <div className={css.childBlocks_container} ref={childBlocksContainerRef} />
     </div>
   );
 };
