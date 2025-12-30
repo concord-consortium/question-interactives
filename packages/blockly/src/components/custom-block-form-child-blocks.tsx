@@ -74,10 +74,8 @@ export const CustomBlockFormChildBlocks = ({
 
   return (
     <div className={css.childBlocks} data-testid="child-blocks">
-      <div className={css.childBlocks_headerContainer}>
-        <div className={css.childBlocks_header}>
-          <h6>Child Blocks</h6>
-        </div>
+      <div className={css.childBlocks_header}>
+        <h6>Child Blocks</h6>
       </div>
 
       <div className={css.childBlocks_container} ref={childBlocksContainerRef} />
