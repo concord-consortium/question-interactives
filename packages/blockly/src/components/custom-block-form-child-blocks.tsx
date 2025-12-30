@@ -1,6 +1,6 @@
 import { Events, inject, serialization } from "blockly";
 import classNames from "classnames";
-import React, { useEffect, useRef, useState } from "react";
+import React, { MutableRefObject, useEffect, useRef, useState } from "react";
 
 import { registerCustomBlocks } from "../blocks/block-factory";
 import { saveEvents, stateContainsType } from "../utils/block-utils";
@@ -10,20 +10,19 @@ import { ICustomBlock } from "./types";
 import css from "./custom-block-form-child-blocks.scss";
 
 interface IProps {
-  childBlocks?: serialization.blocks.State;
+  childBlocksRef: MutableRefObject<serialization.blocks.State | undefined>;
   editingBlock?: ICustomBlock | null;
   existingBlocks?: ICustomBlock[];
-  onChange: (childBlocks?: serialization.blocks.State) => void;
+  setHasChange: (hasChange: boolean) => void;
   toolbox: string;
 }
 
 export const CustomBlockFormChildBlocks = ({
-  childBlocks, editingBlock, existingBlocks, onChange, toolbox
+  childBlocksRef, editingBlock, existingBlocks, setHasChange, toolbox
 }: IProps) => {
-  const childBlocksRef = useRef<serialization.blocks.State | undefined>(childBlocks);
+  const childBlocks = editingBlock?.config.defaultChildBlocks;
   const childBlocksContainerRef = useRef<HTMLDivElement>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [hasChange, setHasChange] = useState(false);
 
   // Set up Blockly workspace for editing child blocks
   useEffect(() => {
@@ -73,20 +72,15 @@ export const CustomBlockFormChildBlocks = ({
       newWorkspace.removeChangeListener(saveState);
       if (childBlocksContainer) childBlocksContainer.innerHTML = "";
     };
-  }, [childBlocks,editingBlock, existingBlocks, isEditing, onChange, toolbox]);
+  }, [childBlocks, childBlocksRef, editingBlock, existingBlocks, isEditing, setHasChange, toolbox]);
 
   const handleButtonClick = () => {
     if (!isEditing) {
       setIsEditing(true);
-    } else {
-      onChange(childBlocksRef.current);
-      setIsEditing(false);
-      setHasChange(false);
     }
   };
 
   const containerClassName = classNames({ [css.childBlocks_container]: isEditing });
-  const buttonClassName = classNames({ [css.childBlocks_changeWarning]: hasChange });
 
   return (
     <div className={css.childBlocks} data-testid="child-blocks">
@@ -94,9 +88,11 @@ export const CustomBlockFormChildBlocks = ({
         <div className={css.childBlocks_header}>
           <h6>Child Blocks</h6>
         </div>
-        <button className={buttonClassName} onClick={handleButtonClick}>
-          {isEditing ? "Save Child Blocks" : "Edit Child Blocks"}
-        </button>
+        {!isEditing && (
+          <button onClick={handleButtonClick}>
+            Edit Child Blocks
+          </button>
+        )}
       </div>
 
       <div className={containerClassName} ref={childBlocksContainerRef} />
