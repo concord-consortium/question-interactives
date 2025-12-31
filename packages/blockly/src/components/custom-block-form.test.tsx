@@ -12,7 +12,8 @@ jest.mock("../utils/block-utils", () => ({
   availableChildBlocks: jest.fn()
 }));
 jest.mock("../utils/toolbox-utils", () => ({
-  extractCategoriesFromToolbox: jest.fn()
+  extractCategoriesFromToolbox: jest.fn(),
+  injectCustomBlocksIntoToolbox: jest.fn(() => '{"kind":"categoryToolbox","contents":[]}')
 }));
 
 describe("CustomBlockForm", () => {
