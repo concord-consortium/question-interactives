@@ -1,7 +1,10 @@
-import { Block } from "blockly";
+import { Block, Events } from "blockly";
 import { BLOCKLY_BUILT_IN_BLOCKS } from "../blocks/blockly-built-in-registry";
 import { CUSTOM_BUILT_IN_BLOCKS } from "../blocks/custom-built-in-blocks";
 import { ICustomBlock, IParameter, REQUIRED_BLOCK_FIELDS, VALID_BLOCK_TYPES } from "../components/types";
+
+// Save when any of these events occur while editing a blockly workspace
+export const saveEvents: string[] = [Events.BLOCK_CREATE, Events.BLOCK_DELETE, Events.BLOCK_CHANGE, Events.BLOCK_MOVE];
 
 const validateString = (value: unknown): boolean => {
   return typeof value === "string" && value.length > 0;
@@ -87,4 +90,23 @@ export function replaceParameters(code: string, params: IParameter[], block: Blo
     code = code.replace(re, safe);
   });
   return code;
+}
+
+// Returns true if a serialization.blocks.State (default child block structure) contains a block of the given type.
+export function stateContainsType(block: any, type: string) {
+  if (!block) return false;
+  if (block.type === type) return true;
+
+  const { inputs, next } = block;
+  let input: any;
+  if (inputs) {
+    for (input of Object.values(inputs)) {
+      if (stateContainsType(input.block, type)) return true;
+      if (stateContainsType(input.shadow, type)) return true;
+    }
+  }
+
+  if (next?.block && stateContainsType(next.block, type)) return true;
+
+  return false;
 }

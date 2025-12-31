@@ -8,6 +8,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { registerCustomBlocks } from "../blocks/block-factory";
 import "../blocks/block-registration";
+import { saveEvents } from "../utils/block-utils";
 import { injectCustomBlocksIntoToolbox } from "../utils/toolbox-utils";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { FileModal, Header } from "./header";
@@ -16,9 +17,6 @@ import { MaybeFileModal } from "./maybe-file-modal";
 import css from "./blockly.scss";
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
-
-// Save when any of these events occur
-const saveEvents: string[] = [Events.BLOCK_CREATE, Events.BLOCK_DELETE, Events.BLOCK_CHANGE, Events.BLOCK_MOVE];
 
 export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const { customBlocks = [], simulationCode, toolbox } = authoredState;

@@ -6,6 +6,12 @@ import { ICustomBlock } from "../components/types";
 // Mock Blockly and its components
 jest.mock("blockly/core", () => ({
   Blocks: {},
+  Events: {
+    BLOCK_CREATE: "block_create",
+    BLOCK_DELETE: "block_delete",
+    BLOCK_CHANGE: "block_change",
+    BLOCK_MOVE: "block_move"
+  },
   FieldDropdown: jest.fn().mockImplementation((options) => ({
     setValue: jest.fn(),
     getValue: jest.fn().mockReturnValue("test_value"),
@@ -23,7 +29,8 @@ jest.mock("blockly/core", () => ({
     width,
     height,
     alt
-  }))
+  })),
+  setLocale: jest.fn()
 }));
 
 jest.mock("@blockly/field-slider", () => ({
