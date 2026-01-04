@@ -44,7 +44,7 @@ describe("createGenerator unit tests", () => {
     };
     (replaceParameters as jest.Mock).mockImplementation((s) => s.replace("${P1}", "42"));
     const gen = createGenerator(def, cfg);
-    const block = { getFieldValue: jest.fn() } as unknown as BlockSvg;
+    const block = { getFieldValue: jest.fn(), getInput: () => null } as unknown as BlockSvg;
     const out = gen(block);
 
     expect(replaceParameters).toHaveBeenCalled();
