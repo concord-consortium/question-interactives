@@ -15,22 +15,22 @@ export interface CustomChartData extends ChartData<"bar">, ChartData<"line"> {
   datasets: Array<CustomChartDataSet>
 }
 
-const bgColors =  [
-  'rgba(255, 99, 132, 0.2)',
-  'rgba(54, 162, 235, 0.2)',
-  'rgba(255, 206, 86, 0.2)',
-  'rgba(75, 192, 192, 0.2)',
-  'rgba(153, 102, 255, 0.2)',
-  'rgba(255, 159, 64, 0.2)',
+const bgColors = [
+  'rgba(230, 25, 75, 0.2)',   // Vivid Red
+  'rgba(0, 130, 200, 0.2)',   // Deep Blue
+  'rgba(245, 130, 48, 0.2)',  // Orange
+  'rgba(60, 180, 75, 0.2)',   // Green
+  'rgba(145, 30, 180, 0.2)',  // Purple
+  'rgba(0, 128, 128, 0.2)',   // Teal
 ];
 
 const borderColors = [
-  'rgba(255, 99, 132, 1)',
-  'rgba(54, 162, 235, 1)',
-  'rgba(255, 206, 86, 1)',
-  'rgba(75, 192, 192, 1)',
-  'rgba(153, 102, 255, 1)',
-  'rgba(255, 159, 64, 1)',
+  'rgba(230, 25, 75, 1)',     // Vivid Red
+  'rgba(0, 130, 200, 1)',     // Deep Blue
+  'rgba(245, 130, 48, 1)',    // Orange
+  'rgba(60, 180, 75, 1)',     // Green
+  'rgba(145, 30, 180, 1)',    // Purple
+  'rgba(0, 128, 128, 1)',     // Teal
 ];
 
 const getBgColor = (idx: number) => bgColors[idx % bgColors.length];
