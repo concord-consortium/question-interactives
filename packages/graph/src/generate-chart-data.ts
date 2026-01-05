@@ -6,11 +6,11 @@ import { IAuthoredState } from "./components/types";
 type Label = number | string;
 type DataPoint = number; // | null;
 
-type CustomChartDataSet = ChartDataset<"bar"> & {
+type CustomChartDataSet = ChartDataset<"bar"> & ChartDataset<"line"> & {
   data: DataPoint[];
 }
 
-export interface CustomChartData extends ChartData<"bar"> {
+export interface CustomChartData extends ChartData<"bar">, ChartData<"line"> {
   labels: Label[];
   datasets: Array<CustomChartDataSet>
 }

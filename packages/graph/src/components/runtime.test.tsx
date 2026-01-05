@@ -6,7 +6,7 @@ import {
 import { useContextInitMessage } from "@concord-consortium/question-interactives-helpers/src/hooks/use-context-init-message";
 import { mount } from "enzyme";
 import { Runtime } from "./runtime";
-import { Bar } from "react-chartjs-2";
+import { Bar, Line } from "react-chartjs-2";
 import { IAuthoredState } from "./types";
 import { act } from "react-dom/test-utils";
 import css from "./runtime.scss";
@@ -186,5 +186,125 @@ describe("Graph runtime", () => {
     });
     wrapper.update();
     expect(wrapper.find(`.${css["graphLayout" + graphsPerRow]}`).length).toEqual(graphsPerRow);
+  });
+
+  describe("graphType option", () => {
+    it("renders a bar graph by default", () => {
+      useContextInitMessageMock.mockReturnValue(initMessageWithDataSources);
+      const wrapper = mount(<ObjectStorageProvider config={objectStorageConfig}><Runtime authoredState={authoredState} /></ObjectStorageProvider>);
+      fakeDatasetUpdate(0, defaultLinkedState);
+      wrapper.update();
+      expect(wrapper.find(Bar).length).toEqual(1);
+      expect(wrapper.find(Line).length).toEqual(0);
+    });
+
+    it("renders a bar graph when graphType is set to 'bar'", () => {
+      const customAuthoredState = {...authoredState, graphType: "bar" as const};
+      useContextInitMessageMock.mockReturnValue(initMessageWithDataSources);
+      const wrapper = mount(<ObjectStorageProvider config={objectStorageConfig}><Runtime authoredState={customAuthoredState} /></ObjectStorageProvider>);
+      fakeDatasetUpdate(0, defaultLinkedState);
+      wrapper.update();
+      expect(wrapper.find(Bar).length).toEqual(1);
+      expect(wrapper.find(Line).length).toEqual(0);
+    });
+
+    it("renders a line graph when graphType is set to 'line'", () => {
+      const customAuthoredState = {...authoredState, graphType: "line" as const};
+      useContextInitMessageMock.mockReturnValue(initMessageWithDataSources);
+      const wrapper = mount(<ObjectStorageProvider config={objectStorageConfig}><Runtime authoredState={customAuthoredState} /></ObjectStorageProvider>);
+      fakeDatasetUpdate(0, defaultLinkedState);
+      wrapper.update();
+      expect(wrapper.find(Line).length).toEqual(1);
+      expect(wrapper.find(Bar).length).toEqual(0);
+    });
+
+    it("renders line graphs for multiple datasets when graphType is 'line'", () => {
+      const customAuthoredState = {...authoredState, graphType: "line" as const};
+      useContextInitMessageMock.mockReturnValue(initMessageWithDataSources);
+      const wrapper = mount(<ObjectStorageProvider config={objectStorageConfig}><Runtime authoredState={customAuthoredState} /></ObjectStorageProvider>);
+      fakeDatasetUpdate(0, defaultLinkedState);
+      fakeDatasetUpdate(1, {
+        dataset: {
+          type: "dataset",
+          version: 1,
+          properties: ["x", "y1"], // different properties to create separate graphs
+          xAxisProp: "x",
+          rows: [ [1, 3], [2, 4] ]
+        }
+      });
+      wrapper.update();
+      expect(wrapper.find(Line).length).toEqual(2);
+      expect(wrapper.find(Bar).length).toEqual(0);
+    });
+  });
+
+  describe("noDataMessage option", () => {
+    it("does not display a message when noDataMessage is undefined and there is no data", () => {
+      useContextInitMessageMock.mockReturnValue(initMessageWithoutDataSources);
+      const wrapper = mount(<ObjectStorageProvider config={objectStorageConfig}><Runtime authoredState={authoredState} /></ObjectStorageProvider>);
+      expect(wrapper.find(`.${css.noDataMessage}`).length).toEqual(0);
+      expect(wrapper.find(Bar).length).toEqual(1); // should show empty graph instead
+    });
+
+    it("does not display a message when noDataMessage is an empty string and there is no data", () => {
+      const customAuthoredState = {...authoredState, noDataMessage: ""};
+      useContextInitMessageMock.mockReturnValue(initMessageWithoutDataSources);
+      const wrapper = mount(<ObjectStorageProvider config={objectStorageConfig}><Runtime authoredState={customAuthoredState} /></ObjectStorageProvider>);
+      expect(wrapper.find(`.${css.noDataMessage}`).length).toEqual(0);
+      expect(wrapper.find(Bar).length).toEqual(1); // should show empty graph instead
+    });
+
+    it("displays custom no data message when there is no data", () => {
+      const customMessage = "No data available yet";
+      const customAuthoredState = {...authoredState, noDataMessage: customMessage};
+      useContextInitMessageMock.mockReturnValue(initMessageWithoutDataSources);
+      const wrapper = mount(<ObjectStorageProvider config={objectStorageConfig}><Runtime authoredState={customAuthoredState} /></ObjectStorageProvider>);
+      expect(wrapper.find(`.${css.noDataMessage}`).length).toEqual(1);
+      expect(wrapper.find(`.${css.noDataMessage}`).text()).toEqual(customMessage);
+      expect(wrapper.find(Bar).length).toEqual(0); // should not show empty graph
+    });
+
+    it("does not display no data message when data is available", () => {
+      const customMessage = "No data available yet";
+      const customAuthoredState = {...authoredState, noDataMessage: customMessage};
+      useContextInitMessageMock.mockReturnValue(initMessageWithDataSources);
+      const wrapper = mount(<ObjectStorageProvider config={objectStorageConfig}><Runtime authoredState={customAuthoredState} /></ObjectStorageProvider>);
+      fakeDatasetUpdate(0, defaultLinkedState);
+      wrapper.update();
+      expect(wrapper.find(`.${css.noDataMessage}`).length).toEqual(0);
+      expect(wrapper.find(Bar).length).toEqual(1);
+    });
+
+    it("hides no data message after data becomes available", () => {
+      const customMessage = "No data available yet";
+      const customAuthoredState = {...authoredState, noDataMessage: customMessage};
+      useContextInitMessageMock.mockReturnValue(initMessageWithDataSources);
+      const wrapper = mount(<ObjectStorageProvider config={objectStorageConfig}><Runtime authoredState={customAuthoredState} /></ObjectStorageProvider>);
+      // Initially no data, message should be shown
+      expect(wrapper.find(`.${css.noDataMessage}`).length).toEqual(1);
+      // Add data
+      fakeDatasetUpdate(0, defaultLinkedState);
+      wrapper.update();
+      // Message should now be hidden
+      expect(wrapper.find(`.${css.noDataMessage}`).length).toEqual(0);
+      expect(wrapper.find(Bar).length).toEqual(1);
+    });
+
+    it("trims whitespace from noDataMessage", () => {
+      const customMessage = "  No data available  ";
+      const customAuthoredState = {...authoredState, noDataMessage: customMessage};
+      useContextInitMessageMock.mockReturnValue(initMessageWithoutDataSources);
+      const wrapper = mount(<ObjectStorageProvider config={objectStorageConfig}><Runtime authoredState={customAuthoredState} /></ObjectStorageProvider>);
+      expect(wrapper.find(`.${css.noDataMessage}`).length).toEqual(1);
+      expect(wrapper.find(`.${css.noDataMessage}`).text()).toEqual(customMessage.trim());
+    });
+
+    it("does not display message when noDataMessage is only whitespace", () => {
+      const customAuthoredState = {...authoredState, noDataMessage: "   "};
+      useContextInitMessageMock.mockReturnValue(initMessageWithoutDataSources);
+      const wrapper = mount(<ObjectStorageProvider config={objectStorageConfig}><Runtime authoredState={customAuthoredState} /></ObjectStorageProvider>);
+      expect(wrapper.find(`.${css.noDataMessage}`).length).toEqual(0);
+      expect(wrapper.find(Bar).length).toEqual(1); // should show empty graph instead
+    });
   });
 });
