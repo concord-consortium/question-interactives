@@ -2,7 +2,7 @@ import { FieldSlider } from "@blockly/field-slider";
 import type { BlockSvg } from "blockly";
 import { javascriptGenerator } from "blockly/javascript";
 import {
-  Blocks, Connection, FieldDropdown, FieldImage, FieldNumber, Input, MenuOption, serialization, utils, WorkspaceSvg, Xml
+  Blocks, FieldDropdown, FieldImage, FieldNumber, Input, MenuOption, serialization, utils, WorkspaceSvg, Xml
 } from "blockly/core";
 
 import { ICustomBlock, INestedBlock, IBlockConfig } from "../components/types";
@@ -202,38 +202,6 @@ const generateCodeFromXml = (block: BlockSvg, xml: string, inputName: string): s
   } catch (e) {
     console.warn("Failed to generate code from XML:", e);
     return "";
-  }
-};
-
-// Creates nested blocks from config (used for seeding).
-const createNestedBlocksFromConfig = (
-  workspace: WorkspaceSvg, nestedBlocks: INestedBlock[], parentConnection: Connection
-): void => {
-  let previousChild: BlockSvg | null = null;
-
-  for (const nestedBlock of nestedBlocks) {
-    const child = workspace.newBlock(nestedBlock.blockId) as BlockSvg;
-    child.initSvg();
-
-    // If an override for a dropdown is specified, apply it
-    if (nestedBlock.defaultOptionValue) {
-      child.setFieldValue(nestedBlock.defaultOptionValue, "value");
-    }
-
-    const targetConnection = previousChild?.nextConnection ?? parentConnection;
-    if (targetConnection && child.previousConnection) {
-      targetConnection.connect(child.previousConnection);
-    }
-
-    child.render();
-    previousChild = child;
-
-    if (nestedBlock.children && nestedBlock.children.length > 0) {
-      const childStmt = child.getInput("statements");
-      if (childStmt?.connection) {
-        createNestedBlocksFromConfig(workspace, nestedBlock.children, childStmt.connection);
-      }
-    }
   }
 };
 
