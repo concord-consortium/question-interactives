@@ -1,12 +1,12 @@
+import { serialization } from "blockly";
 import React, { useState, useEffect, useMemo, useRef } from "react";
 
-import { availableChildBlocks } from "../utils/block-utils";
 import { extractCategoriesFromToolbox } from "../utils/toolbox-utils";
 import { BLOCK_TYPE_CONFIG } from "./custom-block-form-config";
-import { CustomBlockFormNestedBlocks } from "./custom-block-form-nested-blocks";
+import { CustomBlockFormChildBlocks } from "./custom-block-form-child-blocks";
 import { CustomBlockFormOptionList } from "./custom-block-form-option-list";
 import { CustomBlockFormParameters } from "./custom-block-form-parameters";
-import { CustomBlockType, GlobalValueType, IBlockConfig, ICustomBlock, INestedBlock, IParameter } from "./types";
+import { CustomBlockType, GlobalValueType, ICustomBlock, IParameter } from "./types";
 
 import css from "./custom-block-form.scss";
 
@@ -22,7 +22,6 @@ interface IProps {
 interface ICustomBlockFormState {
   childrenEnabled: boolean;
   category: string;
-  childBlocks: INestedBlock[];
   color: string;
   conditionLabelPosition?: "prefix" | "suffix";
   conditionInput: boolean;
@@ -58,7 +57,9 @@ const blockOptionsFromConfig = (block: ICustomBlock) => {
   return [{ label: "", value: "" }];
 };
 
-export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, existingBlocks, onDirtyChange, onSubmit, toolbox }) => {
+export const CustomBlockForm: React.FC<IProps> = ({
+  blockType, editingBlock, existingBlocks, onDirtyChange, onSubmit, toolbox
+}) => {
   const blockConfig = useMemo(() => BLOCK_TYPE_CONFIG[blockType], [blockType]);
   const optionTerm = blockConfig.optionTerm || "Options";
   const optionsLabelPlaceholder = blockConfig.optionLabelPlaceholder || "Display text (e.g., blue)";
@@ -66,7 +67,6 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
   
   const [formData, setFormData] = useState<ICustomBlockFormState>({
     category: "",
-    childBlocks: [],
     childrenEnabled: blockConfig.childrenEnabled,
     color: blockConfig.color,
     conditionInput: false,
@@ -90,14 +90,11 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
     showTargetEntityLabel: true,
     type: blockType,
   });
+  const childBlocksRef = useRef<serialization.blocks.State | undefined>(editingBlock?.config.defaultChildBlocks);
+  // Used to track changes for state handled by refs (like childBlocksRef)
+  const [hasChange, setHasChange] = useState(false);
 
   const availableCategories = useMemo(() => extractCategoriesFromToolbox(toolbox), [toolbox]);
-  const childOptions = useMemo(() => {
-    if (formData.type === "action" || formData.type === "creator") {
-      return availableChildBlocks(existingBlocks, editingBlock?.id);
-    }
-    return [];
-  }, [formData.type, existingBlocks, editingBlock?.id]);
 
   const [parameters, setParameters] = useState<IParameter[]>([]);
 
@@ -110,8 +107,9 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
 
     if (editingBlock) {
       // For editing: check if ANY field differs from the original block
-      const config = editingBlock.config;
+      const { config } = editingBlock;
       isDirty =
+        hasChange ||
         formData.name !== editingBlock.name ||
         formData.color !== editingBlock.color ||
         formData.category !== editingBlock.category ||
@@ -130,7 +128,6 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         formData.conditionLabelPosition !== (config.labelPosition ?? "prefix") ||
         formData.showTargetEntityLabel !== (config.showTargetEntityLabel ?? true) ||
         JSON.stringify(formData.options) !== JSON.stringify(blockOptionsFromConfig(editingBlock)) ||
-        JSON.stringify(formData.childBlocks) !== JSON.stringify(config.childBlocks || []) ||
         JSON.stringify(parameters) !== JSON.stringify(config.parameters || []);
     } else {
       // For new block: check if ANY meaningful data has been entered
@@ -139,17 +136,17 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       const hasGeneratorTemplate = (formData.generatorTemplate || "").trim().length > 0;
       const hasGlobalName = formData.globalName.trim().length > 0;
       const hasTargetEntity = formData.targetEntity.trim().length > 0;
-      const hasChildBlocks = formData.childBlocks.length > 0;
       const hasParameters = parameters.length > 0;
 
-      isDirty = hasName || hasOptions || hasGeneratorTemplate || hasGlobalName || hasTargetEntity || hasChildBlocks || hasParameters;
+      isDirty = hasChange || hasName || hasOptions || hasGeneratorTemplate || hasGlobalName || hasTargetEntity ||
+        hasParameters;
     }
 
     if (previousDirtyRef.current !== isDirty) {
       previousDirtyRef.current = isDirty;
       onDirtyChange(isDirty);
     }
-  }, [formData, parameters, editingBlock, onDirtyChange]);
+  }, [formData, hasChange, parameters, editingBlock, onDirtyChange]);
 
   const availableTargetEntities = useMemo(() => {
     // Get creator blocks from existing blocks to populate target entity dropdown
@@ -157,10 +154,6 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       .filter(block => block.type === "creator")
       .map(block => ({ value: block.name, label: block.name }));
   }, [existingBlocks]);
-
-  const handleNestedBlocksChange = (nestedBlocks: INestedBlock[]) => {
-    setFormData(prev => ({ ...prev, childBlocks: nestedBlocks }));
-  };
 
   // We create a stable scalar for the first category to use in the useEffect below to avoid
   // unnecessary re-runs of the effect due to new array references that can be created each render.
@@ -170,11 +163,10 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
   useEffect(() => {
     if (!editingBlock) return;
 
-    const config: IBlockConfig = editingBlock.config;
+    const { config } = editingBlock;
 
     setFormData({
       category: editingBlock.category || firstCategory || "",
-      childBlocks: config.childBlocks || [],
       childrenEnabled: !!config.canHaveChildren,
       color: editingBlock.color,
       conditionInput: !!config.conditionInput,
@@ -234,7 +226,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       previousStatement: formData.previousStatement
     };
 
-    const effectiveChildBlocks = formData.childrenEnabled ? formData.childBlocks : [];
+    const defaultChildBlocks = formData.childrenEnabled ? childBlocksRef.current : undefined;
 
     // Compute statement options for statement blocks with a target entity
     let statementOptions: [string, string][] | undefined = undefined;
@@ -252,7 +244,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         ? {
             ...base,
             canHaveChildren: formData.childrenEnabled,
-            childBlocks: effectiveChildBlocks,
+            defaultChildBlocks,
             parameters: parameters.length ? parameters : undefined,
             generatorTemplate: formData.generatorTemplate?.trim() ? formData.generatorTemplate : undefined
           }
@@ -260,7 +252,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         ? {
             ...base,
             canHaveChildren: true,
-            childBlocks: [],
+            defaultChildBlocks,
             conditionInput: formData.conditionInput,
             includeAllOption: formData.includeAllOption,
             options: statementOptions,
@@ -283,7 +275,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
         ? {
             ...base,
             canHaveChildren: formData.childrenEnabled,
-            childBlocks: effectiveChildBlocks,
+            defaultChildBlocks,
             typeOptions: formData.options
               .filter(opt => opt.label && opt.value)
               .map(opt => [opt.label, opt.value] as [string, string]),
@@ -329,7 +321,7 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       name: "",
       globalName: "",
       options: [{ label: "", value: "" }],
-      childBlocks: []
+      defaultChildBlocks: undefined
     }));
     setParameters([]);
   };
@@ -635,12 +627,12 @@ export const CustomBlockForm: React.FC<IProps> = ({ blockType, editingBlock, exi
       )}
 
       {((formData.type === "creator" || formData.type === "action") && formData.childrenEnabled) && (
-        <CustomBlockFormNestedBlocks
-          availableBlocks={childOptions}
+        <CustomBlockFormChildBlocks
+          childBlocksRef={childBlocksRef}
+          editingBlock={editingBlock}
           existingBlocks={existingBlocks}
-          nestedBlocks={formData.childBlocks}
-          parentBlockId={editingBlock?.id || "new-block"}
-          onChange={handleNestedBlocksChange}
+          setHasChange={setHasChange}
+          toolbox={toolbox}
         />
       )}
 

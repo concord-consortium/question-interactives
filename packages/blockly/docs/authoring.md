@@ -246,6 +246,8 @@ An author doesn't have to do anything special for an ask block to work.
 
 Custom action blocks give authors a lot of flexibility to create blocks that can do a wide range of things that a simulation might need. Many different types of fields can be added to action blocks. And action blocks require custom code to be specified by an author.
 
+When an action block contains child blocks, the code from these child blocks can be plugged into the action's code by using `${CHILDBLOCKS}`.
+
 Check example simulations for ideas on how to use action blocks.
 
 ### Condition Blocks

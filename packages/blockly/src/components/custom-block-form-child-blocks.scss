@@ -1,0 +1,34 @@
+@import "./variables.scss";
+
+.childBlocks {
+  border: 1px solid $border-medium;
+  border-radius: $border-radius-md;
+  margin-top: $spacing-lg;
+  padding: $spacing-md;
+
+  .childBlocks_header {
+    h6 {
+      font-size: $font-size-md;
+      font-weight: $font-weight-medium;
+      margin: 0;
+    }
+  }
+
+  .childBlocks_container {
+    height: 400px;
+    margin-top: $spacing-md;
+  }
+}
+
+.nestedBlock {
+  border: 1px solid $border-light;
+  border-radius: $border-radius-sm;
+  margin-bottom: $spacing-sm;
+  padding: 10px;
+  transition: background-color $transition-fast;
+
+  &:hover {
+    background-color: $background-light;
+  }
+}
+

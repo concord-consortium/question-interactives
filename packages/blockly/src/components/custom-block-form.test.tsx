@@ -12,7 +12,8 @@ jest.mock("../utils/block-utils", () => ({
   availableChildBlocks: jest.fn()
 }));
 jest.mock("../utils/toolbox-utils", () => ({
-  extractCategoriesFromToolbox: jest.fn()
+  extractCategoriesFromToolbox: jest.fn(),
+  injectCustomBlocksIntoToolbox: jest.fn(() => '{"kind":"categoryToolbox","contents":[]}')
 }));
 
 describe("CustomBlockForm", () => {
@@ -133,12 +134,12 @@ describe("CustomBlockForm", () => {
 
       const childrenCheckbox = screen.getByTestId("toggle-canHaveChildren");
       expect(childrenCheckbox).toBeChecked();
-      expect(screen.queryByTestId("nested-blocks")).toBeInTheDocument();
+      expect(screen.queryByTestId("child-blocks")).toBeInTheDocument();
 
       await user.click(childrenCheckbox);
 
       expect(childrenCheckbox).not.toBeChecked();
-      expect(screen.queryByTestId("nested-blocks")).not.toBeInTheDocument();
+      expect(screen.queryByTestId("child-blocks")).not.toBeInTheDocument();
     });
   });
 
