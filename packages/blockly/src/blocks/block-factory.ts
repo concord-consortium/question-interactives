@@ -279,16 +279,8 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaul
               // Seed child blocks on first open if configured
               if (!this.__childrenSeeded && hasChildBlocksConfig) {
                 this.__childrenSeeded = true;
-                if (this.__savedChildrenXml) {
-                  restoreChildBlocks(this, this.__savedChildrenXml);
-                  this.__savedChildrenXml = "";
-                } else if (this.workspace && !this.workspace.isFlyout && childBlocks) {
-                  // TODO Determine if this is ever reached, and remove it if not.
-                  const stmtConnection = this.getInput("statements")?.connection;
-                  if (stmtConnection) {
-                    createNestedBlocksFromConfig(this.workspace, childBlocks, stmtConnection);
-                  }
-                }
+                restoreChildBlocks(this, this.__savedChildrenXml);
+                this.__savedChildrenXml = "";
               } else if (this.__savedChildrenXml) {
                 restoreChildBlocks(this, this.__savedChildrenXml);
                 this.__savedChildrenXml = "";
