@@ -107,7 +107,7 @@
   },
   "dependencies": {
     "@concord-consortium/dynamic-text": "^1.0.6",
-    "@concord-consortium/lara-interactive-api": "1.12.0-pre.1",
+    "@concord-consortium/lara-interactive-api": "1.12.0",
     "@concord-consortium/question-interactives-helpers": "^1.16.0",
     "@rjsf/utils": "^5.0.1",
     "iframe-phone": "^1.3.1",
