@@ -211,11 +211,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
     });
 
     return () => {
-      Object.values(pubSubChannelMapRef.current).forEach(channel => {
-        if (channel && typeof channel.dispose === "function") {
-          channel.dispose();
-        }
-      });
+      Object.values(pubSubChannelMapRef.current).forEach(channel => channel.dispose());
       pubSubChannelMapRef.current = {};
     };
   }, [linkedInteractives]);
