@@ -15,9 +15,6 @@
   "workspaces": [
     "packages/*"
   ],
-  "dependencies": {
-    "@aws-sdk/util-locate-window": "3.310.0"
-  },
   "scripts": {
     "start": "http-server dist -o -c-1",
     "build": "lerna run build",
