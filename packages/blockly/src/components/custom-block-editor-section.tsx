@@ -1,4 +1,5 @@
 import React, { useCallback, useState, useMemo } from "react";
+import { setDirtyState } from "@concord-consortium/lara-interactive-api";
 
 import { CustomBlockForm } from "./custom-block-form";
 import { CustomBlockType, ICustomBlock } from "./types";
@@ -36,12 +37,14 @@ export const CustomBlockEditorSection: React.FC<IProps> = ({ blockType, toolbox,
 
   const handleFormDirtyChange = useCallback((isDirty: boolean) => {
     setFormIsDirty(isDirty);
+    setDirtyState(isDirty);
   }, []);
 
   const closeForm = useCallback(() => {
     setShowForm(false);
     setEditingBlock(null);
     setFormIsDirty(false);
+    setDirtyState(false);
   }, []);
 
   const addCustomBlock = (block: ICustomBlock) => {

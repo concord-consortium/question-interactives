@@ -6,6 +6,18 @@ import "@testing-library/jest-dom";
 
 enzyme.configure({ adapter: new Adapter() });
 
+// Polyfill for crypto.getRandomValues (required by nanoid in lara-interactive-api v1.12.0-pre.1)
+if (typeof globalThis.crypto === "undefined") {
+  (globalThis as any).crypto = {
+    getRandomValues: (buffer: Uint8Array) => {
+      for (let i = 0; i < buffer.length; i++) {
+        buffer[i] = Math.floor(Math.random() * 256);
+      }
+      return buffer;
+    },
+  };
+}
+
 // Mock window.alert
 global.alert = jest.fn();
 
