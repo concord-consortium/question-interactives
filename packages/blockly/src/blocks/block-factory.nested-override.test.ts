@@ -72,14 +72,4 @@ describe("block-factory nested override", () => {
     expect(cb?.__disclosureOpen).toBe(false);
     expect(cb?.__savedChildrenXml).toContain(`<field name="value">BLUE</field>`);
   });
-  
-  // it("starts closed with no statement input (input is added when opened)", () => {
-  //   Blocks["custom_create_molecules_456"].init.call(mockBlock);
-
-  //   // Should create temporary input for code generation, but not the user-visible "statements" input
-  //   expect(mockBlock.appendStatementInput).toHaveBeenCalledWith("__temp_statements");
-  //   expect(mockBlock.appendStatementInput).not.toHaveBeenCalledWith("statements");
-  //   expect(mockBlock.__disclosureOpen).toBe(false);
-  //   expect(mockBlock.__savedChildrenXml).toBe('<block type="custom_set_color_123"></block>');
-  // });
 });
