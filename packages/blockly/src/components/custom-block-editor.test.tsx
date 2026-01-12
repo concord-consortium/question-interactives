@@ -29,7 +29,6 @@ describe("CustomBlockEditor", () => {
       category: "General",
       config: {
         canHaveChildren: true,
-        childBlocks: [{ blockId: "custom_set_color_1234567890" }],
         defaultCount: 100,
         minCount: 0,
         maxCount: 500,

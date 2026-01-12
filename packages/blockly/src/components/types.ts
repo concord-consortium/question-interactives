@@ -27,13 +27,6 @@ export const REQUIRED_BLOCK_FIELDS = [
 export type CustomBlockType = typeof VALID_BLOCK_TYPES[number];
 export type ParameterKind = "select" | "number";
 
-export interface INestedBlock {
-  blockId: string;
-  canHaveChildren?: boolean;
-  children?: INestedBlock[];
-  defaultOptionValue?: string;
-}
-
 export interface IParameterBase {
   defaultValue?: string | number;
   kind: ParameterKind;
@@ -55,7 +48,6 @@ export type GlobalValueType = "number" | "string";
 
 export interface IBlockConfig {
   canHaveChildren: boolean;
-  childBlocks?: INestedBlock[]; // DEPRECATED, use defaultChildBlocks instead
   conditionInput?: boolean;
   defaultChildBlocks?: serialization.blocks.State;
   defaultCount?: number;
@@ -187,11 +179,6 @@ export const DemoAuthoredState: IAuthoredState = {
         inputsInline: true,
         nextStatement: true,
         previousStatement: true,
-        childBlocks: [
-          {
-            blockId: "custom_setter_color_1759159837671"
-          }
-        ],
         typeOptions: [
           ["water", "WATER"],
           ["ink", "INK"]
@@ -212,7 +199,6 @@ export const DemoAuthoredState: IAuthoredState = {
         nextStatement: true,
         previousStatement: true,
         canHaveChildren: false,
-        childBlocks: [],
         generatorTemplate: "${ACTION} ${DIRECTION}\nspeed=${MAGNITUDE}\n",
         parameters: [
           {

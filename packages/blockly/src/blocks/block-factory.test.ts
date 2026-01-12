@@ -162,7 +162,6 @@ describe("block-factory", () => {
         category: "General",
         config: {
           canHaveChildren: true,
-          childBlocks: [{ blockId: "custom_set_color_123" }],
           defaultCount: 100,
           minCount: 0,
           maxCount: 500,
@@ -310,7 +309,6 @@ describe("block-factory", () => {
         category: "General",
         config: {
           canHaveChildren: true,
-          childBlocks: [{ blockId: "custom_set_color_123" }],
           defaultCount: 100,
           minCount: 0,
           maxCount: 500,
@@ -327,16 +325,6 @@ describe("block-factory", () => {
       expect(mockBlock.appendDummyInput).toHaveBeenCalled();
       expect(mockInput.appendField).toHaveBeenCalledWith("create");
       expect(mockInput.appendField).toHaveBeenCalledWith("molecules");
-    });
-
-    it("starts closed with no statement input (input is added when opened)", () => {
-      Blocks["custom_create_molecules_456"].init.call(mockBlock);
-
-      // Should create temporary input for code generation, but not the user-visible "statements" input
-      expect(mockBlock.appendStatementInput).toHaveBeenCalledWith("__temp_statements");
-      expect(mockBlock.appendStatementInput).not.toHaveBeenCalledWith("statements");
-      expect(mockBlock.__disclosureOpen).toBe(false);
-      expect(mockBlock.__savedChildrenXml).toBe('<block type="custom_set_color_123"></block>');
     });
 
     it("adds toggle icon and initializes as closed", () => {
@@ -373,7 +361,6 @@ describe("block-factory", () => {
         color: "#004696",
         config: {
           canHaveChildren: true,
-          childBlocks: [{ blockId: "custom_set_color_123" }],
           generatorTemplate: "${ACTION} ${DIRECTION}",
           parameters: [
             {
@@ -423,15 +410,6 @@ describe("block-factory", () => {
       expect(mockInput.appendField).toHaveBeenCalledWith(expect.any(Object), "SPEED");
     });
 
-    it("starts closed with no statement input when `canHaveChildren` is true (input is added when opened)", () => {
-      Blocks["custom_action_move_789"].init.call(mockBlock);
-      // Should create temporary input for code generation, but not the user-visible "statements" input
-      expect(mockBlock.appendStatementInput).toHaveBeenCalledWith("__temp_statements");
-      expect(mockBlock.appendStatementInput).not.toHaveBeenCalledWith("statements");
-      expect(mockBlock.__disclosureOpen).toBe(false);
-      expect(mockBlock.__savedChildrenXml).toBe('<block type="custom_set_color_123"></block>');
-    });
-
     it("adds fields in correct order for action blocks", () => {
       Blocks["custom_action_move_789"].init.call(mockBlock);
       const appendFieldCalls = mockInput.appendField.mock.calls;
@@ -460,7 +438,6 @@ describe("block-factory", () => {
 
     it("handles action block without child blocks", () => {
       actionBlock.config.canHaveChildren = false;
-      actionBlock.config.childBlocks = [];
       registerCustomBlocks([actionBlock]);
 
       Blocks["custom_action_move_789"].init.call(mockBlock);

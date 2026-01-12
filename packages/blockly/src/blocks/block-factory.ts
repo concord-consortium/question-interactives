@@ -5,7 +5,7 @@ import {
   Blocks, FieldDropdown, FieldImage, FieldNumber, Input, MenuOption, serialization, utils, WorkspaceSvg, Xml
 } from "blockly/core";
 
-import { ICustomBlock, INestedBlock, IBlockConfig } from "../components/types";
+import { ICustomBlock, IBlockConfig } from "../components/types";
 import { createGenerator } from "./generators";
 import { appendParameterFields, applyParameterDefaults } from "./params";
 
@@ -119,37 +119,6 @@ const restoreChildBlocks = (block: BlockSvg, xml: string, inputName = "statement
   }
 };
 
-// Builds XML for a single block with its nested children.
-const buildBlockXml = (child: INestedBlock): string => {
-  const defaultFieldXml = child.defaultOptionValue
-    ? `<field name="value">${child.defaultOptionValue}</field>`
-    : "";
-  const nestedXml = child.children?.length 
-    ? `<statement name="statements">${buildSiblingChainXml(child.children)}</statement>` 
-    : "";
-  return `<block type="${child.blockId}">${defaultFieldXml}${nestedXml}</block>`;
-};
-
-// Builds XML for a chain of sibling blocks connected via <next>.
-const buildSiblingChainXml = (children: INestedBlock[]): string => {
-  if (children.length === 0) return "";
-  if (children.length === 1) return buildBlockXml(children[0]);
-  
-  // Build from last to first, wrapping in <next> tags
-  let xml = buildBlockXml(children[children.length - 1]);
-  for (let i = children.length - 2; i >= 0; i--) {
-    const child = children[i];
-    const defaultFieldXml = child.defaultOptionValue
-      ? `<field name="value">${child.defaultOptionValue}</field>`
-      : "";
-    const nestedXml = child.children?.length 
-      ? `<statement name="statements">${buildSiblingChainXml(child.children)}</statement>` 
-      : "";
-    xml = `<block type="${child.blockId}">${defaultFieldXml}${nestedXml}<next>${xml}</next></block>`;
-  }
-  return xml;
-};
-
 const getXmlFromTemplate = (childBlocks: serialization.blocks.State, workspace: WorkspaceSvg) => {
   const innerRoot = serialization.blocks.append(childBlocks, workspace);
   const dom = Xml.blockToDom(innerRoot, true);
@@ -230,9 +199,8 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaul
     
         if (blockHasDisclosure(blockDef, blockConfig)) {
           // Check if this block type has child blocks configured for seeding.
-          const { childBlocks, defaultChildBlocks } = blockConfig;
-          const hasChildBlocksOld = childBlocks && childBlocks.length > 0;
-          const hasChildBlocksConfig = includeDefaultChildBlocks && (defaultChildBlocks || hasChildBlocksOld);
+          const { defaultChildBlocks } = blockConfig;
+          const hasChildBlocksConfig = includeDefaultChildBlocks && defaultChildBlocks;
 
           // Add open/close toggle button.
           const icon = new FieldImage(PLUS_ICON, 16, 16, "+/-");
@@ -279,11 +247,7 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaul
 
           // Pre-generate XML and cached code for configured child blocks.
           if (hasChildBlocksConfig) {
-            if (defaultChildBlocks) {
-              this.__savedChildrenXml = getXmlFromTemplate(defaultChildBlocks, this.workspace);
-            } else {
-              this.__savedChildrenXml = buildSiblingChainXml(childBlocks || []);
-            }
+            this.__savedChildrenXml = getXmlFromTemplate(defaultChildBlocks, this.workspace);
             this.__cachedChildrenCode = generateCodeFromXml(this, this.__savedChildrenXml, "__temp_statements");
           } else {
             this.__savedChildrenXml = "";
