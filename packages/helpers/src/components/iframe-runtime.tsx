@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from "react";
 import iframePhone from "iframe-phone";
 import { DynamicText } from "@concord-consortium/dynamic-text";
 import { renderHTML } from "@concord-consortium/question-interactives-helpers/src/utilities/render-html";
-import { closeModal, flushStateUpdates, getClient, IAccessibilitySettings, IAddLinkedInteractiveStateListenerRequest, IAttachmentUrlRequest, IAttachmentUrlResponse, ICloseModal, ICustomMessage, IGetInteractiveState, IHintRequest, IInitInteractive, IShowModal, log, setOnUnload, showModal } from "@concord-consortium/lara-interactive-api";
+import { closeModal, flushStateUpdates, getClient, IAccessibilitySettings, IAddLinkedInteractiveStateListenerRequest, IAttachmentUrlRequest, IAttachmentUrlResponse, ICloseModal, ICustomMessage, IGetInteractiveState, IHintRequest, IInitInteractive, ILinkedInteractive, IShowModal, log, setOnUnload, showModal } from "@concord-consortium/lara-interactive-api";
 
 import { IframePhone } from "../types";
 import { getLibraryInteractive } from "../utilities/library-interactives";
@@ -161,11 +161,15 @@ export const IframeRuntime: React.FC<IProps> =
       client.addListener("customMessage", (message: ICustomMessage) => phone.post("customMessage", message));
       phone.addListener("customMessage", (message: ICustomMessage) => client.post("customMessage", message));
 
-      // if we have local linked interactives, we need to pass them in the linkedInteractives array
-      let linkedInteractives: {id: string; label: string}[] = [];
+      // Start with linkedInteractives from parent initMessage, then add any local linked interactives
+      const linkedInteractives: ILinkedInteractive[] = (initMessage as any)?.linkedInteractives || [];
       const libraryInteractive = getLibraryInteractive(url);
       if (libraryInteractive?.localLinkedInteractiveProp && authoredState?.[libraryInteractive.localLinkedInteractiveProp]) {
-        linkedInteractives = [ {id: authoredState[libraryInteractive.localLinkedInteractiveProp], label: libraryInteractive.localLinkedInteractiveProp} ];
+        const localLinkedInteractiveId = authoredState[libraryInteractive.localLinkedInteractiveProp];
+        // Only add if it doesn't already exist
+        if (!linkedInteractives.find(li => li.id === localLinkedInteractiveId)) {
+          linkedInteractives.push({id: localLinkedInteractiveId, label: libraryInteractive.localLinkedInteractiveProp});
+        }
       }
 
       const initInteractiveMessage: any = {
