@@ -20,4 +20,7 @@ export interface IAuthoredState {
   dataSourceInteractive1Name?: string;
   dataSourceInteractive2Name?: string;
   dataSourceInteractive3Name?: string;
+
+  noDataMessage?: string;
+  graphType?: "bar" | "line";
 }
