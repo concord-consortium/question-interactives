@@ -182,7 +182,7 @@ export const IframeRuntime: React.FC<IProps> =
         interactive: {
           id: id || "demo-interactive"
         },
-        objectStorageConfig: {
+        objectStorageConfig: (initMessage as any)?.objectStorageConfig || {
           version: 1,
           type: "demo",
         }
