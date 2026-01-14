@@ -5,8 +5,8 @@ import {
   createPubSubChannel
 } from "@concord-consortium/lara-interactive-api";
 import { useLinkedInteractiveId } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
-import { Bar } from "react-chartjs-2";
-import { BarElement, CategoryScale, Chart, ChartOptions, Legend, LinearScale, Title, Tooltip } from "chart.js";
+import { Bar, Line } from "react-chartjs-2";
+import { BarElement, CategoryScale, Chart, ChartOptions, Legend, LinearScale, Title, Tooltip, LineElement, PointElement } from "chart.js";
 import ChartDataLabels from "chartjs-plugin-datalabels";
 import { StoredObjectDataTableMetadata, useObjectStorage } from "@concord-consortium/object-storage";
 
@@ -18,6 +18,8 @@ Chart.register(
   CategoryScale,
   LinearScale,
   BarElement,
+  LineElement,
+  PointElement,
   Title,
   Tooltip,
   Legend
@@ -27,7 +29,7 @@ export interface IProps {
   authoredState: IAuthoredState;
 }
 
-const getGraphOptions = (authoredState: IAuthoredState, chartData?: CustomChartData): ChartOptions<"bar"> => {
+const getGraphOptions = (authoredState: IAuthoredState, chartData?: CustomChartData): ChartOptions<"bar"> | ChartOptions<"line"> => {
   let yAxisLabel;
   if (authoredState.useYAxisLabelFromData && chartData && chartData.datasets.length > 0) {
     yAxisLabel = chartData.datasets[0].label;
@@ -78,12 +80,17 @@ const getGraphOptions = (authoredState: IAuthoredState, chartData?: CustomChartD
           display: authoredState.displayXAxisLabels // this will show/hide labels only
         }
       }
+    },
+    elements: {
+      point:{
+        radius: 0
+      }
     }
   };
 };
 
 export const Runtime: React.FC<IProps> = ({ authoredState }) => {
-  const [ datasets, setDatasets ] = useState<Array<IDataset | null | undefined>>([]);
+  const [datasets, setDatasets] = useState<Array<IDataset | null | undefined>>([]);
   const dataSourceInteractive1 = useLinkedInteractiveId("dataSourceInteractive1");
   const dataSourceInteractive2 = useLinkedInteractiveId("dataSourceInteractive2");
   const dataSourceInteractive3 = useLinkedInteractiveId("dataSourceInteractive3");
@@ -93,7 +100,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
   const [pubSubDataUpdatedAt, setPubSubDataUpdatedAt] = useState<number>(0);
 
   const linkedInteractives = useMemo(() => {
-    return [ dataSourceInteractive1,
+    return [dataSourceInteractive1,
       dataSourceInteractive2,
       dataSourceInteractive3
     ].filter(intItemId => intItemId !== undefined) as string[];
@@ -223,7 +230,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
     };
   }, [linkedInteractives]);
 
-  const anyData = datasets.filter(d => d !== null).length > 0;
+  const anyData = datasets.filter(d => !!d).length > 0;
   const graphContainerClassName = css.graph + " " + css["graphLayout" + (authoredState.graphsPerRow || 1)];
   const datasetNames = [
     authoredState.dataSourceInteractive1Name,
@@ -231,27 +238,37 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
     authoredState.dataSourceInteractive3Name
   ];
 
+  const Graph = authoredState.graphType === "line" ? Line : Bar;
+
+  const noDataMessage = (authoredState.noDataMessage ?? "").trim();
+  const showNoDataMessage = noDataMessage.length > 0 && !pubSubDataUpdatedAt && !anyData;
+
   return (
     <div>
       {
         pubSubDataUpdatedAt ?
           generateChartData(pubSubDatasetsRef.current, datasetNames, authoredState).map((chartData, idx: number) =>
             <div key={`pubSub-${idx}`} className={graphContainerClassName}>
-              <Bar data={chartData} options={getGraphOptions(authoredState, chartData)}
-                plugins={[ChartDataLabels]}
-              />
-            </div>
-          ):
-        anyData ?
-          generateChartData(datasets, datasetNames, authoredState).map((chartData, idx: number) =>
-            <div key={`dataset-${idx}`} className={graphContainerClassName}>
-              <Bar data={chartData} options={getGraphOptions(authoredState, chartData)}
+              <Graph data={chartData} options={getGraphOptions(authoredState, chartData) as any}
                 plugins={[ChartDataLabels]}
               />
             </div>
           ) :
-          // Without passing chartData, we won't add things like the legend
-          <Bar data={emptyChartData} options={getGraphOptions(authoredState)} />
+          anyData ?
+            generateChartData(datasets, datasetNames, authoredState).map((chartData, idx: number) =>
+              <div key={`dataset-${idx}`} className={graphContainerClassName}>
+                <Graph data={chartData} options={getGraphOptions(authoredState, chartData) as any}
+                  plugins={[ChartDataLabels]}
+                />
+              </div>
+            ) :
+          showNoDataMessage ?
+            <div className={css.noDataMessage}>
+              {noDataMessage}
+            </div>
+          :
+            // Without passing chartData, we won't add things like the legend
+            <Graph data={emptyChartData} options={getGraphOptions(authoredState) as any} />
       }
     </div>
   );

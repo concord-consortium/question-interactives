@@ -12,6 +12,13 @@ const baseAuthoringProps = {
         type: "number",
         default: 1
       },
+      graphType: {
+        title: "Graph Type",
+        type: "string",
+        enum: ["bar", "line"],
+        enumNames: ["Bar Graph", "Line Graph"],
+        default: "bar"
+      },
       graphsPerRow: {
         title: "Number of graphs per row",
         type: "number",
@@ -27,6 +34,12 @@ const baseAuthoringProps = {
         title: "X axis label (optional)",
         type: "string",
         default: ""
+      },
+      noDataMessage: {
+        title: "No data message (optional)",
+        type: "string",
+        default: "",
+        help: "Message to display when there is no data to show in the graph."
       },
       useYAxisLabelFromData: {
         title: "Use default Y axis label from data source",
@@ -157,6 +170,8 @@ const baseAuthoringProps = {
       }
     },
     "ui:order": [
+      "graphType",
+      "noDataMessage",
       "graphsPerRow",
       "displayXAxisLabels",
       "xAxisLabel",
