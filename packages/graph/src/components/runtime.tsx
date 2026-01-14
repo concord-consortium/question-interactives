@@ -147,42 +147,49 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
   const objectStorage = useObjectStorage();
 
   useEffect(() => {
-    const unsubscribes = linkedInteractives.map((linkedInteractiveId, datasetIdx) => {
-      const unsubscribe = objectStorage.monitor(linkedInteractiveId, (objects) => {
-        // find the latest dataTable (objects are ordered from oldest to newest)
-        const latest = objects[objects.length - 1];
-        if (latest) {
-          const dataTableEntry = Object.entries(latest.metadata.items).find(([key, item]) => item.type === "dataTable") as [string, StoredObjectDataTableMetadata] | undefined;
-          const [dataTableId, dataTableMetadata] = dataTableEntry || [];
-          if (dataTableId && dataTableMetadata) {
-            const loadDataTableObject = async () => {
-              const dataTableData = await objectStorage.readDataItem(latest.id, dataTableId);
-              if (dataTableData) {
-                // convert the dataTableObject to the IDataset format
-                const newDataset: IDataset = {
-                  type: "dataset",
-                  version: 1,
-                  properties: dataTableMetadata.cols,
-                  rows: Object.values(dataTableData.rows || {}).map((row: any) => row)
-                };
-                setDatasets(prevDatasets => {
-                  const newDatasets = prevDatasets.slice();
-                  newDatasets[datasetIdx] = newDataset;
-                  return newDatasets;
-                });
-                hasObjectStorageData.current = true;
+    const unsubscribes: Array<() => void> = [];
 
-                // clear any existing pubsub dataset when we get object storage data
-                pubSubDatasetsRef.current[datasetIdx] = null;
-                setPubSubDataUpdatedAt(0);
-              }
-            };
-            loadDataTableObject();
+    const setupMonitors = async () => {
+      let datasetIdx = 0;
+      for await (const linkedInteractiveId of linkedInteractives) {
+        const unsubscribe = await objectStorage.monitor(linkedInteractiveId, (objects) => {
+          // find the latest dataTable (objects are ordered from oldest to newest)
+          const latest = objects[objects.length - 1];
+          if (latest) {
+            const dataTableEntry = Object.entries(latest.metadata.items).find(([key, item]) => item.type === "dataTable") as [string, StoredObjectDataTableMetadata] | undefined;
+            const [dataTableId, dataTableMetadata] = dataTableEntry || [];
+            if (dataTableId && dataTableMetadata) {
+              const loadDataTableObject = async () => {
+                const dataTableData = await objectStorage.readDataItem(latest.id, dataTableId);
+                if (dataTableData) {
+                  // convert the dataTableObject to the IDataset format
+                  const newDataset: IDataset = {
+                    type: "dataset",
+                    version: 1,
+                    properties: dataTableMetadata.cols,
+                    rows: Object.values(dataTableData.rows || {}).map((row: any) => row)
+                  };
+                  setDatasets(prevDatasets => {
+                    const newDatasets = prevDatasets.slice();
+                    newDatasets[datasetIdx] = newDataset;
+                    return newDatasets;
+                  });
+                  hasObjectStorageData.current = true;
+
+                  // clear any existing pubsub dataset when we get object storage data
+                  pubSubDatasetsRef.current[datasetIdx] = null;
+                  setPubSubDataUpdatedAt(0);
+                }
+              };
+              loadDataTableObject();
+            }
           }
-        }
-      });
-      return unsubscribe;
-    });
+        });
+        unsubscribes.push(unsubscribe);
+        datasetIdx++;
+      }
+    };
+    setupMonitors();
 
     return () => {
       unsubscribes.forEach(unsubscribe => unsubscribe());
