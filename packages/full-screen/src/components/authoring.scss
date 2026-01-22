@@ -1,0 +1,205 @@
+.authoring {
+  .formContainer {
+    // Target checkbox fields (CODAP options) for highlight animation
+    // RJSF renders checkboxes in .field-boolean elements
+    // Use :global() because .field-boolean is an RJSF-generated class, not scoped by CSS modules
+    :global(.field-boolean) {
+      transition: background-color 0.3s ease-out;
+      border-radius: 4px;
+      padding: 2px 4px;
+      margin: -2px -4px;
+
+      // RJSF renders both a field-level label (direct child) and the checkbox
+      // widget's inline label (inside .checkbox). Hide the field-level label
+      // to avoid duplication - keep only the inline label next to the checkbox.
+      // The inline label is nested in .checkbox > label, so targeting direct
+      // child labels only affects the field-level label.
+      > label {
+        display: none;
+      }
+
+      // Make checkbox labels bold so they stand out
+      :global(.checkbox) label span {
+        font-weight: bold;
+      }
+    }
+
+    // Indent dependent/child fields (e.g., lockComponents under removeToolbarsAndGrid)
+    :global(.indented-field) {
+      margin-left: 24px;
+    }
+  }
+
+  // Collapsible section styles (using native <details>/<summary>)
+  .collapsibleSection {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    margin: 15px 0;
+
+    &[open] {
+      .collapsibleHeader::after {
+        transform: rotate(90deg);
+      }
+    }
+  }
+
+  .collapsibleHeader {
+    display: flex;
+    align-items: center;
+    padding: 10px 12px;
+    font-weight: bold;
+    cursor: pointer;
+    background: #f8f9fa;
+    border-radius: 4px;
+    list-style: none;  // Remove default marker
+
+    // Custom expand/collapse indicator
+    &::after {
+      content: "▶";
+      font-size: 10px;
+      margin-left: auto;
+      transition: transform 0.2s ease;
+    }
+
+    // Remove default marker in Safari/WebKit
+    &::-webkit-details-marker {
+      display: none;
+    }
+
+    &:hover {
+      background: #e9ecef;
+    }
+  }
+
+  .collapsibleContent {
+    padding: 12px;
+    border-top: 1px solid #ddd;
+  }
+
+  // Highlight animation when source URL changes and checkboxes update
+  .highlightOptions {
+    :global(.field-boolean) {
+      animation: optionsHighlight 0.6s ease-out;
+    }
+  }
+
+  .error {
+    padding: 15px;
+    background: #fee;
+    border: 1px solid #fcc;
+    border-radius: 4px;
+    color: #c33;
+  }
+
+  // Dismissible error banner for URL build failures
+  .errorBanner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 15px;
+    margin-bottom: 15px;
+    background: #fef3cd;
+    border: 1px solid #ffc107;
+    border-radius: 4px;
+    color: #856404;
+
+    .dismissButton {
+      background: none;
+      border: none;
+      font-size: 20px;
+      line-height: 1;
+      color: #856404;
+      cursor: pointer;
+      padding: 0 4px;
+      margin-left: 10px;
+
+      &:hover {
+        color: #533f03;
+      }
+    }
+  }
+
+  // Validation message styling (RJSF renders errors in .text-danger or .error-detail)
+  // We use extraErrors with custom __severity for warnings vs errors
+  .formContainer {
+    // Default error styling (red)
+    .text-danger,
+    .error-detail {
+      color: #dc3545;
+      font-size: 13px;
+      margin-top: 4px;
+    }
+
+    // Warning styling (orange/amber) - applied via data attribute or class
+    // Note: RJSF doesn't natively support warning severity, so we style based on message content
+    // or use a custom ErrorList template. For simplicity, we'll use a softer error style.
+    .field-error {
+      // Subtle left border to indicate validation issue
+      border-left: 3px solid #dc3545;
+      padding-left: 8px;
+      margin-left: -11px;
+
+      // Warning variant (can be toggled via custom template or data attribute)
+      &.warning {
+        border-left-color: #f59e0b;
+
+        .text-danger,
+        .error-detail {
+          color: #b45309;
+        }
+      }
+    }
+  }
+
+  // Custom FieldErrorTemplate styling for warnings vs errors
+  .fieldErrors {
+    list-style: none;
+    padding: 0;
+    margin: 4px 0 0 0;
+    font-size: 13px;
+
+    li {
+      padding: 2px 0;
+    }
+  }
+
+  .errorMessage {
+    color: #dc3545;  // Bootstrap danger red
+    border-left: 3px solid #dc3545;
+    padding-left: 8px;
+    margin-left: 0;
+  }
+
+  .warningMessage {
+    color: #b45309;  // Amber/orange for warnings
+    border-left: 3px solid #f59e0b;
+    padding-left: 8px;
+    margin-left: 0;
+  }
+}
+
+// Keyframe animation for the highlight pulse
+// Animation duration: 600ms (must match setTimeout in authoring.tsx)
+@keyframes optionsHighlight {
+  0% {
+    background-color: transparent;
+  }
+  30% {
+    background-color: rgba(59, 130, 246, 0.15); // Light blue highlight
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+
+// Respect user's reduced motion preference for accessibility
+@media (prefers-reduced-motion: reduce) {
+  .highlightOptions {
+    :global(.field-boolean) {
+      animation: none;
+      // Use a static subtle background instead of animation
+      background-color: rgba(59, 130, 246, 0.1);
+      transition: background-color 0.5s ease-out 0.5s; // Fade out after delay
+    }
+  }
+}
