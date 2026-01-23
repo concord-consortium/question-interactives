@@ -43,6 +43,7 @@ interface ICustomBlockFormState {
   showTargetEntityLabel: boolean;
   targetEntity: string;
   type: CustomBlockType;
+  useOptionChildBlocks: boolean;
 }
 
 const blockOptionsFromConfig = (block: ICustomBlock) => {
@@ -89,7 +90,9 @@ export const CustomBlockForm: React.FC<IProps> = ({
     conditionLabelPosition: "prefix",
     showTargetEntityLabel: true,
     type: blockType,
+    useOptionChildBlocks: false,
   });
+  const [optionChildBlocks, setOptionChildBlocks] = useState<string>("");
   const childBlocksRef = useRef<serialization.blocks.State | undefined>(editingBlock?.config.defaultChildBlocks);
   // Used to track changes for state handled by refs (like childBlocksRef)
   const [hasChange, setHasChange] = useState(false);
@@ -188,7 +191,8 @@ export const CustomBlockForm: React.FC<IProps> = ({
       targetEntity: config.targetEntity ?? "",
       conditionLabelPosition: config.labelPosition ?? "prefix",
       showTargetEntityLabel: config.showTargetEntityLabel ?? true,
-      type: editingBlock.type
+      type: editingBlock.type,
+      useOptionChildBlocks: config.useOptionChildBlocks ?? false,
     });
 
     if (editingBlock.type === "action") {
@@ -623,6 +627,42 @@ export const CustomBlockForm: React.FC<IProps> = ({
             />
             Contains Child Blocks
           </label>
+        </div>
+      )}
+
+      {(formData.type === "creator" && formData.childrenEnabled) && (
+        <div className={css.customBlockForm_canHaveChildren} data-testid="section-use-option-child-blocks">
+          <label htmlFor="use-option-child-blocks">
+            <input
+              checked={formData.useOptionChildBlocks}
+              data-testid="toggle-useOptionChildBlocks"
+              id="use-option-child-blocks"
+              type="checkbox"
+              onChange={(e) => {
+                const checked = e.currentTarget.checked;
+                setFormData(prev => ({ ...prev, useOptionChildBlocks: checked }));
+              }}
+            />
+            Use Option-Specific Child Blocks
+          </label>
+        </div>
+      )}
+
+      {formData.useOptionChildBlocks && (
+        <div className={css.customBlockForm_category} data-testid="option-child-blocks-selector">
+          <select
+            data-testid="select-option-child-blocks"
+            required
+            value={optionChildBlocks}
+            onChange={(e) => setOptionChildBlocks(e.target.value)}
+          >
+            <option value="">Select an option...</option>
+            {formData.options.map(({ label, value }) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
         </div>
       )}
 
