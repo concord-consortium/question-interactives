@@ -94,6 +94,8 @@ export const CustomBlockForm: React.FC<IProps> = ({
   });
   const [optionChildBlocks, setOptionChildBlocks] = useState<string>("");
   const childBlocksRef = useRef<serialization.blocks.State | undefined>(editingBlock?.config.defaultChildBlocks);
+  const optionChildBlocksRef =
+    useRef<Record<string, serialization.blocks.State>>(editingBlock?.config.optionChildBlocks || {});
   // Used to track changes for state handled by refs (like childBlocksRef)
   const [hasChange, setHasChange] = useState(false);
 
@@ -130,6 +132,7 @@ export const CustomBlockForm: React.FC<IProps> = ({
         formData.includeNumberInput !== !!config.includeNumberInput ||
         formData.conditionLabelPosition !== (config.labelPosition ?? "prefix") ||
         formData.showTargetEntityLabel !== (config.showTargetEntityLabel ?? true) ||
+        formData.useOptionChildBlocks !== (config.useOptionChildBlocks ?? false) ||
         JSON.stringify(formData.options) !== JSON.stringify(blockOptionsFromConfig(editingBlock)) ||
         JSON.stringify(parameters) !== JSON.stringify(config.parameters || []);
     } else {
@@ -284,6 +287,8 @@ export const CustomBlockForm: React.FC<IProps> = ({
               .filter(opt => opt.label && opt.value)
               .map(opt => [opt.label, opt.value] as [string, string]),
             defaultOptionValue: formData.defaultOptionValue,
+            optionChildBlocks: optionChildBlocksRef.current,
+            useOptionChildBlocks: formData.useOptionChildBlocks,
             ...(formData.includeCount
               ? {
                   defaultCount: formData.defaultCount,
@@ -669,8 +674,10 @@ export const CustomBlockForm: React.FC<IProps> = ({
       {((formData.type === "creator" || formData.type === "action") && formData.childrenEnabled) && (
         <CustomBlockFormChildBlocks
           childBlocksRef={childBlocksRef}
+          currentOption={formData.useOptionChildBlocks ? optionChildBlocks : undefined}
           editingBlock={editingBlock}
           existingBlocks={existingBlocks}
+          optionChildBlocksRef={optionChildBlocksRef}
           setHasChange={setHasChange}
           toolbox={toolbox}
         />

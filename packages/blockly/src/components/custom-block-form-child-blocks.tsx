@@ -10,16 +10,20 @@ import css from "./custom-block-form-child-blocks.scss";
 
 interface IProps {
   childBlocksRef: MutableRefObject<serialization.blocks.State | undefined>;
+  currentOption?: string;
   editingBlock?: ICustomBlock | null;
   existingBlocks?: ICustomBlock[];
+  optionChildBlocksRef?: MutableRefObject<Record<string, serialization.blocks.State> | undefined>;
   setHasChange: (hasChange: boolean) => void;
   toolbox: string;
 }
 
 export const CustomBlockFormChildBlocks = ({
-  childBlocksRef, editingBlock, existingBlocks, setHasChange, toolbox
+  childBlocksRef, currentOption, editingBlock, existingBlocks, optionChildBlocksRef, setHasChange, toolbox
 }: IProps) => {
-  const childBlocks = editingBlock?.config.defaultChildBlocks;
+  const childBlocks = currentOption
+    ? editingBlock?.config.optionChildBlocks?.[currentOption]
+    : editingBlock?.config.defaultChildBlocks;
   const childBlocksContainerRef = useRef<HTMLDivElement>(null);
 
   // Set up Blockly workspace for editing child blocks
@@ -31,10 +35,20 @@ export const CustomBlockFormChildBlocks = ({
     // Do not include blocks that would enable cycles
     const safeBlocks = (existingBlocks ?? []).filter(block => {
       if (!editingBlock) return true;
+
+      // Do not include the block that is being edited
       if (block.id === editingBlock.id) return false;
+
+      // Do not include blocks that contain the block being edited in any child block sets
       if (block.config.defaultChildBlocks && stateContainsType(block.config.defaultChildBlocks, editingBlock.id)) {
         return false;
       }
+      for (const optionChildBlocks of Object.values(block.config.optionChildBlocks || {})) {
+        if (stateContainsType(optionChildBlocks, editingBlock.id)) {
+          return false;
+        }
+      }
+
       return true;
     });
     registerCustomBlocks(safeBlocks, false);
@@ -55,11 +69,18 @@ export const CustomBlockFormChildBlocks = ({
         const topBlock = newWorkspace.getTopBlocks(true)[0];
         const template = topBlock ? serialization.blocks.save(topBlock) : undefined;
         if (template) {
-          if (childBlocksRef.current &&
-            JSON.stringify(childBlocksRef.current) !== JSON.stringify(template)) {
-            setHasChange(true);
+          if (currentOption && optionChildBlocksRef?.current) {
+            if (JSON.stringify(optionChildBlocksRef.current[currentOption]) !== JSON.stringify(template)) {
+              setHasChange(true);
+            }
+            optionChildBlocksRef.current[currentOption] = template;
+          } else {
+            if (childBlocksRef.current &&
+              JSON.stringify(childBlocksRef.current) !== JSON.stringify(template)) {
+              setHasChange(true);
+            }
+            childBlocksRef.current = template;
           }
-          childBlocksRef.current = template;
         }
       }
     };
@@ -70,7 +91,7 @@ export const CustomBlockFormChildBlocks = ({
       newWorkspace.removeChangeListener(saveState);
       if (childBlocksContainer) childBlocksContainer.innerHTML = "";
     };
-  }, [childBlocks, childBlocksRef, editingBlock, existingBlocks, setHasChange, toolbox]);
+  }, [childBlocks, childBlocksRef, currentOption, editingBlock, existingBlocks, optionChildBlocksRef, setHasChange, toolbox]);
 
   return (
     <div className={css.childBlocks} data-testid="child-blocks">
