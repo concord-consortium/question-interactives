@@ -44,11 +44,17 @@ const AuthoringWrapper: React.FC<IAuthoringComponentProps<IAuthoredState>> = ({
     );
   }
 
-  // Initialize default authored state if not set
-  const currentAuthoredState: IAuthoredState = authoredState || {
+  // Initialize authored state, using URL param as fallback for wrappedInteractiveUrl.
+  // This handles cases where:
+  // 1. authoredState is null/undefined (new interactive)
+  // 2. authoredState exists but is empty (e.g., {} from LARA/AP)
+  // 3. authoredState exists but wrappedInteractiveUrl is not set
+  const currentAuthoredState: IAuthoredState = {
     version: 1,
-    wrappedInteractiveUrl: wrappedInteractive || undefined,
-    questionType: "iframe_interactive"
+    questionType: "iframe_interactive",
+    ...(authoredState || {}),
+    // Use URL param as fallback only if wrappedInteractiveUrl is not already set
+    wrappedInteractiveUrl: authoredState?.wrappedInteractiveUrl || wrappedInteractive || undefined
   };
 
   // Adapter: setAuthoredState expects an update function, but Authoring

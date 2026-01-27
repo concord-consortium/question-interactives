@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback } from "react";
+import React, { useMemo, useState, useCallback, useEffect } from "react";
 import Form from "@rjsf/core";
 import { ErrorSchema, FieldErrorProps, ObjectFieldTemplateProps } from "@rjsf/utils";
 import validator from "@rjsf/validator-ajv8";
@@ -232,6 +232,49 @@ export const Authoring: React.FC<IProps> = ({
     }
     return data;
   }, [authoredState, config]);
+
+  // Sync initial form data to authored state when there's a URL param but no saved config.
+  // This ensures the runtime has the correct wrappedInteractiveUrl even if the user
+  // doesn't make any changes before saving.
+  useEffect(() => {
+    if (!config) return;
+
+    // Only sync if we have a wrappedInteractiveUrl but no authoringConfig
+    const needsInitialSync = authoredState.wrappedInteractiveUrl &&
+                              !authoredState.authoringConfig?.data;
+
+    if (!needsInitialSync) return;
+
+    // Build the URL from the parsed form data
+    let wrappedInteractiveUrl: string | null | undefined;
+    if (config.buildUrl) {
+      try {
+        wrappedInteractiveUrl = config.buildUrl(formData);
+      } catch (e) {
+        // Keep original URL if build fails
+        wrappedInteractiveUrl = authoredState.wrappedInteractiveUrl;
+      }
+    } else {
+      wrappedInteractiveUrl = authoredState.wrappedInteractiveUrl;
+    }
+
+    // Extract disableFullscreen from form data
+    const disableFullscreen = config.getDisableFullscreen
+      ? config.getDisableFullscreen(formData)
+      : !(formData as any).enableFullscreen;
+
+    onAuthoredStateChange({
+      ...authoredState,
+      wrappedInteractiveUrl: wrappedInteractiveUrl || undefined,
+      disableFullscreen,
+      authoringConfig: {
+        type: authoringType,
+        version: config.dataVersion || 1,
+        data: formData
+      }
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // Run only on mount
 
   // Compute validation messages from config's validateFormData function
   // Also includes any parse errors from failed URL parsing
