@@ -32,7 +32,9 @@ jobs:
       matrix:
         include:
           # Add new Question Interactives to this list
+          - INTERACTIVE_FOLDER: agent-simulation
           - INTERACTIVE_FOLDER: bar-graph
+          - INTERACTIVE_FOLDER: blockly
           - INTERACTIVE_FOLDER: carousel
           - INTERACTIVE_FOLDER: drag-and-drop
           - INTERACTIVE_FOLDER: drawing-tool
@@ -49,7 +51,6 @@ jobs:
           - INTERACTIVE_FOLDER: scaffolded-question
           - INTERACTIVE_FOLDER: score-bot
           - INTERACTIVE_FOLDER: side-by-side
-          - INTERACTIVE_FOLDER: tests-e2e
           - INTERACTIVE_FOLDER: video-player
           - INTERACTIVE_FOLDER: wrapper
     steps:
