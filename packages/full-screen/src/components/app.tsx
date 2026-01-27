@@ -74,5 +74,6 @@ export const App = () => (
     Runtime={Runtime}
     disableAutoHeight={true}
     disableSubmitBtnRendering={true}
+    allowEmptyAuthoredStateAtRuntime={true}
   />
 );
