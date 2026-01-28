@@ -62,12 +62,14 @@ export interface IBlockConfig {
   maxCount?: number;
   minCount?: number;
   nextStatement?: boolean;
+  optionChildBlocks?: Record<string, serialization.blocks.State>;
   options?: MenuOption[];
   parameters?: IParameter[];
   previousStatement?: boolean;
   showTargetEntityLabel?: boolean;
   targetEntity?: string;
   typeOptions?: MenuOption[];
+  useOptionChildBlocks?: boolean;
 }
 
 export interface ICustomBlock {

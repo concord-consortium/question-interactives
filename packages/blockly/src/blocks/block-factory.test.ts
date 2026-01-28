@@ -236,7 +236,7 @@ describe("block-factory", () => {
     it("adds dropdown field when typeOptions are provided", () => {
       Blocks["custom_set_color_123"].init.call(mockBlock);
 
-      expect(FieldDropdown).toHaveBeenCalledWith([["red", "RED"], ["blue", "BLUE"]]);
+      expect(FieldDropdown).toHaveBeenCalledWith([["red", "RED"], ["blue", "BLUE"]], undefined);
       expect(mockInput.appendField).toHaveBeenCalledWith(expect.any(Object), "value");
     });
 
