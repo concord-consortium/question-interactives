@@ -2,7 +2,8 @@ import { FieldSlider } from "@blockly/field-slider";
 import type { BlockSvg } from "blockly";
 import { javascriptGenerator } from "blockly/javascript";
 import {
-  Blocks, FieldDropdown, FieldImage, FieldNumber, Input, MenuOption, serialization, utils, WorkspaceSvg, Xml
+  Blocks, FieldDropdown, FieldDropdownValidator, FieldImage, FieldNumber, Input, MenuOption, serialization, utils,
+  WorkspaceSvg, Xml
 } from "blockly/core";
 
 import { ICustomBlock, IBlockConfig } from "../components/types";
@@ -32,10 +33,12 @@ const filterDropdownOptions = (options: unknown[]): MenuOption[] => {
 };
 
 // Appends a dropdown field to an input based on type options in block config.
-const appendDropdownFromTypeOptions = (input: Input, blockConfig: IBlockConfig, fieldName: string) => {
+const appendDropdownFromTypeOptions = (
+  input: Input, blockConfig: IBlockConfig, fieldName: string, validator?: FieldDropdownValidator
+) => {
   const opts = filterDropdownOptions(blockConfig.typeOptions || []);
   if (opts.length > 0) {
-    input.appendField(new FieldDropdown(opts), fieldName);
+    input.appendField(new FieldDropdown(opts, validator), fieldName);
   }
 };
 
@@ -127,6 +130,53 @@ const getXmlFromTemplate = (childBlocks: serialization.blocks.State, workspace: 
   return xml;
 };
 
+// Generates code from XML by temporarily creating blocks.
+const generateCodeFromXml = (block: BlockSvg, xml: string, inputName: string): string => {
+  if (!xml || !block.workspace || block.workspace.isFlyout) return "";
+
+  try {
+    // Temporarily add statement input
+    const tempStmt = block.appendStatementInput(inputName);
+    const tempConn = tempStmt.connection;
+
+    if (!tempConn) return "";
+
+    // Create blocks from XML
+    const dom = utils.xml.textToDom(`<xml>${xml}</xml>`);
+    const blockDom = dom.firstElementChild;
+    if (!blockDom) return "";
+
+    const tempBlock = Xml.domToBlock(blockDom, block.workspace) as BlockSvg;
+    if (tempBlock.previousConnection) {
+      tempConn.connect(tempBlock.previousConnection);
+    }
+    
+    // Generate code from the temporary blocks
+    const code = javascriptGenerator.statementToCode(block, inputName) || "";
+    
+    // Clean up: dispose temp blocks
+    const blocksToDispose = collectBlockChain(tempBlock);
+    blocksToDispose.reverse().forEach(b => {
+      try {
+        // false = do not "heal stack", i.e., don't reconnect remaining blocks when
+        // one is removed. We skip healing because we're disposing all children.
+        // See https://developers.google.com/blockly/reference/js/blockly.blocksvg_class.dispose_1_method.md
+        b.dispose(false);
+      } catch (e) {
+        console.warn("Error disposing temp block:", e);
+      }
+    });
+    
+    // Remove temporary input
+    block.removeInput(inputName, true);
+    
+    return code;
+  } catch (e) {
+    console.warn("Failed to generate code from XML:", e);
+    return "";
+  }
+};
+
 export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaultChildBlocks = true) => {
   if (!Array.isArray(customBlocks)) {
     console.warn("registerCustomBlocks: customBlocks is not an array:", customBlocks);
@@ -146,16 +196,30 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaul
 
     Blocks[blockType] = {
       init() {
+        const { defaultChildBlocks, optionChildBlocks, useOptionChildBlocks } = blockConfig;
         const displayName = displayNameForBlock(blockDef);
         // Create input without immediately appending the name so we can control placement as needed.
         const input = this.appendDummyInput();
+
+        // Returns the default child blocks, which can change based on the selected type for creator blocks
+        const getDefaultChildBlocks = (type?: string) => {
+          const option = type ?? this.getFieldValue("type");
+          return useOptionChildBlocks ? optionChildBlocks?.[option] : defaultChildBlocks;
+        };
+
+        // Sets the cached children code based on the current default child blocks
+        const updateCachedChildrenCode = (type?: string) => {
+          const childBlocks = getDefaultChildBlocks(type);
+          if (childBlocks) {
+            const xml = getXmlFromTemplate(childBlocks, this.workspace);
+            this.__cachedChildrenCode = generateCodeFromXml(this, xml, "__temp_statements");
+          }
+        };
     
         if (blockHasDisclosure(blockDef, blockConfig)) {
-          const { defaultChildBlocks, optionChildBlocks, useOptionChildBlocks } = blockConfig;
-          
           // Initialize as closed (no statement input).
           this.__disclosureOpen = false;
-          this.__cachedChildrenCode = "";
+          updateCachedChildrenCode();
           this.__childrenSeeded = false;
 
           // Add open/close toggle button.
@@ -177,8 +241,7 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaul
               //    C will be in B, even though it is not specified in A's default child blocks.
               if (includeDefaultChildBlocks && !this.__childrenSeeded && !this.__savedChildrenXml) {
                 this.__childrenSeeded = true;
-                const option = this.getFieldValue("type");
-                const childBlocks = useOptionChildBlocks ? optionChildBlocks?.[option] : defaultChildBlocks;
+                const childBlocks = getDefaultChildBlocks();
                 if (childBlocks) {
                   restoreChildBlocks(this, getXmlFromTemplate(childBlocks, this.workspace));
                 }
@@ -212,8 +275,9 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaul
         }
 
         if (blockDef.type === "creator") {
-          if (blockConfig.defaultCount !== undefined && blockConfig.minCount !== undefined && blockConfig.maxCount !== undefined) {
-            input.appendField(new FieldSlider(blockConfig.defaultCount, blockConfig.minCount, blockConfig.maxCount), "count");
+          const { defaultCount, minCount, maxCount } = blockConfig;
+          if (defaultCount !== undefined && minCount !== undefined && maxCount !== undefined) {
+            input.appendField(new FieldSlider(defaultCount, minCount, maxCount), "count");
           }
         }
 
@@ -227,8 +291,12 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaul
             }
           }
         } else if (blockDef.type === "creator") {
-          // TODO changing this should change the default child block code
-          appendDropdownFromTypeOptions(input, blockConfig, "type");
+          // Use a validator to update the cached children code when the type changes if the block hasn't been opened
+          const validator = (newType: string) => {
+            if (!this.__childrenSeeded) updateCachedChildrenCode(newType);
+            return newType;
+          };
+          appendDropdownFromTypeOptions(input, blockConfig, "type", validator);
         } else if (blockDef.type === "setter") {
           if (blockConfig.includeNumberInput) {
             input.appendField(new FieldNumber(0), "value");
