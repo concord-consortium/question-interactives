@@ -1,4 +1,4 @@
-import React, { useMemo, useState, useCallback, useEffect } from "react";
+import React, { useMemo, useState, useCallback, useEffect, useRef } from "react";
 import Form from "@rjsf/core";
 import { ErrorSchema, FieldErrorProps, ObjectFieldTemplateProps } from "@rjsf/utils";
 import validator from "@rjsf/validator-ajv8";
@@ -6,6 +6,9 @@ import { IAuthoredState, IValidationResult } from "./types";
 import { getAuthoringConfig } from "../authoring-configs";
 
 import css from "./authoring.scss";
+
+// Debounce delay for saving to parent (ms)
+const SAVE_DEBOUNCE_MS = 500;
 
 // NOTE: No CODAP-specific imports here. All type-specific logic is in the config files.
 // This keeps authoring.tsx generic and reusable for any interactive type.
@@ -171,6 +174,21 @@ export const Authoring: React.FC<IProps> = ({
   const [parseError, setParseError] = useState<string | null>(null);
   const [buildError, setBuildError] = useState<string | null>(null);
 
+  // Local form data state for immediate updates (prevents input focus loss)
+  // When null, falls back to computed formData from authoredState
+  const [localFormData, setLocalFormData] = useState<any>(null);
+
+  // Ref for debounce timeout - clears pending save when new changes come in
+  const saveTimeoutRef = useRef<number | undefined>(undefined);
+
+  // Cleanup debounce timeout on unmount
+  useEffect(() => {
+    const timeoutId = saveTimeoutRef.current;
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, []);
+
   // Trigger highlight animation and auto-clear after animation completes
   const triggerOptionsHighlight = useCallback(() => {
     setHighlightOptions(true);
@@ -180,21 +198,23 @@ export const Authoring: React.FC<IProps> = ({
   // Compute uiSchema dynamically to handle disabled states and conditional visibility
   // Each config can provide its own computeUiSchema function for type-specific logic
   // NOTE: All hooks must be called before any early returns (React rules of hooks)
+  // Uses localFormData when available so UI updates reflect immediate changes
   const computedUiSchema = useMemo(() => {
     if (!config) return {};
     if (!config.computeUiSchema) {
       return config.uiSchema;
     }
 
-    const currentData = authoredState.authoringConfig?.data || config.initialData || {};
+    const currentData = localFormData ?? authoredState.authoringConfig?.data ?? config.initialData ?? {};
     return config.computeUiSchema(currentData, config.uiSchema || {});
-  }, [config, authoredState.authoringConfig?.data]);
+  }, [config, localFormData, authoredState.authoringConfig?.data]);
 
-  // Get current form data from one of three sources (in priority order):
+  // Compute form data from authored state (used when localFormData is null)
+  // Sources in priority order:
   // 1. Existing authoringConfig.data (previously saved form state, migrated if needed)
   // 2. Parsed from wrappedInteractiveUrl (editing existing interactive without authoringConfig)
   // 3. config.initialData (brand new interactive)
-  const formData = useMemo(() => {
+  const computedFormData = useMemo(() => {
     if (!config) return {};
     let data;
 
@@ -232,6 +252,10 @@ export const Authoring: React.FC<IProps> = ({
     }
     return data;
   }, [authoredState, config]);
+
+  // Use local form data for immediate updates, fall back to computed data
+  // This prevents input focus loss by avoiding re-renders from parent state changes
+  const formData = localFormData ?? computedFormData;
 
   // Sync initial form data to authored state when there's a URL param but no saved config.
   // This ensures the runtime has the correct wrappedInteractiveUrl even if the user
@@ -317,8 +341,8 @@ export const Authoring: React.FC<IProps> = ({
     // they expect the form to reflect that URL's current settings.
     if (config.sourceUrlField && config.parseUrlToFormData) {
       const field = config.sourceUrlField;
-      // Compare against authoredState directly to avoid stale closure issues
-      const currentSourceUrl = authoredState.authoringConfig?.data?.[field] || '';
+      // Compare against current form data (local or authored) to detect changes
+      const currentSourceUrl = (localFormData ?? authoredState.authoringConfig?.data)?.[field] || '';
       const newSourceUrl = newFormData[field] || '';
 
       if (newSourceUrl && newSourceUrl !== currentSourceUrl) {
@@ -340,6 +364,9 @@ export const Authoring: React.FC<IProps> = ({
         }
       }
     }
+
+    // Update local state immediately to prevent input focus loss
+    setLocalFormData(updatedFormData);
 
     // Calculate the final wrapped interactive URL
     let wrappedInteractiveUrl: string | null | undefined;
@@ -364,17 +391,21 @@ export const Authoring: React.FC<IProps> = ({
       ? config.getDisableFullscreen(updatedFormData)
       : !updatedFormData.enableFullscreen;
 
-    onAuthoredStateChange({
-      ...authoredState,
-      wrappedInteractiveUrl: wrappedInteractiveUrl || undefined,
-      disableFullscreen,
-      authoringConfig: {
-        type: authoringType,
-        version: config.dataVersion || 1,
-        data: updatedFormData
-      }
-    });
-  }, [config, authoredState, authoringType, onAuthoredStateChange, triggerOptionsHighlight]);
+    // Debounce the save to parent to prevent re-renders while typing
+    window.clearTimeout(saveTimeoutRef.current);
+    saveTimeoutRef.current = window.setTimeout(() => {
+      onAuthoredStateChange({
+        ...authoredState,
+        wrappedInteractiveUrl: wrappedInteractiveUrl || undefined,
+        disableFullscreen,
+        authoringConfig: {
+          type: authoringType,
+          version: config.dataVersion || 1,
+          data: updatedFormData
+        }
+      });
+    }, SAVE_DEBOUNCE_MS);
+  }, [config, authoredState, localFormData, authoringType, onAuthoredStateChange, triggerOptionsHighlight]);
 
   // Early return AFTER all hooks have been called
   if (!config) {
