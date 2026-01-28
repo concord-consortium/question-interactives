@@ -215,73 +215,28 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaul
             this.__cachedChildrenCode = generateCodeFromXml(this, xml, "__temp_statements");
           }
         };
-    
-        if (blockHasDisclosure(blockDef, blockConfig)) {
-          // Initialize as closed (no statement input).
-          this.__disclosureOpen = false;
-          updateCachedChildrenCode();
-          this.__childrenSeeded = false;
-
-          // Add open/close toggle button.
-          const icon = new FieldImage(PLUS_ICON, 16, 16, "+/-");
-          icon.setOnClickHandler?.(() => {
-            const open = !this.__disclosureOpen;
-            this.__disclosureOpen = open;
-
-            if (open) {
-              // Opening: add statement input
-              this.appendStatementInput("statements");
-
-              // Create default child blocks if this is the first time opening the block
-              // FIXME This will add default child blocks to a child block if no child blocks are specified for it. To reproduce:
-              // 1. Define three custom blocks, A, B, and C.
-              // 2. Make the default child blocks of B a single C.
-              // 3. Make the default child blocks of A a single B with no children (no C in it).
-              // 4. Add an A block to the workspace and open it. Then open the B within it.
-              //    C will be in B, even though it is not specified in A's default child blocks.
-              if (includeDefaultChildBlocks && !this.__childrenSeeded && !this.__savedChildrenXml) {
-                this.__childrenSeeded = true;
-                const childBlocks = getDefaultChildBlocks();
-                if (childBlocks) {
-                  restoreChildBlocks(this, getXmlFromTemplate(childBlocks, this.workspace));
-                }
-              } else if (this.__savedChildrenXml) {
-                restoreChildBlocks(this, this.__savedChildrenXml);
-              }
-
-              // Clear saved status since the children exist.
-              this.__savedChildrenXml = "";
-              this.__cachedChildrenCode = "";
-            } else {
-              // Closing: save children XML and cache generated code.
-              this.__savedChildrenXml = serializeChildBlocks(this);
-              const stmt = this.getInput("statements");
-              if (stmt) {
-                this.__cachedChildrenCode = javascriptGenerator.statementToCode(this, "statements") || "";
-              }
-              disposeChildBlocks(this);
-              this.removeInput("statements", true);
-            }
-
-            icon.setValue(open ? MINUS_ICON : PLUS_ICON);
-            this.render();
-          });
-          input.insertFieldAt(0, icon, "__disclosure_icon");
-        }
 
         // Except for condition blocks, append the display name immediately.
         if (blockDef.type !== "condition") {
           input.appendField(displayName);
         }
 
+        // Set up type specific fields and inputs
         if (blockDef.type === "creator") {
           const { defaultCount, minCount, maxCount } = blockConfig;
           if (defaultCount !== undefined && minCount !== undefined && maxCount !== undefined) {
             input.appendField(new FieldSlider(defaultCount, minCount, maxCount), "count");
           }
-        }
 
-        if (blockDef.type === "action") {
+          // Use a validator to update the cached children code when the type changes if the block hasn't been opened
+          const validator = (newType: string) => {
+            if (!this.__childrenSeeded) updateCachedChildrenCode(newType);
+            return newType;
+          };
+          appendDropdownFromTypeOptions(input, blockConfig, "type", validator);
+
+          input.appendField(blockDef.name);
+        } else if (blockDef.type === "action") {
           if (Array.isArray(blockConfig.parameters) && blockConfig.parameters.length > 0) {
             appendParameterFields(input, blockConfig.parameters, this);
             try {
@@ -290,13 +245,6 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaul
               console.debug("Error applying parameter defaults", e);
             }
           }
-        } else if (blockDef.type === "creator") {
-          // Use a validator to update the cached children code when the type changes if the block hasn't been opened
-          const validator = (newType: string) => {
-            if (!this.__childrenSeeded) updateCachedChildrenCode(newType);
-            return newType;
-          };
-          appendDropdownFromTypeOptions(input, blockConfig, "type", validator);
         } else if (blockDef.type === "setter") {
           if (blockConfig.includeNumberInput) {
             input.appendField(new FieldNumber(0), "value");
@@ -370,9 +318,57 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaul
           this.setOutput(true, outputType);
         }
 
-        // Add object name at the end for creator blocks
-        if (blockDef.type === "creator") {
-          input.appendField(blockDef.name);
+        if (blockHasDisclosure(blockDef, blockConfig)) {
+          // Initialize as closed (no statement input).
+          this.__disclosureOpen = false;
+          updateCachedChildrenCode();
+          this.__childrenSeeded = false;
+
+          // Add open/close toggle button.
+          const icon = new FieldImage(PLUS_ICON, 16, 16, "+/-");
+          icon.setOnClickHandler?.(() => {
+            const open = !this.__disclosureOpen;
+            this.__disclosureOpen = open;
+
+            if (open) {
+              // Opening: add statement input
+              this.appendStatementInput("statements");
+
+              // Create default child blocks if this is the first time opening the block
+              // FIXME This will add default child blocks to a child block if no child blocks are specified for it. To reproduce:
+              // 1. Define three custom blocks, A, B, and C.
+              // 2. Make the default child blocks of B a single C.
+              // 3. Make the default child blocks of A a single B with no children (no C in it).
+              // 4. Add an A block to the workspace and open it. Then open the B within it.
+              //    C will be in B, even though it is not specified in A's default child blocks.
+              if (includeDefaultChildBlocks && !this.__childrenSeeded && !this.__savedChildrenXml) {
+                this.__childrenSeeded = true;
+                const childBlocks = getDefaultChildBlocks();
+                if (childBlocks) {
+                  restoreChildBlocks(this, getXmlFromTemplate(childBlocks, this.workspace));
+                }
+              } else if (this.__savedChildrenXml) {
+                restoreChildBlocks(this, this.__savedChildrenXml);
+              }
+
+              // Clear saved status since the children exist.
+              this.__savedChildrenXml = "";
+              this.__cachedChildrenCode = "";
+            } else {
+              // Closing: save children XML and cache generated code.
+              this.__savedChildrenXml = serializeChildBlocks(this);
+              const stmt = this.getInput("statements");
+              if (stmt) {
+                this.__cachedChildrenCode = javascriptGenerator.statementToCode(this, "statements") || "";
+              }
+              disposeChildBlocks(this);
+              this.removeInput("statements", true);
+            }
+
+            icon.setValue(open ? MINUS_ICON : PLUS_ICON);
+            this.render();
+          });
+          input.insertFieldAt(0, icon, "__disclosure_icon");
         }
 
         // Color and inline/connection flags
