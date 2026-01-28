@@ -127,53 +127,6 @@ const getXmlFromTemplate = (childBlocks: serialization.blocks.State, workspace: 
   return xml;
 };
 
-// Generates code from XML by temporarily creating blocks.
-const generateCodeFromXml = (block: BlockSvg, xml: string, inputName: string): string => {
-  if (!xml || !block.workspace || block.workspace.isFlyout) return "";
-
-  try {
-    // Temporarily add statement input
-    const tempStmt = block.appendStatementInput(inputName);
-    const tempConn = tempStmt.connection;
-    
-    if (!tempConn) return "";
-
-    // Create blocks from XML
-    const dom = utils.xml.textToDom(`<xml>${xml}</xml>`);
-    const blockDom = dom.firstElementChild;
-    if (!blockDom) return "";
-
-    const tempBlock = Xml.domToBlock(blockDom, block.workspace) as BlockSvg;
-    if (tempBlock.previousConnection) {
-      tempConn.connect(tempBlock.previousConnection);
-    }
-    
-    // Generate code from the temporary blocks
-    const code = javascriptGenerator.statementToCode(block, inputName) || "";
-    
-    // Clean up: dispose temp blocks
-    const blocksToDispose = collectBlockChain(tempBlock);
-    blocksToDispose.reverse().forEach(b => {
-      try {
-        // false = do not "heal stack", i.e., don't reconnect remaining blocks when
-        // one is removed. We skip healing because we're disposing all children.
-        // See https://developers.google.com/blockly/reference/js/blockly.blocksvg_class.dispose_1_method.md
-        b.dispose(false);
-      } catch (e) {
-        console.warn("Error disposing temp block:", e);
-      }
-    });
-    
-    // Remove temporary input
-    block.removeInput(inputName, true);
-    
-    return code;
-  } catch (e) {
-    console.warn("Failed to generate code from XML:", e);
-    return "";
-  }
-};
-
 export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaultChildBlocks = true) => {
   if (!Array.isArray(customBlocks)) {
     console.warn("registerCustomBlocks: customBlocks is not an array:", customBlocks);
@@ -198,9 +151,12 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaul
         const input = this.appendDummyInput();
     
         if (blockHasDisclosure(blockDef, blockConfig)) {
-          // Check if this block type has child blocks configured for seeding.
-          const { defaultChildBlocks } = blockConfig;
-          const hasChildBlocksConfig = includeDefaultChildBlocks && defaultChildBlocks;
+          const { defaultChildBlocks, optionChildBlocks, useOptionChildBlocks } = blockConfig;
+          
+          // Initialize as closed (no statement input).
+          this.__disclosureOpen = false;
+          this.__cachedChildrenCode = "";
+          this.__childrenSeeded = false;
 
           // Add open/close toggle button.
           const icon = new FieldImage(PLUS_ICON, 16, 16, "+/-");
@@ -212,17 +168,26 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaul
               // Opening: add statement input
               this.appendStatementInput("statements");
 
-              // Seed child blocks on first open if configured
-              if (!this.__childrenSeeded && hasChildBlocksConfig) {
+              // Create default child blocks if this is the first time opening the block
+              // FIXME This will add default child blocks to a child block if no child blocks are specified for it. To reproduce:
+              // 1. Define three custom blocks, A, B, and C.
+              // 2. Make the default child blocks of B a single C.
+              // 3. Make the default child blocks of A a single B with no children (no C in it).
+              // 4. Add an A block to the workspace and open it. Then open the B within it.
+              //    C will be in B, even though it is not specified in A's default child blocks.
+              if (includeDefaultChildBlocks && !this.__childrenSeeded && !this.__savedChildrenXml) {
                 this.__childrenSeeded = true;
-                restoreChildBlocks(this, this.__savedChildrenXml);
-                this.__savedChildrenXml = "";
+                const option = this.getFieldValue("type");
+                const childBlocks = useOptionChildBlocks ? optionChildBlocks?.[option] : defaultChildBlocks;
+                if (childBlocks) {
+                  restoreChildBlocks(this, getXmlFromTemplate(childBlocks, this.workspace));
+                }
               } else if (this.__savedChildrenXml) {
                 restoreChildBlocks(this, this.__savedChildrenXml);
-                this.__savedChildrenXml = "";
               }
 
-              // Clear cached code since children are now editable.
+              // Clear saved status since the children exist.
+              this.__savedChildrenXml = "";
               this.__cachedChildrenCode = "";
             } else {
               // Closing: save children XML and cache generated code.
@@ -239,19 +204,6 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaul
             this.render();
           });
           input.insertFieldAt(0, icon, "__disclosure_icon");
-          
-          // Initialize as closed (no statement input).
-          this.__disclosureOpen = false;
-          this.__cachedChildrenCode = "";
-          this.__childrenSeeded = false;
-
-          // Pre-generate XML and cached code for configured child blocks.
-          if (hasChildBlocksConfig) {
-            this.__savedChildrenXml = getXmlFromTemplate(defaultChildBlocks, this.workspace);
-            this.__cachedChildrenCode = generateCodeFromXml(this, this.__savedChildrenXml, "__temp_statements");
-          } else {
-            this.__savedChildrenXml = "";
-          }
         }
 
         // Except for condition blocks, append the display name immediately.
@@ -275,6 +227,7 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaul
             }
           }
         } else if (blockDef.type === "creator") {
+          // TODO changing this should change the default child block code
           appendDropdownFromTypeOptions(input, blockConfig, "type");
         } else if (blockDef.type === "setter") {
           if (blockConfig.includeNumberInput) {
