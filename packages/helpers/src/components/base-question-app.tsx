@@ -50,13 +50,14 @@ interface IProps<IAuthoredState, IInteractiveState> {
   isAnswered?: (state: IInteractiveState | null, authoredState?: IAuthoredState) => boolean;
   linkedInteractiveProps?: ILinkedInteractiveProp[];
   migrateAuthoredState?: (oldAuthoredState: any) => IAuthoredState;
+  allowEmptyAuthoredStateAtRuntime?: boolean;
 }
 
 // BaseApp for interactives that save interactive state and show in the report. E.g. open response, multiple choice.
 export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBaseQuestionAuthoredState,
   IInteractiveState extends IRuntimeMetadata & IBaseQuestionInteractiveState>(props: IProps<IAuthoredState, IInteractiveState>) => {
   const { Authoring, baseAuthoringProps, Runtime, isAnswered, disableAutoHeight, disableSubmitBtnRendering,
-    linkedInteractiveProps, migrateAuthoredState } = props;
+    linkedInteractiveProps, migrateAuthoredState, allowEmptyAuthoredStateAtRuntime } = props;
   const container = useRef<HTMLDivElement>(null);
   const useAuthStateResult = useAuthoredState<IAuthoredState>();
   const authoredState = migrateAuthoredState && useAuthStateResult.authoredState ?
@@ -108,17 +109,23 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
   };
 
   const renderRuntime = () => {
-    if (!authoredState) {
+    // Some interactives, like full-screen, may not require authored state to render at runtime, and can signal that
+    // by setting allowEmptyAuthoredStateAtRuntime to true. In the case of the full-screen interactive it originally
+    // did not require authored state to render because it just used a query parameter for the URL that it was "wrapping"
+    // but it has since been updated to optionally use authored state.
+    const runtimeAuthoredState = !authoredState && allowEmptyAuthoredStateAtRuntime ? {} as IAuthoredState : authoredState;
+    if (!runtimeAuthoredState) {
       return "Authored state is missing.";
     }
+
     return (
       <ObjectStorageProvider config={objectStorageConfig}>
         <div className={css.runtime} data-font-family-override="true">
-          <Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} />
+          <Runtime authoredState={runtimeAuthoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} />
           {
             !disableSubmitBtnRendering &&
             <div>
-              <SubmitButton isAnswered={!!isAnswered?.(interactiveState, authoredState)} />
+              <SubmitButton isAnswered={!!isAnswered?.(interactiveState, runtimeAuthoredState)} />
               <LockedInfo />
             </div>
           }
