@@ -146,6 +146,7 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
 
     try {
       serialization.workspaces.load(JSON.parse(state), workspaceRef.current);
+      workspaceRef.current.render();
     } catch (loadError) {
       if (loadError instanceof Error && loadError.message.includes("Invalid block definition")) {
         console.warn("Invalid block definition error - likely due to deleted custom blocks:", loadError);
