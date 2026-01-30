@@ -288,7 +288,7 @@ export const parseCodapUrlToFormData = (existingUrl: string): ICodapAuthoringDat
           urlToParse = decodeURIComponent(wrappedInteractive);
         }
       } catch (e) {
-        // Keep original urlToParse
+        console.info('full-screen interactive: Could not parse wrapped URL, using original:', e);
       }
     }
 
