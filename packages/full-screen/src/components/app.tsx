@@ -7,6 +7,7 @@ import { Authoring } from "./authoring";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { detectInteractiveType } from "../utils/detect-interactive-type";
 import { getAuthoringConfig } from "../authoring-configs";
+import { parsePrefixedParams } from "../utils/url-prefix-params";
 
 // Wrapper component that provides additional props to Authoring
 const AuthoringWrapper: React.FC<IAuthoringComponentProps<IAuthoredState>> = ({
@@ -32,17 +33,21 @@ const AuthoringWrapper: React.FC<IAuthoringComponentProps<IAuthoredState>> = ({
     ? authoringParam.trim().toLowerCase()
     : "";
 
-  const authoringType = normalizedAuthoringParam
+  let authoringType = normalizedAuthoringParam
     ? normalizedAuthoringParam
     : detectedType ?? "generic";
 
-  // Warn if explicit authoring param doesn't match a known config
+  // Fall back to generic if explicit authoring param doesn't match a known config
   if (normalizedAuthoringParam && !getAuthoringConfig(authoringType)) {
     console.warn(
       `Unknown authoring type "${authoringParam}" - falling back to generic config. ` +
       `Known types: codap, generic`
     );
+    authoringType = "generic";
   }
+
+  // Parse default: and custom: prefixed parameters from the URL
+  const { defaults: urlDefaults, customs: urlCustoms } = parsePrefixedParams(location.search);
 
   // Initialize authored state, using URL param as fallback for wrappedInteractiveUrl.
   // This handles cases where:
@@ -70,6 +75,8 @@ const AuthoringWrapper: React.FC<IAuthoringComponentProps<IAuthoredState>> = ({
       authoredState={currentAuthoredState}
       onAuthoredStateChange={handleAuthoredStateChange}
       authoringType={authoringType}
+      urlDefaults={urlDefaults}
+      urlCustoms={urlCustoms}
     />
   );
 };
