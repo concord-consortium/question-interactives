@@ -100,6 +100,17 @@ export interface IAuthoringConfig<TFormData = any> {
   dataVersion?: number;
 
   /**
+   * Merges parsed URL data with current form data when the source URL changes.
+   * Used to preserve independent authoring choices (like custom params, DI settings)
+   * that cannot be determined from the URL alone.
+   * When not provided, parsed data fully replaces current form data.
+   * @param currentData - Current form data (before URL change)
+   * @param parsedData - Data parsed from the new URL via parseUrlToFormData
+   * @returns Merged form data preserving independent fields from currentData
+   */
+  mergeWithParsedUrl?: (currentData: TFormData, parsedData: TFormData) => TFormData;
+
+  /**
    * Migrates old config data to the current version.
    * Called when loading data with a version older than dataVersion.
    * @param data - The old data to migrate

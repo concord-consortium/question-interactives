@@ -142,7 +142,9 @@ export const codapAuthoringConfig: IAuthoringConfig<ICodapAuthoringData> = {
     const url = formData.codapSourceDocumentUrl || '';
 
     // Warn if URL doesn't look like a CODAP URL
-    if (url && !isValidUrl(url)) {
+    // Skip URL validation for iframe embeds - they're not URLs but are fully supported
+    const isIframeEmbed = url.trim().startsWith('<iframe');
+    if (url && !isIframeEmbed && !isValidUrl(url)) {
       result.codapSourceDocumentUrl = {
         message: 'This does not appear to be a valid URL',
         severity: 'error'
@@ -167,6 +169,40 @@ export const codapAuthoringConfig: IAuthoringConfig<ICodapAuthoringData> = {
     }
 
     return result;
+  },
+
+  // Merge parsed URL data with current form data when the source URL changes.
+  // Preserves independent authoring choices that can't be determined from the URL.
+  mergeWithParsedUrl: (currentData: ICodapAuthoringData, parsedData: ICodapAuthoringData): ICodapAuthoringData => {
+    const currentAdvanced = currentData.advancedOptions || {};
+    const parsedAdvanced = parsedData.advancedOptions || {};
+
+    return {
+      ...parsedData,
+      // Always preserve: never derivable from source URL
+      displayFullscreenButton: currentData.displayFullscreenButton,
+      advancedOptions: {
+        ...parsedAdvanced,
+        // Always preserve: custom params are never in the source URL
+        enableCustomParams: currentAdvanced.enableCustomParams ?? false,
+        customParamsValue: currentAdvanced.customParamsValue ?? '',
+        // Conditionally preserve: use parsed value when URL had the param,
+        // otherwise keep current. parseCodapUrlToFormData sets enable* to true
+        // only when the param exists, so false means "absent from URL".
+        ...(parsedAdvanced.enableDi ? {} : {
+          enableDi: currentAdvanced.enableDi ?? false,
+          diPluginUrl: currentAdvanced.diPluginUrl ?? '',
+        }),
+        ...(parsedAdvanced.enableDiOverride ? {} : {
+          enableDiOverride: currentAdvanced.enableDiOverride ?? false,
+          diOverrideValue: currentAdvanced.diOverrideValue ?? '',
+        }),
+        ...(parsedAdvanced.enableGuideIndex ? {} : {
+          enableGuideIndex: currentAdvanced.enableGuideIndex ?? false,
+          guideIndexValue: currentAdvanced.guideIndexValue ?? 0,
+        }),
+      }
+    };
   },
 
   // Compute derived display values for form data (generatedUrl, passthroughParamsDisplay)

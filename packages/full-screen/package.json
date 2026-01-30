@@ -50,7 +50,9 @@
     "build:watch": "webpack --watch",
     "lint": "eslint \"./src/**/*.{js,jsx,ts,tsx}\"",
     "lint:build": "eslint -c \".eslintrc.build.js\" \"./src/**/*.{js,jsx,ts,tsx}\"",
-    "lint:fix": "eslint --fix \"./src/**/*.{js,jsx,ts,tsx}\""
+    "lint:fix": "eslint --fix \"./src/**/*.{js,jsx,ts,tsx}\"",
+    "test": "jest",
+    "test:watch": "jest --watch"
   },
   "devDependencies": {
     "@svgr/webpack": "^6.5.1",
