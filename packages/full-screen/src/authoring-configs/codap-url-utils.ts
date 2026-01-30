@@ -214,45 +214,51 @@ export const buildCodapUrl = (data: ICodapAuthoringData): string | null => {
   const parsed = parseCodapUrl(sourceUrl);
   if (!parsed.baseUrl) return null;
 
-  const url = new URL(parsed.baseUrl);
+  try {
+    const url = new URL(parsed.baseUrl);
 
-  // Add interactiveApi parameter for LARA integration
-  url.searchParams.set('interactiveApi', '');
+    // Add interactiveApi parameter for LARA integration
+    url.searchParams.set('interactiveApi', '');
 
-  if (parsed.documentId) {
-    url.searchParams.set('documentId', parsed.documentId);
-  }
-
-  // Apply CODAP Options from form checkboxes
-  if (data.displayDataVisibilityToggles) url.searchParams.set('app', 'is');
-  if (data.displayAllComponentsAlways) url.searchParams.set('inbounds', 'true');
-  if (data.removeToolbarsAndGrid) url.searchParams.set('embeddedMode', 'yes');
-  if (data.lockComponents) url.searchParams.set('componentMode', 'yes');
-
-  // Apply Advanced Options
-  const advanced = data.advancedOptions || {};
-  if (advanced.enableDi && advanced.diPluginUrl) url.searchParams.set('di', advanced.diPluginUrl);
-  if (advanced.enableDiOverride && advanced.diOverrideValue) url.searchParams.set('di-override', advanced.diOverrideValue);
-  if (advanced.enableGuideIndex && advanced.guideIndexValue !== undefined) {
-    url.searchParams.set('guideIndex', String(advanced.guideIndexValue));
-  }
-
-  // Add passthrough params (before custom params)
-  Object.entries(parsed.passthroughParams).forEach(([key, value]) => {
-    if (!url.searchParams.has(key)) url.searchParams.set(key, value);
-  });
-
-  // Custom params (override everything)
-  if (advanced.enableCustomParams) {
-    const customSearchParams = parseCustomParams(advanced.customParamsValue);
-    if (customSearchParams) {
-      customSearchParams.forEach((value, key) => {
-        if (key) url.searchParams.set(key, value);
-      });
+    if (parsed.documentId) {
+      url.searchParams.set('documentId', parsed.documentId);
     }
-  }
 
-  return url.toString();
+    // Apply CODAP Options from form checkboxes
+    if (data.displayDataVisibilityToggles) url.searchParams.set('app', 'is');
+    if (data.displayAllComponentsAlways) url.searchParams.set('inbounds', 'true');
+    if (data.removeToolbarsAndGrid) url.searchParams.set('embeddedMode', 'yes');
+    if (data.lockComponents) url.searchParams.set('componentMode', 'yes');
+
+    // Apply Advanced Options
+    const advanced = data.advancedOptions || {};
+    if (advanced.enableDi && advanced.diPluginUrl) url.searchParams.set('di', advanced.diPluginUrl);
+    if (advanced.enableDiOverride && advanced.diOverrideValue) url.searchParams.set('di-override', advanced.diOverrideValue);
+    if (advanced.enableGuideIndex && advanced.guideIndexValue !== undefined) {
+      url.searchParams.set('guideIndex', String(advanced.guideIndexValue));
+    }
+
+    // Add passthrough params (before custom params)
+    Object.entries(parsed.passthroughParams).forEach(([key, value]) => {
+      if (!url.searchParams.has(key)) url.searchParams.set(key, value);
+    });
+
+    // Custom params (override everything)
+    if (advanced.enableCustomParams) {
+      const customSearchParams = parseCustomParams(advanced.customParamsValue);
+      if (customSearchParams) {
+        customSearchParams.forEach((value, key) => {
+          if (key) url.searchParams.set(key, value);
+        });
+      }
+    }
+
+    return url.toString();
+  } catch (e) {
+    // baseUrl was not a valid URL (e.g., malformed input that parseCodapUrl
+    // returned as-is). Return null so callers treat it as "no URL available".
+    return null;
+  }
 };
 
 /**
@@ -281,7 +287,7 @@ export const parseCodapUrlToFormData = (existingUrl: string): ICodapAuthoringDat
         if (wrappedInteractive) {
           urlToParse = decodeURIComponent(wrappedInteractive);
         }
-      } catch {
+      } catch (e) {
         // Keep original urlToParse
       }
     }
