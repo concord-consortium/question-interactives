@@ -1,5 +1,5 @@
 import { RJSFSchema } from "@rjsf/utils";
-import { parsePrefixedParams, applyUrlDefaults, applyUrlCustoms } from "./url-prefix-params";
+import { parsePrefixedParams, applyUrlDefaults, applyUrlCustoms, findFieldInSchema } from "./url-prefix-params";
 
 // A minimal schema matching the CODAP authoring form structure
 const testSchema: RJSFSchema = {
@@ -230,6 +230,83 @@ describe("applyUrlDefaults", () => {
     const original = { ...baseInitialData, advancedOptions: { ...baseInitialData.advancedOptions } };
     applyUrlDefaults(original, { removeToolbarsAndGrid: "true" }, testSchema);
     expect(original.removeToolbarsAndGrid).toBe(false);
+  });
+});
+
+describe("findFieldInSchema", () => {
+  it("finds a top-level field", () => {
+    expect(findFieldInSchema(testSchema, "removeToolbarsAndGrid")).toBe("removeToolbarsAndGrid");
+  });
+
+  it("finds a nested field", () => {
+    expect(findFieldInSchema(testSchema, "enableDi")).toBe("advancedOptions.enableDi");
+  });
+
+  it("returns null for unknown field", () => {
+    expect(findFieldInSchema(testSchema, "nonExistent")).toBeNull();
+  });
+
+  it("returns null and warns for ambiguous field names", () => {
+    const consoleSpy = jest.spyOn(console, "warn").mockImplementation();
+    const ambiguousSchema: RJSFSchema = {
+      type: "object",
+      properties: {
+        enabled: { type: "boolean" },
+        nested: {
+          type: "object",
+          properties: {
+            enabled: { type: "boolean" }
+          }
+        }
+      }
+    };
+    expect(findFieldInSchema(ambiguousSchema, "enabled")).toBeNull();
+    expect(consoleSpy).toHaveBeenCalledWith(expect.stringContaining("ambiguous"));
+    consoleSpy.mockRestore();
+  });
+});
+
+describe("applyUrlDefaults — auto-resolution", () => {
+  it("auto-resolves unqualified nested field names", () => {
+    const result = applyUrlDefaults(
+      baseInitialData,
+      { enableDi: "true" },
+      testSchema
+    );
+    expect(result.advancedOptions.enableDi).toBe(true);
+  });
+
+  it("auto-resolves unqualified top-level field names", () => {
+    const result = applyUrlDefaults(
+      baseInitialData,
+      { removeToolbarsAndGrid: "true" },
+      testSchema
+    );
+    expect(result.removeToolbarsAndGrid).toBe(true);
+  });
+
+  it("still supports full dot-notation paths", () => {
+    const result = applyUrlDefaults(
+      baseInitialData,
+      { "advancedOptions.enableDi": "true" },
+      testSchema
+    );
+    expect(result.advancedOptions.enableDi).toBe(true);
+  });
+
+  it("mixes short and full paths in one call", () => {
+    const result = applyUrlDefaults(
+      baseInitialData,
+      {
+        enableDi: "true",
+        "advancedOptions.guideIndexValue": "3",
+        lockComponents: "1"
+      },
+      testSchema
+    );
+    expect(result.advancedOptions.enableDi).toBe(true);
+    expect(result.advancedOptions.guideIndexValue).toBe(3);
+    expect(result.lockComponents).toBe(true);
   });
 });
 

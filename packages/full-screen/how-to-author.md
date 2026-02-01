@@ -113,6 +113,8 @@ Use `default:` prefixed parameters to pre-fill form fields. These values are app
 
 **Format:** `?default:<fieldName>=<value>`
 
+Field names are auto-resolved against the form schema, so you can use short names like `default:enableDi=true` instead of the full path `default:advancedOptions.enableDi=true`. Full dot-notation paths are still supported for backward compatibility.
+
 **Type coercion:** String values from the URL are converted to the appropriate type based on the form schema:
 - Boolean fields: `true` or `1` becomes checked; anything else becomes unchecked
 - Integer fields: Parsed as a whole number
@@ -127,14 +129,14 @@ Use `default:` prefixed parameters to pre-fill form fields. These values are app
 | `default:displayAllComponentsAlways` | boolean | Keep components within canvas bounds |
 | `default:removeToolbarsAndGrid` | boolean | Remove toolbars and background grid |
 | `default:lockComponents` | boolean | Lock component positions |
-| `default:advancedOptions.enableDi` | boolean | Enable plugin loading |
-| `default:advancedOptions.diPluginUrl` | string | Plugin URL |
-| `default:advancedOptions.enableDiOverride` | boolean | Enable plugin replacement |
-| `default:advancedOptions.diOverrideValue` | string | Plugin override match string |
-| `default:advancedOptions.enableGuideIndex` | boolean | Enable specific guide page |
-| `default:advancedOptions.guideIndexValue` | integer | Guide page index (0-based) |
-| `default:advancedOptions.enableCustomParams` | boolean | Enable custom parameters |
-| `default:advancedOptions.customParamsValue` | string | Custom parameter text |
+| `default:enableDi` | boolean | Enable plugin loading |
+| `default:diPluginUrl` | string | Plugin URL |
+| `default:enableDiOverride` | boolean | Enable plugin replacement |
+| `default:diOverrideValue` | string | Plugin override match string |
+| `default:enableGuideIndex` | boolean | Enable specific guide page |
+| `default:guideIndexValue` | integer | Guide page index (0-based) |
+| `default:enableCustomParams` | boolean | Enable custom parameters |
+| `default:customParamsValue` | string | Custom parameter text |
 
 #### Available Default Fields (Generic)
 
@@ -145,7 +147,7 @@ Use `default:` prefixed parameters to pre-fill form fields. These values are app
 
 ### Adding Custom URL Parameters
 
-Use `custom:` prefixed parameters to inject additional URL parameters into the CODAP custom params field. This is a convenient shorthand for setting `default:advancedOptions.enableCustomParams=true` and populating the custom params text.
+Use `custom:` prefixed parameters to inject additional URL parameters into the CODAP custom params field. This is a convenient shorthand for setting `default:enableCustomParams=true` and populating the custom params text.
 
 **Format:** `?custom:<paramName>=<value>`
 
@@ -163,7 +165,7 @@ When `custom:` parameters are present:
 
 **CODAP with a plugin pre-configured:**
 ```
-?authoring=codap&default:advancedOptions.enableDi=true&default:advancedOptions.diPluginUrl=https://example.com/plugin
+?authoring=codap&default:enableDi=true&default:diPluginUrl=https://example.com/plugin
 ```
 
 **CODAP with custom parameters injected:**
@@ -173,7 +175,7 @@ When `custom:` parameters are present:
 
 **CODAP with fullscreen disabled and a specific guide page:**
 ```
-?authoring=codap&default:displayFullscreenButton=false&default:advancedOptions.enableGuideIndex=true&default:advancedOptions.guideIndexValue=2
+?authoring=codap&default:displayFullscreenButton=false&default:enableGuideIndex=true&default:guideIndexValue=2
 ```
 
 **Generic with fullscreen disabled:**
