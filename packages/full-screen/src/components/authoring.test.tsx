@@ -574,7 +574,7 @@ describe("Authoring", () => {
           authoredState={authoredState}
           onAuthoredStateChange={jest.fn()}
           authoringType="codap"
-          urlDefaults={{ "advancedOptions.enableDi": "true", "advancedOptions.diPluginUrl": "https://plugin.example.com" }}
+          urlDefaults={{ enableDi: "true", diPluginUrl: "https://plugin.example.com" }}
         />
       );
       // Defaults should be applied on top of the parsed URL data
@@ -614,7 +614,7 @@ describe("Authoring", () => {
           authoredState={authoredState}
           onAuthoredStateChange={jest.fn()}
           authoringType="codap"
-          urlDefaults={{ "advancedOptions.enableDi": "true" }}
+          urlDefaults={{ enableDi: "true" }}
         />
       );
       // Saved data wins — enableDi stays false
@@ -635,7 +635,7 @@ describe("Authoring", () => {
           authoredState={authoredState}
           onAuthoredStateChange={onChange}
           authoringType="codap"
-          urlDefaults={{ "advancedOptions.enableDi": "true", "advancedOptions.diPluginUrl": "https://plugin.example.com" }}
+          urlDefaults={{ enableDi: "true", diPluginUrl: "https://plugin.example.com" }}
         />
       );
 

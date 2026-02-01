@@ -119,7 +119,7 @@ describe("applyUrlDefaults", () => {
   it("coerces integer fields from string", () => {
     const result = applyUrlDefaults(
       baseInitialData,
-      { "advancedOptions.guideIndexValue": "5" },
+      { guideIndexValue: "5" },
       testSchema
     );
     expect(result.advancedOptions.guideIndexValue).toBe(5);
@@ -128,7 +128,7 @@ describe("applyUrlDefaults", () => {
   it("coerces number fields from string", () => {
     const result = applyUrlDefaults(
       baseInitialData,
-      { "advancedOptions.scaleFactor": "2.5" },
+      { scaleFactor: "2.5" },
       testSchema
     );
     expect(result.advancedOptions.scaleFactor).toBe(2.5);
@@ -152,10 +152,10 @@ describe("applyUrlDefaults", () => {
     expect(result.sourceUrl).toBe("");
   });
 
-  it("handles nested field paths with dot notation", () => {
+  it("handles nested fields via auto-resolution", () => {
     const result = applyUrlDefaults(
       baseInitialData,
-      { "advancedOptions.enableDi": "true" },
+      { enableDi: "true" },
       testSchema
     );
     expect(result.advancedOptions.enableDi).toBe(true);
@@ -184,7 +184,7 @@ describe("applyUrlDefaults", () => {
 
     const result = applyUrlDefaults(
       baseInitialData,
-      { "advancedOptions.guideIndexValue": "abc" },
+      { guideIndexValue: "abc" },
       testSchema
     );
     expect(result.advancedOptions.guideIndexValue).toBe(0); // unchanged
@@ -200,7 +200,7 @@ describe("applyUrlDefaults", () => {
 
     const result = applyUrlDefaults(
       baseInitialData,
-      { "advancedOptions.scaleFactor": "not-a-number" },
+      { scaleFactor: "not-a-number" },
       testSchema
     );
     expect(result.advancedOptions.scaleFactor).toBe(1.0); // unchanged
@@ -217,7 +217,7 @@ describe("applyUrlDefaults", () => {
       {
         removeToolbarsAndGrid: "true",
         lockComponents: "true",
-        "advancedOptions.enableDi": "1"
+        enableDi: "1"
       },
       testSchema
     );
