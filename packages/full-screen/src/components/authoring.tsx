@@ -4,6 +4,7 @@ import { ErrorSchema, FieldErrorProps, ObjectFieldTemplateProps } from "@rjsf/ut
 import validator from "@rjsf/validator-ajv8";
 import { IAuthoredState, IValidationResult } from "./types";
 import { getAuthoringConfig } from "../authoring-configs";
+import { applyUrlDefaults, applyUrlCustoms } from "../utils/url-prefix-params";
 
 import css from "./authoring.scss";
 
@@ -156,12 +157,16 @@ interface IProps {
   authoredState: IAuthoredState;
   onAuthoredStateChange: (state: IAuthoredState) => void;
   authoringType: string;
+  urlDefaults?: Record<string, string>;
+  urlCustoms?: Record<string, string>;
 }
 
 export const Authoring: React.FC<IProps> = ({
   authoredState,
   onAuthoredStateChange,
-  authoringType
+  authoringType,
+  urlDefaults,
+  urlCustoms
 }) => {
   const config = getAuthoringConfig(authoringType);
 
@@ -241,9 +246,24 @@ export const Authoring: React.FC<IProps> = ({
         console.warn('Failed to parse existing URL:', e);
         data = config.initialData;
       }
+      // Apply URL defaults and customs on top of parsed data.
+      // This handles the common Library Interactive case where an admin provides
+      // both a wrappedInteractive URL and default:/custom: overrides.
+      if (urlDefaults && Object.keys(urlDefaults).length > 0) {
+        data = applyUrlDefaults(data, urlDefaults, config.schema);
+      }
+      if (urlCustoms && Object.keys(urlCustoms).length > 0) {
+        data = applyUrlCustoms(data, urlCustoms);
+      }
     } else {
-      // Fall back to initial data for new interactives
+      // Fall back to initial data for new interactives, with URL overrides applied
       data = config.initialData;
+      if (urlDefaults && Object.keys(urlDefaults).length > 0) {
+        data = applyUrlDefaults(data, urlDefaults, config.schema);
+      }
+      if (urlCustoms && Object.keys(urlCustoms).length > 0) {
+        data = applyUrlCustoms(data, urlCustoms);
+      }
     }
 
     // Allow config to inject computed/derived display values
@@ -251,7 +271,7 @@ export const Authoring: React.FC<IProps> = ({
       return config.computeFormData(data, authoredState);
     }
     return data;
-  }, [authoredState, config]);
+  }, [authoredState, config, urlDefaults, urlCustoms]);
 
   // Use local form data for immediate updates, fall back to computed data
   // This prevents input focus loss by avoiding re-renders from parent state changes
@@ -349,10 +369,12 @@ export const Authoring: React.FC<IProps> = ({
         // Source URL changed - parse it to get updated form field values
         try {
           const parsedData = config.parseUrlToFormData(newSourceUrl);
-          updatedFormData = {
-            ...parsedData,
-            [field]: newSourceUrl  // Ensure the source URL field is set
-          };
+          const currentData = localFormData ?? authoredState.authoringConfig?.data ?? computedFormData;
+          // Merge parsed data with current form data to preserve independent
+          // authoring choices (custom params, DI settings set via defaults, etc.)
+          updatedFormData = config.mergeWithParsedUrl && currentData
+            ? config.mergeWithParsedUrl(currentData, parsedData)
+            : { ...parsedData, [field]: newSourceUrl };
           // Clear any previous parse error on success
           setParseError(null);
           // Trigger visual feedback so author notices the fields updated
@@ -365,8 +387,14 @@ export const Authoring: React.FC<IProps> = ({
       }
     }
 
+    // Apply computed/derived display values (e.g., generatedUrl, passthroughParamsDisplay)
+    // before setting local state, since localFormData bypasses the computedFormData memo.
+    const localData = config.computeFormData
+      ? config.computeFormData(updatedFormData, authoredState)
+      : updatedFormData;
+
     // Update local state immediately to prevent input focus loss
-    setLocalFormData(updatedFormData);
+    setLocalFormData(localData);
 
     // Calculate the final wrapped interactive URL
     let wrappedInteractiveUrl: string | null | undefined;
@@ -405,7 +433,7 @@ export const Authoring: React.FC<IProps> = ({
         }
       });
     }, SAVE_DEBOUNCE_MS);
-  }, [config, authoredState, localFormData, authoringType, onAuthoredStateChange, triggerOptionsHighlight]);
+  }, [config, authoredState, localFormData, computedFormData, authoringType, onAuthoredStateChange, triggerOptionsHighlight]);
 
   // Early return AFTER all hooks have been called
   if (!config) {
