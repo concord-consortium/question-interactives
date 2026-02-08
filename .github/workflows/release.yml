@@ -41,7 +41,6 @@ jobs:
           - INTERACTIVE_FOLDER: fill-in-the-blank
           - INTERACTIVE_FOLDER: full-screen
           - INTERACTIVE_FOLDER: graph
-          - INTERACTIVE_FOLDER: helpers
           - INTERACTIVE_FOLDER: image-question
           - INTERACTIVE_FOLDER: image
           - INTERACTIVE_FOLDER: labbook
