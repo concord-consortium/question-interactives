@@ -137,14 +137,15 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
   const renderReport = () => {
     const reportInitMessage = initMessage as IReportInitInteractive;
     const view = reportInitMessage?.view;
-    if (!authoredState) {
+    const reportAuthoredState = !authoredState && allowEmptyAuthoredStateAtRuntime ? {} as IAuthoredState : authoredState;
+    if (!reportAuthoredState) {
       return "Authored state is missing.";
     }
     return (
       <ObjectStorageProvider config={objectStorageConfig}>
         <div className={css.runtime}>
-          <Runtime authoredState={authoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} report={true} view={view} />
-          { authoredState?.required && <div>Question has been { interactiveState?.submitted ? "" : "NOT" } submitted.</div> }
+          <Runtime authoredState={reportAuthoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} report={true} view={view} />
+          { reportAuthoredState?.required && <div>Question has been { interactiveState?.submitted ? "" : "NOT" } submitted.</div> }
         </div>
       </ObjectStorageProvider>
     );
