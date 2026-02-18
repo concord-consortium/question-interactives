@@ -90,6 +90,12 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
     });
   }, [initMessage]);
 
+  // Some interactives, like full-screen, may not require authored state to render at runtime, and can signal that
+  // by setting allowEmptyAuthoredStateAtRuntime to true. In the case of the full-screen interactive it originally
+  // did not require authored state to render because it just used a query parameter for the URL that it was "wrapping"
+  // but it has since been updated to optionally use authored state.
+  const resolvedAuthoredState = !authoredState && allowEmptyAuthoredStateAtRuntime ? {} as IAuthoredState : authoredState;
+
   if (!isAnswered && !disableSubmitBtnRendering) {
     throw new Error("isAnswered function is required when disableSubmitBtnRendering = false");
   }
@@ -109,23 +115,18 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
   };
 
   const renderRuntime = () => {
-    // Some interactives, like full-screen, may not require authored state to render at runtime, and can signal that
-    // by setting allowEmptyAuthoredStateAtRuntime to true. In the case of the full-screen interactive it originally
-    // did not require authored state to render because it just used a query parameter for the URL that it was "wrapping"
-    // but it has since been updated to optionally use authored state.
-    const runtimeAuthoredState = !authoredState && allowEmptyAuthoredStateAtRuntime ? {} as IAuthoredState : authoredState;
-    if (!runtimeAuthoredState) {
+    if (!resolvedAuthoredState) {
       return "Authored state is missing.";
     }
 
     return (
       <ObjectStorageProvider config={objectStorageConfig}>
         <div className={css.runtime} data-font-family-override="true">
-          <Runtime authoredState={runtimeAuthoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} />
+          <Runtime authoredState={resolvedAuthoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} />
           {
             !disableSubmitBtnRendering &&
             <div>
-              <SubmitButton isAnswered={!!isAnswered?.(interactiveState, runtimeAuthoredState)} />
+              <SubmitButton isAnswered={!!isAnswered?.(interactiveState, resolvedAuthoredState)} />
               <LockedInfo />
             </div>
           }
@@ -137,15 +138,14 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
   const renderReport = () => {
     const reportInitMessage = initMessage as IReportInitInteractive;
     const view = reportInitMessage?.view;
-    const reportAuthoredState = !authoredState && allowEmptyAuthoredStateAtRuntime ? {} as IAuthoredState : authoredState;
-    if (!reportAuthoredState) {
+    if (!resolvedAuthoredState) {
       return "Authored state is missing.";
     }
     return (
       <ObjectStorageProvider config={objectStorageConfig}>
         <div className={css.runtime}>
-          <Runtime authoredState={reportAuthoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} report={true} view={view} />
-          { reportAuthoredState?.required && <div>Question has been { interactiveState?.submitted ? "" : "NOT" } submitted.</div> }
+          <Runtime authoredState={resolvedAuthoredState} interactiveState={interactiveState} setInteractiveState={setInteractiveState} report={true} view={view} />
+          { resolvedAuthoredState?.required && <div>Question has been { interactiveState?.submitted ? "" : "NOT" } submitted.</div> }
         </div>
       </ObjectStorageProvider>
     );
