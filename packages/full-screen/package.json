@@ -1,6 +1,6 @@
 {
   "name": "full-screen",
-  "version": "1.16.0",
+  "version": "1.22.1",
   "description": "Full-screen interactive",
   "repository": {
     "type": "git",
@@ -102,7 +102,7 @@
   },
   "dependencies": {
     "@concord-consortium/lara-interactive-api": "1.12.0",
-    "@concord-consortium/question-interactives-helpers": "^1.16.0",
+    "@concord-consortium/question-interactives-helpers": "^1.22.1",
     "@rjsf/core": "^5.9.0",
     "@rjsf/utils": "^5.9.0",
     "@rjsf/validator-ajv8": "^5.9.0",

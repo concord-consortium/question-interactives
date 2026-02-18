@@ -1,6 +1,6 @@
 {
   "name": "blockly",
-  "version": "1.16.0",
+  "version": "1.22.1",
   "description": "Blockly interactive",
   "repository": {
     "type": "git",
@@ -110,7 +110,7 @@
     "@blockly/field-slider": "8.0.2",
     "@concord-consortium/dynamic-text": "^1.0.6",
     "@concord-consortium/lara-interactive-api": "1.12.0",
-    "@concord-consortium/question-interactives-helpers": "^1.16.0",
+    "@concord-consortium/question-interactives-helpers": "^1.22.1",
     "@rjsf/utils": "^5.0.1",
     "blockly": "12.3.0",
     "chart.js": "^3.9.1",
