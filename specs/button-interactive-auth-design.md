@@ -40,7 +40,7 @@ The interactive does **not** send auth tokens or the student's identity — Fire
 
 ### Function identity & Firestore access
 
-**Identifying the student:** Firebase Callable Functions provide `context.auth.uid` and `context.auth.token` automatically. The token contains custom claims from the LARA Firebase JWT: `platform_user_id`, `class_hash`, `platform_id`, etc.
+**Identifying the student:** Firebase Callable Functions provide `context.auth.uid` and `context.auth.token` automatically. The token contains custom claims set by the Portal's `getFirebaseJwt` endpoint (used by Activity Player via `signInWithCustomToken`): `platform_user_id`, `class_hash`, `platform_id`, and other enrollment context. The function primarily depends on `platform_user_id` (student identity), `class_hash` (Firestore paths and teacher token scope), and `platform_id` (Portal routing).
 
 **Two-client Firestore access, both through security rules:**
 
@@ -66,7 +66,7 @@ The function needs to call Portal APIs for operations that students must not be 
 4. The Portal verifies the token against **Google's public JWKS endpoint** (`https://www.googleapis.com/oauth2/v3/certs`) — standard JWT verification, no shared secrets.
 5. The Portal checks that the token's `email` claim matches a pre-configured trusted service identity.
 
-**Portal-side (initial implementation):** The Portal maps the service account identity to a Portal user account. When an API request arrives with a valid OIDC token, the Portal sets the "current user" to the mapped Portal user and processes the request using existing authorization logic. This requires minimal Portal changes — just the OIDC verification middleware and the service-account-to-user mapping, plus the new API endpoints. Since these scripts automate what a project admin would do manually, running as that admin user is a natural starting point. Building a dedicated service role system is premature until we see what permissions future scripts need (see Future considerations).
+**Portal-side (initial implementation):** The Portal maps the service account identity to a Portal user account. When an API request arrives with a valid OIDC token, the Portal sets the "current user" to the mapped Portal user and processes the request using existing authorization logic. The new API endpoints use normal Portal authorization — they are not narrow-scoped or restricted to service-identity callers. This requires minimal Portal changes — just the OIDC verification middleware and the service-account-to-user mapping, plus the new API endpoints. This first version automates what a project admin would do manually, so running as that admin user with standard permissions is appropriate and avoids unnecessary Portal changes. Building a dedicated service role system is premature until we see what permissions future scripts need (see Future considerations).
 
 **What the function sends to the Portal on each call:**
 - The OIDC bearer token (proves the function's identity)
