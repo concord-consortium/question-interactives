@@ -170,6 +170,7 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
               setInteractiveState={setInteractiveState}
               flushOnSave={true}
               accessibility={accessibility}
+              iframeStyling={{width: "100%", flex: 1, border: "none"}}
             />
           </DynamicTextContext.Provider>
           {renderReportItemHtml()}
