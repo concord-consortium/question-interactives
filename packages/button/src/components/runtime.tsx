@@ -4,7 +4,7 @@ import { renderHTML } from "@concord-consortium/question-interactives-helpers/sr
 import { DynamicText } from "@concord-consortium/dynamic-text";
 
 import { DefaultAuthoredState, IAuthoredState, IInteractiveState } from "./types";
-import { StarterComponent } from "./starter";
+import { ButtonComponent } from "./button";
 
 import css from "./runtime.scss";
 
@@ -14,9 +14,9 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
   authoredState = {...DefaultAuthoredState, ...authoredState};
 
   return (
-    <div className={css.starter}>
+    <div className={css.button}>
       {authoredState.prompt && <div><DynamicText>{renderHTML(authoredState.prompt)}</DynamicText></div>}
-      <StarterComponent
+      <ButtonComponent
         authoredState={authoredState}
         interactiveState={interactiveState}
         setInteractiveState={setInteractiveState}

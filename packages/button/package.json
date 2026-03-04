@@ -1,7 +1,7 @@
 {
-  "name": "starter",
+  "name": "button",
   "version": "1.22.1",
-  "description": "Starter interactive",
+  "description": "Button interactive",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/concord-consortium/question-interactives.git"
