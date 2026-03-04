@@ -92,6 +92,7 @@ Use the following steps to add a new interactive:
 - search your newly created folder for instances of the string `starter` and replace it with the name of your interactive. For example, this string might appear in `readme.md`, and `package.json`.
 - cd into your new interactive folder and run `npm start`.  DO NOT RUN `npm start` from the root folder as that just starts a http server for everything in `dist`.
 - load http://localhost:8080/new-interactive/demo.html to see the default starter authoring, runtime and report-item html.  Note: the default port is 8080 and you will need to change `new-interactive` to the name you picked.  The demo will show you some example authored and interactive state and point you where to start customizing the interactive.
+- add the new interactive's folder name to the matrix list in `.github/workflows/release.yml` (see the comment in that file: "Add new Question Interactives to this list"). This is required for release promotion — build, test, and branch deploys are automatic, but the release workflow uses an explicit list.
 
 
 ## Deployment

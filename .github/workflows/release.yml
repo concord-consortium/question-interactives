@@ -35,6 +35,7 @@ jobs:
           - INTERACTIVE_FOLDER: agent-simulation
           - INTERACTIVE_FOLDER: bar-graph
           - INTERACTIVE_FOLDER: blockly
+          - INTERACTIVE_FOLDER: button
           - INTERACTIVE_FOLDER: carousel
           - INTERACTIVE_FOLDER: drag-and-drop
           - INTERACTIVE_FOLDER: drawing-tool
