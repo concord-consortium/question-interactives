@@ -1,13 +1,9 @@
 @import "../../../helpers/src/styles/px-to-rem.scss";
 
 .buttonComponent {
-  display: flex;
-  gap: 10px;
-  flex-direction: column;
-
-  .example {
+  pre {
     font-family: monospace;
     white-space: pre-wrap;
-    margin: 10px 0;
+    margin: 0;
   }
 }

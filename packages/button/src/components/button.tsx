@@ -7,31 +7,11 @@ import css from "./button.scss";
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
 
-export const ButtonComponent: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
-  const exampleAuthoredState = (authoredState.exampleAuthoredState ?? "").replace(/\\n/g, "<br/>");
-
-  React.useEffect(() => {
-    const update = () => {
-      setInteractiveState?.((prev: IInteractiveState) => {
-        return {
-          ...prev,
-          exampleInteractiveState: new Date().toISOString()
-        };
-      });
-    };
-
-    update();
-    const timer = setInterval(update, 1000);
-    return () => clearTimeout(timer);
-  }, [setInteractiveState]);
-
+export const ButtonComponent: React.FC<IProps> = ({ authoredState }) => {
   return (
     <div className={css.buttonComponent}>
-      <div><strong>TODO: Replace this ButtonComponent with your interactive.</strong></div>
-      <div>Below is an example of reading the exampleAuthoredState value from authoredState:</div>
-      <div className={css.example} dangerouslySetInnerHTML={{ __html: exampleAuthoredState }} />
-      <div>Below is an example of reading the exampleInteractiveState value from interactiveState:</div>
-      <div className={css.example}>{interactiveState?.exampleInteractiveState}</div>
+      <p><strong>Temporary Debug View</strong> — this will be replaced with the button component in a future story.</p>
+      <pre>{JSON.stringify(authoredState, null, 2)}</pre>
     </div>
   );
 };
