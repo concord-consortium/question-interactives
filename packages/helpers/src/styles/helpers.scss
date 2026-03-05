@@ -30,6 +30,12 @@
   --cc-orange-light-4-b: #ffeddc;
   --cc-orange-light-5: #fff2e7;
   --cc-orange-light-6: #fff9f3;
+  --cc-ap-button-color: #000000;
+  --cc-ap-button-default: #ffba7d;
+  --cc-ap-button-hover: #ff9a42;
+  --cc-ap-button-click: #ff8113;
+  --cc-ap-button-border: #949494;
+  --cc-ap-button-focus-ring: #0957d0;
 }
 
 
@@ -112,10 +118,10 @@ $themeColor2: #34a5be;
 
 
 @mixin ap-button {
-  background-color: #ffa350;
-  border: solid 1.5px #979797;
+  background-color: var(--cc-ap-button-default);
+  border: solid 1.5px var(--cc-ap-button-border);
   border-radius: 4px;
-  color: #3f3f3f;
+  color: var(--cc-ap-button-color);
   cursor: pointer;
   flex-grow: 0;
   flex-shrink: 0;
@@ -127,25 +133,24 @@ $themeColor2: #34a5be;
   white-space: nowrap;
 
   &:hover {
-    background-color: #ff8415;
+    background-color: var(--cc-ap-button-hover);
+  }
+  &:focus-visible {
+    background-color: var(--cc-ap-button-hover);
+    box-shadow: inset 0 0 0 2.5px var(--cc-ap-button-focus-ring), inset 0 0 0 3.5px white;
+    outline: none;
   }
   &:active {
-    color: white;
-
-    // Icon.
-    svg {
-      fill: white;
-    }
+    background-color: var(--cc-ap-button-click);
   }
 
   &:disabled {
     cursor: not-allowed;
-    opacity: 0.3;
+    opacity: 0.35;
   }
 
-  // Icon.
   svg {
-    fill: #3f3f3f;
+    fill: currentColor;
   }
 }
 
