@@ -13,6 +13,18 @@ export interface IInteractiveState extends IRuntimeInteractiveMetadata {
   submitted?: boolean;
 }
 
+export interface IScriptResponse {
+  status: "queued" | "success" | "failure";
+  message: string;
+  disableButton: boolean;
+  processingMessage?: string;
+}
+
+export interface IFakeScriptResult {
+  queued: IScriptResponse;
+  result: Promise<IScriptResponse>;
+}
+
 export const DefaultAuthoredState: Omit<Required<IAuthoredState>, "questionSubType"|"required"|"prompt"> = {
   version: 1,
   questionType: "iframe_interactive",
@@ -25,5 +37,5 @@ export const DemoAuthoredState: IAuthoredState = {
   questionType: "iframe_interactive",
   prompt: "<p>Click this button when you have finished answering all the questions.</p>",
   buttonLabel: "I'm Done!",
-  scriptUrl: "https://example.com/action-script",
+  scriptUrl: "https://example.com/success",
 };
