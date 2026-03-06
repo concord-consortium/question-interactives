@@ -5,6 +5,7 @@ import { renderHTML } from "@concord-consortium/question-interactives-helpers/sr
 import { closeModal, flushStateUpdates, getClient, IAccessibilitySettings, IAddLinkedInteractiveStateListenerRequest, IAttachmentUrlRequest, IAttachmentUrlResponse, ICloseModal, ICustomMessage, IGetInteractiveState, IHintRequest, IInitInteractive, ILinkedInteractive, IShowModal, log, setOnUnload, showModal } from "@concord-consortium/lara-interactive-api";
 
 import { IframePhone } from "../types";
+import { demoJobManager } from "../utilities/demo-job-manager";
 import { getLibraryInteractive } from "../utilities/library-interactives";
 
 import css from "./iframe-runtime.scss";
@@ -193,6 +194,10 @@ export const IframeRuntime: React.FC<IProps> =
       }
 
       phone.post("initInteractive", initInteractiveMessage);
+
+      // Register interactive with the job manager for job system support
+      const interactiveId = id || "demo-interactive";
+      demoJobManager.addInteractive(interactiveId, phone);
     };
 
     if (iframeRef.current) {
@@ -204,6 +209,8 @@ export const IframeRuntime: React.FC<IProps> =
     // Cleanup.
     return () => {
       if (phoneRef.current) {
+        const interactiveId = id || "demo-interactive";
+        demoJobManager.removeInteractive(interactiveId);
         phoneRef.current.disconnect();
       }
     };
