@@ -108,7 +108,8 @@ module.exports = (env, argv, interactiveDirName, customizations) => {
         // prevent duplicate react versions when npm linking lara-interactive-api
         // cf. https://github.com/facebook/react/issues/13991#issuecomment-435587809
         react: path.resolve(__dirname, '../node_modules/react'),
-        // prevent duplicate lara-interactive-api when dynamic-text pins an older version
+        // prevent duplicate lara-interactive-api versions (e.g. dynamic-text pulls in 1.12.0
+        // while packages use 1.13.0-pre.2) which triggers "loaded multiple times" warning
         '@concord-consortium/lara-interactive-api': path.resolve(interactiveDirName, 'node_modules/@concord-consortium/lara-interactive-api'),
       },
       extensions: ['.ts', '.tsx', '.js']
