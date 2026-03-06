@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { log } from "@concord-consortium/lara-interactive-api";
+import classNames from "classnames";
 
 import { IRuntimeQuestionComponentProps } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
 import { IAuthoredState, IInteractiveState, IScriptResponse } from "./types";
@@ -72,7 +73,7 @@ export const ButtonComponent: React.FC<IProps> = ({ authoredState }) => {
     switch (scriptResponse.status) {
       case "queued":
         return (
-          <div className={css.statusMessage}>
+          <div className={classNames(css.statusMessage, css.processingMessage)}>
             <div className={css.spinner} aria-hidden="true" />
             <span>{scriptResponse.processingMessage || "Please wait\u2026"}</span>
           </div>
