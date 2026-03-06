@@ -18,11 +18,17 @@
 
 .statusMessage {
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  gap: 8px;
-  font-size: pxToRem(14);
+  gap: 10px;
+  font-size: pxToRem(16);
   line-height: 1.4;
+
+  &.processingMessage {
+    font-size: pxToRem(18);
+    font-weight: bold;
+    font-style: italic;
+  }
 }
 
 .statusIcon {
@@ -32,8 +38,8 @@
 
 .spinner {
   flex-shrink: 0;
-  width: 20px;
-  height: 20px;
+  width: 36px;
+  height: 36px;
   border: 2.5px solid #ccc;
   border-top-color: #666;
   border-radius: 50%;
