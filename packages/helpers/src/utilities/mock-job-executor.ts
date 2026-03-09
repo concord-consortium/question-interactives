@@ -36,7 +36,7 @@ export class MockJobExecutor implements IJobExecutor {
 
     if (!taskConfig) {
       // Unknown task — immediate failure, no transitions
-      const job: IJobInfo = {
+      const failedJob: IJobInfo = {
         version: 1,
         id,
         status: "failure",
@@ -45,8 +45,8 @@ export class MockJobExecutor implements IJobExecutor {
         createdAt: now,
         completedAt: now,
       };
-      this.jobs.push(job);
-      return Promise.resolve(job);
+      this.jobs.push(failedJob);
+      return Promise.resolve(failedJob);
     }
 
     const processingMessage = request.processingMessage ?? taskConfig.defaultProcessingMessage;
@@ -89,6 +89,12 @@ export class MockJobExecutor implements IJobExecutor {
   }
 
   cancelJob(jobId: string): Promise<void> {
+    // Only cancel jobs that are still in progress
+    const job = this.jobs.find(j => j.id === jobId);
+    if (!job || (job.status !== "queued" && job.status !== "running")) {
+      return Promise.resolve();
+    }
+
     // Clear pending timeouts
     const timeouts = this.pendingTimeouts.get(jobId);
     if (timeouts) {

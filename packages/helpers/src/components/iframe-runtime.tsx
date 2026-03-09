@@ -4,8 +4,8 @@ import { DynamicText } from "@concord-consortium/dynamic-text";
 import { renderHTML } from "@concord-consortium/question-interactives-helpers/src/utilities/render-html";
 import { closeModal, flushStateUpdates, getClient, IAccessibilitySettings, IAddLinkedInteractiveStateListenerRequest, IAttachmentUrlRequest, IAttachmentUrlResponse, ICloseModal, ICustomMessage, IGetInteractiveState, IHintRequest, IInitInteractive, ILinkedInteractive, IShowModal, log, setOnUnload, showModal } from "@concord-consortium/lara-interactive-api";
 
+import { JobManager } from "@concord-consortium/interactive-api-host";
 import { IframePhone } from "../types";
-import { demoJobManager } from "../utilities/demo-job-manager";
 import { getLibraryInteractive } from "../utilities/library-interactives";
 
 import css from "./iframe-runtime.scss";
@@ -21,6 +21,7 @@ interface IProps {
   id?: string;
   iframeStyling?: any;
   interactiveState: any;
+  jobManager?: JobManager;
   logRequestData?: Record<string, unknown>;
   report?: boolean;
   readOnly?: boolean;
@@ -37,7 +38,7 @@ interface IProps {
 }
 
 export const IframeRuntime: React.FC<IProps> =
-  ({ authoredState, id, iframeStyling, interactiveState, logRequestData, report,
+  ({ authoredState, id, iframeStyling, interactiveState, jobManager, logRequestData, report,
       url, setHint, setInteractiveState, addLocalLinkedDataListener, initMessage,
       scale, onUnloadCallback, scrolling, flushOnSave, accessibility, readOnly }) => {
     const [ iframeHeight, setIframeHeight ] = useState(300);
@@ -196,8 +197,10 @@ export const IframeRuntime: React.FC<IProps> =
       phone.post("initInteractive", initInteractiveMessage);
 
       // Register interactive with the job manager for job system support
-      const interactiveId = id || "demo-interactive";
-      demoJobManager.addInteractive(interactiveId, phone);
+      if (jobManager) {
+        const interactiveId = id || "demo-interactive";
+        jobManager.addInteractive(interactiveId, phone);
+      }
     };
 
     if (iframeRef.current) {
@@ -209,12 +212,14 @@ export const IframeRuntime: React.FC<IProps> =
     // Cleanup.
     return () => {
       if (phoneRef.current) {
-        const interactiveId = id || "demo-interactive";
-        demoJobManager.removeInteractive(interactiveId);
+        if (jobManager) {
+          const interactiveId = id || "demo-interactive";
+          jobManager.removeInteractive(interactiveId);
+        }
         phoneRef.current.disconnect();
       }
     };
-  },[addLocalLinkedDataListener, authoredState, logRequestData, report, setHint, url, initMessage, flushOnSave, accessibility, id]);
+  },[addLocalLinkedDataListener, authoredState, jobManager, logRequestData, report, setHint, url, initMessage, flushOnSave, accessibility, id]);
 
   let scaledIframeStyle = undefined;
   if (scale && report) {

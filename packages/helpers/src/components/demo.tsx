@@ -4,6 +4,7 @@ import { useAccessibility } from "@concord-consortium/lara-interactive-api";
 import { IframeRuntime } from "../components/iframe-runtime";
 import { DemoAuthoringComponent } from "./demo-authoring";
 import { DynamicTextContext, useDynamicTextProxy } from "@concord-consortium/dynamic-text";
+import { demoJobManager } from "../utilities/demo-job-manager";
 
 import css from "./demo.scss";
 
@@ -168,6 +169,7 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
               authoredState={authoredState}
               interactiveState={interactiveState}
               setInteractiveState={setInteractiveState}
+              jobManager={demoJobManager}
               flushOnSave={true}
               accessibility={accessibility}
               iframeStyling={{width: "100%", flex: 1, border: "none"}}

@@ -134,6 +134,16 @@ describe("MockJobExecutor", () => {
       );
     });
 
+    it("does not cancel a job that has already completed", async () => {
+      const job = await executor.createJob({ task: "success" });
+      jest.advanceTimersByTime(2000); // let it reach success
+      onUpdate.mockClear();
+      await executor.cancelJob(job.id);
+      expect(onUpdate).not.toHaveBeenCalled();
+      const jobs = await executor.getJobs();
+      expect(jobs[0].status).toBe("success");
+    });
+
     it("clears pending timeouts so no further transitions occur", async () => {
       const job = await executor.createJob({ task: "success" });
       await executor.cancelJob(job.id);
