@@ -18,8 +18,12 @@
       "<rootDir>src/setupTests.ts"
     ],
     "transform": {
-      "^.+\\.tsx?$": "ts-jest"
+      "^.+\\.tsx?$": "ts-jest",
+      "node_modules/(@smithy|@aws-sdk)/.+\\.js$": "<rootDir>/jest-node-protocol-transform.js"
     },
+    "transformIgnorePatterns": [
+      "node_modules/(?!(@smithy|@aws-sdk)/)"
+    ],
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
     "testPathIgnorePatterns": [
       "/convert-lara-answers/",
