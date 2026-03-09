@@ -19,7 +19,7 @@
     ],
     "transform": {
       "^.+\\.tsx?$": "ts-jest",
-      "node_modules/(@smithy|@aws-sdk)/.+\\.js$": "<rootDir>/jest-node-protocol-transform.js"
+      "node_modules/(@smithy|@aws-sdk)/.+\\.js$": "../../jest-node-protocol-transform.js"
     },
     "transformIgnorePatterns": [
       "node_modules/(?!(@smithy|@aws-sdk)/)"
