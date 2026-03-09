@@ -18,8 +18,10 @@
       "<rootDir>src/setupTests.ts"
     ],
     "transform": {
-      "^.+\\.tsx?$": "ts-jest"
+      "^.+\\.tsx?$": "ts-jest",
+      "node_modules/(@smithy|@aws-sdk)/.+\\.js$": "../../jest-node-protocol-transform.js"
     },
+    "transformIgnorePatterns": ["node_modules/(?!(@smithy|@aws-sdk)/)"],
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
     "testPathIgnorePatterns": [
       "/node_modules/",
