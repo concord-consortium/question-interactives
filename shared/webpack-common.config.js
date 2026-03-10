@@ -108,6 +108,8 @@ module.exports = (env, argv, interactiveDirName, customizations) => {
         // prevent duplicate react versions when npm linking lara-interactive-api
         // cf. https://github.com/facebook/react/issues/13991#issuecomment-435587809
         react: path.resolve(__dirname, '../node_modules/react'),
+        // prevent duplicate lara-interactive-api when dynamic-text pins an older version
+        '@concord-consortium/lara-interactive-api': path.resolve(interactiveDirName, 'node_modules/@concord-consortium/lara-interactive-api'),
       },
       extensions: ['.ts', '.tsx', '.js']
     },
