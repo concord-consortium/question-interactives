@@ -26,6 +26,37 @@ const demoUrl = (newIframe: string) => `demo.html?iframe=${newIframe}&${params.t
 
 const dynamicTextProxy = useDynamicTextProxy();
 
+// Phone adapter that bridges postMessage to JobManager in the root demo.
+// The JobManager expects an iframe-phone-like interface (addListener/post).
+// This adapter converts between postMessage events and the JobManager's phone API.
+class PostMessagePhone {
+  private listeners: Record<string, ((data: any) => void)[]> = {};
+  source: MessageEventSource | null = null;
+
+  addListener(type: string, callback: (data: any) => void) {
+    if (!this.listeners[type]) {
+      this.listeners[type] = [];
+    }
+    this.listeners[type].push(callback);
+  }
+
+  post(type: string, data: any) {
+    if (this.source) {
+      this.source.postMessage({ type, content: data });
+    }
+  }
+
+  dispatch(type: string, data: any) {
+    (this.listeners[type] || []).forEach(cb => cb(data));
+  }
+}
+
+let demoJobPhone: PostMessagePhone | null = null;
+if (rootDemo) {
+  demoJobPhone = new PostMessagePhone();
+  demoJobManager.addInteractive("demo-interactive", demoJobPhone as any);
+}
+
 export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<IAuthoredState, IInteractiveState>) => {
   const { App, title, getReportItemHtml } = props;
   const [authoredState, setAuthoredState] = useState<IAuthoredState>(props.authoredState);
@@ -77,6 +108,17 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
                 return prev;
               });
             }, 500);
+          }
+          break;
+        case "createJob":
+          if (rootDemo && source && demoJobPhone) {
+            demoJobPhone.source = source;
+            demoJobPhone.dispatch("createJob", data.content);
+          }
+          break;
+        case "cancelJob":
+          if (rootDemo && demoJobPhone) {
+            demoJobPhone.dispatch("cancelJob", data.content);
           }
           break;
         case "log":
@@ -169,7 +211,6 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
               authoredState={authoredState}
               interactiveState={interactiveState}
               setInteractiveState={setInteractiveState}
-              jobManager={demoJobManager}
               flushOnSave={true}
               accessibility={accessibility}
               iframeStyling={{width: "100%", flex: 1, border: "none"}}
