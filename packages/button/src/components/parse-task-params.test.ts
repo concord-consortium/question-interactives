@@ -67,4 +67,18 @@ describe("parseTaskParams", () => {
       onlykey: "onlyvalue",
     });
   });
+
+  it("handles Windows-style \\r\\n line endings", () => {
+    expect(parseTaskParams("key1=value1\r\nkey2=value2")).toEqual({
+      key1: "value1",
+      key2: "value2",
+    });
+  });
+
+  it("handles bare \\r line endings", () => {
+    expect(parseTaskParams("key1=value1\rkey2=value2")).toEqual({
+      key1: "value1",
+      key2: "value2",
+    });
+  });
 });

@@ -22,9 +22,9 @@ export const parseTaskParams = (taskParams: string | undefined): Record<string, 
   if (!taskParams || !taskParams.trim()) {
     return {};
   }
-  const normalized = taskParams.replace(/\n/g, "&");
+  const normalized = taskParams.replace(/\r?\n|\r/g, "&");
   const params = new URLSearchParams(normalized);
-  const result: Record<string, string> = {};
+  const result: Record<string, string> = Object.create(null);
   params.forEach((value, key) => {
     if (key) {
       result[key] = value;
@@ -37,7 +37,7 @@ export const ButtonComponent: React.FC<IProps> = ({ authoredState }) => {
   const { createJob, latestJob } = useJobs();
 
   const handleClick = useCallback(async () => {
-    const task = authoredState.task || "";
+    const task = authoredState.task?.trim() || "";
     const params = parseTaskParams(authoredState.taskParams);
 
     log("button clicked", { buttonLabel: authoredState.buttonLabel, task });
@@ -52,7 +52,7 @@ export const ButtonComponent: React.FC<IProps> = ({ authoredState }) => {
   }, [authoredState.task, authoredState.taskParams, authoredState.buttonLabel, createJob]);
 
   const buttonLabel = authoredState.buttonLabel || "Submit";
-  const hasTask = !!(authoredState.task);
+  const hasTask = !!(authoredState.task?.trim());
   const canRetry = latestJob?.status === "failure" || latestJob?.status === "cancelled";
   const isDisabled = !hasTask || (latestJob != null && !canRetry);
 

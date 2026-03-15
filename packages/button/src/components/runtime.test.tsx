@@ -76,6 +76,12 @@ describe("Button runtime", () => {
     expect(wrapper.text()).toContain("No task is configured");
   });
 
+  it("disables the button and shows error when task is whitespace-only", () => {
+    const wrapper = mountRuntime({ ...DemoAuthoredState, task: "   " });
+    expect(wrapper.find("button").prop("disabled")).toBe(true);
+    expect(wrapper.text()).toContain("No task is configured");
+  });
+
   it("calls createJob with the task on click", () => {
     const wrapper = mountRuntime({ ...DemoAuthoredState, task: "success" });
 
@@ -176,6 +182,6 @@ describe("Button runtime", () => {
     const wrapper = mountRuntime();
 
     expect(wrapper.find("button").prop("disabled")).toBe(false);
-    expect(wrapper.text()).not.toContain("No task is configured");
+    expect(wrapper.find("[role=\"status\"]").text()).toBe("");
   });
 });
