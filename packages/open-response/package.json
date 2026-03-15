@@ -34,8 +34,7 @@
     ],
     "moduleNameMapper": {
       "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>__mocks__/fileMock.js",
-      "\\.(css|less|sass|scss)$": "identity-obj-proxy",
-      "@concord-consortium/lara-interactive-api": "<rootDir>node_modules/@concord-consortium/lara-interactive-api"
+      "\\.(css|less|sass|scss)$": "identity-obj-proxy"
     },
     "moduleFileExtensions": [
       "ts",
@@ -91,7 +90,7 @@
     "file-loader": "^6.2.0",
     "generate-json-from-js-webpack-plugin": "^0.1.1",
     "html-webpack-plugin": "^4.5.2",
-    "identity-obj-proxy": "^3.0.0",
+    "identity-obj-proxy": "^3.0.0"
     "jest": "^26.6.3",
     "mini-css-extract-plugin": "^0.11.3",
     "npm-run-all": "^4.1.5",
