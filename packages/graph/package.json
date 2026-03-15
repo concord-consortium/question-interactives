@@ -34,8 +34,7 @@
     ],
     "moduleNameMapper": {
       "\\.(jpg|jpeg|png|gif|eot|otf|webp|svg|ttf|woff|woff2|mp4|webm|wav|mp3|m4a|aac|oga)$": "<rootDir>__mocks__/fileMock.js",
-      "\\.(css|less|sass|scss)$": "identity-obj-proxy",
-      "@concord-consortium/lara-interactive-api": "<rootDir>node_modules/@concord-consortium/lara-interactive-api"
+      "\\.(css|less|sass|scss)$": "identity-obj-proxy"
     },
     "moduleFileExtensions": [
       "ts",
@@ -110,7 +109,7 @@
     "webpack-dev-server": "^4.7.4"
   },
   "dependencies": {
-    "@concord-consortium/lara-interactive-api": "1.13.0-pre.2",
+    "@concord-consortium/lara-interactive-api": "1.13.0",
     "@concord-consortium/object-storage": "1.0.0-pre.8",
     "@concord-consortium/question-interactives-helpers": "^1.22.1",
     "@rjsf/utils": "^5.0.1",
