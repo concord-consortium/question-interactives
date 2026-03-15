@@ -161,6 +161,12 @@ export const IframeRuntime: React.FC<IProps> =
       client.addListener("customMessage", (message: ICustomMessage) => phone.post("customMessage", message));
       phone.addListener("customMessage", (message: ICustomMessage) => client.post("customMessage", message));
 
+      // proxy job messages between child interactive and parent host
+      phone.addListener("createJob", (request: any) => client.post("createJob", request));
+      phone.addListener("cancelJob", (request: any) => client.post("cancelJob", request));
+      client.addListener("jobCreated", (response: any) => phone.post("jobCreated", response));
+      client.addListener("jobInfo", (info: any) => phone.post("jobInfo", info));
+
       // Start with linkedInteractives from parent initMessage, then add any local linked interactives
       const linkedInteractives: ILinkedInteractive[] = (initMessage as any)?.linkedInteractives || [];
       const libraryInteractive = getLibraryInteractive(url);

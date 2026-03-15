@@ -18,8 +18,12 @@
       "<rootDir>src/setupTests.ts"
     ],
     "transform": {
-      "^.+\\.tsx?$": "ts-jest"
+      "^.+\\.tsx?$": "ts-jest",
+      "node_modules/(@smithy|@aws-sdk)/.+\\.js$": "../../jest-node-protocol-transform.js"
     },
+    "transformIgnorePatterns": [
+      "node_modules/(?!(@smithy|@aws-sdk)/)"
+    ],
     "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
     "testPathIgnorePatterns": [
       "/node_modules/",
@@ -108,7 +112,7 @@
   },
   "dependencies": {
     "@concord-consortium/dynamic-text": "^1.0.6",
-    "@concord-consortium/lara-interactive-api": "1.12.0",
+    "@concord-consortium/lara-interactive-api": "1.13.0",
     "@concord-consortium/question-interactives-helpers": "^1.22.1",
     "@rjsf/utils": "^5.0.1",
     "classnames": "^2.3.1",
