@@ -1,10 +1,9 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
-import { log } from "@concord-consortium/lara-interactive-api";
+import React, { useCallback } from "react";
+import { log, useJobs } from "@concord-consortium/lara-interactive-api";
 import classNames from "classnames";
 
 import { IRuntimeQuestionComponentProps } from "@concord-consortium/question-interactives-helpers/src/components/base-question-app";
-import { IAuthoredState, IInteractiveState, IScriptResponse } from "./types";
-import { executeScript } from "./execute-script";
+import { IAuthoredState, IInteractiveState } from "./types";
 
 import CorrectIcon from "../assets/correct-icon.svg";
 import IncorrectIcon from "../assets/incorrect-icon.svg";
@@ -13,83 +12,83 @@ import css from "./button.scss";
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
 
-export const ButtonComponent: React.FC<IProps> = ({ authoredState }) => {
-  const [scriptResponse, setScriptResponse] = useState<IScriptResponse | null>(null);
-  const mountedRef = useRef(true);
+/**
+ * Parse a taskParams string into a key-value record.
+ * Supports both query string format (key1=value1&key2=value2) and
+ * newline-separated format (key1=value1\nkey2=value2).
+ * Returns an empty object for empty/whitespace-only input.
+ */
+export const parseTaskParams = (taskParams: string | undefined): Record<string, string> => {
+  if (!taskParams || !taskParams.trim()) {
+    return {};
+  }
+  const normalized = taskParams.replace(/\r?\n|\r/g, "&");
+  const params = new URLSearchParams(normalized);
+  const result: Record<string, string> = Object.create(null);
+  params.forEach((value, key) => {
+    if (key) {
+      result[key] = value;
+    }
+  });
+  return result;
+};
 
-  useEffect(() => {
-    return () => { mountedRef.current = false; };
-  }, []);
+export const ButtonComponent: React.FC<IProps> = ({ authoredState }) => {
+  const { createJob, latestJob } = useJobs();
 
   const handleClick = useCallback(async () => {
-    const scriptUrl = authoredState.scriptUrl || "";
+    const task = authoredState.task?.trim() || "";
+    const params = parseTaskParams(authoredState.taskParams);
 
-    log("button clicked", { buttonLabel: authoredState.buttonLabel, scriptUrl });
-
-    const { queued, result } = executeScript(scriptUrl);
-
-    // Apply queued state synchronously to prevent double-clicks
-    setScriptResponse(queued);
+    log("button clicked", { buttonLabel: authoredState.buttonLabel, task });
 
     try {
-      const response = await result;
-
-      if (!mountedRef.current) {
-        return;
-      }
-
-      setScriptResponse(response);
-
-      log("script response", { status: response.status, message: response.message });
+      await createJob({ ...params, task });
     } catch (error) {
-      if (!mountedRef.current) {
-        return;
-      }
-
-      setScriptResponse({
-        status: "failure",
-        message: "An unexpected error occurred.",
-        disableButton: false,
-      });
+      // createJob errors are not expected in normal operation — the mock executor
+      // always resolves. Log for debugging if it ever happens.
+      log("createJob error", { error: String(error) });
     }
-  }, [authoredState.scriptUrl, authoredState.buttonLabel]);
+  }, [authoredState.task, authoredState.taskParams, authoredState.buttonLabel, createJob]);
 
   const buttonLabel = authoredState.buttonLabel || "Submit";
-  const hasScriptUrl = !!(authoredState.scriptUrl);
-  const isDisabled = !hasScriptUrl || (scriptResponse?.disableButton ?? false);
+  const hasTask = !!(authoredState.task?.trim());
+  const canRetry = latestJob?.status === "failure" || latestJob?.status === "cancelled";
+  const isDisabled = !hasTask || (latestJob != null && !canRetry);
 
   const renderStatusMessage = () => {
-    if (!hasScriptUrl) {
+    if (!hasTask) {
       return (
         <div className={css.statusMessage}>
           <IncorrectIcon className={css.statusIcon} aria-hidden="true" />
-          <span>No script URL is configured for this button.</span>
+          <span>No task is configured for this button.</span>
         </div>
       );
     }
-    if (!scriptResponse) {
+    if (!latestJob) {
       return null;
     }
-    switch (scriptResponse.status) {
+    switch (latestJob.status) {
       case "queued":
+      case "running":
         return (
           <div className={classNames(css.statusMessage, css.processingMessage)}>
             <div className={css.spinner} aria-hidden="true" />
-            <span>{scriptResponse.processingMessage || "Please wait\u2026"}</span>
+            <span>{latestJob.result?.processingMessage || "Please wait\u2026"}</span>
           </div>
         );
       case "success":
         return (
           <div className={css.statusMessage}>
             <CorrectIcon className={css.statusIcon} aria-hidden="true" />
-            <span>{scriptResponse.message}</span>
+            <span>{latestJob.result?.message}</span>
           </div>
         );
       case "failure":
         return (
           <div className={css.statusMessage}>
             <IncorrectIcon className={css.statusIcon} aria-hidden="true" />
-            <span>{scriptResponse.message}</span>
+            <span>{latestJob.result?.message}</span>
           </div>
         );
       default:
