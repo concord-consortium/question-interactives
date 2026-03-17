@@ -175,6 +175,33 @@ describe("Button runtime", () => {
     expect(wrapper.find("button").prop("disabled")).toBe(false);
   });
 
+  it("disables the button immediately on click before latestJob updates", () => {
+    const wrapper = mountRuntime({ ...DemoAuthoredState, task: "success" });
+    expect(wrapper.find("button").prop("disabled")).toBe(false);
+
+    act(() => { wrapper.find("button").simulate("click"); });
+    wrapper.update();
+
+    // Button should be disabled via local clicked state even though latestJob is still null
+    expect(wrapper.find("button").prop("disabled")).toBe(true);
+    expect(mockCreateJob).toHaveBeenCalledTimes(1);
+  });
+
+  it("stays disabled when latestJob transitions to queued after click", () => {
+    const wrapper = mountRuntime({ ...DemoAuthoredState, task: "success" });
+
+    act(() => { wrapper.find("button").simulate("click"); });
+    wrapper.update();
+    expect(wrapper.find("button").prop("disabled")).toBe(true);
+
+    // Simulate latestJob updating to queued (clicked state resets but latestJob keeps it disabled)
+    mockLatestJob = { status: "queued" };
+    wrapper.setProps({});
+    wrapper.update();
+
+    expect(wrapper.find("button").prop("disabled")).toBe(true);
+  });
+
   it("re-enables button and shows no message on cancelled job", () => {
     mockLatestJob = {
       status: "cancelled",

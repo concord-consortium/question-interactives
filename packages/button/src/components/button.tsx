@@ -37,8 +37,9 @@ export const ButtonComponent: React.FC<IProps> = ({ authoredState }) => {
   const { createJob, latestJob } = useJobs();
   const [clicked, setClicked] = useState(false);
 
-  // Reset clicked state whenever the job status changes (e.g. failure/cancelled)
-  // so the user can retry.
+  // Reset clicked state whenever the job status changes so that the button
+  // re-enables for retryable statuses (failure/cancelled) without flickering
+  // during non-retryable transitions (the latestJob check keeps it disabled).
   useEffect(() => {
     setClicked(false);
   }, [latestJob?.status]);
