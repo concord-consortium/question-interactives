@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { log, useJobs } from "@concord-consortium/lara-interactive-api";
 import classNames from "classnames";
 
@@ -11,6 +11,10 @@ import IncorrectIcon from "../assets/incorrect-icon.svg";
 import css from "./button.scss";
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
+
+type LocalStatus =
+  | { status: "clicked" }
+  | { status: "error"; errorMessage: string };
 
 /**
  * Parse a taskParams string into a key-value record.
@@ -35,35 +39,58 @@ export const parseTaskParams = (taskParams: string | undefined): Record<string, 
 
 export const ButtonComponent: React.FC<IProps> = ({ authoredState }) => {
   const { createJob, latestJob } = useJobs();
-  const [clicked, setClicked] = useState(false);
+  const [localStatus, setLocalStatus] = useState<LocalStatus | undefined>(undefined);
+  const createdJobId = useRef<string | null>(null);
 
-  // Reset clicked state whenever the job status changes so that the button
+  // Reset local status whenever the job status changes so that the button
   // re-enables for retryable statuses (failure/cancelled) without flickering
   // during non-retryable transitions (the latestJob check keeps it disabled).
   useEffect(() => {
-    setClicked(false);
+    setLocalStatus(undefined);
   }, [latestJob?.status]);
 
+  // Log terminal job statuses (success, failure, cancelled). The createdJobId ref
+  // ensures we only log jobs created by this user's click in this session — not
+  // stale jobs hydrated from persistence on page load.
+  useEffect(() => {
+    if (!latestJob || latestJob.id !== createdJobId.current) {
+      return;
+    }
+    const { status, id, result } = latestJob;
+    const label = authoredState.buttonLabel || "Submit";
+    const task = authoredState.task?.trim() || "";
+    if (status === "success") {
+      log("button interactive: job success", { jobId: id, message: result?.message, buttonLabel: label, task });
+    } else if (status === "failure") {
+      log("button interactive: job failure", { jobId: id, message: result?.message, buttonLabel: label, task });
+    } else if (status === "cancelled") {
+      log("button interactive: job cancelled", { jobId: id, buttonLabel: label, task });
+    } else {
+      return; // queued/running — don't clear ref yet
+    }
+    createdJobId.current = null;
+  }, [latestJob, authoredState.buttonLabel, authoredState.task]);
+
   const handleClick = useCallback(async () => {
-    setClicked(true);
+    setLocalStatus({ status: "clicked" });
     const task = authoredState.task?.trim() || "";
     const params = parseTaskParams(authoredState.taskParams);
 
-    log("button clicked", { buttonLabel: authoredState.buttonLabel, task });
+    log("button interactive: button clicked", { buttonLabel: authoredState.buttonLabel || "Submit", task });
 
     try {
-      await createJob({ ...params, task });
-    } catch (error) {
-      // createJob errors are not expected in normal operation — the mock executor
-      // always resolves. Log for debugging if it ever happens.
-      log("createJob error", { error: String(error) });
-      setClicked(false);
+      const job = await createJob({ ...params, task });
+      createdJobId.current = job.id;
+      log("button interactive: job created", { jobId: job.id, buttonLabel: authoredState.buttonLabel || "Submit", task });
+    } catch (err) {
+      log("button interactive: job create error", { error: String(err) });
+      setLocalStatus({ status: "error", errorMessage: "Something went wrong. Please try again." });
     }
   }, [authoredState.task, authoredState.taskParams, authoredState.buttonLabel, createJob]);
 
   const buttonLabel = authoredState.buttonLabel || "Submit";
   const hasTask = !!(authoredState.task?.trim());
-  const isDisabled = !hasTask || clicked || (latestJob != null && latestJob.status !== "failure" && latestJob.status !== "cancelled");
+  const isDisabled = !hasTask || localStatus?.status === "clicked" || (latestJob != null && latestJob.status !== "failure" && latestJob.status !== "cancelled");
 
   const renderStatusMessage = () => {
     if (!hasTask) {
@@ -74,7 +101,23 @@ export const ButtonComponent: React.FC<IProps> = ({ authoredState }) => {
         </div>
       );
     }
+    if (localStatus?.status === "error") {
+      return (
+        <div className={css.statusMessage}>
+          <IncorrectIcon className={css.statusIcon} aria-hidden="true" />
+          <span>{localStatus.errorMessage}</span>
+        </div>
+      );
+    }
     if (!latestJob) {
+      if (localStatus?.status === "clicked") {
+        return (
+          <div className={classNames(css.statusMessage, css.processingMessage)}>
+            <div className={css.spinner} aria-hidden="true" />
+            <span>Please wait{"\u2026"}</span>
+          </div>
+        );
+      }
       return null;
     }
     switch (latestJob.status) {
