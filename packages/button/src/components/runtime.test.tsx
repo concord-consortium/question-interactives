@@ -4,7 +4,7 @@ import { mount } from "enzyme";
 import { Runtime } from "./runtime";
 import { DemoAuthoredState } from "./types";
 import { InitMessageContext } from "@concord-consortium/question-interactives-helpers/src/hooks/use-context-init-message";
-import { useInitMessage } from "@concord-consortium/lara-interactive-api";
+import { log, useInitMessage } from "@concord-consortium/lara-interactive-api";
 import { DynamicTextTester } from "@concord-consortium/question-interactives-helpers/src/utilities/dynamic-text-tester";
 import { ButtonComponent } from "./button";
 
@@ -61,7 +61,7 @@ const mountRerenderableRuntime = (authoredState = DemoAuthoredState) => {
   return mount(<RerenderableRuntime authoredState={authoredState} />);
 };
 
-const mockLog = require("@concord-consortium/lara-interactive-api").log as jest.Mock;
+const mockLog = log as jest.Mock;
 
 describe("Button runtime", () => {
   beforeEach(() => {
