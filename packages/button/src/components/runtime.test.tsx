@@ -211,15 +211,15 @@ describe("Button runtime", () => {
   });
 
   it("stays disabled when latestJob transitions to queued after click", () => {
-    const wrapper = mountRuntime({ ...DemoAuthoredState, task: "success" });
+    const wrapper = mountRerenderableRuntime({ ...DemoAuthoredState, task: "success" });
 
     act(() => { wrapper.find("button").simulate("click"); });
     wrapper.update();
     expect(wrapper.find("button").prop("disabled")).toBe(true);
 
-    // Simulate latestJob updating to queued (clicked state resets but latestJob keeps it disabled)
+    // Simulate latestJob updating to queued (localStatus resets but latestJob keeps it disabled)
     mockLatestJob = { status: "queued" };
-    wrapper.setProps({});
+    act(() => { triggerRerender(); });
     wrapper.update();
 
     expect(wrapper.find("button").prop("disabled")).toBe(true);
@@ -261,6 +261,24 @@ describe("Button runtime", () => {
     wrapper.update();
 
     expect(wrapper.text()).toContain("Submitting your work\u2026");
+    expect(wrapper.find("button").prop("disabled")).toBe(true);
+  });
+
+  it("shows immediate progress on retry after failure", () => {
+    mockLatestJob = {
+      status: "failure",
+      result: { message: "Sorry, please try again." },
+    };
+    const wrapper = mountRerenderableRuntime({ ...DemoAuthoredState, task: "success" });
+    expect(wrapper.text()).toContain("Sorry, please try again.");
+    expect(wrapper.find("button").prop("disabled")).toBe(false);
+
+    // Click retry — should show immediate progress even though latestJob is still failure
+    act(() => { wrapper.find("button").simulate("click"); });
+    wrapper.update();
+
+    expect(wrapper.text()).toContain("Please wait\u2026");
+    expect(wrapper.text()).not.toContain("Sorry, please try again.");
     expect(wrapper.find("button").prop("disabled")).toBe(true);
   });
 

@@ -73,6 +73,7 @@ export const ButtonComponent: React.FC<IProps> = ({ authoredState }) => {
 
   const handleClick = useCallback(async () => {
     setLocalStatus({ status: "clicked" });
+    createdJobId.current = null;
     const task = authoredState.task?.trim() || "";
     const params = parseTaskParams(authoredState.taskParams);
 
@@ -84,6 +85,7 @@ export const ButtonComponent: React.FC<IProps> = ({ authoredState }) => {
       log("button interactive: job created", { jobId: job.id, buttonLabel: authoredState.buttonLabel || "Submit", task });
     } catch (err) {
       log("button interactive: job create error", { error: String(err) });
+      createdJobId.current = null;
       setLocalStatus({ status: "error", errorMessage: "Something went wrong. Please try again." });
     }
   }, [authoredState.task, authoredState.taskParams, authoredState.buttonLabel, createJob]);
@@ -109,15 +111,17 @@ export const ButtonComponent: React.FC<IProps> = ({ authoredState }) => {
         </div>
       );
     }
+    // Show immediate progress when clicked, even on retry (latestJob may still
+    // hold the previous failure/cancelled status at this point).
+    if (localStatus?.status === "clicked") {
+      return (
+        <div className={classNames(css.statusMessage, css.processingMessage)}>
+          <div className={css.spinner} aria-hidden="true" />
+          <span>Please wait{"\u2026"}</span>
+        </div>
+      );
+    }
     if (!latestJob) {
-      if (localStatus?.status === "clicked") {
-        return (
-          <div className={classNames(css.statusMessage, css.processingMessage)}>
-            <div className={css.spinner} aria-hidden="true" />
-            <span>Please wait{"\u2026"}</span>
-          </div>
-        );
-      }
       return null;
     }
     switch (latestJob.status) {
