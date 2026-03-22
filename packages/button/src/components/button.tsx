@@ -1,4 +1,4 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { log, useJobs } from "@concord-consortium/lara-interactive-api";
 import classNames from "classnames";
 
@@ -35,8 +35,17 @@ export const parseTaskParams = (taskParams: string | undefined): Record<string, 
 
 export const ButtonComponent: React.FC<IProps> = ({ authoredState }) => {
   const { createJob, latestJob } = useJobs();
+  const [clicked, setClicked] = useState(false);
+
+  // Reset clicked state whenever the job status changes so that the button
+  // re-enables for retryable statuses (failure/cancelled) without flickering
+  // during non-retryable transitions (the latestJob check keeps it disabled).
+  useEffect(() => {
+    setClicked(false);
+  }, [latestJob?.status]);
 
   const handleClick = useCallback(async () => {
+    setClicked(true);
     const task = authoredState.task?.trim() || "";
     const params = parseTaskParams(authoredState.taskParams);
 
@@ -48,13 +57,13 @@ export const ButtonComponent: React.FC<IProps> = ({ authoredState }) => {
       // createJob errors are not expected in normal operation — the mock executor
       // always resolves. Log for debugging if it ever happens.
       log("createJob error", { error: String(error) });
+      setClicked(false);
     }
   }, [authoredState.task, authoredState.taskParams, authoredState.buttonLabel, createJob]);
 
   const buttonLabel = authoredState.buttonLabel || "Submit";
   const hasTask = !!(authoredState.task?.trim());
-  const canRetry = latestJob?.status === "failure" || latestJob?.status === "cancelled";
-  const isDisabled = !hasTask || (latestJob != null && !canRetry);
+  const isDisabled = !hasTask || clicked || (latestJob != null && latestJob.status !== "failure" && latestJob.status !== "cancelled");
 
   const renderStatusMessage = () => {
     if (!hasTask) {
