@@ -5,6 +5,7 @@ import { IframeRuntime } from "../components/iframe-runtime";
 import { DemoAuthoringComponent } from "./demo-authoring";
 import { DynamicTextContext, useDynamicTextProxy } from "@concord-consortium/dynamic-text";
 import { demoJobManager } from "../utilities/demo-job-manager";
+import { LogMonitor, emitLogEvent } from "@concord-consortium/log-monitor";
 
 import css from "./demo.scss";
 
@@ -21,6 +22,7 @@ const iframe = params.get("iframe");
 params.delete("iframe");
 
 const rootDemo = !iframe;
+const logMonitorEnabled = params.get("logMonitor") === "true";
 
 const demoUrl = (newIframe: string) => `demo.html?iframe=${newIframe}&${params.toString()}`
 
@@ -124,6 +126,13 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
         case "log":
           if (rootDemo) {
             console.log("DEMO LOG:", JSON.stringify(data.content));
+            if (logMonitorEnabled) {
+              emitLogEvent({
+                event: data.content.action,
+                data: data.content.data,
+                timestamp: Date.now()
+              });
+            }
           }
           break;
       }
@@ -238,12 +247,15 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
 
     default:
       return (
-        <div className={css.demo}>
-          <div className={css.header}><h1>{title}</h1></div>
-          <div className={css.split}>
-            <div className={css.authoring}><iframe src={demoUrl("authoring-container")} /></div>
-            <div className={css.runtime}><iframe src={demoUrl("runtime-container")} /></div>
+        <div className={`${css.demo} ${logMonitorEnabled ? css.withLogMonitor : ""}`}>
+          <div className={css.demoContent}>
+            <div className={css.header}><h1>{title}</h1></div>
+            <div className={css.split}>
+              <div className={css.authoring}><iframe src={demoUrl("authoring-container")} /></div>
+              <div className={css.runtime}><iframe src={demoUrl("runtime-container")} /></div>
+            </div>
           </div>
+          {logMonitorEnabled && <LogMonitor logFilePrefix={`${title.toLowerCase().replace(/\s+/g, "-")}-log-events`} />}
         </div>
       );
   }
