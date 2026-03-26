@@ -6,6 +6,7 @@ import { DemoAuthoringComponent } from "./demo-authoring";
 import { DynamicTextContext, useDynamicTextProxy } from "@concord-consortium/dynamic-text";
 import { demoJobManager } from "../utilities/demo-job-manager";
 import { LogMonitor, emitLogEvent } from "@concord-consortium/log-monitor";
+import { slugify } from "../utilities/slugify";
 
 import css from "./demo.scss";
 
@@ -255,7 +256,7 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
               <div className={css.runtime}><iframe src={demoUrl("runtime-container")} /></div>
             </div>
           </div>
-          {logMonitorEnabled && <LogMonitor logFilePrefix={`${title.toLowerCase().replace(/\s+/g, "-")}-log-events`} />}
+          {logMonitorEnabled && <LogMonitor logFilePrefix={`${slugify(title)}-log-events`} />}
         </div>
       );
   }
