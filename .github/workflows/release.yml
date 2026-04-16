@@ -45,6 +45,7 @@ jobs:
           - INTERACTIVE_FOLDER: image-question
           - INTERACTIVE_FOLDER: image
           - INTERACTIVE_FOLDER: labbook
+          - INTERACTIVE_FOLDER: live-graph
           - INTERACTIVE_FOLDER: multiple-choice-alerts
           - INTERACTIVE_FOLDER: multiple-choice
           - INTERACTIVE_FOLDER: open-response

@@ -1,4 +1,4 @@
-import { IInitInteractive } from "@concord-consortium/lara-interactive-api";
+import { IInitInteractive, ILinkedInteractive } from "@concord-consortium/lara-interactive-api";
 import React, { useEffect, useRef, useState } from "react";
 import { IframePhone } from "../types";
 import iframePhone from "iframe-phone";
@@ -8,11 +8,12 @@ import css from "./demo-authoring.scss";
 interface IProps<IAuthoredState> {
   url: string;
   authoredState: IAuthoredState;
-  setAuthoredState: React.Dispatch<React.SetStateAction<IAuthoredState>>
+  setAuthoredState: React.Dispatch<React.SetStateAction<IAuthoredState>>;
+  demoLinkedInteractives?: ILinkedInteractive[];
 }
 
 export function DemoAuthoringComponent<IAuthoredState>(props: IProps<IAuthoredState>) {
-  const {authoredState, url, setAuthoredState} = props;
+  const {authoredState, url, setAuthoredState, demoLinkedInteractives} = props;
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const phoneRef = useRef<IframePhone>();
   const [height, setHeight] = useState<number|string|null>(null);
@@ -32,6 +33,21 @@ export function DemoAuthoringComponent<IAuthoredState>(props: IProps<IAuthoredSt
         setHeight(typeof newHeight === "string" ? parseInt(newHeight, 10) : newHeight);
       });
 
+      if (demoLinkedInteractives && demoLinkedInteractives.length > 0) {
+        phone.addListener("getInteractiveList", (request: any) => {
+          phone.post("interactiveList", {
+            requestId: request.requestId,
+            interactives: demoLinkedInteractives.map(li => ({
+              id: li.id,
+              name: li.id,
+            })),
+          });
+        });
+        phone.addListener("setLinkedInteractives", () => {
+          // no-op in demo — the linked interactives are pre-configured
+        });
+      }
+
       const initInteractiveMessage: IInitInteractive = {
         version: 1,
         error: null,
@@ -45,7 +61,7 @@ export function DemoAuthoringComponent<IAuthoredState>(props: IProps<IAuthoredSt
           }
         },
         interactiveItemId: "demo",
-        linkedInteractives: []
+        linkedInteractives: demoLinkedInteractives || []
       };
 
       phone.post("initInteractive", initInteractiveMessage);

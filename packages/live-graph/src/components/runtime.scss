@@ -1,0 +1,48 @@
+.liveGraph {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.message {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  font-style: italic;
+}
+
+.warning {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+  border: 1px solid #c00;
+  background-color: #fee;
+  color: #900;
+}
+
+.chartArea {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.chart {
+  flex: 1;
+  min-height: 0;
+  user-select: none;
+}
+
+.hidden {
+  // Keep in DOM for screen readers to observe aria-live, but hide visually.
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+}

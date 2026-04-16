@@ -1,0 +1,52 @@
+.legend {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  justify-content: center;
+}
+
+.entry {
+  display: inline;
+}
+
+.button {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  border: 1px solid transparent;
+  border-radius: 4px;
+  padding: 2px 8px;
+  background: none;
+  cursor: pointer;
+  font-size: inherit;
+  font-family: inherit;
+
+  &:focus-visible {
+    outline: 2px solid #36a2eb;
+    outline-offset: 2px;
+  }
+
+  &:hover {
+    background-color: rgba(0, 0, 0, 0.05);
+  }
+
+  &[aria-pressed="false"] .label {
+    text-decoration: line-through;
+    opacity: 0.5;
+  }
+}
+
+.swatch {
+  display: inline-block;
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+.label {
+  white-space: nowrap;
+}

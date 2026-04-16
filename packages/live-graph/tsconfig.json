@@ -1,0 +1,6 @@
+{
+  "extends": "../../shared/tsconfig",
+  "include": [
+    "./src/**/*"
+  ]
+}
