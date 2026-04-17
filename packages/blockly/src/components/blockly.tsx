@@ -9,14 +9,17 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { registerCustomBlocks } from "../blocks/block-factory";
 import "../blocks/block-registration";
 import { saveEvents } from "../utils/block-utils";
+import { hasAuthoredStarterContent, parseStarterProgram } from "../utils/starter-utils";
 import { injectCustomBlocksIntoToolbox } from "../utils/toolbox-utils";
-import { IAuthoredState, IInteractiveState } from "./types";
+import { IAuthoredState, IInteractiveState, INITIAL_SEED_BLOCKS, SEED_BLOCK_TYPES } from "./types";
 import { FileModal, Header } from "./header";
 import { MaybeFileModal } from "./maybe-file-modal";
 
 import css from "./blockly.scss";
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> {}
+
+const DEFAULT_INTERACTIVE_STATE: IInteractiveState = { answerType: "interactive_state" };
 
 export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const { customBlocks = [], simulationCode, toolbox } = authoredState;
@@ -59,20 +62,11 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
 
       registerCustomBlocks(safeCustomBlocks);
 
-      const initialBlocks = [
-        { deletable: false, type: "setup", x: 10, y: 10 },
-        { deletable: false, type: "go", x: 10, y: 80 },
-        { deletable: false, type: "onclick", x: 10, y: 150 }
-      ];
-
       try {
         // Inject custom blocks into toolbox based on their assigned categories
         const enhancedToolbox = injectCustomBlocksIntoToolbox(toolbox, safeCustomBlocks);
         const newWorkspace = inject(blocklyDivRef.current, {
           readOnly: report, toolbox: JSON.parse(enhancedToolbox), trashcan: true
-        });
-        initialBlocks.forEach(block => {
-          serialization.blocks.append(block, newWorkspace);
         });
         workspaceRef.current = newWorkspace;
         setError(null);
@@ -108,17 +102,18 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
             log(eventName, eventParams);
           } catch (e) {
             console.error("Error stringifying blockly change event for logging:", e);
-            log(eventName, { error: e.message || String(e) });
+            log(eventName, { error: (e instanceof Error ? e.message : String(e)) });
           }
         });
 
         // Set up automatic saving
         const saveState = (event: Events.Abstract) => {
+          if (report) return;
           if (saveEvents.includes(event.type)) {
             const {code, blocklyState} = getWorkspaceCodeAndState();
-            setInteractiveState?.((prevState: IInteractiveState) => {
+            setInteractiveState?.((prevState: IInteractiveState | null) => {
               const newState = {
-                ...prevState,
+                ...(prevState ?? DEFAULT_INTERACTIVE_STATE),
                 code,
                 blocklyState
               };
@@ -130,14 +125,37 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
 
         return () => newWorkspace.removeChangeListener(saveState);
       } catch (e) {
-        setError(e);
+        setError(e instanceof Error ? e : new Error(String(e)));
       }
     }
   }, [getWorkspaceCodeAndState, report, safeCustomBlocks, setInteractiveState, toolbox]);
 
-  useEffect(() => {
-    initWorkspace();
-  }, [initWorkspace]);
+  const starterProgram = useMemo(
+    () => parseStarterProgram(authoredState.starterBlocklyState),
+    [authoredState.starterBlocklyState]
+  );
+
+  const seedWorkspace = useCallback(() => {
+    const ws = workspaceRef.current;
+    if (!ws) return;
+    let loaded = false;
+    if (hasAuthoredStarterContent(starterProgram)) {
+      try {
+        serialization.workspaces.load(starterProgram, ws);
+        loaded = true;
+      } catch (e) {
+        console.warn("Failed to load authored starter program. Falling back to seed blocks only:", e);
+      }
+    }
+    if (!loaded) {
+      INITIAL_SEED_BLOCKS.forEach(b => serialization.blocks.append(b, ws));
+    }
+    ws.render();
+    // Ensure the three seed blocks remain non-deletable regardless of how Blockly round-trips the deletable flag.
+    ws.getTopBlocks(false).forEach(b => {
+      if ((SEED_BLOCK_TYPES as readonly string[]).includes(b.type)) b.setDeletable(false);
+    });
+  }, [starterProgram]);
 
   const loadWorkspaceState = (state: string) => {
     if (!workspaceRef.current) {
@@ -157,6 +175,32 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
     }
   };
 
+  // Refs used by the re-init restore path so we don't need to add fast-changing values
+  // (interactiveState, seedWorkspace) to the useEffect deps and cause churn.
+  const interactiveStateRef = useRef(interactiveState);
+  const seedWorkspaceRef = useRef(seedWorkspace);
+  useEffect(() => { interactiveStateRef.current = interactiveState; });
+  useEffect(() => { seedWorkspaceRef.current = seedWorkspace; });
+
+  useEffect(() => {
+    initWorkspace();
+    // A re-init (caused by toolbox/customBlocks/report/simulationCode changing) leaves the
+    // newly-created workspace empty. Restore its content so the save listener doesn't
+    // persist blank state. First-load is handled by the dedicated effect below.
+    if (hasLoadedRef.current && workspaceRef.current) {
+      const savedState = interactiveStateRef.current?.blocklyState;
+      if (savedState) {
+        try {
+          loadWorkspaceState(savedState);
+        } catch (e) {
+          console.warn("Failed to restore workspace state on re-init:", e);
+        }
+      } else {
+        seedWorkspaceRef.current();
+      }
+    }
+  }, [initWorkspace]);
+
   // Load saved state on initial load
   useEffect(() => {
     if (hasLoadedRef.current || !workspaceRef.current) {
@@ -166,11 +210,18 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
 
     if (interactiveState?.blocklyState) {
       loadWorkspaceState(interactiveState.blocklyState);
+    } else {
+      seedWorkspace();
+      if (!report && hasAuthoredStarterContent(starterProgram)) {
+        // Persist the seeded starter so future loads follow the "has saved state" path.
+        const { code, blocklyState } = getWorkspaceCodeAndState();
+        setInteractiveState?.((prevState: IInteractiveState | null) => ({ ...(prevState ?? DEFAULT_INTERACTIVE_STATE), code, blocklyState }));
+      }
     }
     if (interactiveState?.name) {
       setName(interactiveState.name);
     }
-  }, [interactiveState]);
+  }, [interactiveState, starterProgram, report, seedWorkspace, getWorkspaceCodeAndState, setInteractiveState]);
 
   const validateModelName = useCallback((newName: string, { renaming, opening } = { renaming: false, opening: false }): boolean => {
     if (newName.length === 0) {
@@ -218,15 +269,16 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
       alert("Workspace is not initialized.");
       return false;
     }
+    seedWorkspace();
     const {code, blocklyState} = getWorkspaceCodeAndState();
 
     const newBlocklyStates = [...updatedSavedBlocklyStates, { name: newName, blocklyState }];
     setSavedBlocklyStates(newBlocklyStates);
 
     setName(newName);
-    setInteractiveState?.((prevState: IInteractiveState) => {
+    setInteractiveState?.((prevState: IInteractiveState | null) => {
       const newState = {
-        ...prevState,
+        ...(prevState ?? DEFAULT_INTERACTIVE_STATE),
         name: newName,
         code,
         blocklyState,
@@ -236,7 +288,7 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
     });
 
     return true;
-  }, [validateModelName, ensureUpdatedSavedBlocklyStates, initWorkspace, getWorkspaceCodeAndState, setInteractiveState]);
+  }, [validateModelName, ensureUpdatedSavedBlocklyStates, initWorkspace, seedWorkspace, getWorkspaceCodeAndState, setInteractiveState]);
 
   const handleFileOpen = useCallback((selectedName: string): boolean => {
     if (!validateModelName(selectedName, { opening: true })) {
@@ -261,9 +313,9 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
     setSavedBlocklyStates(updatedSavedBlocklyStates);
 
     setName(selectedName);
-    setInteractiveState?.((prevState: IInteractiveState) => {
+    setInteractiveState?.((prevState: IInteractiveState | null) => {
       const newState = {
-        ...prevState,
+        ...(prevState ?? DEFAULT_INTERACTIVE_STATE),
         name: selectedName,
         code,
         blocklyState,
@@ -287,9 +339,9 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
     setSavedBlocklyStates(newBlocklyStates);
 
     setName(newName);
-    setInteractiveState?.((prevState: IInteractiveState) => {
+    setInteractiveState?.((prevState: IInteractiveState | null) => {
       const newState = {
-        ...prevState,
+        ...(prevState ?? DEFAULT_INTERACTIVE_STATE),
         name: newName,
         savedBlocklyStates: newBlocklyStates
       };
@@ -314,9 +366,9 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
     setSavedBlocklyStates(updatedSavedBlocklyStates);
 
     setName(newName);
-    setInteractiveState?.((prevState: IInteractiveState) => {
+    setInteractiveState?.((prevState: IInteractiveState | null) => {
       const newState = {
-        ...prevState,
+        ...(prevState ?? DEFAULT_INTERACTIVE_STATE),
         name: newName,
         savedBlocklyStates: updatedSavedBlocklyStates
       };
@@ -345,6 +397,7 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
         alert("Workspace is not initialized.");
         return false;
       }
+      seedWorkspace();
       const {code, blocklyState} = getWorkspaceCodeAndState();
 
       const newName = "Model 1";
@@ -352,9 +405,9 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
       setSavedBlocklyStates(newBlocklyStates);
 
       setName(newName);
-      setInteractiveState?.((prevState: IInteractiveState) => {
+      setInteractiveState?.((prevState: IInteractiveState | null) => {
         const newState = {
-          ...prevState,
+          ...(prevState ?? DEFAULT_INTERACTIVE_STATE),
           name: newName,
           code,
           blocklyState,
@@ -367,7 +420,7 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
     setSavedBlocklyStates(updatedSavedBlocklyStates);
 
     return true;
-  }, [ensureUpdatedSavedBlocklyStates, getWorkspaceCodeAndState, handleFileOpen, initWorkspace, name, setInteractiveState]);
+  }, [ensureUpdatedSavedBlocklyStates, getWorkspaceCodeAndState, handleFileOpen, initWorkspace, seedWorkspace, name, setInteractiveState]);
 
   return (
     <div className={css.blockly}>

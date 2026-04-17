@@ -253,3 +253,12 @@ Check example simulations for ideas on how to use action blocks.
 ### Condition Blocks
 
 Custom condition blocks allow authors to create conditions that can be used within if, when, or many other types of blocks. Like action blocks, they require authors to write their own custom code to generate.
+
+## Starter Program
+
+The authoring form includes an embedded Blockly workspace for defining an optional **Starter Program**. Any blocks you place here become the initial program a student sees the first time they open the interactive. The three top-level blocks (`setup`, `go`, `onclick`) are always present and cannot be deleted. You can nest any other built-in or custom block inside them, just as a student would.
+
+- **When students see the starter.** The first time a student opens the interactive with no saved work, their workspace is seeded from the authored starter. If no starter is authored, they see the three empty top-level blocks.
+- **New models re-seed.** When a student creates a new model via `File → New`, the new model starts from the authored starter. `File → Copy` duplicates the state of the student's current model rather than re-seeding.
+- **Student work is never clobbered.** Once a student has saved any work, re-authoring the starter has no effect on their existing models. The starter is consulted only when a model has no saved state.
+- **Deleted custom blocks are pruned automatically.** If you delete a custom block that the starter references, the stale block is removed from the starter on save. For safety, if a removed block sits in the middle of a chain of connected blocks, the tail of that chain (everything connected after the removed block) is also dropped rather than re-wired. This avoids leaving orphaned references to variables or state that the removed block was responsible for creating.

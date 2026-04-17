@@ -1,0 +1,19 @@
+@import "./variables.scss";
+
+.starterEditor {
+  border: 1px solid $border-medium;
+  border-radius: $border-radius-md;
+  margin-top: $spacing-lg;
+  padding: $spacing-md;
+
+  h4 {
+    font-size: $font-size-md;
+    margin: 0;
+  }
+
+  .starterEditor_container {
+    height: 400px;
+    margin-top: $spacing-md;
+    overflow: auto;
+  }
+}
