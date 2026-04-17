@@ -79,15 +79,33 @@ export const StarterProgramEditor: React.FC<IProps> = ({ customBlocks, starterBl
     // Match runtime behavior: orphaned blocks should render disabled.
     workspace.addChangeListener(Events.disableOrphans);
 
-    const save = (event: Events.Abstract) => {
-      if (!saveEvents.includes(event.type)) return;
+    // Suppress saves while a block is being dragged. The RJSF re-render
+    // triggered by onChange interrupts Blockly's drag tracking, so we defer
+    // the save until the drag completes.
+    let needsSave = false;
+    const performSave = () => {
       const json = JSON.stringify(serialization.workspaces.save(workspace));
       onChangeRef.current(json);
     };
-    workspace.addChangeListener(save);
+    const listener = (event: Events.Abstract) => {
+      if (event.type === Events.BLOCK_DRAG) {
+        if (!(event as any).isStart && needsSave) {
+          needsSave = false;
+          performSave();
+        }
+        return;
+      }
+      if (!saveEvents.includes(event.type)) return;
+      if (workspace.isDragging()) {
+        needsSave = true;
+        return;
+      }
+      performSave();
+    };
+    workspace.addChangeListener(listener);
 
     return () => {
-      workspace.removeChangeListener(save);
+      workspace.removeChangeListener(listener);
       workspace.dispose();
       container.innerHTML = "";
     };
