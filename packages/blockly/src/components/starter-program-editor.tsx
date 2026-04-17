@@ -50,31 +50,32 @@ export const StarterProgramEditor: React.FC<IProps> = ({ customBlocks, starterBl
 
     registerCustomBlocks(customBlocks, false);
     const enhancedToolbox = injectCustomBlocksIntoToolbox(toolbox, customBlocks);
-    let parsedToolbox;
-    try {
-      parsedToolbox = JSON.parse(enhancedToolbox);
-    } catch (e) {
-      console.warn("Starter program editor: could not parse toolbox JSON. Workspace not rendered.", e);
-      return;
-    }
-    const workspace = inject(container, {
-      readOnly: false, toolbox: parsedToolbox, trashcan: true
-    });
 
-    if (effectiveStarter) {
-      try {
-        serialization.workspaces.load(JSON.parse(effectiveStarter), workspace);
-      } catch {
+    let workspace: ReturnType<typeof inject>;
+    try {
+      const parsedToolbox = JSON.parse(enhancedToolbox);
+      workspace = inject(container, {
+        readOnly: false, toolbox: parsedToolbox, trashcan: true
+      });
+
+      if (effectiveStarter) {
+        try {
+          serialization.workspaces.load(JSON.parse(effectiveStarter), workspace);
+        } catch {
+          INITIAL_SEED_BLOCKS.forEach(b => serialization.blocks.append(b, workspace));
+        }
+      } else {
         INITIAL_SEED_BLOCKS.forEach(b => serialization.blocks.append(b, workspace));
       }
-    } else {
-      INITIAL_SEED_BLOCKS.forEach(b => serialization.blocks.append(b, workspace));
-    }
-    workspace.render();
+      workspace.render();
 
-    workspace.getTopBlocks(false).forEach(b => {
-      if ((SEED_BLOCK_TYPES as readonly string[]).includes(b.type)) b.setDeletable(false);
-    });
+      workspace.getTopBlocks(false).forEach(b => {
+        if ((SEED_BLOCK_TYPES as readonly string[]).includes(b.type)) b.setDeletable(false);
+      });
+    } catch (e) {
+      console.warn("Starter program editor: toolbox or starter state could not be loaded. Check that toolbox JSON is valid.", e);
+      return;
+    }
 
     // Match runtime behavior: orphaned blocks should render disabled.
     workspace.addChangeListener(Events.disableOrphans);

@@ -61,15 +61,14 @@ export function buildValidTypeSet(customBlocks: ICustomBlock[]): Set<string> {
  * that a starter program may still reference until the form is saved.
  */
 export function pruneStarterState(raw: string, validTypes: Set<string>): string {
-  const parsed = JSON.parse(raw);
-  const top: BlockState[] = parsed?.blocks?.blocks ?? [];
-  const prunedTop = top.map(b => pruneBlock(b, validTypes)).filter(Boolean);
+  const parsed: unknown = JSON.parse(raw);
+  if (!isStarterProgram(parsed)) return raw;
+  const prunedTop = parsed.blocks.blocks
+    .map(b => pruneBlock(b, validTypes))
+    .filter((block): block is BlockState => block !== null);
   return JSON.stringify({
     ...parsed,
-    blocks: {
-      ...(parsed?.blocks ?? {}),
-      blocks: prunedTop
-    }
+    blocks: { ...parsed.blocks, blocks: prunedTop }
   });
 }
 

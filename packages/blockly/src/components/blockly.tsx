@@ -57,7 +57,11 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
     }
 
     if (blocklyDivRef.current) {
-      // Empty existing container before creating a new workspace to avoid duplication.
+      // Dispose previous workspace to release Blockly's internal listeners and timers.
+      if (workspaceRef.current) {
+        workspaceRef.current.dispose();
+        workspaceRef.current = null;
+      }
       blocklyDivRef.current.innerHTML = "";
 
       registerCustomBlocks(safeCustomBlocks);
@@ -122,8 +126,6 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
           }
         };
         newWorkspace.addChangeListener(saveState);
-
-        return () => newWorkspace.removeChangeListener(saveState);
       } catch (e) {
         setError(e instanceof Error ? e : new Error(String(e)));
       }
@@ -135,19 +137,21 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
     [authoredState.starterBlocklyState]
   );
 
-  const seedWorkspace = useCallback(() => {
+  /** Seeds the workspace with the authored starter (if valid) or the three default seed blocks.
+   *  Returns true if the authored starter was loaded successfully. */
+  const seedWorkspace = useCallback((): boolean => {
     const ws = workspaceRef.current;
-    if (!ws) return;
-    let loaded = false;
+    if (!ws) return false;
+    let loadedStarter = false;
     if (hasAuthoredStarterContent(starterProgram)) {
       try {
         serialization.workspaces.load(starterProgram, ws);
-        loaded = true;
+        loadedStarter = true;
       } catch (e) {
         console.warn("Failed to load authored starter program. Falling back to seed blocks only:", e);
       }
     }
-    if (!loaded) {
+    if (!loadedStarter) {
       INITIAL_SEED_BLOCKS.forEach(b => serialization.blocks.append(b, ws));
     }
     ws.render();
@@ -155,6 +159,8 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
     ws.getTopBlocks(false).forEach(b => {
       if ((SEED_BLOCK_TYPES as readonly string[]).includes(b.type)) b.setDeletable(false);
     });
+
+    return loadedStarter;
   }, [starterProgram]);
 
   const loadWorkspaceState = (state: string) => {
@@ -199,6 +205,15 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
         seedWorkspaceRef.current();
       }
     }
+
+    // Dispose on unmount so Blockly's global listeners and timers are cleaned up.
+    // Re-init disposal is handled inside initWorkspace itself.
+    return () => {
+      if (workspaceRef.current) {
+        workspaceRef.current.dispose();
+        workspaceRef.current = null;
+      }
+    };
   }, [initWorkspace]);
 
   // Load saved state on initial load
@@ -211,9 +226,12 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
     if (interactiveState?.blocklyState) {
       loadWorkspaceState(interactiveState.blocklyState);
     } else {
-      seedWorkspace();
-      if (!report && hasAuthoredStarterContent(starterProgram)) {
+      const starterLoaded = seedWorkspace();
+      if (!report && starterLoaded) {
         // Persist the seeded starter so future loads follow the "has saved state" path.
+        // Only persist when the authored starter actually loaded. If seedWorkspace fell back
+        // to default seed blocks (e.g. due to a transient load error), we must not create a
+        // saved state that would prevent the real starter from being retried later.
         const { code, blocklyState } = getWorkspaceCodeAndState();
         setInteractiveState?.((prevState: IInteractiveState | null) => ({ ...(prevState ?? DEFAULT_INTERACTIVE_STATE), code, blocklyState }));
       }
