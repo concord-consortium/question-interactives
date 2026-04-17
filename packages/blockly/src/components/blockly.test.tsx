@@ -11,6 +11,26 @@ import {
   validToolboxAuthoredState
 } from "./__mocks__/fixtures";
 import { BlocklyComponent } from "./blockly";
+import { IAuthoredState } from "./types";
+
+const starterStateWithNestedIf = JSON.stringify({
+  blocks: {
+    languageVersion: 0,
+    blocks: [
+      {
+        type: "setup", x: 10, y: 10, deletable: false,
+        inputs: { statements: { block: { type: "controls_if", id: "starter-if" } } }
+      },
+      { type: "go", x: 10, y: 80, deletable: false },
+      { type: "onclick", x: 10, y: 150, deletable: false }
+    ]
+  }
+});
+
+const authoredStateWithStarter: IAuthoredState = {
+  ...generalToolboxAuthoredState,
+  starterBlocklyState: starterStateWithNestedIf
+};
 
 describe("BlocklyComponent", () => {
   it("shows error message when no toolbox is provided", () => {
@@ -146,6 +166,86 @@ describe("BlocklyComponent", () => {
       const setupBlock = container.querySelector('.setup');
       expect(setupBlock).toBeInTheDocument();
       expect(setupBlock?.classList.contains('blocklyDisabled')).toBe(false);
+    });
+  });
+
+  describe("starter programs", () => {
+    it("renders the three seed blocks when there is no starter and no student state", () => {
+      render(<BlocklyComponent
+        authoredState={generalToolboxAuthoredState}
+        interactiveState={defaultInteractiveState}
+        report={false}
+        setInteractiveState={() => { /* no-op */ }}
+      />);
+      expect(document.querySelector(".setup.blocklyNotDeletable")).toBeInTheDocument();
+      expect(document.querySelector(".go.blocklyNotDeletable")).toBeInTheDocument();
+      expect(document.querySelector(".onclick.blocklyNotDeletable")).toBeInTheDocument();
+      expect(document.querySelector(".controls_if")).not.toBeInTheDocument();
+    });
+
+    it("loads the starter and persists it when not in report mode", async () => {
+      const setInteractiveState = jest.fn();
+      const { container } = render(
+        <BlocklyComponent
+          authoredState={authoredStateWithStarter}
+          interactiveState={defaultInteractiveState}
+          report={false}
+          setInteractiveState={setInteractiveState}
+        />
+      );
+
+      await waitFor(() => {
+        expect(container.querySelector("g.controls_if")).toBeInTheDocument();
+      });
+
+      expect(setInteractiveState).toHaveBeenCalled();
+      const lastCall = setInteractiveState.mock.calls.at(-1)?.[0];
+      const result = (lastCall as (prev: { answerType: string }) => { blocklyState?: string })({ answerType: "interactive_state" });
+      expect(result.blocklyState).toBeTruthy();
+      expect(result.blocklyState).toContain("controls_if");
+    });
+
+    it("loads the starter in report mode without persisting", async () => {
+      const setInteractiveState = jest.fn();
+      const { container } = render(<BlocklyComponent
+        authoredState={authoredStateWithStarter}
+        interactiveState={defaultInteractiveState}
+        report={true}
+        setInteractiveState={setInteractiveState}
+      />);
+
+      await waitFor(() => {
+        expect(container.querySelector("g.controls_if")).toBeInTheDocument();
+      });
+
+      // No persistence call should include a blocklyState — the save listener
+      // only runs on non-report mutations.
+      const persistedWithBlocklyState = setInteractiveState.mock.calls.some(([arg]: [any]) => {
+        if (typeof arg !== "function") return false;
+        const result = arg({ answerType: "interactive_state" });
+        return !!result.blocklyState;
+      });
+      expect(persistedWithBlocklyState).toBe(false);
+    });
+
+    it("prefers existing student state over the starter", async () => {
+      const { container } = render(<BlocklyComponent
+        authoredState={authoredStateWithStarter}
+        interactiveState={savedInteractiveState}
+        report={false}
+        setInteractiveState={() => { /* no-op */ }}
+      />);
+
+      await waitFor(() => {
+        // savedInteractiveState has a controls_if block at top level (no setup parent).
+        // The starter's controls_if is nested inside setup. Look for the one that is NOT nested.
+        const ifBlocks = container.querySelectorAll("g.controls_if");
+        expect(ifBlocks.length).toBe(1);
+      });
+
+      // The seed blocks setup/go/onclick from the starter should NOT be present because
+      // savedInteractiveState won (it has no seed blocks).
+      expect(document.querySelector(".setup.blocklyNotDeletable")).not.toBeInTheDocument();
     });
   });
 
