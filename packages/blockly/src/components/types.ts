@@ -24,6 +24,15 @@ export const REQUIRED_BLOCK_FIELDS = [
   "type"
 ] as const;
 
+export const SEED_BLOCK_TYPES = ["setup", "go", "onclick"] as const;
+export type SeedBlockType = typeof SEED_BLOCK_TYPES[number];
+
+export const INITIAL_SEED_BLOCKS: { deletable: false; type: SeedBlockType; x: number; y: number }[] = [
+  { deletable: false, type: "setup", x: 10, y: 10 },
+  { deletable: false, type: "go", x: 10, y: 80 },
+  { deletable: false, type: "onclick", x: 10, y: 150 }
+];
+
 export type CustomBlockType = typeof VALID_BLOCK_TYPES[number];
 export type ParameterKind = "select" | "number";
 
@@ -97,6 +106,7 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   customBlocks?: ICustomBlock[];
   hint?: string;
   simulationCode: string;
+  starterBlocklyState?: string;
   toolbox: string;
   version: number;
 }
@@ -150,6 +160,7 @@ export const DefaultAuthoredState: Omit<Required<IAuthoredState>, "questionSubTy
   hint: "",
   questionType: "iframe_interactive",
   simulationCode: predatorPreyCode,
+  starterBlocklyState: "",
   toolbox: defaultToolbox ? JSON.stringify(defaultToolbox, null, 2) : "",
   version: 1
 };

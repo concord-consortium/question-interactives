@@ -52,7 +52,8 @@ describe("Blockly runtime", () => {
     const blocklyComponent = wrapper.find(BlocklyComponent);
     const expectedAuthoredState = {
       ...customBlocksAuthoredState,
-      hint: ""
+      hint: "",
+      starterBlocklyState: ""
     };
     expect(blocklyComponent.prop("authoredState")).toEqual(expectedAuthoredState);
   });

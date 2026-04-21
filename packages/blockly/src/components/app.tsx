@@ -4,6 +4,7 @@ import React from "react";
 
 import { CustomBlockEditor } from "./custom-block-editor";
 import { Runtime } from "./runtime";
+import { StarterProgramEditor } from "./starter-program-editor";
 import { DefaultAuthoredState, IAuthoredState, IInteractiveState } from "./types";
 
 const baseAuthoringProps = {
@@ -50,6 +51,10 @@ const baseAuthoringProps = {
           }
         }
       },
+      starterBlocklyState: {
+        type: "string",
+        default: ""
+      },
       toolbox: {
         default: DefaultAuthoredState.toolbox || "",
         title: "Toolbox",
@@ -62,6 +67,11 @@ const baseAuthoringProps = {
     "ui:order": [
       "prompt",
       "required",
+      "hint",
+      "simulationCode",
+      "customBlocks",
+      "starterBlocklyState",
+      "toolbox",
       "*"
     ],
     version: {
@@ -84,6 +94,9 @@ const baseAuthoringProps = {
     },
     customBlocks: {
       "ui:field": "customBlockEditor"
+    },
+    starterBlocklyState: {
+      "ui:field": "starterProgramEditor"
     },
     toolbox: {
       "ui:widget": "textarea",
@@ -109,12 +122,24 @@ export const App = () => (
           const value = Array.isArray(props.formData) ? props.formData : [];
           const authoredState = props.registry?.formContext?.authoredState || {};
           const toolbox = authoredState.toolbox || "";
-          
+
           return (
             <CustomBlockEditor
               customBlocks={value}
               onChange={props.onChange}
               toolbox={toolbox}
+            />
+          );
+        },
+        starterProgramEditor: (props: FieldProps<any, RJSFSchema, any>) => {
+          const value = typeof props.formData === "string" ? props.formData : "";
+          const authoredState = props.registry?.formContext?.authoredState || {};
+          return (
+            <StarterProgramEditor
+              customBlocks={authoredState.customBlocks || []}
+              starterBlocklyState={value}
+              toolbox={authoredState.toolbox || ""}
+              onChange={props.onChange}
             />
           );
         }
