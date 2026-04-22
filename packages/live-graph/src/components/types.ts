@@ -31,5 +31,4 @@ export const DEFAULT_RECORDING_STOPPED_MESSAGE = "Recording complete.";
 export const DemoAuthoredState: IAuthoredState = {
   version: 1,
   questionType: "iframe_interactive",
-  recordingStoppedMessage: DEFAULT_RECORDING_STOPPED_MESSAGE,
 };

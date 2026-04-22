@@ -19,6 +19,7 @@ const demoAuthoredState: IAuthoredState = {
   columnFilteringMode: "all",
   noDataMessage: "Waiting for data...",
   noSourceMessage: "No data source configured",
+  recordingStoppedMessage: "Recording complete.",
 };
 
 const pubSubSimulation: PubSubSimulationConfig = {

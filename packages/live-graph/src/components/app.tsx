@@ -90,8 +90,7 @@ export const baseAuthoringProps = {
       },
       recordingStoppedMessage: {
         title: "Recording-stopped message",
-        type: "string",
-        default: "Recording complete."
+        type: "string"
       }
     }
   } as RJSFSchema,
