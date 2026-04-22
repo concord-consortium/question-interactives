@@ -106,6 +106,8 @@ const streamReducer = (state: IStreamState, action: StreamAction): IStreamState 
         recordingEpoch: state.recordingEpoch + 1,
         unmatchedFilterEntries: action.unmatchedFilterEntries,
       };
+    default:
+      return state;
   }
 };
 
@@ -119,13 +121,15 @@ export const useLiveStream = (
   // the init message asynchronously (undefined on first render, real ID later).
   const lockedIdRef = useRef<string | null>(normalizeId(linkedInteractiveId));
   const [lockedId, setLockedId] = useState<string | null>(lockedIdRef.current);
-  if (lockedIdRef.current === null) {
-    const candidate = normalizeId(linkedInteractiveId);
-    if (candidate !== null) {
-      lockedIdRef.current = candidate;
-      setLockedId(candidate);
+  useEffect(() => {
+    if (lockedIdRef.current === null) {
+      const candidate = normalizeId(linkedInteractiveId);
+      if (candidate !== null) {
+        lockedIdRef.current = candidate;
+        setLockedId(candidate);
+      }
     }
-  }
+  }, [linkedInteractiveId]);
 
   const colsRef = useRef<string[] | null>(null);
   const rowsRef = useRef<(number | null)[][]>([]);

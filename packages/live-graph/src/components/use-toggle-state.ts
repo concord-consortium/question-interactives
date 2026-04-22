@@ -26,15 +26,9 @@ export const useToggleState = (): IToggleStateResult => {
 
   const registerColumns = useCallback((cols: string[]) => {
     let changed = false;
-    const activeSet = new Set(cols);
-    // Prune entries for columns that are no longer active so the visibility
-    // object doesn't grow unbounded across recordings with different column sets.
-    mapRef.current.forEach((_v, k) => {
-      if (!activeSet.has(k)) {
-        mapRef.current.delete(k);
-        changed = true;
-      }
-    });
+    // Keep visibility state for previously-seen columns so toggle state persists
+    // across recordings even if a column disappears temporarily. Only add new
+    // columns; never prune — the map is bounded by session lifetime.
     for (const c of cols) {
       if (!mapRef.current.has(c)) {
         mapRef.current.set(c, true);

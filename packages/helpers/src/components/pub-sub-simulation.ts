@@ -18,7 +18,7 @@ export interface IColumnConfig {
 
 export interface ICustomGenerator {
   name: string;
-  fn: (tickIndex: number, previousValue: number | null) => number | null;
+  fn: (tickIndex: number, previousValue: number | null) => number | string | null;
 }
 
 export interface PubSubSimulationConfig {

@@ -30,5 +30,3 @@ export const columnColor = (index: number): string => {
 
 
 
-
-

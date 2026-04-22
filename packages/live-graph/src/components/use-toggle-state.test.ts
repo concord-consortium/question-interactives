@@ -25,7 +25,7 @@ describe("useToggleState", () => {
     expect(result.current.visibility.c).toBe(true);
   });
 
-  it("prunes columns that are no longer in the active set", () => {
+  it("retains toggle state for columns not in the current active set", () => {
     const { result } = renderHook(() => useToggleState());
     act(() => {
       result.current.registerColumns(["a", "b"]);
@@ -33,16 +33,16 @@ describe("useToggleState", () => {
     act(() => {
       result.current.setVisibility("a", false);
     });
-    // register without "a" — "a" should be pruned
+    // register without "a" — "a" should keep its persisted state
     act(() => {
       result.current.registerColumns(["b", "c"]);
     });
-    expect(result.current.visibility.a).toBeUndefined();
+    expect(result.current.visibility.a).toBe(false);
     expect(result.current.visibility.b).toBe(true);
     expect(result.current.visibility.c).toBe(true);
   });
 
-  it("defaults reappearing columns to visible after pruning", () => {
+  it("preserves toggle state for columns that disappear and reappear", () => {
     const { result } = renderHook(() => useToggleState());
     act(() => {
       result.current.registerColumns(["a", "b"]);
@@ -50,15 +50,15 @@ describe("useToggleState", () => {
     act(() => {
       result.current.setVisibility("a", false);
     });
-    // prune "a"
+    // "a" disappears for one recording
     act(() => {
       result.current.registerColumns(["b"]);
     });
-    // bring "a" back — it was pruned so it defaults to visible
+    // "a" reappears — its toggled-off state should persist
     act(() => {
       result.current.registerColumns(["a", "b"]);
     });
-    expect(result.current.visibility.a).toBe(true);
+    expect(result.current.visibility.a).toBe(false);
   });
 
   it("returns a stable visibility reference when nothing changes", () => {

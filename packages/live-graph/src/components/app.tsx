@@ -163,5 +163,6 @@ export const App = () => (
     Runtime={Runtime}
     Authoring={Authoring}
     disableAutoHeight={false}
+    linkedInteractiveProps={[{ label: "dataSourceInteractive" }]}
   />
 );

@@ -1,5 +1,4 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
-import iframePhone from "iframe-phone";
 import { useAccessibility } from "@concord-consortium/lara-interactive-api";
 import { PubSubManager } from "@concord-consortium/interactive-api-host";
 

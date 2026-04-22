@@ -55,6 +55,8 @@ export const IframeRuntime: React.FC<IProps> =
     setInteractiveStateRef.current = setInteractiveState;
     const onUnloadCallbackRef = useRef<((state: any) => void) | undefined>(onUnloadCallback);
     onUnloadCallbackRef.current = onUnloadCallback;
+    const onPhoneReadyRef = useRef(onPhoneReady);
+    onPhoneReadyRef.current = onPhoneReady;
 
     const resolveOnUnload = useRef<(value: any | PromiseLike<any>) => void>();
     const phoneReadyCleanup = useRef<(() => void) | undefined>();
@@ -202,8 +204,8 @@ export const IframeRuntime: React.FC<IProps> =
 
       phone.post("initInteractive", initInteractiveMessage);
 
-      if (onPhoneReady) {
-        phoneReadyCleanup.current = onPhoneReady(phone) || undefined;
+      if (onPhoneReadyRef.current) {
+        phoneReadyCleanup.current = onPhoneReadyRef.current(phone) || undefined;
       }
     };
 
@@ -221,7 +223,7 @@ export const IframeRuntime: React.FC<IProps> =
         phoneRef.current.disconnect();
       }
     };
-  },[addLocalLinkedDataListener, authoredState, logRequestData, report, setHint, url, initMessage, flushOnSave, accessibility, id, onPhoneReady]);
+  },[addLocalLinkedDataListener, authoredState, logRequestData, report, setHint, url, initMessage, flushOnSave, accessibility, id]);
 
   let scaledIframeStyle = undefined;
   if (scale && report) {

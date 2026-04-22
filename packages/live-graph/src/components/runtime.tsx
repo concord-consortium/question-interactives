@@ -80,7 +80,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
     logXAxisCompressed();
   }, []);
 
-  const chartHeight = authoredState.chartHeight || 400;
+  const chartHeight = authoredState.chartHeight ?? 400;
   const noSourceMessage = authoredState.noSourceMessage?.trim() || DEFAULT_NO_SOURCE_MESSAGE;
   const noDataMessage = authoredState.noDataMessage?.trim() || DEFAULT_NO_DATA_MESSAGE;
   const chartTitle = authoredState.chartTitle?.trim();
