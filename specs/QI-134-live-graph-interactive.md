@@ -17,15 +17,17 @@ A new standalone `live-graph` package that subscribes to a single linked interac
 - X-axis auto-compresses when data exceeds the right edge (no scrolling or truncation).
 - Legend auto-generated from column names (after filtering and display-name mapping).
 - Students toggle individual series on/off via the legend using mouse click or keyboard (Tab + Enter/Space). Each legend entry is a focusable button with `aria-pressed`.
-- Author-configurable "no data source configured" and "waiting for data" messages with sensible defaults.
+- Author-configurable "no data source configured", "waiting for data", and "recording stopped" messages with sensible defaults.
 - Student-friendly warning when authored x-axis column is missing from published data; `console.error` and `log` event emitted. Ticks discarded until a new `recording-started` includes the column.
 - Fixed message when column filtering produces an empty plottable set.
 - Chart clears on new `recording-started`. Toggle state persists across recordings by column name within the session.
 - No internal cap on data-point count in v1.
-- ARIA label derived from chart title. Dual ARIA live regions: `polite` for expected states, `assertive` for x-axis-missing warning.
+- Six view states: `no-source`, `waiting`, `plotting`, `stopped`, `filter-empty`, `x-axis-missing`.
+- ARIA label derived from chart title. Dual ARIA live regions: `polite` for expected states (including stopped), `assertive` for x-axis-missing warning.
 - Five log events: `toggle-series`, `recording-started`, `recording-stopped`, `x-axis-compressed`, `x-axis-column-missing`.
 - rAF-coalesced chart rendering for high tick rates.
-- Defensive handling of unexpected PubSub message order (tick-before-started discarded, orphan stopped is no-op, repeated started clears, ticks-after-stopped extend dataset).
+- On `recording-stopped`, chart clears and displays an author-configurable "recording stopped" message (default: "Recording complete."). Transitions back to plotting on next `recording-started`.
+- Defensive handling of unexpected PubSub message order (tick-before-started discarded, orphan stopped transitions to stopped state, repeated started clears, ticks-after-stopped discarded).
 - Defensive tick payload coercion: missing columns → `null`, non-finite values → `null`, extra keys ignored.
 - Detailed data-table accessibility *(deferred to a follow-up)*.
 
@@ -36,7 +38,7 @@ A new standalone `live-graph` package that subscribes to a single linked interac
 - Y-axis label, Y-axis range (Auto-scale / Fixed with yMin/yMax — conditional fields always visible, disabled when not applicable).
 - Column display names (URLSearchParams-based parser), Column filtering (All / Allow / Ignore with conditional list fields).
 - Chart height in pixels (defaults to 400). Applied as an inline style; `useAutoHeight` reports the value to the parent iframe.
-- No-data message and No-source message with authoring help text.
+- No-data message, No-source message, and Recording-stopped message with authoring help text.
 - Field ordering via `ui:order` with conditional fields positioned after their parent.
 - Custom Authoring component renders RJSF Form directly (bypasses BaseAuthoring to avoid unnecessary Firebase JWT calls).
 
