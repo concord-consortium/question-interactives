@@ -9,6 +9,7 @@ export type ViewState =
   | "no-source"
   | "waiting"
   | "plotting"
+  | "stopped"
   | "filter-empty"
   | "x-axis-missing";
 
@@ -90,11 +91,13 @@ interface IStreamState {
   updatedAt: number;
   recordingEpoch: number;
   unmatchedFilterEntries: string[];
+  stopped: boolean;
 }
 
 type StreamAction =
   | { type: "tick" }
-  | { type: "recording-started"; unmatchedFilterEntries: string[] };
+  | { type: "recording-started"; unmatchedFilterEntries: string[] }
+  | { type: "recording-stopped" };
 
 const streamReducer = (state: IStreamState, action: StreamAction): IStreamState => {
   switch (action.type) {
@@ -105,7 +108,10 @@ const streamReducer = (state: IStreamState, action: StreamAction): IStreamState 
         updatedAt: state.updatedAt + 1,
         recordingEpoch: state.recordingEpoch + 1,
         unmatchedFilterEntries: action.unmatchedFilterEntries,
+        stopped: false,
       };
+    case "recording-stopped":
+      return { ...state, updatedAt: state.updatedAt + 1, stopped: true };
     default:
       return state;
   }
@@ -138,6 +144,7 @@ export const useLiveStream = (
     updatedAt: 0,
     recordingEpoch: 0,
     unmatchedFilterEntries: [],
+    stopped: false,
   });
 
   const dispatchTick = useCallback(() => dispatch({ type: "tick" }), []);
@@ -210,7 +217,10 @@ export const useLiveStream = (
           break;
         }
         case "recording-stopped": {
+          colsRef.current = null;
+          rowsRef.current = [];
           logRecordingStopped();
+          dispatch({ type: "recording-stopped" });
           break;
         }
       }
@@ -240,6 +250,8 @@ export const useLiveStream = (
   let viewState: ViewState;
   if (!lockedIdRef.current) {
     viewState = "no-source";
+  } else if (streamState.stopped) {
+    viewState = "stopped";
   } else if (!cols) {
     viewState = "waiting";
   } else {

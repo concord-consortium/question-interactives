@@ -130,16 +130,28 @@ describe("useLiveStream — viewState transitions", () => {
     expect(lastResult?.viewState).toBe("plotting");
   });
 
-  it("treats recording-stopped as no-op for orphan message", () => {
+  it("transitions to stopped on orphan recording-stopped message", () => {
     wrapper = mount(
       <Harness authoredState={baseAuthoredState} linkedInteractiveId="interactive_1" />
     );
     emit({ topic: "recording-stopped" });
-    expect(lastResult?.viewState).toBe("waiting");
+    expect(lastResult?.viewState).toBe("stopped");
     expect(lastResult?.rows.length).toBe(0);
   });
 
-  it("extends dataset when ticks arrive after recording-stopped with no new recording-started", () => {
+  it("clears data and transitions to stopped on recording-stopped", () => {
+    wrapper = mount(
+      <Harness authoredState={baseAuthoredState} linkedInteractiveId="interactive_1" />
+    );
+    emit({ topic: "recording-started", cols: ["a"] });
+    emit({ topic: "recording-tick", values: { a: 1 } });
+    emit({ topic: "recording-stopped" });
+    expect(lastResult?.viewState).toBe("stopped");
+    expect(lastResult?.rows.length).toBe(0);
+    expect(lastResult?.cols).toBeNull();
+  });
+
+  it("discards ticks received after recording-stopped", () => {
     wrapper = mount(
       <Harness authoredState={baseAuthoredState} linkedInteractiveId="interactive_1" />
     );
@@ -147,8 +159,21 @@ describe("useLiveStream — viewState transitions", () => {
     emit({ topic: "recording-tick", values: { a: 1 } });
     emit({ topic: "recording-stopped" });
     emit({ topic: "recording-tick", values: { a: 2 } });
-    expect(lastResult?.rows).toEqual([[1], [2]]);
+    expect(lastResult?.viewState).toBe("stopped");
+    expect(lastResult?.rows.length).toBe(0);
+  });
+
+  it("transitions from stopped back to plotting on new recording-started", () => {
+    wrapper = mount(
+      <Harness authoredState={baseAuthoredState} linkedInteractiveId="interactive_1" />
+    );
+    emit({ topic: "recording-started", cols: ["a"] });
+    emit({ topic: "recording-tick", values: { a: 1 } });
+    emit({ topic: "recording-stopped" });
+    expect(lastResult?.viewState).toBe("stopped");
+    emit({ topic: "recording-started", cols: ["a", "b"] });
     expect(lastResult?.viewState).toBe("plotting");
+    expect(lastResult?.rows.length).toBe(0);
   });
 
   it("clears on repeated recording-started (double-started)", () => {
@@ -449,7 +474,7 @@ describe("useLiveStream — post-stop viewState", () => {
     wrapper?.unmount();
   });
 
-  it("keeps viewState 'plotting' after recording-stopped", () => {
+  it("transitions to stopped after recording-stopped, clearing all data", () => {
     wrapper = mount(
       <Harness authoredState={baseAuthoredState} linkedInteractiveId="interactive_1" />
     );
@@ -457,8 +482,9 @@ describe("useLiveStream — post-stop viewState", () => {
     emit({ topic: "recording-tick", values: { a: 1 } });
     emit({ topic: "recording-tick", values: { a: 2 } });
     emit({ topic: "recording-stopped" });
-    expect(lastResult?.viewState).toBe("plotting");
-    expect(lastResult?.rows.length).toBe(2);
+    expect(lastResult?.viewState).toBe("stopped");
+    expect(lastResult?.cols).toBeNull();
+    expect(lastResult?.rows.length).toBe(0);
   });
 });
 

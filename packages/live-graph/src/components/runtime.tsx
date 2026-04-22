@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useLinkedInteractiveId } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
-import { DEFAULT_NO_DATA_MESSAGE, DEFAULT_NO_SOURCE_MESSAGE, IAuthoredState } from "./types";
+import { DEFAULT_NO_DATA_MESSAGE, DEFAULT_NO_SOURCE_MESSAGE, DEFAULT_RECORDING_STOPPED_MESSAGE, IAuthoredState } from "./types";
 import { useLiveStream } from "./use-live-stream";
 import { useToggleState } from "./use-toggle-state";
 import { Chart } from "./chart";
@@ -83,12 +83,14 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
   const chartHeight = authoredState.chartHeight ?? 400;
   const noSourceMessage = authoredState.noSourceMessage?.trim() || DEFAULT_NO_SOURCE_MESSAGE;
   const noDataMessage = authoredState.noDataMessage?.trim() || DEFAULT_NO_DATA_MESSAGE;
+  const recordingStoppedMessage = authoredState.recordingStoppedMessage?.trim() || DEFAULT_RECORDING_STOPPED_MESSAGE;
   const chartTitle = authoredState.chartTitle?.trim();
   const ariaLabel = chartTitle ? `Live graph: ${chartTitle}` : "Live graph";
 
   let politeText = "";
   if (viewState === "no-source") { politeText = noSourceMessage; }
   else if (viewState === "waiting") { politeText = noDataMessage; }
+  else if (viewState === "stopped") { politeText = recordingStoppedMessage; }
   else if (viewState === "filter-empty") { politeText = FILTER_EMPTY_MESSAGE; }
   const assertiveText = viewState === "x-axis-missing" ? X_AXIS_MISSING_MESSAGE : "";
 
