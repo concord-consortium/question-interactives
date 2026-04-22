@@ -674,7 +674,7 @@ export const AgentSimulationComponent = ({
               src={currentRecording.snapshot}
               alt="Simulation snapshot"
               className={css.snapshot}
-              style={{ transform: `scale(${zoomLevel})` }}
+              style={{ height: gridHeight, transform: `scale(${zoomLevel})`, width: gridWidth }}
             />
           )}
           <ZoomControls

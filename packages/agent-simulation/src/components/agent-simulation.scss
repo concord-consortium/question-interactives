@@ -147,9 +147,8 @@
       position: absolute;
       top: 0;
       left: 0;
-      width: 450px;
-      height: 450px;
-      object-fit: contain;
+      transform-origin: left top;
+      transition: transform 0.2s ease-out;
     }
   }
 
