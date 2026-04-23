@@ -13,7 +13,7 @@ import {
   Title,
   Tooltip,
 } from "chart.js";
-import { columnColor } from "./column-color";
+import { columnStyle } from "./column-style";
 import { IActiveColumn } from "./use-live-stream";
 import { IAuthoredState } from "./types";
 
@@ -140,7 +140,7 @@ const ChartInner: React.FC<IChartProps> = ({
 
   const datasets = activeColumns.map((col, i) => {
     const colIdx = cols.indexOf(col.column);
-    const color = columnColor(i);
+    const { color, borderDash } = columnStyle(i);
     const hidden = visibility ? visibility[col.column] === false : false;
     if (hasXCol) {
       const points: { x: number; y: number | null }[] = [];
@@ -156,6 +156,7 @@ const ChartInner: React.FC<IChartProps> = ({
         data: points,
         borderColor: color,
         backgroundColor: color,
+        borderDash,
         borderWidth: 1.5,
         pointRadius: 0,
         hidden,
@@ -166,6 +167,7 @@ const ChartInner: React.FC<IChartProps> = ({
       data: rows.map(row => (colIdx >= 0 ? row[colIdx] : null)),
       borderColor: color,
       backgroundColor: color,
+      borderDash,
       borderWidth: 1.5,
       pointRadius: 0,
       hidden,

@@ -1,5 +1,5 @@
 import React from "react";
-import { columnColor } from "./column-color";
+import { columnStyle } from "./column-style";
 import { IActiveColumn } from "./use-live-stream";
 import css from "./legend.scss";
 
@@ -44,7 +44,7 @@ export const Legend = React.memo<ILegendProps>(({ columns, visibility, onToggle 
             >
               <span
                 className={css.swatch}
-                style={{ backgroundColor: columnColor(i) }}
+                style={{ backgroundColor: columnStyle(i).color }}
               />
               <span className={css.label}>{col.label}</span>
             </button>

@@ -67,7 +67,7 @@ A new standalone `live-graph` package that subscribes to a single linked interac
 - Chart.js 3.9.1 with react-chartjs-2 4.3.1 (matches existing packages).
 - PubSub routing uses `PubSubManager` from `@concord-consortium/interactive-api-host` following the activity-player pattern.
 - Chart.js animation disabled (`options.animation = false`) for streaming use case.
-- Column colors shared between chart and legend via `columnColor(index)` helper.
+- Column styling shared between chart and legend via `columnStyle(index)` helper, which returns both a color and a `borderDash` pattern. Each of the 10 palette positions has a unique color and a unique dash style (solid, dashed, dotted, dash-dot, etc.) for accessibility without relying on color alone.
 - X-axis scale: `linear` when xAxisColumn is set (pre-parsed `{x, y}` points, non-finite x points omitted), `category` when blank (row-index labels).
 - Axis bounds computed with manual loop (not `Math.min(...array)`) to avoid stack overflow on large datasets.
 
@@ -85,4 +85,4 @@ A new standalone `live-graph` package that subscribes to a single linked interac
 ## Not Yet Implemented
 
 - Accessible data-table fallback for screen readers — deferred to a follow-up ticket.
-- WCAG contrast and color-blind accessibility for the line color palette — current implementation uses Chart.js default colors as a placeholder.
+- WCAG contrast review for the line color palette — distinct dash styles now supplement color for color-blind accessibility, but contrast ratios against the chart background have not been formally audited.
