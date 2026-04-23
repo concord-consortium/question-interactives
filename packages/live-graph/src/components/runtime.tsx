@@ -123,40 +123,46 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
   else if (viewState === "filter-empty") { visibleMessage = FILTER_EMPTY_MESSAGE; }
   const assertiveText = viewState === "x-axis-missing" ? X_AXIS_MISSING_MESSAGE : "";
 
+  const showLegend = viewState === "plotting" && cols;
+
   return (
     <div className={css.liveGraph} style={{height: chartHeight}} role="region" data-view-state={viewState} aria-label={ariaLabel}>
-      <div aria-live="polite" className={visibleMessage ? css.message : css.hidden}>
-        {visibleMessage}
-      </div>
       <div aria-live="polite" className={css.hidden}>
         {activityAnnouncement}
       </div>
-      <div role="alert" aria-live="assertive" className={assertiveText ? css.warning : css.hidden}>
-        {assertiveText}
-      </div>
-      {viewState === "plotting" && cols && (
-        <div className={`${css.chartArea} ${css[`legend-${authoredState.legendPosition ?? "top"}`]}`}>
+      <div className={`${css.chartArea} ${css[`legend-${authoredState.legendPosition ?? "top"}`]}`}>
+        {showLegend && (
           <Legend
             columns={activeColumns}
             visibility={visibility}
             onToggle={handleToggle}
             position={authoredState.legendPosition ?? "top"}
           />
-          <div className={css.chart}>
-            <Chart
-              authoredState={authoredState}
-              composedTitle={composedTitle}
-              activeColumns={activeColumns}
-              cols={cols}
-              rows={rows}
-              updatedAt={coalescedUpdatedAt}
-              recordingEpoch={recordingEpoch}
-              visibility={visibility}
-              onXAxisCompressed={handleXAxisCompressed}
-            />
-          </div>
+        )}
+        <div className={css.chart}>
+          {visibleMessage && (
+            <div aria-live="polite" className={css.overlay}>
+              <span>{visibleMessage}</span>
+            </div>
+          )}
+          {assertiveText && (
+            <div role="alert" aria-live="assertive" className={css.overlayWarning}>
+              {assertiveText}
+            </div>
+          )}
+          <Chart
+            authoredState={authoredState}
+            composedTitle={composedTitle}
+            activeColumns={activeColumns}
+            cols={cols ?? []}
+            rows={rows}
+            updatedAt={coalescedUpdatedAt}
+            recordingEpoch={recordingEpoch}
+            visibility={visibility}
+            onXAxisCompressed={handleXAxisCompressed}
+          />
         </div>
-      )}
+      </div>
     </div>
   );
 };

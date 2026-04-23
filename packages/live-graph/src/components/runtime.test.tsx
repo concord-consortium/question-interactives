@@ -17,7 +17,7 @@ jest.mock("react-chartjs-2", () => ({
   Line: (props: any) => <canvas data-testid="chart-canvas" />,
 }));
 jest.mock("chart.js", () => ({
-  Chart: { register: jest.fn() },
+  Chart: { register: jest.fn(), defaults: { font: {}, color: "" } },
   CategoryScale: {},
   LinearScale: {},
   LineElement: {},
@@ -108,8 +108,7 @@ describe("Runtime viewState rendering", () => {
     );
     emit({ topic: "recording-started", cols: ["a", "b"] });
     wrapper.update();
-    const politeRegion = wrapper.find("[aria-live='polite']").first();
-    expect(politeRegion.text()).toMatch(/No columns to display\. There may be a problem/);
+    expect(wrapper.text()).toMatch(/No columns to display\. There may be a problem/);
   });
 
   it("renders the Chart when plotting", () => {

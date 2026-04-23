@@ -46,13 +46,26 @@ Track activity state (idle, playing, paused, recording, stopped, recorded) deriv
 
 Log new message types via `logging.ts`: `logSimulationStarted`, `logSimulationPaused`, `logSimulationReset`, `logRecordingSelected`, `logRecordingDeselected`. Tick-level events are not logged individually.
 
+### R9: Visual polish — fonts, colors, legend position, chart title alignment
+
+- All chart text uses Lato font family (`'Lato', sans-serif`) via Chart.js global defaults. All chart text color is `#3f3f3f`.
+- Chart title: 16px. Axis labels: 14px. Tick labels: 12px.
+- Legend text: 16px, Lato, `#3f3f3f`. Legend line swatches use `strokeWidth="1.3"` to match graph line weight.
+- Renamed `chartTitlePosition` to `legendPosition` — the authorable position option (top/right/bottom/left) controls the custom legend placement, not the Chart.js title. Legend supports vertical layout for left/right positions.
+- Added `chartTitleAlignment` authoring option (Center/Start/End, defaults to Center) mapped to Chart.js `plugins.title.align`.
+
+### R10: Always-visible chart with overlay messages
+
+The chart (axes, title, grid) is always rendered in all view states, including "waiting" and "no-source". Status messages ("Waiting for data...", "No data source configured", etc.) are overlaid as a centered pill-styled badge (semi-transparent white background, subtle border, rounded corners) on top of the chart. This gives students a preview of the graph structure before data arrives, and updates in the authoring preview as well. The legend is only shown when `viewState === "plotting"`.
+
 ## Technical Notes
 
 - Both recording and simulation messages share the same `recordingChannelRef` channel (keyed to the interactive ID). The live-graph subscribes to a single channel per linked interactive and differentiates by topic prefix.
 - The `afterTick` callback in agent-simulation uses an `inRecordingModeRef` to check recording mode at tick time, since the callback is captured in a closure during `resetSimulationWithPreservedGlobals`.
 - R6 uses `useObjectStorage()` from `@concord-consortium/object-storage` — a new dependency for the live-graph package. The fetch is a two-step process: `readMetadata` to find the dataTable item, then `readDataItem` to get cols and rows.
 - A `fetchEpochRef` counter cancels stale object storage fetches when a new source arrives before the previous fetch completes.
-- Activity state announcements use a separate always-hidden `aria-live="polite"` div so they are screen-reader-only. Visible status messages (waiting, no-source, etc.) use a separate div that toggles visibility. *(Original spec used a single polite region with priority logic; split into two divs during implementation to prevent activity labels from rendering visibly when the chart title already shows the state.)*
+- Activity state announcements use a separate always-hidden `aria-live="polite"` div so they are screen-reader-only. Visible status messages are rendered as an absolutely-positioned overlay (`css.overlay`) inside the chart container, styled as a pill badge. *(Original spec used a single polite region with priority logic; split into two divs during implementation to prevent activity labels from rendering visibly when the chart title already shows the state.)*
+- The Chart component is always rendered (even with empty cols/rows) so axes and title are visible in all states. The `cols` prop accepts an empty array when no data source is active, and Chart.js renders the configured axes and title as an empty scaffold.
 - When exiting recording mode (return to tinker or creating a new recording), the agent-simulation resets `hasBeenStarted` to `false` and triggers `resetSimulationWithPreservedGlobals` via `setNewRecordingCount`. This ensures the next play publishes `simulation-started` (clearing stale live-graph data) and resets the tick counter to 0.
 
 ## Out of Scope

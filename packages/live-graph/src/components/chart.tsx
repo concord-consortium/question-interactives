@@ -27,6 +27,9 @@ ChartJS.register(
   Legend
 );
 
+ChartJS.defaults.font.family = "'Lato', sans-serif";
+ChartJS.defaults.color = "#3f3f3f";
+
 export interface IChartProps {
   authoredState: IAuthoredState;
   composedTitle?: string;
@@ -180,7 +183,9 @@ const ChartInner: React.FC<IChartProps> = ({
     ? undefined
     : rows.map((_, idx) => String(idx));
 
+  const titleFont = { size: 16, weight: "normal" as const };
   const labelFont = { size: 14, weight: "normal" as const };
+  const tickFont = { size: 12 };
 
   const yAxisOptions: ScaleOptions<"linear"> = {
     title: {
@@ -188,6 +193,7 @@ const ChartInner: React.FC<IChartProps> = ({
       text: authoredState.yAxisLabel,
       font: labelFont,
     },
+    ticks: { font: tickFont },
     ...(authoredState.yAxisRangeMode === "fixed" && {
       ...(typeof authoredState.yMin === "number" && { min: authoredState.yMin }),
       ...(typeof authoredState.yMax === "number" && { max: authoredState.yMax }),
@@ -205,10 +211,10 @@ const ChartInner: React.FC<IChartProps> = ({
   // separately with its own partial type so the compiler validates the option
   // shapes while accepting the runtime branch.
   const xScaleOptions: ScaleOptions<"linear"> | ScaleOptions<"category"> = hasXCol
-    ? { type: "linear" as const, min: xMin, max: xMax, title: xAxisTitle }
+    ? { type: "linear" as const, min: xMin, max: xMax, title: xAxisTitle, ticks: { font: tickFont } }
     : rows.length > 0
-      ? { type: "category" as const, min: String(xMin), max: String(xMax), title: xAxisTitle }
-      : { type: "category" as const, title: xAxisTitle };
+      ? { type: "category" as const, min: String(xMin), max: String(xMax), title: xAxisTitle, ticks: { font: tickFont } }
+      : { type: "category" as const, title: xAxisTitle, ticks: { font: tickFont } };
 
   const options: ChartOptions<"line"> = {
     animation: false,
@@ -219,7 +225,8 @@ const ChartInner: React.FC<IChartProps> = ({
       title: {
         display: !!composedTitle,
         text: composedTitle,
-        font: labelFont,
+        align: authoredState.chartTitleAlignment ?? "center",
+        font: titleFont,
       },
       legend: {
         display: false,

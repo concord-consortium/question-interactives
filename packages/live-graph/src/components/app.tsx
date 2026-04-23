@@ -25,6 +25,13 @@ export const baseAuthoringProps = {
         title: "Chart title",
         type: "string"
       },
+      chartTitleAlignment: {
+        title: "Chart title alignment",
+        type: "string",
+        enum: ["center", "start", "end"],
+        enumNames: ["Center", "Start", "End"],
+        default: "center"
+      },
       legendPosition: {
         title: "Legend position",
         type: "string",
@@ -102,6 +109,7 @@ export const baseAuthoringProps = {
     "ui:order": [
       "dataSourceInteractive",
       "chartTitle",
+      "chartTitleAlignment",
       "legendPosition",
       "xAxisColumn",
       "xAxisLabel",

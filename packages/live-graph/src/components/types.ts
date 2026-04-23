@@ -3,6 +3,7 @@ import { IAuthoringInteractiveMetadata } from "@concord-consortium/lara-interact
 export type YAxisRangeMode = "auto" | "fixed";
 export type ColumnFilteringMode = "all" | "allow" | "ignore";
 export type LegendPosition = "top" | "right" | "bottom" | "left";
+export type ChartTitleAlignment = "start" | "center" | "end";
 
 export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   version: 1;
@@ -21,6 +22,7 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   ignoreList?: string;
   chartHeight?: number;
   legendPosition?: LegendPosition;
+  chartTitleAlignment?: ChartTitleAlignment;
   noDataMessage?: string;
   noSourceMessage?: string;
 }

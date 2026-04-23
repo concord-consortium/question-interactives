@@ -47,6 +47,7 @@ describe("baseAuthoringProps schema", () => {
     expect((uiSchema as any)["ui:order"]).toEqual([
       "dataSourceInteractive",
       "chartTitle",
+      "chartTitleAlignment",
       "legendPosition",
       "xAxisColumn",
       "xAxisLabel",

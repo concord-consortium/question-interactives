@@ -17,28 +17,29 @@ A new standalone `live-graph` package that subscribes to a single linked interac
 - X-axis auto-compresses when data exceeds the right edge (no scrolling or truncation).
 - Legend auto-generated from column names (after filtering and display-name mapping).
 - Students toggle individual series on/off via the legend using mouse click or keyboard (Tab + Enter/Space). Each legend entry is a focusable button with `aria-pressed`.
-- Author-configurable "no data source configured", "waiting for data", and "recording stopped" messages with sensible defaults.
+- Author-configurable "no data source configured" and "waiting for data" messages with sensible defaults. *(Recording-stopped message removed in follow-on spec.)*
 - Student-friendly warning when authored x-axis column is missing from published data; `console.error` and `log` event emitted. Ticks discarded until a new `recording-started` includes the column.
 - Fixed message when column filtering produces an empty plottable set.
 - Chart clears on new `recording-started`. Toggle state persists across recordings by column name within the session.
 - No internal cap on data-point count in v1.
-- Six view states: `no-source`, `waiting`, `plotting`, `stopped`, `filter-empty`, `x-axis-missing`.
-- ARIA label derived from chart title. Dual ARIA live regions: `polite` for expected states (including stopped), `assertive` for x-axis-missing warning.
+- Five view states: `no-source`, `waiting`, `plotting`, `filter-empty`, `x-axis-missing`. *(`stopped` removed in follow-on spec — chart retains data on stop.)*
+- ARIA label derived from chart title. Dual ARIA live regions: `polite` for status messages, `assertive` for x-axis-missing warning. Activity state announcements use a separate always-hidden `aria-live="polite"` div.
 - Five log events: `toggle-series`, `recording-started`, `recording-stopped`, `x-axis-compressed`, `x-axis-column-missing`.
 - rAF-coalesced chart rendering for high tick rates.
-- On `recording-stopped`, chart clears and displays an author-configurable "recording stopped" message (default: "Recording complete."). Transitions back to plotting on next `recording-started`.
-- Defensive handling of unexpected PubSub message order (tick-before-started discarded, orphan stopped transitions to stopped state, repeated started clears, ticks-after-stopped discarded).
+- On `recording-stopped`, chart retains last plotted data. Activity state indicator shows "(Stopped)". *(Changed from clearing in follow-on spec.)*
+- Chart is always rendered (with axes and title visible) in all view states. Status and error messages are overlaid as a pill-styled badge centered over the chart, so students see the graph structure before data arrives.
+- Defensive handling of unexpected PubSub message order (tick-before-started discarded, repeated started clears).
 - Defensive tick payload coercion: missing columns → `null`, non-finite values → `null`, extra keys ignored.
 - Detailed data-table accessibility *(deferred to a follow-up)*.
 
 ### Authoring (Author View)
 
 - Data Source Interactive dropdown via `linkedInteractiveProps` with `customValidate` for `"none"` sentinel.
-- Chart title, custom legend with authorable position (top/right/bottom/left, defaults to top), X-axis column (with placeholder text), X-axis label, X-axis max.
+- Chart title with authorable alignment (Center/Start/End, defaults to Center). Custom legend with authorable position (top/right/bottom/left, defaults to top). X-axis column (with placeholder text), X-axis label, X-axis max.
 - Y-axis label, Y-axis range (Auto-scale / Fixed with yMin/yMax — conditional fields always visible, disabled when not applicable).
 - Column display names (URLSearchParams-based parser), Column filtering (All / Allow / Ignore with conditional list fields).
 - Chart height in pixels (defaults to 400). Applied as an inline style; `useAutoHeight` reports the value to the parent iframe.
-- No-data message, No-source message, and Recording-stopped message with authoring help text.
+- No-data message and No-source message with authoring help text. *(Recording-stopped message removed in follow-on spec.)*
 - Field ordering via `ui:order` with conditional fields positioned after their parent.
 - Custom Authoring component renders RJSF Form directly (bypasses BaseAuthoring to avoid unnecessary Firebase JWT calls).
 
@@ -67,7 +68,8 @@ A new standalone `live-graph` package that subscribes to a single linked interac
 - Chart.js 3.9.1 with react-chartjs-2 4.3.1 (matches existing packages).
 - PubSub routing uses `PubSubManager` from `@concord-consortium/interactive-api-host` following the activity-player pattern.
 - Chart.js animation disabled (`options.animation = false`) for streaming use case.
-- Column styling shared between chart and legend via `columnStyle(index)` helper, which returns both a color and a `borderDash` pattern. Each of the 10 palette positions has a unique color and a unique dash style (solid, dashed, dotted, dash-dot, etc.) for accessibility without relying on color alone.
+- Column styling shared between chart and legend via `columnStyle(index)` helper, which returns both a color and a `borderDash` pattern. Each of the 10 palette positions has a unique color and a unique dash style (solid, dashed, dotted, dash-dot, etc.) for accessibility without relying on color alone. Legend line swatches use `strokeWidth="1.3"` to match graph line weight.
+- All chart text uses Lato font with `#3f3f3f` color (set via Chart.js global defaults). Chart title is 16px, axis labels 14px, tick labels 12px. Legend text is 16px Lato `#3f3f3f`.
 - X-axis scale: `linear` when xAxisColumn is set (pre-parsed `{x, y}` points, non-finite x points omitted), `category` when blank (row-index labels).
 - Axis bounds computed with manual loop (not `Math.min(...array)`) to avoid stack overflow on large datasets.
 

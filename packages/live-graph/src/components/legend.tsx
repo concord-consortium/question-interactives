@@ -31,7 +31,7 @@ const LineSwatch: React.FC<{ index: number }> = ({ index }) => {
   const dashArray = borderDash.length > 0 ? borderDash.join(" ") : "none";
   return (
     <svg className={css.swatch} viewBox="0 0 24 12" aria-hidden="true">
-      <line x1="0" y1="6" x2="24" y2="6" stroke={color} strokeWidth="1" strokeDasharray={dashArray} strokeLinecap="round" />
+      <line x1="0" y1="6" x2="24" y2="6" stroke={color} strokeWidth="1.3" strokeDasharray={dashArray} strokeLinecap="round" />
     </svg>
   );
 };
