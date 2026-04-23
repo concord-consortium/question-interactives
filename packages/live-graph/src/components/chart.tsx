@@ -29,6 +29,7 @@ ChartJS.register(
 
 export interface IChartProps {
   authoredState: IAuthoredState;
+  composedTitle?: string;
   activeColumns: IActiveColumn[];
   cols: string[];
   rows: (number | null)[][];
@@ -100,6 +101,7 @@ export const computeAxisBounds = (
 // value (or other props like visibility/activeColumns) actually change.
 const ChartInner: React.FC<IChartProps> = ({
   authoredState,
+  composedTitle,
   activeColumns,
   cols,
   rows,
@@ -215,8 +217,8 @@ const ChartInner: React.FC<IChartProps> = ({
     parsing: hasXCol ? false : undefined,
     plugins: {
       title: {
-        display: !!authoredState.chartTitle,
-        text: authoredState.chartTitle,
+        display: !!composedTitle,
+        text: composedTitle,
         position: authoredState.chartTitlePosition ?? "top",
         font: labelFont,
       },

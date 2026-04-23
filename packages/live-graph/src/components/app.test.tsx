@@ -62,7 +62,6 @@ describe("baseAuthoringProps schema", () => {
       "chartHeight",
       "noDataMessage",
       "noSourceMessage",
-      "recordingStoppedMessage",
       "*"
     ]);
   });

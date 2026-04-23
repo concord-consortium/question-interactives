@@ -95,10 +95,6 @@ export const baseAuthoringProps = {
         title: "No-source message",
         type: "string"
       },
-      recordingStoppedMessage: {
-        title: "Recording-stopped message",
-        type: "string"
-      }
     }
   } as RJSFSchema,
 
@@ -121,7 +117,6 @@ export const baseAuthoringProps = {
       "chartHeight",
       "noDataMessage",
       "noSourceMessage",
-      "recordingStoppedMessage",
       "*"
     ],
     version: {
@@ -151,9 +146,6 @@ export const baseAuthoringProps = {
     noSourceMessage: {
       "ui:help": "Shown to students when no data source interactive has been linked to this graph."
     },
-    recordingStoppedMessage: {
-      "ui:help": "Shown to students when a recording ends. Defaults to \"Recording complete.\""
-    }
   },
 
   preprocessFormData: (data: IAuthoredState): IAuthoredState => {

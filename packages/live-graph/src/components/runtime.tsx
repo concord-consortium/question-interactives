@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useLinkedInteractiveId } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
-import { DEFAULT_NO_DATA_MESSAGE, DEFAULT_NO_SOURCE_MESSAGE, DEFAULT_RECORDING_STOPPED_MESSAGE, IAuthoredState } from "./types";
-import { useLiveStream } from "./use-live-stream";
+import { DEFAULT_NO_DATA_MESSAGE, DEFAULT_NO_SOURCE_MESSAGE, IAuthoredState } from "./types";
+import { ActivityState, useLiveStream } from "./use-live-stream";
 import { useToggleState } from "./use-toggle-state";
 import { Chart } from "./chart";
 import { Legend } from "./legend";
@@ -14,6 +14,15 @@ const X_AXIS_MISSING_MESSAGE =
 const FILTER_EMPTY_MESSAGE =
   "No columns to display. There may be a problem with how this activity was set up.";
 
+const stateLabels: Record<ActivityState, string> = {
+  idle: "",
+  playing: "Playing",
+  paused: "Paused",
+  recording: "Recording",
+  stopped: "Stopped",
+  recorded: "Recorded",
+};
+
 interface IProps {
   authoredState: IAuthoredState;
 }
@@ -21,7 +30,7 @@ interface IProps {
 export const Runtime: React.FC<IProps> = ({ authoredState }) => {
   const linkedInteractiveId = useLinkedInteractiveId("dataSourceInteractive");
   const liveStream = useLiveStream(authoredState, linkedInteractiveId);
-  const { viewState, activeColumns, cols, rows, updatedAt, recordingEpoch } = liveStream;
+  const { viewState, activeColumns, cols, rows, updatedAt, recordingEpoch, activityState, sourceTitle, statusMessage } = liveStream;
   const { visibility, setVisibility, registerColumns, isVisible } = useToggleState();
 
   // rAF-coalesced rendering: coalesce tick-driven Chart updates to animation frame
@@ -83,21 +92,44 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
   const chartHeight = authoredState.chartHeight ?? 400;
   const noSourceMessage = authoredState.noSourceMessage?.trim() || DEFAULT_NO_SOURCE_MESSAGE;
   const noDataMessage = authoredState.noDataMessage?.trim() || DEFAULT_NO_DATA_MESSAGE;
-  const recordingStoppedMessage = authoredState.recordingStoppedMessage?.trim() || DEFAULT_RECORDING_STOPPED_MESSAGE;
   const chartTitle = authoredState.chartTitle?.trim();
   const ariaLabel = chartTitle ? `Live graph: ${chartTitle}` : "Live graph";
 
-  let politeText = "";
-  if (viewState === "no-source") { politeText = noSourceMessage; }
-  else if (viewState === "waiting") { politeText = noDataMessage; }
-  else if (viewState === "stopped") { politeText = recordingStoppedMessage; }
-  else if (viewState === "filter-empty") { politeText = FILTER_EMPTY_MESSAGE; }
+  const stateLabel = stateLabels[activityState];
+
+  let composedTitle = chartTitle ?? "";
+  if (activityState !== "idle") {
+    if (sourceTitle) {
+      composedTitle = composedTitle ? `${composedTitle}: ${sourceTitle}` : sourceTitle;
+    }
+    if (stateLabel) {
+      composedTitle = composedTitle ? `${composedTitle} (${stateLabel})` : `(${stateLabel})`;
+    }
+  }
+
+  const [activityAnnouncement, setActivityAnnouncement] = useState("");
+  const prevActivityStateRef = useRef<ActivityState>("idle");
+  useEffect(() => {
+    if (prevActivityStateRef.current !== activityState) {
+      prevActivityStateRef.current = activityState;
+      setActivityAnnouncement(stateLabel);
+    }
+  }, [activityState, stateLabel]);
+
+  let visibleMessage = "";
+  if (statusMessage) { visibleMessage = statusMessage; }
+  else if (viewState === "no-source") { visibleMessage = noSourceMessage; }
+  else if (viewState === "waiting") { visibleMessage = noDataMessage; }
+  else if (viewState === "filter-empty") { visibleMessage = FILTER_EMPTY_MESSAGE; }
   const assertiveText = viewState === "x-axis-missing" ? X_AXIS_MISSING_MESSAGE : "";
 
   return (
     <div className={css.liveGraph} style={{height: chartHeight}} role="region" data-view-state={viewState} aria-label={ariaLabel}>
-      <div aria-live="polite" className={politeText ? css.message : css.hidden}>
-        {politeText}
+      <div aria-live="polite" className={visibleMessage ? css.message : css.hidden}>
+        {visibleMessage}
+      </div>
+      <div aria-live="polite" className={css.hidden}>
+        {activityAnnouncement}
       </div>
       <div role="alert" aria-live="assertive" className={assertiveText ? css.warning : css.hidden}>
         {assertiveText}
@@ -112,6 +144,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
           <div className={css.chart}>
             <Chart
               authoredState={authoredState}
+              composedTitle={composedTitle}
               activeColumns={activeColumns}
               cols={cols}
               rows={rows}

@@ -8,6 +8,12 @@ import * as parseFilterModule from "./parse-column-filter";
 import * as parseDisplayNamesModule from "./parse-column-display-names";
 
 jest.mock("@concord-consortium/lara-interactive-api");
+jest.mock("@concord-consortium/object-storage", () => ({
+  useObjectStorage: () => ({
+    readMetadata: jest.fn(),
+    readDataItem: jest.fn(),
+  }),
+}));
 
 const mockApi = api as any;
 
@@ -130,49 +136,30 @@ describe("useLiveStream — viewState transitions", () => {
     expect(lastResult?.viewState).toBe("plotting");
   });
 
-  it("transitions to stopped on orphan recording-stopped message", () => {
-    wrapper = mount(
-      <Harness authoredState={baseAuthoredState} linkedInteractiveId="interactive_1" />
-    );
-    emit({ topic: "recording-stopped" });
-    expect(lastResult?.viewState).toBe("stopped");
-    expect(lastResult?.rows.length).toBe(0);
-  });
-
-  it("clears data and transitions to stopped on recording-stopped", () => {
+  it("retains data on recording-stopped and sets activityState to stopped", () => {
     wrapper = mount(
       <Harness authoredState={baseAuthoredState} linkedInteractiveId="interactive_1" />
     );
     emit({ topic: "recording-started", cols: ["a"] });
     emit({ topic: "recording-tick", values: { a: 1 } });
     emit({ topic: "recording-stopped" });
-    expect(lastResult?.viewState).toBe("stopped");
-    expect(lastResult?.rows.length).toBe(0);
-    expect(lastResult?.cols).toBeNull();
+    expect(lastResult?.viewState).toBe("plotting");
+    expect(lastResult?.activityState).toBe("stopped");
+    expect(lastResult?.rows).toEqual([[1]]);
+    expect(lastResult?.cols).toEqual(["a"]);
   });
 
-  it("discards ticks received after recording-stopped", () => {
+  it("retains data after recording-stopped and accepts ticks from a new source", () => {
     wrapper = mount(
       <Harness authoredState={baseAuthoredState} linkedInteractiveId="interactive_1" />
     );
     emit({ topic: "recording-started", cols: ["a"] });
     emit({ topic: "recording-tick", values: { a: 1 } });
     emit({ topic: "recording-stopped" });
-    emit({ topic: "recording-tick", values: { a: 2 } });
-    expect(lastResult?.viewState).toBe("stopped");
-    expect(lastResult?.rows.length).toBe(0);
-  });
-
-  it("transitions from stopped back to plotting on new recording-started", () => {
-    wrapper = mount(
-      <Harness authoredState={baseAuthoredState} linkedInteractiveId="interactive_1" />
-    );
-    emit({ topic: "recording-started", cols: ["a"] });
-    emit({ topic: "recording-tick", values: { a: 1 } });
-    emit({ topic: "recording-stopped" });
-    expect(lastResult?.viewState).toBe("stopped");
+    expect(lastResult?.activityState).toBe("stopped");
     emit({ topic: "recording-started", cols: ["a", "b"] });
     expect(lastResult?.viewState).toBe("plotting");
+    expect(lastResult?.activityState).toBe("recording");
     expect(lastResult?.rows.length).toBe(0);
   });
 
@@ -462,7 +449,7 @@ describe("useLiveStream — recordingEpoch", () => {
   });
 });
 
-describe("useLiveStream — post-stop viewState", () => {
+describe("useLiveStream — post-stop behavior", () => {
   let wrapper: ReactWrapper;
 
   beforeEach(() => {
@@ -474,7 +461,7 @@ describe("useLiveStream — post-stop viewState", () => {
     wrapper?.unmount();
   });
 
-  it("transitions to stopped after recording-stopped, clearing all data", () => {
+  it("retains chart data after recording-stopped with activityState stopped", () => {
     wrapper = mount(
       <Harness authoredState={baseAuthoredState} linkedInteractiveId="interactive_1" />
     );
@@ -482,9 +469,10 @@ describe("useLiveStream — post-stop viewState", () => {
     emit({ topic: "recording-tick", values: { a: 1 } });
     emit({ topic: "recording-tick", values: { a: 2 } });
     emit({ topic: "recording-stopped" });
-    expect(lastResult?.viewState).toBe("stopped");
-    expect(lastResult?.cols).toBeNull();
-    expect(lastResult?.rows.length).toBe(0);
+    expect(lastResult?.viewState).toBe("plotting");
+    expect(lastResult?.activityState).toBe("stopped");
+    expect(lastResult?.cols).toEqual(["a"]);
+    expect(lastResult?.rows).toEqual([[1], [2]]);
   });
 });
 
@@ -500,7 +488,7 @@ describe("useLiveStream — parser memoization", () => {
     wrapper?.unmount();
   });
 
-  it("invokes parsers at most once per raw-string change across a tick burst", () => {
+  it("invokes parsers at most once per raw-string change across a tick burst (recording)", () => {
     const displaySpy = jest.spyOn(parseDisplayNamesModule, "parseColumnDisplayNames");
     const filterSpy = jest.spyOn(parseFilterModule, "parseColumnFilter");
     displaySpy.mockClear();
@@ -530,5 +518,212 @@ describe("useLiveStream — parser memoization", () => {
 
     displaySpy.mockRestore();
     filterSpy.mockRestore();
+  });
+});
+
+describe("useLiveStream — simulation message handling", () => {
+  let wrapper: ReactWrapper;
+
+  beforeEach(() => {
+    mockApi.__resetMockChannels();
+    lastResult = undefined;
+  });
+
+  afterEach(() => {
+    wrapper?.unmount();
+  });
+
+  it("handles simulation-started like recording-started", () => {
+    wrapper = mount(
+      <Harness authoredState={baseAuthoredState} linkedInteractiveId="interactive_1" />
+    );
+    emit({ topic: "simulation-started", cols: ["a", "b"], title: "Test Model" });
+    expect(lastResult?.viewState).toBe("plotting");
+    expect(lastResult?.activityState).toBe("playing");
+    expect(lastResult?.sourceTitle).toBe("Test Model");
+    expect(lastResult?.cols).toEqual(["a", "b"]);
+  });
+
+  it("handles simulation-tick like recording-tick", () => {
+    wrapper = mount(
+      <Harness authoredState={baseAuthoredState} linkedInteractiveId="interactive_1" />
+    );
+    emit({ topic: "simulation-started", cols: ["a", "b"] });
+    emit({ topic: "simulation-tick", values: { a: 1, b: 2 } });
+    emit({ topic: "simulation-tick", values: { a: 3, b: 4 } });
+    expect(lastResult?.rows).toEqual([[1, 2], [3, 4]]);
+  });
+
+  it("simulation-paused retains data and sets activityState to paused", () => {
+    wrapper = mount(
+      <Harness authoredState={baseAuthoredState} linkedInteractiveId="interactive_1" />
+    );
+    emit({ topic: "simulation-started", cols: ["a"] });
+    emit({ topic: "simulation-tick", values: { a: 1 } });
+    emit({ topic: "simulation-paused" });
+    expect(lastResult?.viewState).toBe("plotting");
+    expect(lastResult?.activityState).toBe("paused");
+    expect(lastResult?.rows).toEqual([[1]]);
+  });
+
+  it("simulation-reset clears data and returns to waiting", () => {
+    wrapper = mount(
+      <Harness authoredState={baseAuthoredState} linkedInteractiveId="interactive_1" />
+    );
+    emit({ topic: "simulation-started", cols: ["a"] });
+    emit({ topic: "simulation-tick", values: { a: 1 } });
+    emit({ topic: "simulation-reset" });
+    expect(lastResult?.viewState).toBe("waiting");
+    expect(lastResult?.activityState).toBe("idle");
+    expect(lastResult?.cols).toBeNull();
+    expect(lastResult?.rows.length).toBe(0);
+  });
+
+  it("ticks resume after pause (activityState returns to playing)", () => {
+    wrapper = mount(
+      <Harness authoredState={baseAuthoredState} linkedInteractiveId="interactive_1" />
+    );
+    emit({ topic: "simulation-started", cols: ["a"] });
+    emit({ topic: "simulation-tick", values: { a: 1 } });
+    emit({ topic: "simulation-paused" });
+    expect(lastResult?.activityState).toBe("paused");
+    emit({ topic: "simulation-tick", values: { a: 2 } });
+    expect(lastResult?.activityState).toBe("playing");
+    expect(lastResult?.rows).toEqual([[1], [2]]);
+  });
+
+  it("recording-started resets chart during active simulation (mutual exclusivity)", () => {
+    wrapper = mount(
+      <Harness authoredState={baseAuthoredState} linkedInteractiveId="interactive_1" />
+    );
+    emit({ topic: "simulation-started", cols: ["a"] });
+    emit({ topic: "simulation-tick", values: { a: 1 } });
+    expect(lastResult?.activityState).toBe("playing");
+    emit({ topic: "recording-started", cols: ["x", "y"] });
+    expect(lastResult?.activityState).toBe("recording");
+    expect(lastResult?.cols).toEqual(["x", "y"]);
+    expect(lastResult?.rows.length).toBe(0);
+  });
+});
+
+describe("useLiveStream — activity state and source title", () => {
+  let wrapper: ReactWrapper;
+
+  beforeEach(() => {
+    mockApi.__resetMockChannels();
+    lastResult = undefined;
+  });
+
+  afterEach(() => {
+    wrapper?.unmount();
+  });
+
+  it("starts with idle activityState and empty sourceTitle", () => {
+    wrapper = mount(
+      <Harness authoredState={baseAuthoredState} linkedInteractiveId="interactive_1" />
+    );
+    expect(lastResult?.activityState).toBe("idle");
+    expect(lastResult?.sourceTitle).toBe("");
+  });
+
+  it("recording-started sets recording activityState", () => {
+    wrapper = mount(
+      <Harness authoredState={baseAuthoredState} linkedInteractiveId="interactive_1" />
+    );
+    emit({ topic: "recording-started", cols: ["a"], title: "My Model" });
+    expect(lastResult?.activityState).toBe("recording");
+    expect(lastResult?.sourceTitle).toBe("My Model");
+  });
+
+  it("title defaults to empty string when not provided", () => {
+    wrapper = mount(
+      <Harness authoredState={baseAuthoredState} linkedInteractiveId="interactive_1" />
+    );
+    emit({ topic: "recording-started", cols: ["a"] });
+    expect(lastResult?.sourceTitle).toBe("");
+  });
+
+  it("recording-deselected clears data and returns to waiting", () => {
+    wrapper = mount(
+      <Harness authoredState={baseAuthoredState} linkedInteractiveId="interactive_1" />
+    );
+    emit({ topic: "recording-started", cols: ["a"] });
+    emit({ topic: "recording-tick", values: { a: 1 } });
+    emit({ topic: "recording-deselected" });
+    expect(lastResult?.viewState).toBe("waiting");
+    expect(lastResult?.activityState).toBe("idle");
+    expect(lastResult?.cols).toBeNull();
+    expect(lastResult?.rows.length).toBe(0);
+  });
+});
+
+describe("useLiveStream — recording-selected status handling", () => {
+  let wrapper: ReactWrapper;
+
+  beforeEach(() => {
+    mockApi.__resetMockChannels();
+    lastResult = undefined;
+  });
+
+  afterEach(() => {
+    wrapper?.unmount();
+  });
+
+  it("recording-selected with status 'empty' clears data and shows status message", () => {
+    wrapper = mount(
+      <Harness authoredState={baseAuthoredState} linkedInteractiveId="interactive_1" />
+    );
+    emit({ topic: "simulation-started", cols: ["a"] });
+    emit({ topic: "simulation-tick", values: { a: 1 } });
+    emit({ topic: "recording-selected", objectId: null, title: "Model 1", status: "empty" });
+    expect(lastResult?.viewState).toBe("waiting");
+    expect(lastResult?.activityState).toBe("recorded");
+    expect(lastResult?.sourceTitle).toBe("Model 1");
+    expect(lastResult?.statusMessage).toBe("No recording data yet.");
+    expect(lastResult?.cols).toBeNull();
+    expect(lastResult?.rows.length).toBe(0);
+  });
+
+  it("recording-selected with status 'waiting' clears data and shows saving message", () => {
+    wrapper = mount(
+      <Harness authoredState={baseAuthoredState} linkedInteractiveId="interactive_1" />
+    );
+    emit({ topic: "recording-selected", objectId: null, title: "Model 1: 10:32 AM (2 secs)", status: "waiting" });
+    expect(lastResult?.viewState).toBe("waiting");
+    expect(lastResult?.activityState).toBe("recorded");
+    expect(lastResult?.statusMessage).toBe("Saving recording...");
+  });
+
+  it("recording-selected with status 'ready' clears data and shows loading message", () => {
+    wrapper = mount(
+      <Harness authoredState={baseAuthoredState} linkedInteractiveId="interactive_1" />
+    );
+    emit({ topic: "recording-selected", objectId: "obj-123", title: "Model 1: 10:32 AM (2 secs)", status: "ready" });
+    expect(lastResult?.viewState).toBe("waiting");
+    expect(lastResult?.activityState).toBe("recorded");
+    expect(lastResult?.statusMessage).toBe("Loading recording...");
+  });
+
+  it("recording-selected with status 'failed' resets to idle and shows error message", () => {
+    wrapper = mount(
+      <Harness authoredState={baseAuthoredState} linkedInteractiveId="interactive_1" />
+    );
+    emit({ topic: "recording-selected", objectId: null, title: "Model 1", status: "failed" });
+    expect(lastResult?.viewState).toBe("waiting");
+    expect(lastResult?.activityState).toBe("idle");
+    expect(lastResult?.sourceTitle).toBe("");
+    expect(lastResult?.statusMessage).toBe("Recording data is not available yet.");
+  });
+
+  it("recording-selected cancels previous source (resets epoch)", () => {
+    wrapper = mount(
+      <Harness authoredState={baseAuthoredState} linkedInteractiveId="interactive_1" />
+    );
+    emit({ topic: "simulation-started", cols: ["a"] });
+    emit({ topic: "simulation-tick", values: { a: 1 } });
+    const epochBefore = lastResult?.recordingEpoch;
+    emit({ topic: "recording-selected", objectId: null, title: "Model 1", status: "empty" });
+    expect(lastResult?.recordingEpoch).toBe((epochBefore ?? 0) + 1);
+    expect(lastResult?.rows.length).toBe(0);
   });
 });

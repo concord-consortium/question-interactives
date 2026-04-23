@@ -1,15 +1,19 @@
 import { useCallback, useEffect, useMemo, useReducer, useRef, useState } from "react";
 import { createPubSubChannel } from "@concord-consortium/lara-interactive-api";
+import { useObjectStorage } from "@concord-consortium/object-storage";
 import { IAuthoredState } from "./types";
 import { parseColumnDisplayNames } from "./parse-column-display-names";
 import { parseColumnFilter } from "./parse-column-filter";
-import { logRecordingStarted, logRecordingStopped, logXAxisColumnMissing } from "./logging";
+import {
+  logRecordingStarted, logRecordingStopped, logRecordingSelected,
+  logRecordingDeselected, logSimulationStarted, logSimulationPaused,
+  logSimulationReset, logXAxisColumnMissing,
+} from "./logging";
 
 export type ViewState =
   | "no-source"
   | "waiting"
   | "plotting"
-  | "stopped"
   | "filter-empty"
   | "x-axis-missing";
 
@@ -30,6 +34,9 @@ export interface ILiveStreamResult {
   filterEntries: string[];
   unmatchedFilterEntries: string[];
   recordingEpoch: number;
+  activityState: ActivityState;
+  sourceTitle: string;
+  statusMessage: string;
 }
 
 const isMissingId = (value: string | null | undefined): boolean => {
@@ -91,27 +98,49 @@ interface IStreamState {
   updatedAt: number;
   recordingEpoch: number;
   unmatchedFilterEntries: string[];
-  stopped: boolean;
+  activityState: ActivityState;
+  sourceTitle: string;
+  statusMessage: string;
 }
+
+export type ActivityState = "idle" | "playing" | "paused" | "recording" | "stopped" | "recorded";
 
 type StreamAction =
   | { type: "tick" }
-  | { type: "recording-started"; unmatchedFilterEntries: string[] }
-  | { type: "recording-stopped" };
+  | { type: "source-started"; unmatchedFilterEntries: string[]; activityState: ActivityState; sourceTitle: string }
+  | { type: "activity-changed"; activityState: ActivityState; sourceTitle?: string }
+  | { type: "status-message"; message: string }
+  | { type: "data-loaded"; unmatchedFilterEntries: string[] };
 
 const streamReducer = (state: IStreamState, action: StreamAction): IStreamState => {
   switch (action.type) {
     case "tick":
       return { ...state, updatedAt: state.updatedAt + 1 };
-    case "recording-started":
+    case "source-started":
       return {
         updatedAt: state.updatedAt + 1,
         recordingEpoch: state.recordingEpoch + 1,
         unmatchedFilterEntries: action.unmatchedFilterEntries,
-        stopped: false,
+        activityState: action.activityState,
+        sourceTitle: action.sourceTitle,
+        statusMessage: "",
       };
-    case "recording-stopped":
-      return { ...state, updatedAt: state.updatedAt + 1, stopped: true };
+    case "activity-changed":
+      return {
+        ...state,
+        updatedAt: state.updatedAt + 1,
+        activityState: action.activityState,
+        ...(action.sourceTitle !== undefined ? { sourceTitle: action.sourceTitle } : {}),
+      };
+    case "status-message":
+      return { ...state, statusMessage: action.message };
+    case "data-loaded":
+      return {
+        ...state,
+        updatedAt: state.updatedAt + 1,
+        unmatchedFilterEntries: action.unmatchedFilterEntries,
+        statusMessage: "",
+      };
     default:
       return state;
   }
@@ -144,7 +173,9 @@ export const useLiveStream = (
     updatedAt: 0,
     recordingEpoch: 0,
     unmatchedFilterEntries: [],
-    stopped: false,
+    activityState: "idle" as ActivityState,
+    sourceTitle: "",
+    statusMessage: "",
   });
 
   const dispatchTick = useCallback(() => dispatch({ type: "tick" }), []);
@@ -171,6 +202,57 @@ export const useLiveStream = (
   const latestIgnoreListRef = useRef(ignoreList);
   latestIgnoreListRef.current = ignoreList;
 
+  const objectStorage = useObjectStorage();
+  const objectStorageRef = useRef(objectStorage);
+  objectStorageRef.current = objectStorage;
+  const fetchEpochRef = useRef(0);
+  const activityStateRef = useRef<ActivityState>("idle");
+  activityStateRef.current = streamState.activityState;
+
+  const fetchRecordingData = useCallback(async (objectId: string, epoch: number) => {
+    try {
+      const os = objectStorageRef.current;
+
+      const metadata = await os.readMetadata(objectId);
+      if (!metadata) {
+        throw new Error(`Object ${objectId} not found`);
+      }
+
+      const dataTableEntry = Object.entries(metadata.items)
+        .find(([, item]: [string, any]) => item.type === "dataTable");
+      if (!dataTableEntry) {
+        throw new Error(`No dataTable found in object ${objectId}`);
+      }
+      const [dataTableId, dataTableMetadata] = dataTableEntry as [string, any];
+
+      const dataTableData = await os.readDataItem(objectId, dataTableId);
+      if (!dataTableData) {
+        throw new Error(`Failed to read data table ${dataTableId}`);
+      }
+
+      if (fetchEpochRef.current !== epoch) {
+        return;
+      }
+
+      const fetchedCols = dataTableMetadata.cols as string[];
+      const fetchedRows = Object.values(dataTableData.rows || {}).map((row: any) => row) as (number | null)[][];
+
+      colsRef.current = fetchedCols;
+      rowsRef.current = fetchedRows;
+
+      const activeMode = latestAuthoredStateRef.current.columnFilteringMode ?? "all";
+      const entries = activeMode === "allow" ? latestAllowListRef.current
+        : activeMode === "ignore" ? latestIgnoreListRef.current : [];
+      const unmatched = entries.filter(e => !fetchedCols.includes(e));
+
+      dispatch({ type: "data-loaded", unmatchedFilterEntries: unmatched });
+    } catch (err) {
+      console.error("[live-graph] Failed to fetch recording data:", err);
+      dispatch({ type: "status-message", message: "Unable to load recording data." });
+      dispatch({ type: "activity-changed", activityState: "idle" });
+    }
+  }, []);
+
   useEffect(() => {
     const id = lockedIdRef.current;
     if (!id) {
@@ -179,7 +261,9 @@ export const useLiveStream = (
     const channel = createPubSubChannel(id);
     const unsubscribe = channel.subscribe((message: any) => {
       switch (message?.topic) {
-        case "recording-started": {
+        case "recording-started":
+        case "simulation-started": {
+          fetchEpochRef.current++;
           const newCols: string[] = Array.isArray(message.cols) ? message.cols : [];
           colsRef.current = newCols;
           rowsRef.current = [];
@@ -188,7 +272,12 @@ export const useLiveStream = (
           const entries = activeMode === "allow" ? latestAllowListRef.current
             : activeMode === "ignore" ? latestIgnoreListRef.current : [];
           const unmatched = entries.filter(e => !newCols.includes(e));
-          logRecordingStarted({ cols: newCols });
+
+          if (message.topic === "recording-started") {
+            logRecordingStarted({ cols: newCols });
+          } else {
+            logSimulationStarted({ cols: newCols });
+          }
 
           if (unmatched.length > 0) {
             console.error(
@@ -198,10 +287,16 @@ export const useLiveStream = (
             );
           }
 
-          dispatch({ type: "recording-started", unmatchedFilterEntries: unmatched });
+          dispatch({
+            type: "source-started",
+            unmatchedFilterEntries: unmatched,
+            activityState: message.topic === "recording-started" ? "recording" : "playing",
+            sourceTitle: message.title ?? "",
+          });
           break;
         }
-        case "recording-tick": {
+        case "recording-tick":
+        case "simulation-tick": {
           const currentCols = colsRef.current;
           if (!currentCols) {
             return;
@@ -213,14 +308,69 @@ export const useLiveStream = (
           const values = message.values ?? {};
           const row = currentCols.map(col => coerceToFiniteOrNull(values[col]));
           rowsRef.current.push(row);
+          if (activityStateRef.current === "paused") {
+            dispatch({ type: "activity-changed", activityState: "playing" });
+          }
           dispatchTick();
           break;
         }
         case "recording-stopped": {
+          logRecordingStopped();
+          dispatch({ type: "activity-changed", activityState: "stopped" });
+          break;
+        }
+        case "simulation-paused": {
+          logSimulationPaused();
+          dispatch({ type: "activity-changed", activityState: "paused" });
+          break;
+        }
+        case "simulation-reset": {
           colsRef.current = null;
           rowsRef.current = [];
-          logRecordingStopped();
-          dispatch({ type: "recording-stopped" });
+          logSimulationReset();
+          dispatch({ type: "source-started", unmatchedFilterEntries: [], activityState: "idle", sourceTitle: "" });
+          break;
+        }
+        case "recording-selected": {
+          const { objectId, title, status } = message;
+          const sourceTitle = title ?? "";
+          fetchEpochRef.current++;
+
+          logRecordingSelected({ objectId: objectId ?? null, status: status ?? "ready", title: sourceTitle });
+
+          colsRef.current = null;
+          rowsRef.current = [];
+          const isFailed = status === "failed";
+          dispatch({
+            type: "source-started",
+            unmatchedFilterEntries: [],
+            activityState: isFailed ? "idle" : "recorded",
+            sourceTitle: isFailed ? "" : sourceTitle,
+          });
+
+          switch (status) {
+            case "empty":
+              dispatch({ type: "status-message", message: "No recording data yet." });
+              break;
+            case "waiting":
+              dispatch({ type: "status-message", message: "Saving recording..." });
+              break;
+            case "ready":
+              dispatch({ type: "status-message", message: "Loading recording..." });
+              fetchRecordingData(objectId, fetchEpochRef.current);
+              break;
+            case "failed":
+              dispatch({ type: "status-message", message: "Recording data is not available yet." });
+              console.error("[live-graph] Recording data fetch failed", { objectId, status });
+              break;
+          }
+          break;
+        }
+        case "recording-deselected": {
+          colsRef.current = null;
+          rowsRef.current = [];
+          logRecordingDeselected();
+          dispatch({ type: "source-started", unmatchedFilterEntries: [], activityState: "idle", sourceTitle: "" });
           break;
         }
       }
@@ -229,7 +379,7 @@ export const useLiveStream = (
       unsubscribe();
       channel.dispose();
     };
-  }, [dispatchTick, lockedId]);
+  }, [dispatchTick, lockedId, fetchRecordingData]);
 
   const cols = colsRef.current;
   const rows = rowsRef.current;
@@ -250,8 +400,6 @@ export const useLiveStream = (
   let viewState: ViewState;
   if (!lockedIdRef.current) {
     viewState = "no-source";
-  } else if (streamState.stopped) {
-    viewState = "stopped";
   } else if (!cols) {
     viewState = "waiting";
   } else {
@@ -296,5 +444,8 @@ export const useLiveStream = (
     filterEntries,
     unmatchedFilterEntries: streamState.unmatchedFilterEntries,
     recordingEpoch: streamState.recordingEpoch,
+    activityState: streamState.activityState,
+    sourceTitle: streamState.sourceTitle,
+    statusMessage: streamState.statusMessage,
   };
 };

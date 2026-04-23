@@ -7,6 +7,12 @@ import { InitMessageContext } from "@concord-consortium/question-interactives-he
 import * as api from "@concord-consortium/lara-interactive-api";
 
 jest.mock("@concord-consortium/lara-interactive-api");
+jest.mock("@concord-consortium/object-storage", () => ({
+  useObjectStorage: () => ({
+    readMetadata: jest.fn(),
+    readDataItem: jest.fn(),
+  }),
+}));
 jest.mock("react-chartjs-2", () => ({
   Line: (props: any) => <canvas data-testid="chart-canvas" />,
 }));
@@ -102,7 +108,7 @@ describe("Runtime viewState rendering", () => {
     );
     emit({ topic: "recording-started", cols: ["a", "b"] });
     wrapper.update();
-    const politeRegion = wrapper.find("[aria-live='polite']");
+    const politeRegion = wrapper.find("[aria-live='polite']").first();
     expect(politeRegion.text()).toMatch(/No columns to display\. There may be a problem/);
   });
 

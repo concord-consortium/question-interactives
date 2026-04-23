@@ -19,3 +19,23 @@ export const logXAxisCompressed = () => {
 export const logXAxisColumnMissing = (data: { expectedColumn: string; publishedColumns: string[] }) => {
   log("x-axis-column-missing", data);
 };
+
+export const logSimulationStarted = (data: { cols: string[] }) => {
+  log("simulation-started", data);
+};
+
+export const logSimulationPaused = () => {
+  log("simulation-paused", {});
+};
+
+export const logSimulationReset = () => {
+  log("simulation-reset", {});
+};
+
+export const logRecordingSelected = (data: { objectId: string | null; status: string; title: string }) => {
+  log("recording-selected", data);
+};
+
+export const logRecordingDeselected = () => {
+  log("recording-deselected", {});
+};
