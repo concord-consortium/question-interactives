@@ -135,11 +135,12 @@ export const Runtime: React.FC<IProps> = ({ authoredState }) => {
         {assertiveText}
       </div>
       {viewState === "plotting" && cols && (
-        <div className={css.chartArea}>
+        <div className={`${css.chartArea} ${css[`legend-${authoredState.legendPosition ?? "top"}`]}`}>
           <Legend
             columns={activeColumns}
             visibility={visibility}
             onToggle={handleToggle}
+            position={authoredState.legendPosition ?? "top"}
           />
           <div className={css.chart}>
             <Chart

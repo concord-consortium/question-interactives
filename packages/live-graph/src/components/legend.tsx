@@ -1,17 +1,20 @@
 import React from "react";
 import { columnStyle } from "./column-style";
 import { IActiveColumn } from "./use-live-stream";
+import { LegendPosition } from "./types";
 import css from "./legend.scss";
 
 interface ILegendProps {
   columns: IActiveColumn[];
   visibility: Record<string, boolean>;
   onToggle: (column: string) => void;
+  position?: LegendPosition;
 }
 
 const propsAreEqual = (prev: ILegendProps, next: ILegendProps): boolean => {
   if (prev.columns !== next.columns) return false;
   if (prev.onToggle !== next.onToggle) return false;
+  if (prev.position !== next.position) return false;
   const prevV = prev.visibility;
   const nextV = next.visibility;
   if (prevV === nextV) return true;
@@ -33,9 +36,10 @@ const LineSwatch: React.FC<{ index: number }> = ({ index }) => {
   );
 };
 
-export const Legend = React.memo<ILegendProps>(({ columns, visibility, onToggle }) => {
+export const Legend = React.memo<ILegendProps>(({ columns, visibility, onToggle, position = "top" }) => {
+  const isVertical = position === "left" || position === "right";
   return (
-    <ul className={css.legend}>
+    <ul className={`${css.legend} ${isVertical ? css.vertical : ""}`}>
       {columns.map((col, i) => {
         const visible = visibility[col.column] !== false;
         return (

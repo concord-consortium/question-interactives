@@ -28,6 +28,18 @@
   flex: 1;
   display: flex;
   flex-direction: column;
+
+  &.legend-left {
+    flex-direction: row;
+  }
+
+  &.legend-right {
+    flex-direction: row-reverse;
+  }
+
+  &.legend-bottom {
+    flex-direction: column-reverse;
+  }
 }
 
 .chart {

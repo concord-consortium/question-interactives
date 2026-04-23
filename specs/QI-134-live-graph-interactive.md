@@ -34,7 +34,7 @@ A new standalone `live-graph` package that subscribes to a single linked interac
 ### Authoring (Author View)
 
 - Data Source Interactive dropdown via `linkedInteractiveProps` with `customValidate` for `"none"` sentinel.
-- Chart title with authorable position (top/right/bottom/left, defaults to top), X-axis column (with placeholder text), X-axis label, X-axis max.
+- Chart title, custom legend with authorable position (top/right/bottom/left, defaults to top), X-axis column (with placeholder text), X-axis label, X-axis max.
 - Y-axis label, Y-axis range (Auto-scale / Fixed with yMin/yMax — conditional fields always visible, disabled when not applicable).
 - Column display names (URLSearchParams-based parser), Column filtering (All / Allow / Ignore with conditional list fields).
 - Chart height in pixels (defaults to 400). Applied as an inline style; `useAutoHeight` reports the value to the parent iframe.

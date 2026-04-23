@@ -25,8 +25,8 @@ export const baseAuthoringProps = {
         title: "Chart title",
         type: "string"
       },
-      chartTitlePosition: {
-        title: "Chart title position",
+      legendPosition: {
+        title: "Legend position",
         type: "string",
         enum: ["top", "right", "bottom", "left"],
         enumNames: ["Top", "Right", "Bottom", "Left"],
@@ -102,7 +102,7 @@ export const baseAuthoringProps = {
     "ui:order": [
       "dataSourceInteractive",
       "chartTitle",
-      "chartTitlePosition",
+      "legendPosition",
       "xAxisColumn",
       "xAxisLabel",
       "xAxisMax",
