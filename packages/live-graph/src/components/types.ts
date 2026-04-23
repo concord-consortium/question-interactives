@@ -2,6 +2,7 @@ import { IAuthoringInteractiveMetadata } from "@concord-consortium/lara-interact
 
 export type YAxisRangeMode = "auto" | "fixed";
 export type ColumnFilteringMode = "all" | "allow" | "ignore";
+export type ChartTitlePosition = "top" | "right" | "bottom" | "left";
 
 export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   version: 1;
@@ -19,6 +20,7 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   allowList?: string;
   ignoreList?: string;
   chartHeight?: number;
+  chartTitlePosition?: ChartTitlePosition;
   noDataMessage?: string;
   noSourceMessage?: string;
   recordingStoppedMessage?: string;

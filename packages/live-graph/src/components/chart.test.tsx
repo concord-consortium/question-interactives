@@ -92,7 +92,7 @@ describe("Chart — options", () => {
     expect(props.data.datasets[0].data).toEqual([1, 2, 3]);
   });
 
-  it("does not render legend (HTML legend renders in Step 5)", () => {
+  it("does not render legend (HTML legend renders separately)", () => {
     mount(
       <Chart
         authoredState={baseAuthoredState}
@@ -104,6 +104,34 @@ describe("Chart — options", () => {
       />
     );
     expect(getLineProps().options.plugins.legend.display).toBe(false);
+  });
+
+  it("defaults chart title position to top", () => {
+    mount(
+      <Chart
+        authoredState={{ ...baseAuthoredState, chartTitle: "Test" }}
+        activeColumns={makeCols(["a"])}
+        cols={["a"]}
+        rows={[[1]]}
+        updatedAt={1}
+        recordingEpoch={1}
+      />
+    );
+    expect(getLineProps().options.plugins.title.position).toBe("top");
+  });
+
+  it("uses authored chartTitlePosition", () => {
+    mount(
+      <Chart
+        authoredState={{ ...baseAuthoredState, chartTitle: "Test", chartTitlePosition: "bottom" }}
+        activeColumns={makeCols(["a"])}
+        cols={["a"]}
+        rows={[[1]]}
+        updatedAt={1}
+        recordingEpoch={1}
+      />
+    );
+    expect(getLineProps().options.plugins.title.position).toBe("bottom");
   });
 });
 

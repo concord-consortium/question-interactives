@@ -25,6 +25,13 @@ export const baseAuthoringProps = {
         title: "Chart title",
         type: "string"
       },
+      chartTitlePosition: {
+        title: "Chart title position",
+        type: "string",
+        enum: ["top", "right", "bottom", "left"],
+        enumNames: ["Top", "Right", "Bottom", "Left"],
+        default: "top"
+      },
       xAxisColumn: {
         title: "X-axis column",
         type: "string"
@@ -99,6 +106,7 @@ export const baseAuthoringProps = {
     "ui:order": [
       "dataSourceInteractive",
       "chartTitle",
+      "chartTitlePosition",
       "xAxisColumn",
       "xAxisLabel",
       "xAxisMax",

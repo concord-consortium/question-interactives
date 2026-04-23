@@ -217,6 +217,7 @@ const ChartInner: React.FC<IChartProps> = ({
       title: {
         display: !!authoredState.chartTitle,
         text: authoredState.chartTitle,
+        position: authoredState.chartTitlePosition ?? "top",
         font: labelFont,
       },
       legend: {

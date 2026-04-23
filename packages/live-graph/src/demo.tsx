@@ -10,6 +10,7 @@ const demoAuthoredState: IAuthoredState = {
   questionType: "iframe_interactive",
   dataSourceInteractive: DEMO_RUNTIME_INTERACTIVE_ID,
   chartTitle: "Live Graph Demo",
+  chartTitlePosition: "top",
   xAxisColumn: "tick",
   xAxisLabel: "Tick",
   xAxisMax: 50,
