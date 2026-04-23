@@ -23,6 +23,16 @@ const propsAreEqual = (prev: ILegendProps, next: ILegendProps): boolean => {
   return true;
 };
 
+const LineSwatch: React.FC<{ index: number }> = ({ index }) => {
+  const { color, borderDash } = columnStyle(index);
+  const dashArray = borderDash.length > 0 ? borderDash.join(" ") : "none";
+  return (
+    <svg className={css.swatch} viewBox="0 0 24 12" aria-hidden="true">
+      <line x1="0" y1="6" x2="24" y2="6" stroke={color} strokeWidth="1" strokeDasharray={dashArray} strokeLinecap="round" />
+    </svg>
+  );
+};
+
 export const Legend = React.memo<ILegendProps>(({ columns, visibility, onToggle }) => {
   return (
     <ul className={css.legend}>
@@ -42,10 +52,7 @@ export const Legend = React.memo<ILegendProps>(({ columns, visibility, onToggle 
                 }
               }}
             >
-              <span
-                className={css.swatch}
-                style={{ backgroundColor: columnStyle(i).color }}
-              />
+              <LineSwatch index={i} />
               <span className={css.label}>{col.label}</span>
             </button>
           </li>
