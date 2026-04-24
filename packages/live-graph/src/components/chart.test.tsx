@@ -262,9 +262,10 @@ describe("Chart — empty rows (chrome-only)", () => {
       />
     );
     const props = getLineProps();
-    // Category mode with no rows: min/max should be omitted so Chart.js auto-fits.
-    expect(props.options.scales.x.min).toBeUndefined();
-    expect(props.options.scales.x.max).toBeUndefined();
+    // Linear mode with no rows: axes show authored bounds so ticks are visible
+    // even before data arrives.
+    expect(props.options.scales.x.min).toBe(0);
+    expect(props.options.scales.x.max).toBe(1);
   });
 
   it("does not fire x-axis-compressed when rows is empty", () => {

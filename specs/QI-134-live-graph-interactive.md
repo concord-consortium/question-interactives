@@ -27,7 +27,7 @@ A new standalone `live-graph` package that subscribes to a single linked interac
 - Five log events: `toggle-series`, `recording-started`, `recording-stopped`, `x-axis-compressed`, `x-axis-column-missing`.
 - rAF-coalesced chart rendering for high tick rates.
 - On `recording-stopped`, chart retains last plotted data. Activity state indicator shows "(Stopped)". *(Changed from clearing in follow-on spec.)*
-- Chart is always rendered (with axes and title visible) in all view states. Status and error messages are overlaid as a pill-styled badge centered over the chart, so students see the graph structure before data arrives.
+- Chart is always rendered (with axes and title visible) in all view states. Before data arrives, the x-axis displays ticks from 0 to `xAxisMax` (or 0–1 if unset) and the y-axis uses authored fixed bounds when configured, so students see the graph structure immediately. Status and error messages are overlaid as a pill-styled badge centered over the chart.
 - Defensive handling of unexpected PubSub message order (tick-before-started discarded, repeated started clears).
 - Defensive tick payload coercion: missing columns → `null`, non-finite values → `null`, extra keys ignored.
 - Detailed data-table accessibility *(deferred to a follow-up)*.

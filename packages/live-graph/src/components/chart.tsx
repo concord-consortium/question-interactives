@@ -214,7 +214,7 @@ const ChartInner: React.FC<IChartProps> = ({
     ? { type: "linear" as const, min: xMin, max: xMax, title: xAxisTitle, ticks: { font: tickFont } }
     : rows.length > 0
       ? { type: "category" as const, min: String(xMin), max: String(xMax), title: xAxisTitle, ticks: { font: tickFont } }
-      : { type: "category" as const, title: xAxisTitle, ticks: { font: tickFont } };
+      : { type: "linear" as const, min: xMin, max: xMax, title: xAxisTitle, ticks: { font: tickFont } };
 
   const options: ChartOptions<"line"> = {
     animation: false,

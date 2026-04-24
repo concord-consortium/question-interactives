@@ -56,7 +56,7 @@ Log new message types via `logging.ts`: `logSimulationStarted`, `logSimulationPa
 
 ### R10: Always-visible chart with overlay messages
 
-The chart (axes, title, grid) is always rendered in all view states, including "waiting" and "no-source". Status messages ("Waiting for data...", "No data source configured", etc.) are overlaid as a centered pill-styled badge (semi-transparent white background, subtle border, rounded corners) on top of the chart. This gives students a preview of the graph structure before data arrives, and updates in the authoring preview as well. The legend is only shown when `viewState === "plotting"`.
+The chart (axes, title, grid) is always rendered in all view states, including "waiting" and "no-source". Before data arrives, the x-axis displays ticks from 0 to `xAxisMax` (or 0–1 if unset) using a linear scale, and the y-axis uses authored fixed bounds when configured, giving students a preview of the graph structure. Status messages ("Waiting for data...", "No data source configured", etc.) are overlaid as a centered pill-styled badge (semi-transparent white background, subtle border, rounded corners) on top of the chart. The legend is only shown when `viewState === "plotting"`.
 
 ## Technical Notes
 
