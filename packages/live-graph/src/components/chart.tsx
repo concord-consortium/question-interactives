@@ -227,6 +227,7 @@ const ChartInner: React.FC<IChartProps> = ({
         text: composedTitle,
         align: authoredState.chartTitleAlignment ?? "center",
         font: titleFont,
+        padding: { bottom: 12 },
       },
       legend: {
         display: false,
