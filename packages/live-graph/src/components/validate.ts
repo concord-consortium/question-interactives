@@ -28,6 +28,10 @@ export const customValidate = (
     errors.xAxisMax?.addError("Must be a positive number.");
   }
 
+  if (formData.chartHeight !== undefined && (!isFiniteNumber(formData.chartHeight) || formData.chartHeight <= 0)) {
+    errors.chartHeight?.addError("Must be a positive number.");
+  }
+
   if (formData.yAxisRangeMode === "fixed") {
     const { yMin, yMax } = formData;
 

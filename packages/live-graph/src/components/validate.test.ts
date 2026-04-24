@@ -6,14 +6,16 @@ const makeErrors = () => {
   const xAxisMax = { addError: jest.fn(), __errors: [] as string[] };
   const yMin = { addError: jest.fn(), __errors: [] as string[] };
   const yMax = { addError: jest.fn(), __errors: [] as string[] };
+  const chartHeight = { addError: jest.fn(), __errors: [] as string[] };
   const errors: any = {
     dataSourceInteractive: dataSource,
     xAxisMax,
     yMin,
     yMax,
+    chartHeight,
     addError: jest.fn(),
   };
-  return { errors, dataSource, xAxisMax, yMin, yMax };
+  return { errors, dataSource, xAxisMax, yMin, yMax, chartHeight };
 };
 
 const baseState: IAuthoredState = {
@@ -73,6 +75,38 @@ describe("customValidate - xAxisMax", () => {
     const { errors, xAxisMax } = makeErrors();
     customValidate({ ...baseState, xAxisMax: NaN }, errors);
     expect(xAxisMax.addError).toHaveBeenCalledWith("Must be a positive number.");
+  });
+});
+
+describe("customValidate - chartHeight", () => {
+  it("accepts a positive chartHeight", () => {
+    const { errors, chartHeight } = makeErrors();
+    customValidate({ ...baseState, chartHeight: 400 }, errors);
+    expect(chartHeight.addError).not.toHaveBeenCalled();
+  });
+
+  it("accepts undefined chartHeight", () => {
+    const { errors, chartHeight } = makeErrors();
+    customValidate({ ...baseState }, errors);
+    expect(chartHeight.addError).not.toHaveBeenCalled();
+  });
+
+  it("flags chartHeight of 0", () => {
+    const { errors, chartHeight } = makeErrors();
+    customValidate({ ...baseState, chartHeight: 0 }, errors);
+    expect(chartHeight.addError).toHaveBeenCalledWith("Must be a positive number.");
+  });
+
+  it("flags negative chartHeight", () => {
+    const { errors, chartHeight } = makeErrors();
+    customValidate({ ...baseState, chartHeight: -100 }, errors);
+    expect(chartHeight.addError).toHaveBeenCalledWith("Must be a positive number.");
+  });
+
+  it("flags NaN chartHeight", () => {
+    const { errors, chartHeight } = makeErrors();
+    customValidate({ ...baseState, chartHeight: NaN }, errors);
+    expect(chartHeight.addError).toHaveBeenCalledWith("Must be a positive number.");
   });
 });
 

@@ -2,7 +2,8 @@ import React from "react";
 import { render } from "@testing-library/react";
 import validator from "@rjsf/validator-ajv8";
 import { useAuthoredState, useInitMessage } from "@concord-consortium/lara-interactive-api";
-import { App, baseAuthoringProps } from "./app";
+import { App } from "./app";
+import { baseAuthoringProps } from "./authoring-config";
 import { getUiSchema } from "./authoring";
 import { DemoAuthoredState } from "./types";
 

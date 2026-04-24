@@ -235,7 +235,9 @@ export const useLiveStream = (
       }
 
       const fetchedCols = dataTableMetadata.cols as string[];
-      const fetchedRows = Object.values(dataTableData.rows || {}).map((row: any) => row) as (number | null)[][];
+      const fetchedRows = Object.values(dataTableData.rows || {}).map(
+        (row: any) => (row as unknown[]).map(coerceToFiniteOrNull)
+      );
 
       colsRef.current = fetchedCols;
       rowsRef.current = fetchedRows;

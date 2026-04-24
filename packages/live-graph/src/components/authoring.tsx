@@ -6,7 +6,7 @@ import { useLinkedInteractivesAuthoring } from "@concord-consortium/question-int
 import { ILinkedInteractiveProp } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactives-authoring";
 import { useDelayedValidation } from "@concord-consortium/question-interactives-helpers/src/hooks/use-delayed-validation";
 import { IAuthoredState } from "./types";
-import { baseAuthoringProps } from "./app";
+import { baseAuthoringProps } from "./authoring-config";
 
 import "@concord-consortium/question-interactives-helpers/src/styles/bootstrap-3.3.7.scss";
 import css from "@concord-consortium/question-interactives-helpers/src/styles/authoring.scss";
