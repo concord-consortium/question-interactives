@@ -68,7 +68,7 @@ export const CustomBlockFormParameters: React.FC<IProps> = ({ parameters, onPara
       </div>
       <div>
         {parameters.map((p, i) => (
-          <div key={`${p.kind}-${p.name || ''}-${i}`} className={css.paramRow} data-testid={`param-row-${i}`}>
+          <div key={i} className={css.paramRow} data-testid={`param-row-${i}`}>
             <div className={css.paramHeader}>
               <span
                 className={css.paramType}
