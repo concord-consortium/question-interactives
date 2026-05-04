@@ -110,6 +110,7 @@ export const AgentSimulationComponent = ({
   const [showDeleteRecordingConfirm, setShowDeleteRecordingConfirm] = useState(false);
   const tickDataRef = useRef<{ [key: string]: any }[]>([]);
   const handlePlayPauseRef: React.MutableRefObject<() => void> = useRef(() => undefined);
+  const inRecordingModeRef = useRef(false);
 
   const timeFormatter = useMemo(() => {
     return new Intl.DateTimeFormat(undefined, {
@@ -161,6 +162,7 @@ export const AgentSimulationComponent = ({
     return undefined;
   }, [currentRecordingIndex, recordings]);
   const inRecordingMode = useMemo(() => !!currentRecording, [currentRecording]);
+  inRecordingModeRef.current = inRecordingMode;
   const isRecording = useMemo(() => !!currentRecording && !paused, [currentRecording, paused]);
   const isCompletedRecording = useMemo(() =>
     !!currentRecording &&
@@ -285,7 +287,8 @@ export const AgentSimulationComponent = ({
         tickDataRef.current.push(values);
         tick++;
 
-        recordingChannelRef.current?.publish({topic: "recording-tick", values});
+        const topic = inRecordingModeRef.current ? "recording-tick" : "simulation-tick";
+        recordingChannelRef.current?.publish({topic, values});
       }
     };
 
@@ -393,7 +396,7 @@ export const AgentSimulationComponent = ({
 
           if (recordingChannelRef.current) {
             const cols = ["tick", ...Object.keys(simRef.current?.globals.values() || {})];
-            recordingChannelRef.current.publish({topic: "recording-started", cols});
+            recordingChannelRef.current.publish({topic: "recording-started", cols, title: modelName});
           }
         } else {
           log("stop-record-simulation", { startedAt, duration });
@@ -478,7 +481,16 @@ export const AgentSimulationComponent = ({
         }
 
       } else {
-        log(paused ? "play-simulation" : "pause-simulation");
+        if (paused) {
+          log("play-simulation");
+          if (!hasBeenStarted) {
+            const cols = ["tick", ...Object.keys(simRef.current?.globals.values() || {})];
+            recordingChannelRef.current?.publish({ topic: "simulation-started", cols, title: modelName });
+          }
+        } else {
+          log("pause-simulation");
+          recordingChannelRef.current?.publish({ topic: "simulation-paused" });
+        }
       }
 
       simRef.current.sim.pause(!paused);
@@ -501,6 +513,9 @@ export const AgentSimulationComponent = ({
     });
     if (hasBeenStarted) {
       setHasBeenReset(true);
+    }
+    if (!inRecordingMode) {
+      recordingChannelRef.current?.publish({ topic: "simulation-reset" });
     }
     setHasBeenStarted(false);
   };
@@ -583,26 +598,108 @@ export const AgentSimulationComponent = ({
     setZoomLevel(ZOOM_DEFAULT);
   };
 
+  const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const recordingsRef = useRef(recordings);
+  recordingsRef.current = recordings;
+
+  const cancelRecordingPoll = useCallback(() => {
+    if (pollTimerRef.current !== null) {
+      clearTimeout(pollTimerRef.current);
+      pollTimerRef.current = null;
+    }
+  }, []);
+
+  useEffect(() => {
+    return () => cancelRecordingPoll();
+  }, [cancelRecordingPoll]);
+
   const handleNewRecording = () => {
+    cancelRecordingPoll();
     const newRecording: IRecording = { modelName };
     const newRecordings = [...recordings, newRecording];
     setRecordings(newRecordings);
     setCurrentRecordingIndex(newRecordings.length - 1);
+    setHasBeenStarted(false);
     setNewRecordingCount(prev => prev + 1);
+    recordingChannelRef.current?.publish({
+      topic: "recording-selected", objectId: null, title: modelName, status: "empty"
+    });
   };
 
   const handleSelectRecording = (index: number) => {
+    cancelRecordingPoll();
     setCurrentRecordingIndex(index);
+
+    if (index === -1) {
+      setHasBeenStarted(false);
+      setNewRecordingCount(prev => prev + 1); // trigger sim reset so tick counter starts fresh
+      recordingChannelRef.current?.publish({ topic: "recording-deselected" });
+      return;
+    }
+
+    const recording = recordings[index];
+    if (!recording) {
+      return;
+    }
+
+    const buildTitle = (rec: IRecording) => {
+      if (rec.startedAt && rec.duration !== undefined) {
+        const durationInSeconds = Math.floor(rec.duration / 1000);
+        const durationString = `${durationInSeconds} ${durationInSeconds === 1 ? "sec" : "secs"}`;
+        const formattedTime = new Date(rec.startedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+        return `${rec.modelName}: ${formattedTime} (${durationString})`;
+      }
+      return rec.modelName;
+    };
+    const title = buildTitle(recording);
+
+    if (!recording.startedAt) {
+      recordingChannelRef.current?.publish({
+        topic: "recording-selected", objectId: null, title, status: "empty"
+      });
+    } else if (recording.objectId) {
+      recordingChannelRef.current?.publish({
+        topic: "recording-selected", objectId: recording.objectId, title, status: "ready"
+      });
+    } else {
+      recordingChannelRef.current?.publish({
+        topic: "recording-selected", objectId: null, title, status: "waiting"
+      });
+
+      const pollStart = Date.now();
+      const pollForObjectId = () => {
+        const current = recordingsRef.current[index];
+        if (current?.objectId) {
+          recordingChannelRef.current?.publish({
+            topic: "recording-selected", objectId: current.objectId, title, status: "ready"
+          });
+          pollTimerRef.current = null;
+        } else if (Date.now() - pollStart > 10000) {
+          recordingChannelRef.current?.publish({
+            topic: "recording-selected", objectId: null, title, status: "failed"
+          });
+          console.error("[agent-simulation] Timed out waiting for recording save", { index });
+          pollTimerRef.current = null;
+        } else {
+          pollTimerRef.current = setTimeout(pollForObjectId, 250);
+        }
+      };
+      pollTimerRef.current = setTimeout(pollForObjectId, 250);
+    }
   };
 
   const handleDeleteRecording = () => setShowDeleteRecordingConfirm(true);
   const handleCancelDeleteRecording = () => setShowDeleteRecordingConfirm(false);
   const handleConfirmDeleteRecording = useCallback(() => {
+    cancelRecordingPoll();
     const newRecordings = recordings.filter((_, i) => i !== currentRecordingIndex);
     setRecordings(newRecordings);
     setCurrentRecordingIndex(-1);
+    setHasBeenStarted(false);
+    setNewRecordingCount(prev => prev + 1);
     setShowDeleteRecordingConfirm(false);
-  }, [currentRecordingIndex, recordings, setRecordings]);
+    recordingChannelRef.current?.publish({ topic: "recording-deselected" });
+  }, [currentRecordingIndex, recordings, setRecordings, cancelRecordingPoll]);
 
   const renderRecordingInfo = () => {
     const info = getRecordingInfo();

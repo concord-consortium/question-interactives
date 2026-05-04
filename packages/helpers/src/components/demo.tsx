@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useAccessibility } from "@concord-consortium/lara-interactive-api";
+import { PubSubManager } from "@concord-consortium/interactive-api-host";
 
 import { IframeRuntime } from "../components/iframe-runtime";
 import { DemoAuthoringComponent } from "./demo-authoring";
@@ -7,8 +8,17 @@ import { DynamicTextContext, useDynamicTextProxy } from "@concord-consortium/dyn
 import { demoJobManager } from "../utilities/demo-job-manager";
 import { LogMonitor, emitLogEvent } from "@concord-consortium/log-monitor";
 import { slugify } from "../utilities/slugify";
+import { PubSubSimulationConfig } from "./pub-sub-simulation";
+import { PubSubSimulationControls } from "./pub-sub-simulation-controls";
+import { loadOverride } from "./pub-sub-simulation-override";
 
 import css from "./demo.scss";
+
+export const DEMO_RUNTIME_INTERACTIVE_ID = "demo-runtime";
+export const DEMO_PUBLISHER_ID = "demo-publisher";
+
+let pubSubManager: PubSubManager | null = null;
+export const getPubSubManager = () => pubSubManager ??= new PubSubManager();
 
 interface IProps<IAuthoredState, IInteractiveState> {
   title: string;
@@ -16,6 +26,7 @@ interface IProps<IAuthoredState, IInteractiveState> {
   authoredState: IAuthoredState;
   interactiveState: IInteractiveState;
   getReportItemHtml?: (options: {interactiveState: IInteractiveState, authoredState: IAuthoredState}) => string;
+  pubSubSimulation?: PubSubSimulationConfig;
 }
 
 const params = new URLSearchParams(window.location.search);
@@ -61,15 +72,52 @@ if (rootDemo) {
 }
 
 export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<IAuthoredState, IInteractiveState>) => {
-  const { App, title, getReportItemHtml } = props;
+  const { App, title, getReportItemHtml, pubSubSimulation } = props;
   const [authoredState, setAuthoredState] = useState<IAuthoredState>(props.authoredState);
   const [interactiveState, setInteractiveState] = useState<IInteractiveState>(props.interactiveState);
   const [childIFrames, setChildIFrames] = useState<MessageEventSource[]>([]);
   const [reportItemHtml, setReportItemHtml] = useState<string>();
   const [reportItemHeight, setReportItemHeight] = useState(0);
   const timeoutRef = useRef<number|undefined>();
+  const [effectiveSimConfig, setEffectiveSimConfig] = useState<PubSubSimulationConfig | undefined>(
+    () => {
+      if (!pubSubSimulation) {
+        return pubSubSimulation;
+      }
+      return loadOverride(window.location.pathname, pubSubSimulation);
+    }
+  );
 
   const accessibility = useAccessibility();
+
+  const handlePhoneReady = useCallback(
+    (phone: any) => {
+      if (!pubSubSimulation) {
+        return;
+      }
+      const manager = getPubSubManager();
+      manager.addInteractive(DEMO_RUNTIME_INTERACTIVE_ID, phone);
+
+      const onCreateChannel = (data: any) =>
+        manager.createChannel(data.channelId, data.channelInfo);
+      const onPublish = (data: any) =>
+        manager.publish(DEMO_RUNTIME_INTERACTIVE_ID, data.channelId, data.message);
+      const onSubscribe = (data: any) =>
+        manager.subscribe(DEMO_RUNTIME_INTERACTIVE_ID, data.channelId, data.subscriptionId);
+      const onUnsubscribe = (data: any) =>
+        manager.unsubscribe(DEMO_RUNTIME_INTERACTIVE_ID, data.channelId, data.subscriptionId);
+
+      phone.addListener("createChannel", onCreateChannel);
+      phone.addListener("publish", onPublish);
+      phone.addListener("subscribe", onSubscribe);
+      phone.addListener("unsubscribe", onUnsubscribe);
+
+      return () => {
+        manager.removeInteractive(DEMO_RUNTIME_INTERACTIVE_ID);
+      };
+    },
+    [pubSubSimulation]
+  );
 
   // send the new authored state to the root demo and have it re-render the runtime container
   const handleSetAuthoredState = (newAuthoredState: IAuthoredState) => {
@@ -206,6 +254,9 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
               url={demoUrl("authoring")}
               authoredState={authoredState}
               setAuthoredState={handleSetAuthoredState}
+              demoLinkedInteractives={pubSubSimulation ? [
+                { label: "dataSourceInteractive", id: DEMO_RUNTIME_INTERACTIVE_ID }
+              ] : undefined}
             />
           </DynamicTextContext.Provider>
         </>
@@ -215,6 +266,13 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
       return (
         <>
           <strong>Interactive:</strong>
+          {pubSubSimulation && effectiveSimConfig && (
+            <PubSubSimulationControls
+              config={effectiveSimConfig}
+              passedInConfig={pubSubSimulation}
+              onConfigChange={setEffectiveSimConfig}
+            />
+          )}
           <DynamicTextContext.Provider value={dynamicTextProxy}>
             <IframeRuntime
               url={demoUrl("runtime")}
@@ -224,6 +282,15 @@ export const DemoComponent = <IAuthoredState, IInteractiveState>(props: IProps<I
               flushOnSave={true}
               accessibility={accessibility}
               iframeStyling={{width: "100%", flex: 1, border: "none"}}
+              id={pubSubSimulation ? DEMO_RUNTIME_INTERACTIVE_ID : undefined}
+              onPhoneReady={pubSubSimulation ? handlePhoneReady : undefined}
+              initMessage={pubSubSimulation ? {
+                version: 1,
+                mode: "runtime" as const,
+                linkedInteractives: [
+                  { label: "dataSourceInteractive", id: DEMO_RUNTIME_INTERACTIVE_ID }
+                ]
+              } as any : undefined}
             />
           </DynamicTextContext.Provider>
           {renderReportItemHtml()}

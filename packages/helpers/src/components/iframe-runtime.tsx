@@ -33,12 +33,13 @@ interface IProps {
   scrolling?: "auto" | "yes" | "no";
   flushOnSave?: boolean;
   accessibility: IAccessibilitySettings;
+  onPhoneReady?: (phone: any) => (() => void) | void;
 }
 
 export const IframeRuntime: React.FC<IProps> =
   ({ authoredState, id, iframeStyling, interactiveState, logRequestData, report,
       url, setHint, setInteractiveState, addLocalLinkedDataListener, initMessage,
-      scale, onUnloadCallback, scrolling, flushOnSave, accessibility, readOnly }) => {
+      scale, onUnloadCallback, scrolling, flushOnSave, accessibility, readOnly, onPhoneReady }) => {
     const [ iframeHeight, setIframeHeight ] = useState(300);
     const [ internalHint, setInternalHint ] = useState("");
     const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -54,8 +55,11 @@ export const IframeRuntime: React.FC<IProps> =
     setInteractiveStateRef.current = setInteractiveState;
     const onUnloadCallbackRef = useRef<((state: any) => void) | undefined>(onUnloadCallback);
     onUnloadCallbackRef.current = onUnloadCallback;
+    const onPhoneReadyRef = useRef(onPhoneReady);
+    onPhoneReadyRef.current = onPhoneReady;
 
     const resolveOnUnload = useRef<(value: any | PromiseLike<any>) => void>();
+    const phoneReadyCleanup = useRef<(() => void) | undefined>();
 
   useEffect(() => {
     const initInteractive = () => {
@@ -199,6 +203,10 @@ export const IframeRuntime: React.FC<IProps> =
       }
 
       phone.post("initInteractive", initInteractiveMessage);
+
+      if (onPhoneReadyRef.current) {
+        phoneReadyCleanup.current = onPhoneReadyRef.current(phone) || undefined;
+      }
     };
 
     if (iframeRef.current) {
@@ -209,6 +217,8 @@ export const IframeRuntime: React.FC<IProps> =
     }
     // Cleanup.
     return () => {
+      phoneReadyCleanup.current?.();
+      phoneReadyCleanup.current = undefined;
       if (phoneRef.current) {
         phoneRef.current.disconnect();
       }
