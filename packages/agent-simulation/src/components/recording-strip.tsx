@@ -14,11 +14,13 @@ interface Props {
   onSelectRecording: (index: number) => void;
   recordings: IRecordings;
   currentRecordingIndex: number;
+  brokenObjectIds: Set<string>;
   failedSavePlaceholder?: { index: number; snapshot?: string };
 }
 
 export const RecordingStrip = ({
-  isRecording, onNewRecording, recordings, currentRecordingIndex, onSelectRecording, failedSavePlaceholder
+  isRecording, onNewRecording, recordings, currentRecordingIndex, onSelectRecording,
+  brokenObjectIds, failedSavePlaceholder
 }: Props) => {
   const recordingsRef = React.useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = React.useState(false);
@@ -85,16 +87,27 @@ export const RecordingStrip = ({
           const isSaving =
             recording.objectId === undefined &&
             !(isRecording && index === currentRecordingIndex);
+          const isBroken =
+            recording.objectId !== undefined && brokenObjectIds.has(recording.objectId);
           const style: CSSProperties = recording.thumbnail ? {
             backgroundImage: `url(${recording.thumbnail})`,
             backgroundSize: "cover",
             backgroundPosition: "center"
           } : {};
+          let ariaLabel: string | undefined;
+          if (isSaving) {
+            ariaLabel = `Recording ${index + 1} - saving...`;
+          } else if (isBroken) {
+            ariaLabel = `Recording ${index + 1} - data missing, cannot play, select to delete`;
+          } else {
+            ariaLabel = `Recording ${index + 1}`;
+          }
           return (
             <button
               key={index}
               className={classNames(css.recordingButton, {
-                [css.currentRecordingButton]: index === currentRecordingIndex,
+                [css.currentRecordingButton]: index === currentRecordingIndex && !isBroken,
+                [css.currentBrokenRecordingButton]: index === currentRecordingIndex && isBroken,
               })}
               onClick={() => onSelectRecording(index)}
               // Saving-state entries are non-selectable: clicking would call
@@ -106,10 +119,13 @@ export const RecordingStrip = ({
               disabled={isSaving || (isRecording && index !== currentRecordingIndex)}
               style={style}
               data-saving={isSaving || undefined}
-              aria-label={isSaving ? `Recording ${index + 1} - saving...` : `Recording ${index + 1}`}
+              data-broken={isBroken || undefined}
+              aria-label={ariaLabel}
             >
               {isSaving && <span className={css.savingOverlay} aria-hidden="true" />}
               {isSaving && <SpinnerIcon className={css.savingSpinner} aria-hidden="true" />}
+              {isBroken && <span className={css.brokenOverlay} />}
+              {isBroken && <WarningTriangleIcon className={css.brokenIcon} aria-hidden="true" />}
               <span className={classNames(css.recordingIndex, { [css.currentRecording]: index === currentRecordingIndex })}>
                 {index + 1}
               </span>

@@ -903,12 +903,15 @@ describe("AgentSimulationComponent", () => {
       });
 
       // Override the object-storage hook to inject our controllable mockAdd.
+      // readMetadata returns a truthy stub so the broken-history detection
+      // effect classifies these recordings as "ok" (not broken). Save-failure
+      // tests focus on the save path, not broken-history detection.
       mockUseObjectStorage.mockReturnValue({
         add: mockAdd,
         list: jest.fn(),
         monitor: jest.fn(),
         read: jest.fn(),
-        readMetadata: jest.fn(),
+        readMetadata: jest.fn(() => Promise.resolve({})),
         readData: jest.fn(),
         readDataItem: jest.fn(),
       });
@@ -1313,6 +1316,268 @@ describe("AgentSimulationComponent", () => {
         c => c[0]?.topic === "recording-save-failed"
       );
       expect(failedPublish).toBeDefined();
+    });
+  });
+
+  describe("broken-history detection", () => {
+    let mockReadMetadata: jest.Mock;
+    let mockPublish: jest.Mock;
+
+    const renderWithMetadata = (interactiveState: IInteractiveState) => {
+      return render(
+        <ObjectStorageProvider config={objectStorageConfig}>
+          <AgentSimulationComponent
+            authoredState={defaultAuthoredState}
+            interactiveState={interactiveState}
+            setInteractiveState={mockSetInteractiveState}
+          />
+        </ObjectStorageProvider>
+      );
+    };
+
+    beforeEach(() => {
+      mockAgentSimulation.widgets = [];
+      mockGlobals.values.mockReturnValue({});
+
+      mockReadMetadata = jest.fn();
+      mockPublish = jest.fn();
+      mockCreatePubSubChannel.mockReturnValue({
+        publish: mockPublish,
+        subscribe: jest.fn(),
+        unsubscribe: jest.fn(),
+      });
+      mockUseObjectStorage.mockReturnValue({
+        add: jest.fn(),
+        list: jest.fn(),
+        monitor: jest.fn(),
+        read: jest.fn(),
+        readMetadata: mockReadMetadata,
+        readData: jest.fn(),
+        readDataItem: jest.fn(),
+      });
+    });
+
+    it("marks entries whose readMetadata returns undefined as broken (data-broken='true')", async () => {
+      mockReadMetadata.mockImplementation((objectId: string) => {
+        if (objectId === "broken-id") return Promise.resolve(undefined);
+        return Promise.resolve({});
+      });
+
+      const state: IInteractiveState = {
+        ...defaultInteractiveState,
+        recordings: [
+          { modelName: "Model 1", objectId: "ok-id", startedAt: 1000, duration: 5000 },
+          { modelName: "Model 1", objectId: "broken-id", startedAt: 2000, duration: 5000 },
+        ],
+      };
+
+      renderWithMetadata(state);
+      // Wait for the broken-detection effect to resolve.
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+
+      const brokenButtons = document.querySelectorAll('[data-broken="true"]');
+      // Only one broken-history button should be present (the failed-save
+      // placeholder isn't rendered here).
+      expect(brokenButtons.length).toBe(1);
+      expect(brokenButtons[0].getAttribute("aria-label")).toMatch(
+        /Recording 2 - data missing, cannot play, select to delete/
+      );
+    });
+
+    it("treats readMetadata throws as unknown (entry rendered normally, not broken)", async () => {
+      mockReadMetadata.mockImplementation((objectId: string) => {
+        if (objectId === "thrown-id") return Promise.reject(new Error("transient network"));
+        return Promise.resolve({});
+      });
+
+      const state: IInteractiveState = {
+        ...defaultInteractiveState,
+        recordings: [
+          { modelName: "Model 1", objectId: "thrown-id", startedAt: 1000, duration: 5000 },
+        ],
+      };
+
+      renderWithMetadata(state);
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+
+      // Entry should not be marked broken (treated as unknown).
+      expect(document.querySelector('[data-broken="true"]')).toBeNull();
+    });
+
+    it("clicking a broken entry selects it without publishing recording-selected or polling", async () => {
+      mockReadMetadata.mockImplementation((objectId: string) => {
+        if (objectId === "broken-id") return Promise.resolve(undefined);
+        return Promise.resolve({});
+      });
+
+      const state: IInteractiveState = {
+        ...defaultInteractiveState,
+        recordings: [
+          { modelName: "Model 1", objectId: "broken-id", startedAt: 1000, duration: 5000 },
+        ],
+      };
+
+      renderWithMetadata(state);
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+
+      // Initial mount publishes nothing related to recording-selected.
+      mockPublish.mockClear();
+
+      const brokenBtn = document.querySelector('[data-broken="true"]') as HTMLButtonElement;
+      expect(brokenBtn).not.toBeNull();
+      fireEvent.click(brokenBtn);
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      // No recording-selected publish.
+      const selectPublishes = mockPublish.mock.calls.filter(
+        c => c[0]?.topic === "recording-selected"
+      );
+      expect(selectPublishes).toHaveLength(0);
+    });
+
+    it("Play is disabled when a broken entry is selected; Delete is enabled", async () => {
+      mockReadMetadata.mockImplementation((objectId: string) => {
+        if (objectId === "broken-id") return Promise.resolve(undefined);
+        return Promise.resolve({});
+      });
+
+      const state: IInteractiveState = {
+        ...defaultInteractiveState,
+        recordings: [
+          { modelName: "Model 1", objectId: "broken-id", startedAt: 1000, duration: 5000 },
+        ],
+      };
+
+      renderWithMetadata(state);
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+
+      const brokenBtn = document.querySelector('[data-broken="true"]') as HTMLButtonElement;
+      fireEvent.click(brokenBtn);
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      // Play should be disabled (selectedIsBroken gate).
+      const playBtn = screen.getByTestId("play-pause-button");
+      expect(playBtn).toBeDisabled();
+      // Delete should be enabled.
+      const deleteBtn = screen.getByTestId("delete-recording-button");
+      expect(deleteBtn).not.toBeDisabled();
+    });
+
+    it("metadata cache: cold mount fetches all ids; unmount/remount resets the cache (self-healing)", async () => {
+      mockReadMetadata.mockImplementation(() => Promise.resolve({}));
+
+      const fiveRecordings: IInteractiveState = {
+        ...defaultInteractiveState,
+        recordings: Array.from({ length: 5 }, (_, i) => ({
+          modelName: "Model 1",
+          objectId: `id-${i}`,
+          startedAt: 1000 + i,
+          duration: 5000,
+        })),
+      };
+
+      const { unmount } = renderWithMetadata(fiveRecordings);
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+
+      // Cold mount: 5 calls.
+      expect(mockReadMetadata).toHaveBeenCalledTimes(5);
+
+      // Unmount and remount; cache is reset, so fetches happen again.
+      unmount();
+      mockReadMetadata.mockClear();
+      renderWithMetadata(fiveRecordings);
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+      // 5 fetches on remount (cache cleared).
+      expect(mockReadMetadata).toHaveBeenCalledTimes(5);
+    });
+
+    it("metadata cache: a new recording's objectId triggers only one new readMetadata call (delta-fetch)", async () => {
+      // The cache delta-fetch is exercised via a successful save: existing recordings
+      // are pre-mounted, then a new recording is added through the save success path.
+      // The component's useState(recordings) is mount-initialized from interactiveState,
+      // so changing the prop after mount won't update local state; the only way to add
+      // a recording is through the component's own setRecordings flow.
+      mockReadMetadata.mockImplementation(() => Promise.resolve({}));
+
+      // Override useObjectStorage to provide a working add() so we can drive a save.
+      const mockAdd = jest.fn(() => Promise.resolve({} as any));
+      mockUseObjectStorage.mockReturnValue({
+        add: mockAdd,
+        list: jest.fn(),
+        monitor: jest.fn(),
+        read: jest.fn(),
+        readMetadata: mockReadMetadata,
+        readData: jest.fn(),
+        readDataItem: jest.fn(),
+      });
+
+      const fiveRecordings: IInteractiveState = {
+        ...defaultInteractiveState,
+        recordings: Array.from({ length: 5 }, (_, i) => ({
+          modelName: "Model 1",
+          objectId: `id-${i}`,
+          startedAt: 1000 + i,
+          duration: 5000,
+        })),
+      };
+
+      renderWithMetadata(fiveRecordings);
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+      // Cold mount fetched all 5 existing objectIds.
+      expect(mockReadMetadata).toHaveBeenCalledTimes(5);
+
+      mockReadMetadata.mockClear();
+
+      // Drive a new recording so a 6th objectId is added.
+      fireEvent.click(screen.getByText("New"));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+      fireEvent.click(screen.getByTestId("play-pause-button"));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 20)); });
+      fireEvent.click(screen.getByTestId("play-pause-button"));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+
+      // Exactly one new readMetadata fetch — for the just-added objectId.
+      // (Existing 5 ids stay in cache and aren't re-fetched.)
+      expect(mockReadMetadata).toHaveBeenCalledTimes(1);
+    });
+
+    it("starting a new recording clears any broken-entry selection", async () => {
+      mockReadMetadata.mockImplementation((objectId: string) => {
+        if (objectId === "broken-id") return Promise.resolve(undefined);
+        return Promise.resolve({});
+      });
+
+      const state: IInteractiveState = {
+        ...defaultInteractiveState,
+        recordings: [
+          { modelName: "Model 1", objectId: "broken-id", startedAt: 1000, duration: 5000 },
+        ],
+      };
+
+      renderWithMetadata(state);
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+
+      // Select the broken entry.
+      const brokenBtn = document.querySelector('[data-broken="true"]') as HTMLButtonElement;
+      fireEvent.click(brokenBtn);
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      // Confirm broken entry IS currently selected (has currentBrokenRecordingButton class).
+      expect(brokenBtn.className).toMatch(/currentBrokenRecordingButton/);
+
+      // Click New to start a new recording.
+      fireEvent.click(screen.getByText("New"));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      // Direct assertion: the broken entry no longer carries the
+      // currentBrokenRecordingButton selection outline — the new entry is now selected.
+      const stillBrokenBtn = document.querySelector('[data-broken="true"]') as HTMLButtonElement;
+      expect(stillBrokenBtn).not.toBeNull();
+      expect(stillBrokenBtn.className).not.toMatch(/currentBrokenRecordingButton/);
+
+      // Indirect consequence: Play is enabled now that no broken entry is selected.
+      const playBtn = screen.getByTestId("play-pause-button");
+      expect(playBtn).not.toBeDisabled();
     });
   });
 });

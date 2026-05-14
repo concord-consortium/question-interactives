@@ -110,6 +110,12 @@
   cursor: default;
   pointer-events: none; // placeholder is non-interactive
 }
+.currentBrokenRecordingButton {
+  // Warning-colored selection ring so users don't infer playback works.
+  // Distinct from .currentRecordingButton's orange-dark-1 ring.
+  outline: 2px solid var(--warning-ring-color, #f5a623);
+  outline-offset: -2px;
+}
 .brokenOverlay {
   position: absolute;
   inset: 0;

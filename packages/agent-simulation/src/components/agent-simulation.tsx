@@ -99,7 +99,8 @@ export const AgentSimulationComponent = ({
   // Play button is disabled when there is a code source and either:
   // - blocklyCode is not defined
   // - blocklyCode does not match externalBlocklyCode
-  const canPlay = hasCodeSource
+  // - a broken-history entry is currently selected (computed below)
+  const basePlayAllowed = hasCodeSource
     ? !!blocklyCode && (!externalBlocklyCode || blocklyCode === externalBlocklyCode)
     : true;
 
@@ -121,6 +122,15 @@ export const AgentSimulationComponent = ({
   // acknowledges the error modal. When non-null, the error modal is shown and a transient
   // placeholder is rendered in the strip.
   const [failedSaveInfo, setFailedSaveInfo] = useState<FailedSaveInfo | null>(null);
+  // Broken-history UI state. Detected on mount and whenever the set of objectIds changes;
+  // never written to interactiveState. No aria-live announcement on detection — broken
+  // history is passive state, not a notification-worthy event; the per-entry aria-label
+  // is the AT signal on focus.
+  const [brokenObjectIds, setBrokenObjectIds] = useState<Set<string>>(new Set());
+  // Per-mount cache: objectId -> "ok" | "broken". Persists across renders within a mount,
+  // resets on unmount (preserves the "self-healing on every mount" semantic). Avoids
+  // refetching readMetadata for previously-seen ids when a new recording is added.
+  const metadataCacheRef = useRef<Map<string, "ok" | "broken">>(new Map());
   const tickDataRef = useRef<{ [key: string]: any }[]>([]);
   const handlePlayPauseRef: React.MutableRefObject<() => void> = useRef(() => undefined);
   const inRecordingModeRef = useRef(false);
@@ -181,6 +191,53 @@ export const AgentSimulationComponent = ({
     }));
   }, [modelName, setInteractiveState]);
 
+  // Stable cache key derived from just the objectIds. This is the only data the
+  // detection effect cares about; depending on `recordings` directly would re-fire
+  // every 500ms while a recording is in progress (the live-duration setInterval
+  // mutates the in-progress entry on every tick), causing N+1 Firestore reads
+  // per second per active recording.
+  // JSON.stringify (rather than join with a delimiter) is unambiguously delimiter-
+  // safe: Firestore document IDs may contain any character except "/", "..", and
+  // "__name__", so a naive separator like "," could collide. The serialized array
+  // is small (<100 ids x ~40 chars).
+  const objectIdsKey = useMemo(
+    () => JSON.stringify(
+      recordings.map(r => r.objectId).filter((id): id is string => !!id)
+    ),
+    [recordings]
+  );
+
+  // Detect pre-existing broken recordings on every mount and whenever the set of
+  // objectIds changes. Never mutates recordings / interactiveState — broken state
+  // is purely UI. If readMetadata throws (network, auth), the entry is left out of
+  // the cache so a later mount can retry (treated as unknown for the current render).
+  useEffect(() => {
+    let cancelled = false;
+    const detect = async () => {
+      const objectIds: string[] = JSON.parse(objectIdsKey);
+      const cache = metadataCacheRef.current;
+      const newIds = objectIds.filter(id => !cache.has(id));
+      await Promise.all(
+        newIds.map(async (objectId) => {
+          try {
+            const md = await objectStorage.readMetadata(objectId);
+            cache.set(objectId, md === undefined ? "broken" : "ok");
+          } catch {
+            // transient failure — leave out of cache so a later mount can retry
+          }
+        })
+      );
+      if (cancelled) return;
+      const broken = new Set<string>();
+      for (const objectId of objectIds) {
+        if (cache.get(objectId) === "broken") broken.add(objectId);
+      }
+      setBrokenObjectIds(broken);
+    };
+    detect();
+    return () => { cancelled = true; };
+  }, [objectIdsKey, objectStorage]);
+
   const currentRecording = useMemo(() => {
     if (currentRecordingIndex >= 0 && currentRecordingIndex < recordings.length) {
       return recordings[currentRecordingIndex];
@@ -196,6 +253,15 @@ export const AgentSimulationComponent = ({
     currentRecording.duration !== undefined,
     [currentRecording]
   );
+
+  // Broken-entry selection disables Play (broken entries cannot play back).
+  // basePlayAllowed is the existing code-source/blockly-code gate; the broken
+  // check is layered on top so that a future change to one doesn't accidentally
+  // re-enable Play for broken entries.
+  const selectedIsBroken =
+    currentRecording?.objectId !== undefined &&
+    brokenObjectIds.has(currentRecording.objectId);
+  const canPlay = basePlayAllowed && !selectedIsBroken;
 
   const getRecordingInfo = useCallback(() => {
     const startedAt = currentRecording?.startedAt;
@@ -730,50 +796,35 @@ export const AgentSimulationComponent = ({
       return;
     }
 
-    const buildTitle = (rec: IRecording) => {
-      if (rec.startedAt && rec.duration !== undefined) {
-        const durationInSeconds = Math.floor(rec.duration / 1000);
-        const durationString = `${durationInSeconds} ${durationInSeconds === 1 ? "sec" : "secs"}`;
-        const formattedTime = new Date(rec.startedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-        return `${rec.modelName}: ${formattedTime} (${durationString})`;
-      }
-      return rec.modelName;
-    };
-    const title = buildTitle(recording);
-
-    if (!recording.startedAt) {
-      recordingChannelRef.current?.publish({
-        topic: "recording-selected", objectId: null, title, status: "empty"
-      });
-    } else if (recording.objectId) {
-      recordingChannelRef.current?.publish({
-        topic: "recording-selected", objectId: recording.objectId, title, status: "ready"
-      });
-    } else {
-      recordingChannelRef.current?.publish({
-        topic: "recording-selected", objectId: null, title, status: "waiting"
-      });
-
-      const pollStart = Date.now();
-      const pollForObjectId = () => {
-        const current = recordingsRef.current[index];
-        if (current?.objectId) {
-          recordingChannelRef.current?.publish({
-            topic: "recording-selected", objectId: current.objectId, title, status: "ready"
-          });
-          pollTimerRef.current = null;
-        } else if (Date.now() - pollStart > 10000) {
-          recordingChannelRef.current?.publish({
-            topic: "recording-selected", objectId: null, title, status: "failed"
-          });
-          console.error("[agent-simulation] Timed out waiting for recording save", { index });
-          pollTimerRef.current = null;
-        } else {
-          pollTimerRef.current = setTimeout(pollForObjectId, 250);
-        }
-      };
-      pollTimerRef.current = setTimeout(pollForObjectId, 250);
+    // Saving-state guard: entries whose objectId is undefined are still in the
+    // save-in-flight window (between Stop and add() resolution). Selecting such
+    // an entry would publish recording-selected and start polling for objectId —
+    // both pointless until the save resolves. The disabled <button> in the
+    // recording strip is the UI half of this defense-in-depth pair; this is the
+    // programmatic-call half.
+    if (!recording.objectId) {
+      return;
     }
+
+    // Broken-entry selection: skip the playback path entirely. The only purpose
+    // of selection here is to enable the existing control-panel Delete action.
+    if (brokenObjectIds.has(recording.objectId)) {
+      return;
+    }
+
+    // Past the saving-state guard above, recording.objectId is guaranteed defined.
+    const durationInSeconds = Math.floor((recording.duration ?? 0) / 1000);
+    const durationString = `${durationInSeconds} ${durationInSeconds === 1 ? "sec" : "secs"}`;
+    const formattedTime = recording.startedAt
+      ? new Date(recording.startedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
+      : "";
+    const title = recording.startedAt && recording.duration !== undefined
+      ? `${recording.modelName}: ${formattedTime} (${durationString})`
+      : recording.modelName;
+
+    recordingChannelRef.current?.publish({
+      topic: "recording-selected", objectId: recording.objectId, title, status: "ready"
+    });
   };
 
   const handleDeleteRecording = () => setShowDeleteRecordingConfirm(true);
@@ -820,6 +871,7 @@ export const AgentSimulationComponent = ({
             onSelectRecording={handleSelectRecording}
             recordings={recordings}
             currentRecordingIndex={currentRecordingIndex}
+            brokenObjectIds={brokenObjectIds}
             failedSavePlaceholder={failedSaveInfo ? {
               index: failedSaveInfo.placeholderIndex,
               snapshot: failedSaveInfo.placeholderSnapshot,
