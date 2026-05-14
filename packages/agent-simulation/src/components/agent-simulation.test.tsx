@@ -12,7 +12,7 @@ import * as AA from "@gjmcn/atomic-agents";
 import * as AV from "@concord-consortium/atomic-agents-vis";
 import { useLinkedInteractiveId } from "@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id";
 import { AgentSimulation } from "../models/agent-simulation";
-import { ObjectStorageConfig, ObjectStorageProvider } from "@concord-consortium/object-storage";
+import { ObjectStorageConfig, ObjectStorageProvider, useObjectStorage } from "@concord-consortium/object-storage";
 import { IWidgetProps } from "../types/widgets";
 
 // Mock the dependencies
@@ -23,6 +23,14 @@ jest.mock("@concord-consortium/lara-interactive-api", () => ({
   useInitMessage: jest.fn(),
   createPubSubChannel: jest.fn(),
 }));
+
+jest.mock("@concord-consortium/object-storage", () => {
+  const actual = jest.requireActual("@concord-consortium/object-storage");
+  return {
+    ...actual,
+    useObjectStorage: jest.fn(actual.useObjectStorage),
+  };
+});
 
 jest.mock("@concord-consortium/question-interactives-helpers/src/hooks/use-linked-interactive-id", () => ({
   useLinkedInteractiveId: jest.fn()
@@ -37,6 +45,7 @@ const mockAddLinkedInteractiveStateListener = addLinkedInteractiveStateListener 
 const mockRemoveLinkedInteractiveStateListener = removeLinkedInteractiveStateListener as jest.Mock;
 const mockUseInitMessage = useInitMessage as jest.Mock;
 const mockCreatePubSubChannel = createPubSubChannel as jest.Mock;
+const mockUseObjectStorage = useObjectStorage as jest.Mock;
 const mockSimulationConstructor = AgentSimulation as jest.Mock;
 const mockVis = AV.vis as jest.Mock;
 
@@ -837,6 +846,473 @@ describe("AgentSimulationComponent", () => {
       expect(mockSimulationConstructor.mock.calls.length).toBeGreaterThan(callsBeforePlay);
       const lastCall = mockSimulationConstructor.mock.calls[mockSimulationConstructor.mock.calls.length - 1];
       expect(lastCall[3]).toEqual({ speed: 20, count: 8 });
+    });
+  });
+
+  describe("save-failure handling", () => {
+    let mockAdd: jest.Mock;
+    let mockPublish: jest.Mock;
+    let logSpy: jest.SpyInstance;
+    let consoleErrorSpy: jest.SpyInstance;
+    let resolveAdd: ((value: any) => void) | undefined;
+    let rejectAdd: ((reason: any) => void) | undefined;
+
+    const renderWithFailingAdd = (interactiveState: IInteractiveState = defaultInteractiveState) => {
+      return render(
+        <ObjectStorageProvider config={objectStorageConfig}>
+          <AgentSimulationComponent
+            authoredState={defaultAuthoredState}
+            interactiveState={interactiveState}
+            setInteractiveState={mockSetInteractiveState}
+          />
+        </ObjectStorageProvider>
+      );
+    };
+
+    // Drive a recording from New → Play → Stop. add() is whatever mockAdd is rigged
+    // to return for the given test.
+    const startAndStopRecording = async () => {
+      // Wait for initial pause
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      fireEvent.click(screen.getByText("New"));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      // Click play to start
+      fireEvent.click(screen.getByTestId("play-pause-button"));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 20)); });
+
+      // Click again to stop
+      fireEvent.click(screen.getByTestId("play-pause-button"));
+      // Let the save() async chain start.
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+    };
+
+    beforeEach(() => {
+      mockAgentSimulation.widgets = [
+        { globalKey: "speed", type: "slider", defaultValue: 10 },
+      ];
+      mockGlobals.values.mockReturnValue({ speed: 20 });
+
+      mockAdd = jest.fn();
+      mockPublish = jest.fn();
+      mockCreatePubSubChannel.mockReturnValue({
+        publish: mockPublish,
+        subscribe: jest.fn(),
+        unsubscribe: jest.fn(),
+      });
+
+      // Override the object-storage hook to inject our controllable mockAdd.
+      mockUseObjectStorage.mockReturnValue({
+        add: mockAdd,
+        list: jest.fn(),
+        monitor: jest.fn(),
+        read: jest.fn(),
+        readMetadata: jest.fn(),
+        readData: jest.fn(),
+        readDataItem: jest.fn(),
+      });
+
+      // Spies — reset on each test.
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const lara = require("@concord-consortium/lara-interactive-api");
+      logSpy = jest.spyOn(lara, "log").mockImplementation(() => undefined);
+      consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => undefined);
+
+      resolveAdd = undefined;
+      rejectAdd = undefined;
+    });
+
+    afterEach(() => {
+      logSpy.mockRestore();
+      consoleErrorSpy.mockRestore();
+    });
+
+    it("shows the error modal, placeholder, and emits telemetry when add() rejects", async () => {
+      mockAdd.mockImplementation(() => Promise.reject(new Error("doc too big")));
+
+      renderWithFailingAdd();
+      await startAndStopRecording();
+
+      // Let microtasks settle so catch handler runs.
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+
+      // Modal is open.
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+      expect(screen.getByText("Recording Save Failed")).toBeInTheDocument();
+
+      // Placeholder is rendered.
+      const placeholder = document.querySelector('[data-broken="true"]');
+      expect(placeholder).not.toBeNull();
+      expect(placeholder?.getAttribute("aria-label")).toMatch(/failed to save/);
+
+      // console.error called.
+      expect(consoleErrorSpy).toHaveBeenCalledWith(
+        "[agent-simulation] Recording save failed",
+        expect.objectContaining({ errorMessage: "doc too big", approximateSizeBytes: expect.any(Number) })
+      );
+      // log event dispatched.
+      expect(logSpy).toHaveBeenCalledWith(
+        "save-recording-failed",
+        expect.objectContaining({ errorMessage: "doc too big", approximateSizeBytes: expect.any(Number) })
+      );
+      // recording-save-failed publish happened.
+      const failedPublish = mockPublish.mock.calls.find(
+        c => c[0]?.topic === "recording-save-failed"
+      );
+      expect(failedPublish).toBeDefined();
+    });
+
+    it("publishes recording-save-failed before the state update that opens the modal", async () => {
+      let internalReject: ((err: any) => void) | undefined;
+      mockAdd.mockImplementation(() => new Promise((_, rj) => { internalReject = rj; }));
+
+      renderWithFailingAdd();
+      await startAndStopRecording();
+
+      // No modal yet — add() is still pending.
+      expect(screen.queryByText("Recording Save Failed")).not.toBeInTheDocument();
+
+      mockPublish.mockClear();
+      mockSetInteractiveState.mockClear();
+
+      internalReject?.(new Error("doc too big"));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+
+      // Find the recording-save-failed publish invocation.
+      const failedPublishCallIdx = mockPublish.mock.calls.findIndex(
+        c => c[0]?.topic === "recording-save-failed"
+      );
+      expect(failedPublishCallIdx).toBeGreaterThanOrEqual(0);
+
+      // Find the setInteractiveState call that filters the in-progress entry
+      // (the state update happening just before setFailedSaveInfo opens the modal).
+      let filterStateCallIdx = -1;
+      for (let i = 0; i < mockSetInteractiveState.mock.calls.length; i++) {
+        const fn = mockSetInteractiveState.mock.calls[i][0];
+        if (typeof fn === "function") {
+          const result = fn({ recordings: [] });
+          if (result.recordings && result.recordings.length === 0) {
+            filterStateCallIdx = i;
+            break;
+          }
+        }
+      }
+      expect(filterStateCallIdx).toBeGreaterThanOrEqual(0);
+
+      // Robust against React batching: assert publish happened before the
+      // recordings-cleared state update (which immediately precedes the modal
+      // open) via mock.invocationCallOrder.
+      const publishOrder = mockPublish.mock.invocationCallOrder[failedPublishCallIdx];
+      const stateOrder = mockSetInteractiveState.mock.invocationCallOrder[filterStateCallIdx];
+      expect(publishOrder).toBeLessThan(stateOrder);
+
+      expect(screen.getByText("Recording Save Failed")).toBeInTheDocument();
+    });
+
+    it("removes the placeholder and modal when OK is clicked", async () => {
+      mockAdd.mockImplementation(() => Promise.reject(new Error("doc too big")));
+
+      renderWithFailingAdd();
+      await startAndStopRecording();
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+
+      // Click OK
+      fireEvent.click(screen.getByRole("button", { name: "OK" }));
+      // Modal closed.
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      // Placeholder removed.
+      expect(document.querySelector('[data-broken="true"]')).toBeNull();
+    });
+
+    it("does not add an entry to recordings/interactiveState on save failure", async () => {
+      mockAdd.mockImplementation(() => Promise.reject(new Error("doc too big")));
+
+      renderWithFailingAdd();
+      await startAndStopRecording();
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+
+      // After failure, the most recent setInteractiveState call should have an
+      // empty recordings array (the in-progress entry was filtered out).
+      const calls = mockSetInteractiveState.mock.calls;
+      // Walk back from the last call until we find one that produces a state.
+      let finalRecordings: any[] | undefined;
+      for (let i = calls.length - 1; i >= 0; i--) {
+        const fn = calls[i][0];
+        if (typeof fn === "function") {
+          const result = fn({ recordings: [] });
+          finalRecordings = result.recordings;
+          break;
+        }
+      }
+      expect(finalRecordings).toBeDefined();
+      expect(finalRecordings).toEqual([]);
+    });
+
+    it("treats a 30s timeout identically to a rejection (modal, placeholder, log event)", async () => {
+      jest.useFakeTimers();
+      // add() never resolves.
+      mockAdd.mockImplementation(() => new Promise(() => undefined));
+
+      renderWithFailingAdd();
+
+      // Drive the recording while fake timers are active. setTimeout-based waits
+      // must use jest.advanceTimersByTime + Promise microtask flush.
+      // We use jest.useFakeTimers AFTER setup so that the act() helpers in
+      // startAndStopRecording's setTimeout(...,10/20) still work. We manually
+      // advance to drive them.
+      await act(async () => { jest.advanceTimersByTime(10); await Promise.resolve(); });
+      fireEvent.click(screen.getByText("New"));
+      await act(async () => { jest.advanceTimersByTime(10); await Promise.resolve(); });
+      fireEvent.click(screen.getByTestId("play-pause-button"));
+      await act(async () => { jest.advanceTimersByTime(20); await Promise.resolve(); });
+      fireEvent.click(screen.getByTestId("play-pause-button"));
+      // Allow microtasks so save() begins.
+      await act(async () => { await Promise.resolve(); });
+
+      // Advance the 30s timeout.
+      await act(async () => {
+        jest.advanceTimersByTime(30_000);
+        // Flush microtasks so the rejection propagates into the catch handler.
+        await Promise.resolve();
+        await Promise.resolve();
+      });
+
+      // Switch back to real timers so any waitFor / act async settles.
+      jest.useRealTimers();
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+
+      expect(screen.getByText("Recording Save Failed")).toBeInTheDocument();
+      expect(document.querySelector('[data-broken="true"]')).not.toBeNull();
+      expect(logSpy).toHaveBeenCalledWith(
+        "save-recording-failed",
+        expect.objectContaining({ errorMessage: "save timed out after 30s" })
+      );
+    });
+
+    it("dismisses an open delete-confirm modal before opening the error modal (single-modal policy)", async () => {
+      // First save succeeds — recording 0 is created so delete-confirm can be opened.
+      mockAdd.mockImplementation(() => Promise.resolve({} as any));
+
+      renderWithFailingAdd();
+      await startAndStopRecording();
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+      // Second recording: switch mockAdd to a pending-then-rejecting promise so
+      // we can observe the in-flight save window and trigger failure manually.
+      let rejectSecondSave: ((err: any) => void) | undefined;
+      mockAdd.mockImplementation(() => new Promise((_, rj) => { rejectSecondSave = rj; }));
+
+      // Start recording 1, then stop it. After stop the save is in flight.
+      fireEvent.click(screen.getByText("New"));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+      fireEvent.click(screen.getByTestId("play-pause-button"));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 20)); });
+      fireEvent.click(screen.getByTestId("play-pause-button"));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      // Save for recording 1 is pending. Switch selection to recording 0 (saved)
+      // so the delete-recording-button becomes enabled.
+      fireEvent.click(screen.getByRole("button", { name: "Recording 1" }));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      // Open delete-confirm for recording 0.
+      fireEvent.click(screen.getByTestId("delete-recording-button"));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+      expect(screen.getByText("Delete Recording")).toBeInTheDocument();
+
+      // Now reject the pending save for recording 1. The catch handler should
+      // dismiss the delete-confirm and open the error modal.
+      rejectSecondSave?.(new Error("doc too big"));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+
+      // Only the error modal should remain.
+      const dialogs = screen.queryAllByRole("dialog");
+      expect(dialogs).toHaveLength(1);
+      expect(screen.getByText("Recording Save Failed")).toBeInTheDocument();
+      expect(screen.queryByText("Delete Recording")).not.toBeInTheDocument();
+    });
+
+    it("recovers cleanly across repeat failures (no stale state between cycles)", async () => {
+      mockAdd.mockImplementation(() => Promise.reject(new Error("doc too big")));
+
+      renderWithFailingAdd();
+      // First failure cycle.
+      await startAndStopRecording();
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+
+      expect(screen.getByText("Recording Save Failed")).toBeInTheDocument();
+      expect(logSpy).toHaveBeenCalledWith(
+        "save-recording-failed",
+        expect.objectContaining({ errorMessage: "doc too big" })
+      );
+      // Dismiss.
+      fireEvent.click(screen.getByRole("button", { name: "OK" }));
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+
+      logSpy.mockClear();
+
+      // Second failure cycle.
+      fireEvent.click(screen.getByText("New"));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+      fireEvent.click(screen.getByTestId("play-pause-button"));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 20)); });
+      fireEvent.click(screen.getByTestId("play-pause-button"));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+
+      // Second modal opens fresh.
+      expect(screen.getByText("Recording Save Failed")).toBeInTheDocument();
+      expect(logSpy).toHaveBeenCalledWith(
+        "save-recording-failed",
+        expect.objectContaining({ errorMessage: "doc too big" })
+      );
+    });
+
+    it("renders the saving overlay during the in-flight save window and clears it on success", async () => {
+      // add() returns a promise we can resolve manually.
+      const addPromise = new Promise<any>((resolve) => { resolveAdd = resolve; });
+      mockAdd.mockImplementation(() => addPromise);
+
+      renderWithFailingAdd();
+      await startAndStopRecording();
+      // The in-progress entry now has no objectId and is not the currently-recording one.
+      // It should render with data-saving="true".
+      const savingBtn = document.querySelector('[data-saving="true"]');
+      expect(savingBtn).not.toBeNull();
+      expect(savingBtn?.getAttribute("aria-label")).toMatch(/saving/);
+      // The button is disabled while saving.
+      expect(savingBtn).toBeDisabled();
+
+      // Non-selectability: clicking the disabled saving button must not publish
+      // recording-selected. (fireEvent.click respects `disabled` on buttons.)
+      mockPublish.mockClear();
+      if (savingBtn) fireEvent.click(savingBtn);
+      const selectPublishes = mockPublish.mock.calls.filter(
+        c => c[0]?.topic === "recording-selected"
+      );
+      expect(selectPublishes).toHaveLength(0);
+
+      // Resolve the save.
+      resolveAdd?.({});
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+
+      // After success, the saving indicator clears.
+      expect(document.querySelector('[data-saving="true"]')).toBeNull();
+    });
+
+    it("transitions from saving to broken placeholder on failure", async () => {
+      const addPromise = new Promise<any>((_, reject) => { rejectAdd = reject; });
+      mockAdd.mockImplementation(() => addPromise);
+
+      renderWithFailingAdd();
+      await startAndStopRecording();
+      // Saving indicator visible.
+      expect(document.querySelector('[data-saving="true"]')).not.toBeNull();
+
+      rejectAdd?.(new Error("doc too big"));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+
+      // Saving indicator gone; broken placeholder visible.
+      expect(document.querySelector('[data-saving="true"]')).toBeNull();
+      expect(document.querySelector('[data-broken="true"]')).not.toBeNull();
+    });
+
+    it("cleanup invariant: a remount with the post-failure interactiveState yields zero recording entries", async () => {
+      mockAdd.mockImplementation(() => Promise.reject(new Error("doc too big")));
+
+      const { unmount } = renderWithFailingAdd();
+      await startAndStopRecording();
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+
+      // Dismiss the modal.
+      fireEvent.click(screen.getByRole("button", { name: "OK" }));
+
+      // Capture the latest interactiveState recorded by the parent setter.
+      const calls = mockSetInteractiveState.mock.calls;
+      let latestRecordings: any[] | undefined;
+      for (let i = calls.length - 1; i >= 0; i--) {
+        const fn = calls[i][0];
+        if (typeof fn === "function") {
+          const result = fn({ recordings: [] });
+          if (Array.isArray(result.recordings)) {
+            latestRecordings = result.recordings;
+            break;
+          }
+        }
+      }
+      expect(latestRecordings).toEqual([]);
+
+      // Unmount and remount with the captured state — no partial entry should resurrect.
+      unmount();
+      const remountedState: IInteractiveState = {
+        ...defaultInteractiveState,
+        recordings: latestRecordings ?? [],
+      };
+      render(
+        <ObjectStorageProvider config={objectStorageConfig}>
+          <AgentSimulationComponent
+            authoredState={defaultAuthoredState}
+            interactiveState={remountedState}
+            setInteractiveState={mockSetInteractiveState}
+          />
+        </ObjectStorageProvider>
+      );
+
+      // No recording buttons rendered (only the "New" button + scroll arrows).
+      // recording-strip renders recording buttons without an aria-label by default;
+      // we identify them by data-saving/data-broken absence and the labeled "New" button.
+      const newButton = screen.getByText("New");
+      expect(newButton).toBeInTheDocument();
+      // Assert: no broken placeholder, no saving entry, no recording-1 button.
+      expect(document.querySelector('[data-broken="true"]')).toBeNull();
+      expect(document.querySelector('[data-saving="true"]')).toBeNull();
+      expect(screen.queryByRole("button", { name: "Recording 1" })).not.toBeInTheDocument();
+    });
+
+    it("auto-stop via maxRecordingTime triggers the same failure flow as user-stop", async () => {
+      mockAdd.mockImplementation(() => Promise.reject(new Error("doc too big")));
+
+      // 1-second maxRecordingTime so the 500ms-interval check trips quickly.
+      const shortAuthored: IAuthoredState = { ...defaultAuthoredState, maxRecordingTime: 1 };
+
+      render(
+        <ObjectStorageProvider config={objectStorageConfig}>
+          <AgentSimulationComponent
+            authoredState={shortAuthored}
+            interactiveState={defaultInteractiveState}
+            setInteractiveState={mockSetInteractiveState}
+          />
+        </ObjectStorageProvider>
+      );
+
+      // Initial pause.
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      fireEvent.click(screen.getByText("New"));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      // Click play to start recording. Then wait > maxRecordingTime (1s) so the
+      // 500ms-interval auto-stop fires via handlePlayPauseRef.current(). The
+      // third interval tick at ~1500ms is the one that first sees duration >
+      // 1000ms; 2000ms gives margin for the rejection chain to settle on
+      // slower CI runners.
+      fireEvent.click(screen.getByTestId("play-pause-button"));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 2000)); });
+
+      // Save failure should have surfaced through the same channels as user-stop.
+      expect(screen.getByText("Recording Save Failed")).toBeInTheDocument();
+      expect(document.querySelector('[data-broken="true"]')).not.toBeNull();
+      expect(logSpy).toHaveBeenCalledWith(
+        "save-recording-failed",
+        expect.objectContaining({ errorMessage: "doc too big" })
+      );
+      const failedPublish = mockPublish.mock.calls.find(
+        c => c[0]?.topic === "recording-save-failed"
+      );
+      expect(failedPublish).toBeDefined();
     });
   });
 });

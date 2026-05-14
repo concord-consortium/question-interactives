@@ -26,6 +26,7 @@ import ModelIcon from "../assets/model-icon.svg";
 import ReturnToModelIcon from "../assets/return-to-model-icon.svg";
 import RecordingIcon from "../assets/recording-icon.svg";
 import DeleteRecordingIcon from "../assets/delete-recording-icon.svg";
+import WarningTriangleIcon from "../assets/warning-triangle-icon.svg";
 
 import css from "./agent-simulation.scss";
 
@@ -55,6 +56,14 @@ const getThumbnail = (snapshot?: string): Promise<string | undefined> => {
 };
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> { }
+
+interface FailedSaveInfo {
+  approximateSizeBytes: number;
+  placeholderIndex: number;
+  placeholderSnapshot?: string;
+}
+
+const SAVE_TIMEOUT_MS = 30_000;
 
 export const AgentSimulationComponent = ({
   authoredState, interactiveState, setInteractiveState, report
@@ -108,6 +117,10 @@ export const AgentSimulationComponent = ({
   const recordStartTimeRef = useRef<number | null>(null);
   const recordUpdateDurationIntervalRef = useRef<number | null>(null);
   const [showDeleteRecordingConfirm, setShowDeleteRecordingConfirm] = useState(false);
+  // Save-failure UI state. failedSaveInfo is set on save failure and cleared when the user
+  // acknowledges the error modal. When non-null, the error modal is shown and a transient
+  // placeholder is rendered in the strip.
+  const [failedSaveInfo, setFailedSaveInfo] = useState<FailedSaveInfo | null>(null);
   const tickDataRef = useRef<{ [key: string]: any }[]>([]);
   const handlePlayPauseRef: React.MutableRefObject<() => void> = useRef(() => undefined);
   const inRecordingModeRef = useRef(false);
@@ -144,14 +157,27 @@ export const AgentSimulationComponent = ({
     }));
   };
 
-  const setRecordings = useCallback((newRecordings: IRecordings) => {
-    _setRecordings(newRecordings);
+  // Mirror of `recordings` state. Two consumers read it:
+  //   1. setRecordings (below) resolves the `prev` for functional callers
+  //      without nesting setInteractiveState inside a React state updater.
+  //   2. handleSelectRecording's pollForObjectId reads the current value
+  //      across timeouts (declared lower in the file).
+  const recordingsRef = useRef<IRecordings>(recordings);
+  recordingsRef.current = recordings;
+
+  const setRecordings = useCallback((
+    newRecordings: IRecordings | ((prev: IRecordings) => IRecordings)
+  ) => {
+    const next = typeof newRecordings === "function"
+      ? newRecordings(recordingsRef.current)
+      : newRecordings;
+    _setRecordings(next);
     setInteractiveState?.(prev => ({
       answerType: "interactive_state",
       version: 1,
       name: prev?.name || modelName,
       blocklyCode: prev?.blocklyCode || "",
-      recordings: newRecordings
+      recordings: next
     }));
   }, [modelName, setInteractiveState]);
 
@@ -404,7 +430,9 @@ export const AgentSimulationComponent = ({
           recordingChannelRef.current?.publish({topic: "recording-stopped"});
 
           if (!currentRecording.objectId) {
-            const notPausedRecordings = [...recordings];
+            // Capture the recording index at the start of save() so both branches operate
+            // on the same slot even if state changes during the await.
+            const savingIndex = currentRecordingIndex;
 
             const save = async () => {
               // get a snapshot of the simulation
@@ -459,23 +487,85 @@ export const AgentSimulationComponent = ({
                 text: finalCode
               });
 
-              objectStorage.add(storedObject);
+              const addPromise = objectStorage.add(storedObject);
+              // Absorb any late rejection on the timeout path. If the timeout fires, the
+              // underlying add() promise is still pending; if it eventually rejects (e.g.,
+              // Firestore returns "doc too big" after our timer fired), this prevents an
+              // unhandled-rejection warning. The forward marker for researchers is the
+              // log("save-recording-failed", { errorMessage: "save timed out after 30s" })
+              // event already emitted in the catch handler below.
+              addPromise.catch(() => undefined);
 
-              // Preserve existing recording data (including globalValues) while adding new fields
-              notPausedRecordings[currentRecordingIndex] = {
-                ...notPausedRecordings[currentRecordingIndex],
-                objectId: storedObject.id,
-                startedAt,
-                duration,
-                thumbnail,
-                snapshot
-              };
-              setRecordings(notPausedRecordings);
-
-              // Clear out the tick data for the next recording
+              let timeoutId: ReturnType<typeof setTimeout> | undefined;
+              try {
+                await Promise.race([
+                  addPromise,
+                  new Promise((_, reject) => {
+                    timeoutId = setTimeout(
+                      () => reject(new Error("save timed out after 30s")),
+                      SAVE_TIMEOUT_MS
+                    );
+                  }),
+                ]);
+                // Success path — functional setState avoids any stale-closure risk from
+                // a pre-await `recordings` snapshot.
+                setRecordings(prev => {
+                  const next = [...prev];
+                  next[savingIndex] = {
+                    ...next[savingIndex],
+                    objectId: storedObject.id,
+                    startedAt,
+                    duration,
+                    thumbnail,
+                    snapshot,
+                  };
+                  return next;
+                });
+              } catch (err) {
+                // Computed inside the catch (only on failure) so the success path doesn't
+                // pay for a ~1MB stringify of the tick data we already sent to Firestore.
+                const approximateSizeBytes = JSON.stringify(storedObject.data).length;
+                const errorMessage = err instanceof Error ? err.message : String(err);
+                // Synchronous publish BEFORE the modal opens, per spec.
+                recordingChannelRef.current?.publish({
+                  topic: "recording-save-failed",
+                  objectId: storedObject.id,
+                });
+                console.error("[agent-simulation] Recording save failed", {
+                  objectId: storedObject.id,
+                  errorMessage,
+                  approximateSizeBytes,
+                });
+                log("save-recording-failed", { errorMessage, approximateSizeBytes });
+                // Actively remove the in-progress entry that was committed to recordings/
+                // interactiveState when recording started. Without this, a partial entry
+                // (modelName/startedAt/globalValues, no objectId) would persist.
+                setRecordings(prev => prev.filter((_, i) => i !== savingIndex));
+                setCurrentRecordingIndex(-1);
+                // Single-modal policy: dismiss any open delete-confirm before opening the
+                // error modal so we don't render two aria-modal="true" dialogs at once
+                // with competing focus traps. Indices may have shifted because we just
+                // removed the in-progress entry; restarting the delete flow is safer.
+                setShowDeleteRecordingConfirm(false);
+                // Surface to the user. Placeholder occupies the slot just freed by
+                // removal, which is the position the recording would have had on success.
+                setFailedSaveInfo({
+                  approximateSizeBytes,
+                  placeholderIndex: savingIndex,
+                  placeholderSnapshot: snapshot,
+                });
+              } finally {
+                // Clear the 30s timer if add() resolved or rejected before it fired.
+                // Without this, the reject callback runs 30s later into a settled promise
+                // (no observable effect, but holds a closure for 30s).
+                if (timeoutId !== undefined) clearTimeout(timeoutId);
+              }
+              // Tick data is cleared in both paths.
               tickDataRef.current = [];
             };
 
+            // save() handles its own errors internally via try/catch + modal.
+            // Intentionally not awaited so handlePlayPause stays synchronous.
             save();
           }
         }
@@ -599,8 +689,6 @@ export const AgentSimulationComponent = ({
   };
 
   const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const recordingsRef = useRef(recordings);
-  recordingsRef.current = recordings;
 
   const cancelRecordingPoll = useCallback(() => {
     if (pollTimerRef.current !== null) {
@@ -732,6 +820,10 @@ export const AgentSimulationComponent = ({
             onSelectRecording={handleSelectRecording}
             recordings={recordings}
             currentRecordingIndex={currentRecordingIndex}
+            failedSavePlaceholder={failedSaveInfo ? {
+              index: failedSaveInfo.placeholderIndex,
+              snapshot: failedSaveInfo.placeholderSnapshot,
+            } : undefined}
           />
         </div>
       </div>
@@ -813,6 +905,18 @@ export const AgentSimulationComponent = ({
           confirmLabel="Delete"
           onConfirm={handleConfirmDeleteRecording}
           onCancel={handleCancelDeleteRecording}
+        />
+      )}
+      {failedSaveInfo && (
+        <Modal
+          mode="alert"
+          variant="orange"
+          title="Recording Save Failed"
+          Icon={WarningTriangleIcon}
+          message="This recording was too large to save and could not be kept. Please record a shorter session and try again."
+          confirmLabel="OK"
+          onConfirm={() => setFailedSaveInfo(null)}
+          onCancel={() => setFailedSaveInfo(null)}
         />
       )}
     </div>

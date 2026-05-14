@@ -4,6 +4,8 @@ import { IRecordings } from "./types";
 import css from "./recording-strip.scss";
 import ArrowIcon from "../assets/arrow-icon.svg";
 import AddNewIcon from "../assets/add-new-icon.svg";
+import WarningTriangleIcon from "../assets/warning-triangle-icon.svg";
+import SpinnerIcon from "../assets/spinner-icon.svg";
 import classNames from "classnames";
 
 interface Props {
@@ -12,9 +14,12 @@ interface Props {
   onSelectRecording: (index: number) => void;
   recordings: IRecordings;
   currentRecordingIndex: number;
+  failedSavePlaceholder?: { index: number; snapshot?: string };
 }
 
-export const RecordingStrip = ({ isRecording, onNewRecording, recordings, currentRecordingIndex, onSelectRecording }: Props) => {
+export const RecordingStrip = ({
+  isRecording, onNewRecording, recordings, currentRecordingIndex, onSelectRecording, failedSavePlaceholder
+}: Props) => {
   const recordingsRef = React.useRef<HTMLDivElement>(null);
   const [canScrollLeft, setCanScrollLeft] = React.useState(false);
   const [canScrollRight, setCanScrollRight] = React.useState(false);
@@ -71,8 +76,15 @@ export const RecordingStrip = ({ isRecording, onNewRecording, recordings, curren
       <button className={css.leftButton} disabled={!canScrollLeft || isRecording} onClick={handleScrollLeft}>
         <ArrowIcon className={css.leftArrow} />
       </button>
-      <div className={classNames(css.recordings, { [css.noRecordings]: recordings.length === 0 })} ref={recordingsRef} onScroll={checkScrollability}>
+      <div className={classNames(css.recordings, { [css.noRecordings]: recordings.length === 0 && !failedSavePlaceholder })} ref={recordingsRef} onScroll={checkScrollability}>
         {recordings.map((recording, index) => {
+          // Saving-state signal: entry has no objectId AND is not the currently-recording
+          // one. This window opens at recording-stop (between Stop and save resolution)
+          // and self-clears when the success path adds objectId or the failure path
+          // removes the entry.
+          const isSaving =
+            recording.objectId === undefined &&
+            !(isRecording && index === currentRecordingIndex);
           const style: CSSProperties = recording.thumbnail ? {
             backgroundImage: `url(${recording.thumbnail})`,
             backgroundSize: "cover",
@@ -81,22 +93,55 @@ export const RecordingStrip = ({ isRecording, onNewRecording, recordings, curren
           return (
             <button
               key={index}
-              className={classNames(css.recordingButton, { [css.currentRecordingButton]: index === currentRecordingIndex })}
+              className={classNames(css.recordingButton, {
+                [css.currentRecordingButton]: index === currentRecordingIndex,
+              })}
               onClick={() => onSelectRecording(index)}
-              disabled={isRecording && index !== currentRecordingIndex}
+              // Saving-state entries are non-selectable: clicking would call
+              // handleSelectRecording with objectId === undefined, which would publish
+              // recording-selected and start polling, confusing live-graph during the
+              // in-flight save window. agent-simulation's handleSelectRecording also
+              // has a programmatic guard; this disabled prop is the UI half of the
+              // defense-in-depth pair.
+              disabled={isSaving || (isRecording && index !== currentRecordingIndex)}
               style={style}
+              data-saving={isSaving || undefined}
+              aria-label={isSaving ? `Recording ${index + 1} - saving...` : `Recording ${index + 1}`}
             >
+              {isSaving && <span className={css.savingOverlay} aria-hidden="true" />}
+              {isSaving && <SpinnerIcon className={css.savingSpinner} aria-hidden="true" />}
               <span className={classNames(css.recordingIndex, { [css.currentRecording]: index === currentRecordingIndex })}>
                 {index + 1}
               </span>
             </button>
           );
         })}
+        {failedSavePlaceholder && (
+          // role="img" so screen readers honor aria-label on this otherwise-roleless,
+          // non-focusable div. The placeholder is a visual symbol (warning triangle +
+          // overlay) representing the failed recording — role="img" matches that intent
+          // exactly and is the standard ARIA pattern.
+          <div
+            className={classNames(css.recordingButton, css.brokenRecording)}
+            data-broken="true"
+            role="img"
+            aria-label={`Recording ${failedSavePlaceholder.index + 1} - failed to save`}
+            style={failedSavePlaceholder.snapshot ? {
+              backgroundImage: `url(${failedSavePlaceholder.snapshot})`,
+              backgroundSize: "cover",
+              backgroundPosition: "center"
+            } : undefined}
+          >
+            <span className={css.brokenOverlay} />
+            <WarningTriangleIcon className={css.brokenIcon} aria-hidden="true" />
+            <span className={classNames(css.recordingIndex)}>{failedSavePlaceholder.index + 1}</span>
+          </div>
+        )}
         <button className={css.newRecordingButton} onClick={onNewRecording} disabled={newDisabled}>
           <AddNewIcon className={css.buttonIcon} />
           <span className={css.newRecordingLabel}>New</span>
         </button>
-        {recordings.length === 0 && (
+        {recordings.length === 0 && !failedSavePlaceholder && (
           <div className={css.noRecordingsMessage}>
             Recordings
           </div>
