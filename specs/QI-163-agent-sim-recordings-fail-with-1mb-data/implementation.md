@@ -22,8 +22,13 @@
 `packages/helpers/src/components/modal.tsx` — full revised file:
 
 ```tsx
-import React, { ReactNode, useCallback, useEffect, useId, useRef } from "react";
+// NOTE: This project is on React 17, which doesn't have useId. The implementation
+// substitutes `useMemo(() => `modal-title-${uuid()}`, [])` (uuid is already a direct
+// dep of @concord-consortium/question-interactives-helpers via its s3-upload utility).
+// Per-instance uniqueness is preserved; the rest of this sketch is unchanged.
+import React, { ReactNode, useCallback, useEffect, useMemo, useRef } from "react";
 import classnames from "classnames";
+import { v4 as uuid } from "uuid";
 
 import CloseIcon from "../assets/close-icon.svg";
 
@@ -55,8 +60,8 @@ export const Modal = ({
   // two modals coexist (e.g., the QI-163 error modal and the existing delete-confirm
   // modal). aria-describedby points at the message body so screen readers announce
   // both the title and the explanatory text when the dialog opens (ARIA APG).
-  const titleId = useId();
-  const messageId = useId();
+  const titleId = useMemo(() => `modal-title-${uuid()}`, []);
+  const messageId = useMemo(() => `modal-message-${uuid()}`, []);
   const confirmButtonRef = useRef<HTMLButtonElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedRef = useRef<Element | null>(null);

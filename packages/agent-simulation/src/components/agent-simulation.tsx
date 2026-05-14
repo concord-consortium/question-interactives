@@ -232,7 +232,20 @@ export const AgentSimulationComponent = ({
       for (const objectId of objectIds) {
         if (cache.get(objectId) === "broken") broken.add(objectId);
       }
-      setBrokenObjectIds(broken);
+      // Return prev (same reference) if contents are unchanged so React's
+      // Object.is comparison skips an unnecessary re-render. Without this,
+      // every detection-effect run triggers a re-render even when no broken
+      // entries are added or removed.
+      setBrokenObjectIds(prev => {
+        if (prev.size === broken.size) {
+          let same = true;
+          for (const id of broken) {
+            if (!prev.has(id)) { same = false; break; }
+          }
+          if (same) return prev;
+        }
+        return broken;
+      });
     };
     detect();
     return () => { cancelled = true; };
