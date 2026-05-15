@@ -80,12 +80,15 @@ export const RecordingStrip = ({
       </button>
       <div className={classNames(css.recordings, { [css.noRecordings]: recordings.length === 0 && !failedSavePlaceholder })} ref={recordingsRef} onScroll={checkScrollability}>
         {recordings.map((recording, index) => {
-          // Saving-state signal: entry has no objectId AND is not the currently-recording
-          // one. This window opens at recording-stop (between Stop and save resolution)
-          // and self-clears when the success path adds objectId or the failure path
-          // removes the entry.
+          // Saving-state signal: entry has been started (startedAt is set) AND has no
+          // objectId AND is not the currently-recording one. This window opens at
+          // recording-stop (between Stop and save resolution) and self-clears when the
+          // success path adds objectId or the failure path removes the entry. Empty
+          // recordings (just created via New, no startedAt yet) are explicitly excluded
+          // — they're selectable placeholders, not in-flight saves.
           const isSaving =
             recording.objectId === undefined &&
+            recording.startedAt !== undefined &&
             !(isRecording && index === currentRecordingIndex);
           const isBroken =
             recording.objectId !== undefined && brokenObjectIds.has(recording.objectId);

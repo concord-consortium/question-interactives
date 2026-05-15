@@ -88,7 +88,7 @@ In the `agent-simulation` interactive (the "MoDa" / Agent Sim used in classroom 
 
 ### Package version bump *(not implemented — user direction)*
 
-- The spec called for bumping `version` in both `packages/helpers/package.json` and `packages/agent-simulation/package.json`. Per user direction during implementation, package `version` fields are managed by an external release process and were not modified in this PR.
+- The spec originally called for bumping `version` in both `packages/helpers/package.json` and `packages/agent-simulation/package.json`. Per user direction, this repo's release process manages package `version` bumps externally; bumping them inside a feature PR creates churn and conflicts with that process. Both packages remain at `1.24.0`. The new Modal `mode` prop is fully backwards-compatible (defaults to `"confirm"`, preserving existing usages), so no SemVer signal to consumers is needed inside this PR.
 
 ### Tests
 
@@ -134,7 +134,7 @@ In the `agent-simulation` interactive (the "MoDa" / Agent Sim used in classroom 
 
 ## Not Yet Implemented
 
-- **Package `version` bumps** — The spec called for bumping `version` in both `packages/helpers/package.json` and `packages/agent-simulation/package.json` per project release conventions. Deferred per user direction: this repo's release process manages version bumps externally, so they're not bumped in feature PRs.
+- **Package `version` bumps** (both `packages/helpers/package.json` and `packages/agent-simulation/package.json`) — The spec called for bumping `version` per project release conventions. Deferred per user direction: this repo's release process manages `version` bumps externally, so they're not bumped in feature PRs. Both packages remain at `1.24.0`.
 - **Confirm-mode focus management on the shared Modal** — Tracked in the Out of Scope list; should be a follow-up ticket to extend the focus-trap / Escape / focus-restore behavior to `confirm` mode without regressing existing callers.
 - **Cleanup of `startedAt`-without-`objectId` orphans** — Tracked in the Out of Scope list; affects users upgrading from a pre-fix version who had a silent failure. Such entries now render as "saving..." indefinitely. A per-mount sweep is deferred to a separate ticket.
 - **Cleanup of late-resolving Firestore "ghost" records after 30s timeout** — Tracked in the Out of Scope list; the Firebase JS SDK exposes no cancellation handle, so a late-resolving write may leave an orphan record in Firestore. The `log("save-recording-failed", { errorMessage: "save timed out after 30s" })` event is the forward marker for researchers.

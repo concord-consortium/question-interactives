@@ -509,9 +509,14 @@ export const AgentSimulationComponent = ({
           recordingChannelRef.current?.publish({topic: "recording-stopped"});
 
           if (!currentRecording.objectId) {
-            // Capture the recording index at the start of save() so both branches operate
-            // on the same slot even if state changes during the await.
-            const savingIndex = currentRecordingIndex;
+            // Identify the in-flight entry by its `startedAt` timestamp, which is
+            // unique per recording and stable for the lifetime of the save() call.
+            // Using a stable identifier (rather than the captured index) means
+            // index shifts during the up-to-30s save window — e.g., the user
+            // deletes an earlier saved recording — don't cause the success write
+            // to land on the wrong slot or the failure cleanup to filter the
+            // wrong entry. `startedAt` is in closure scope from handlePlayPause.
+            const inFlightStartedAt = startedAt;
 
             const save = async () => {
               // get a snapshot of the simulation
@@ -586,14 +591,21 @@ export const AgentSimulationComponent = ({
                     );
                   }),
                 ]);
-                // Success path — functional setState avoids any stale-closure risk from
-                // a pre-await `recordings` snapshot.
+                // Success path — locate the in-flight entry by its stable
+                // `startedAt` (set when recording began) rather than the captured
+                // index. If the user deleted an earlier saved recording during
+                // the save window, the index would have shifted and an index-
+                // based write would corrupt a different slot.
                 setRecordings(prev => {
+                  const idx = prev.findIndex(
+                    r => r.startedAt === inFlightStartedAt && !r.objectId
+                  );
+                  if (idx === -1) return prev; // entry was already removed
                   const next = [...prev];
-                  next[savingIndex] = {
-                    ...next[savingIndex],
+                  next[idx] = {
+                    ...next[idx],
                     objectId: storedObject.id,
-                    startedAt,
+                    startedAt: inFlightStartedAt,
                     duration,
                     thumbnail,
                     snapshot,
@@ -617,9 +629,18 @@ export const AgentSimulationComponent = ({
                 });
                 log("save-recording-failed", { errorMessage, approximateSizeBytes });
                 // Actively remove the in-progress entry that was committed to recordings/
-                // interactiveState when recording started. Without this, a partial entry
-                // (modelName/startedAt/globalValues, no objectId) would persist.
-                setRecordings(prev => prev.filter((_, i) => i !== savingIndex));
+                // interactiveState when recording started. Identify by stable startedAt
+                // rather than by index so a mid-save delete of an earlier saved recording
+                // doesn't cause us to filter the wrong entry (leaving the phantom).
+                // Capture the placeholder index from the pre-filter array so the
+                // placeholder renders at the slot the recording would have occupied.
+                const preFilter = recordingsRef.current;
+                const inFlightIdx = preFilter.findIndex(
+                  r => r.startedAt === inFlightStartedAt && !r.objectId
+                );
+                setRecordings(prev =>
+                  prev.filter(r => !(r.startedAt === inFlightStartedAt && !r.objectId))
+                );
                 setCurrentRecordingIndex(-1);
                 // Single-modal policy: dismiss any open delete-confirm before opening the
                 // error modal so we don't render two aria-modal="true" dialogs at once
@@ -630,7 +651,7 @@ export const AgentSimulationComponent = ({
                 // removal, which is the position the recording would have had on success.
                 setFailedSaveInfo({
                   approximateSizeBytes,
-                  placeholderIndex: savingIndex,
+                  placeholderIndex: inFlightIdx !== -1 ? inFlightIdx : preFilter.length,
                   placeholderSnapshot: snapshot,
                 });
               } finally {
@@ -809,34 +830,48 @@ export const AgentSimulationComponent = ({
       return;
     }
 
-    // Saving-state guard: entries whose objectId is undefined are still in the
-    // save-in-flight window (between Stop and add() resolution). Selecting such
-    // an entry would publish recording-selected and start polling for objectId —
-    // both pointless until the save resolves. The disabled <button> in the
-    // recording strip is the UI half of this defense-in-depth pair; this is the
-    // programmatic-call half.
-    if (!recording.objectId) {
+    // Saving-state guard: entries that have been started (startedAt set) but not
+    // yet saved (no objectId) are in the save-in-flight window between Stop and
+    // add() resolution. Selecting them would publish recording-selected and start
+    // polling for objectId — both pointless until the save resolves. The disabled
+    // <button> in the recording strip is the UI half of this defense-in-depth
+    // pair; this is the programmatic-call half. Empty recordings (no startedAt
+    // yet, just created via New) are NOT saving and remain selectable.
+    if (recording.startedAt !== undefined && !recording.objectId) {
       return;
     }
+
+    // Empty recording (no startedAt): re-publish "empty" so a user who deselected
+    // an empty recording can re-select it (handleNewRecording publishes "empty"
+    // at create-time; this handles re-selection from the strip).
+    if (!recording.startedAt) {
+      recordingChannelRef.current?.publish({
+        topic: "recording-selected", objectId: null, title: recording.modelName, status: "empty"
+      });
+      return;
+    }
+
+    // Past the guards above, recording.objectId is guaranteed defined. Narrow
+    // via a local const so we don't sprinkle non-null assertions through the
+    // publish call.
+    const { objectId } = recording;
+    if (!objectId) return; // type-narrowing belt-and-suspenders; unreachable.
 
     // Broken-entry selection: skip the playback path entirely. The only purpose
     // of selection here is to enable the existing control-panel Delete action.
-    if (brokenObjectIds.has(recording.objectId)) {
+    if (brokenObjectIds.has(objectId)) {
       return;
     }
 
-    // Past the saving-state guard above, recording.objectId is guaranteed defined.
     const durationInSeconds = Math.floor((recording.duration ?? 0) / 1000);
     const durationString = `${durationInSeconds} ${durationInSeconds === 1 ? "sec" : "secs"}`;
-    const formattedTime = recording.startedAt
-      ? new Date(recording.startedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" })
-      : "";
-    const title = recording.startedAt && recording.duration !== undefined
+    const formattedTime = new Date(recording.startedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    const title = recording.duration !== undefined
       ? `${recording.modelName}: ${formattedTime} (${durationString})`
       : recording.modelName;
 
     recordingChannelRef.current?.publish({
-      topic: "recording-selected", objectId: recording.objectId, title, status: "ready"
+      topic: "recording-selected", objectId, title, status: "ready"
     });
   };
 
