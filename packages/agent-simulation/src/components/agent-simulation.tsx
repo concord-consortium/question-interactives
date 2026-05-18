@@ -68,7 +68,7 @@ const SAVE_TIMEOUT_MS = 30_000;
 export const AgentSimulationComponent = ({
   authoredState, interactiveState, setInteractiveState, report
 }: IProps) => {
-  const { code, gridHeight, gridStep, gridWidth, maxRecordingTime } = authoredState;
+  const { code, gridHeight, gridStep, gridWidth, maxRecordingTime, sampleIntervalMs, maxSamples } = authoredState;
   // The blockly code we're using, which doesn't get updated until the user accepts newer code
   const [blocklyCode, _setBlocklyCode] = useState<string>(interactiveState?.blocklyCode || "");
   const [recordings, _setRecordings] = useState<IRecordings>(interactiveState?.recordings || []);
@@ -134,6 +134,20 @@ export const AgentSimulationComponent = ({
   const tickDataRef = useRef<{ [key: string]: any }[]>([]);
   const handlePlayPauseRef: React.MutableRefObject<() => void> = useRef(() => undefined);
   const inRecordingModeRef = useRef(false);
+  // Wall-clock timestamp (Date.now) of the most recent sample taken in this run of the
+  // simulation. null = no sample yet, so the next tick is always sampled. Reset whenever
+  // the simulation is recreated (reset / new-recording / code update).
+  const lastSampleAtRef = useRef<number | null>(null);
+  // Set true once the max-samples cap has triggered an auto-stop, so we don't try to
+  // auto-stop a second time before handlePlayPause has had a chance to pause the sim.
+  const maxSamplesAutoStoppedRef = useRef(false);
+  // Mirrors authoredState.sampleIntervalMs / maxSamples for use inside afterTick (which
+  // closes over the values from the render that built the visualization). Updated on
+  // every render so authoring-time changes take effect on the next tick.
+  const sampleIntervalMsRef = useRef<number | undefined>(sampleIntervalMs);
+  sampleIntervalMsRef.current = sampleIntervalMs;
+  const maxSamplesRef = useRef<number | undefined>(maxSamples);
+  maxSamplesRef.current = maxSamples;
 
   const timeFormatter = useMemo(() => {
     return new Intl.DateTimeFormat(undefined, {
@@ -385,16 +399,58 @@ export const AgentSimulationComponent = ({
     // save the globals at each tick for recording
     let tick = 0;
     tickDataRef.current = [];
+    lastSampleAtRef.current = null;
+    maxSamplesAutoStoppedRef.current = false;
     const afterTick = () => {
-      if (simRef.current) {
-        const { globals } = simRef.current;
-        const values = { tick, ...globals.values() };
+      if (!simRef.current) {
+        return;
+      }
+      // Hard stop after maxSamples auto-stop is queued: any sim ticks that fire
+      // before the setTimeout(0) below has run handlePlayPause must not add to the
+      // recording, or the saved row count would exceed `maxSamples`. Reset in
+      // resetSimulationWithPreservedGlobals when the sim is rebuilt.
+      if (maxSamplesAutoStoppedRef.current) {
+        return;
+      }
+      const { globals } = simRef.current;
+      const currentTick = tick;
+      tick++;
 
-        tickDataRef.current.push(values);
-        tick++;
+      // Throttle samples by wall-clock interval when sampleIntervalMs is set.
+      // The first tick after a sim (re)create is always sampled because
+      // lastSampleAtRef starts null. `tick` keeps counting every simulation
+      // step so downstream consumers can read sim-time from the sample.
+      const intervalMs = sampleIntervalMsRef.current;
+      const now = Date.now();
+      if (
+        intervalMs !== undefined &&
+        lastSampleAtRef.current !== null &&
+        now - lastSampleAtRef.current < intervalMs
+      ) {
+        return;
+      }
+      lastSampleAtRef.current = now;
 
-        const topic = inRecordingModeRef.current ? "recording-tick" : "simulation-tick";
-        recordingChannelRef.current?.publish({topic, values});
+      const values = { tick: currentTick, ...globals.values() };
+      tickDataRef.current.push(values);
+
+      const topic = inRecordingModeRef.current ? "recording-tick" : "simulation-tick";
+      recordingChannelRef.current?.publish({topic, values});
+
+      // When maxSamples is set and we've just recorded the Nth sample of a recording,
+      // stop the recording via the same path as the maxRecordingTime cutoff. Defer to
+      // setTimeout(0) so handlePlayPause runs after this tick callback returns, matching
+      // the existing maxRecordingTime cutoff which is invoked from a setInterval — keeps
+      // the sim.pause + save() chain out of the afterTick stack.
+      const cap = maxSamplesRef.current;
+      if (
+        inRecordingModeRef.current &&
+        !maxSamplesAutoStoppedRef.current &&
+        cap !== undefined &&
+        tickDataRef.current.length >= cap
+      ) {
+        maxSamplesAutoStoppedRef.current = true;
+        setTimeout(() => handlePlayPauseRef.current(), 0);
       }
     };
 

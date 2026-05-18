@@ -52,6 +52,16 @@ const baseAuthoringProps = {
         maximum: maxMaxRecordingTime,
         default: defaultMaxRecordingTime
       },
+      sampleIntervalMs: {
+        title: "Sample Interval (ms, optional)",
+        type: "number",
+        minimum: 1
+      },
+      maxSamples: {
+        title: "Maximum Samples per Recording (optional)",
+        type: "number",
+        minimum: 1
+      },
       code: {
         title: "Simulation Code",
         type: "string",
@@ -104,6 +114,12 @@ const baseAuthoringProps = {
       "ui:widget": "updown"
     },
     maxRecordingTime: {
+      "ui:widget": "updown"
+    },
+    sampleIntervalMs: {
+      "ui:widget": "updown"
+    },
+    maxSamples: {
       "ui:widget": "updown"
     },
     code: {
