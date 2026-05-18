@@ -26,6 +26,7 @@ import ModelIcon from "../assets/model-icon.svg";
 import ReturnToModelIcon from "../assets/return-to-model-icon.svg";
 import RecordingIcon from "../assets/recording-icon.svg";
 import DeleteRecordingIcon from "../assets/delete-recording-icon.svg";
+import WarningTriangleIcon from "../assets/warning-triangle-icon.svg";
 
 import css from "./agent-simulation.scss";
 
@@ -55,6 +56,14 @@ const getThumbnail = (snapshot?: string): Promise<string | undefined> => {
 };
 
 interface IProps extends IRuntimeQuestionComponentProps<IAuthoredState, IInteractiveState> { }
+
+interface FailedSaveInfo {
+  approximateSizeBytes: number;
+  placeholderIndex: number;
+  placeholderSnapshot?: string;
+}
+
+const SAVE_TIMEOUT_MS = 30_000;
 
 export const AgentSimulationComponent = ({
   authoredState, interactiveState, setInteractiveState, report
@@ -90,7 +99,8 @@ export const AgentSimulationComponent = ({
   // Play button is disabled when there is a code source and either:
   // - blocklyCode is not defined
   // - blocklyCode does not match externalBlocklyCode
-  const canPlay = hasCodeSource
+  // - a broken-history entry is currently selected (computed below)
+  const basePlayAllowed = hasCodeSource
     ? !!blocklyCode && (!externalBlocklyCode || blocklyCode === externalBlocklyCode)
     : true;
 
@@ -108,6 +118,19 @@ export const AgentSimulationComponent = ({
   const recordStartTimeRef = useRef<number | null>(null);
   const recordUpdateDurationIntervalRef = useRef<number | null>(null);
   const [showDeleteRecordingConfirm, setShowDeleteRecordingConfirm] = useState(false);
+  // Save-failure UI state. failedSaveInfo is set on save failure and cleared when the user
+  // acknowledges the error modal. When non-null, the error modal is shown and a transient
+  // placeholder is rendered in the strip.
+  const [failedSaveInfo, setFailedSaveInfo] = useState<FailedSaveInfo | null>(null);
+  // Broken-history UI state. Detected on mount and whenever the set of objectIds changes;
+  // never written to interactiveState. No aria-live announcement on detection — broken
+  // history is passive state, not a notification-worthy event; the per-entry aria-label
+  // is the AT signal on focus.
+  const [brokenObjectIds, setBrokenObjectIds] = useState<Set<string>>(new Set());
+  // Per-mount cache: objectId -> "ok" | "broken". Persists across renders within a mount,
+  // resets on unmount (preserves the "self-healing on every mount" semantic). Avoids
+  // refetching readMetadata for previously-seen ids when a new recording is added.
+  const metadataCacheRef = useRef<Map<string, "ok" | "broken">>(new Map());
   const tickDataRef = useRef<{ [key: string]: any }[]>([]);
   const handlePlayPauseRef: React.MutableRefObject<() => void> = useRef(() => undefined);
   const inRecordingModeRef = useRef(false);
@@ -144,16 +167,90 @@ export const AgentSimulationComponent = ({
     }));
   };
 
-  const setRecordings = useCallback((newRecordings: IRecordings) => {
-    _setRecordings(newRecordings);
+  // Mirror of `recordings` state. Two consumers read it:
+  //   1. setRecordings (below) resolves the `prev` for functional callers
+  //      without nesting setInteractiveState inside a React state updater.
+  //   2. The save-failure path in handlePlayPause reads the current value
+  //      to compute the placeholder index before filtering out the
+  //      in-progress entry (declared lower in the file).
+  const recordingsRef = useRef<IRecordings>(recordings);
+  recordingsRef.current = recordings;
+
+  const setRecordings = useCallback((
+    newRecordings: IRecordings | ((prev: IRecordings) => IRecordings)
+  ) => {
+    const next = typeof newRecordings === "function"
+      ? newRecordings(recordingsRef.current)
+      : newRecordings;
+    _setRecordings(next);
     setInteractiveState?.(prev => ({
       answerType: "interactive_state",
       version: 1,
       name: prev?.name || modelName,
       blocklyCode: prev?.blocklyCode || "",
-      recordings: newRecordings
+      recordings: next
     }));
   }, [modelName, setInteractiveState]);
+
+  // Stable cache key derived from just the objectIds. This is the only data the
+  // detection effect cares about; depending on `recordings` directly would re-fire
+  // every 500ms while a recording is in progress (the live-duration setInterval
+  // mutates the in-progress entry on every tick), causing N+1 Firestore reads
+  // per second per active recording.
+  // JSON.stringify (rather than join with a delimiter) is unambiguously delimiter-
+  // safe: Firestore document IDs may contain any character except "/", "..", and
+  // "__name__", so a naive separator like "," could collide. The serialized array
+  // is small (<100 ids x ~40 chars).
+  const objectIdsKey = useMemo(
+    () => JSON.stringify(
+      recordings.map(r => r.objectId).filter((id): id is string => !!id)
+    ),
+    [recordings]
+  );
+
+  // Detect pre-existing broken recordings on every mount and whenever the set of
+  // objectIds changes. Never mutates recordings / interactiveState — broken state
+  // is purely UI. If readMetadata throws (network, auth), the entry is left out of
+  // the cache so a later mount can retry (treated as unknown for the current render).
+  useEffect(() => {
+    let cancelled = false;
+    const detect = async () => {
+      const objectIds: string[] = JSON.parse(objectIdsKey);
+      const cache = metadataCacheRef.current;
+      const newIds = objectIds.filter(id => !cache.has(id));
+      await Promise.all(
+        newIds.map(async (objectId) => {
+          try {
+            const md = await objectStorage.readMetadata(objectId);
+            cache.set(objectId, md === undefined ? "broken" : "ok");
+          } catch {
+            // transient failure — leave out of cache so a later mount can retry
+          }
+        })
+      );
+      if (cancelled) return;
+      const broken = new Set<string>();
+      for (const objectId of objectIds) {
+        if (cache.get(objectId) === "broken") broken.add(objectId);
+      }
+      // Return prev (same reference) if contents are unchanged so React's
+      // Object.is comparison skips an unnecessary re-render. Without this,
+      // every detection-effect run triggers a re-render even when no broken
+      // entries are added or removed.
+      setBrokenObjectIds(prev => {
+        if (prev.size === broken.size) {
+          let same = true;
+          for (const id of broken) {
+            if (!prev.has(id)) { same = false; break; }
+          }
+          if (same) return prev;
+        }
+        return broken;
+      });
+    };
+    detect();
+    return () => { cancelled = true; };
+  }, [objectIdsKey, objectStorage]);
 
   const currentRecording = useMemo(() => {
     if (currentRecordingIndex >= 0 && currentRecordingIndex < recordings.length) {
@@ -170,6 +267,15 @@ export const AgentSimulationComponent = ({
     currentRecording.duration !== undefined,
     [currentRecording]
   );
+
+  // Broken-entry selection disables Play (broken entries cannot play back).
+  // basePlayAllowed is the existing code-source/blockly-code gate; the broken
+  // check is layered on top so that a future change to one doesn't accidentally
+  // re-enable Play for broken entries.
+  const selectedIsBroken =
+    currentRecording?.objectId !== undefined &&
+    brokenObjectIds.has(currentRecording.objectId);
+  const canPlay = basePlayAllowed && !selectedIsBroken;
 
   const getRecordingInfo = useCallback(() => {
     const startedAt = currentRecording?.startedAt;
@@ -404,7 +510,14 @@ export const AgentSimulationComponent = ({
           recordingChannelRef.current?.publish({topic: "recording-stopped"});
 
           if (!currentRecording.objectId) {
-            const notPausedRecordings = [...recordings];
+            // Identify the in-flight entry by its `startedAt` timestamp, which is
+            // unique per recording and stable for the lifetime of the save() call.
+            // Using a stable identifier (rather than the captured index) means
+            // index shifts during the up-to-30s save window — e.g., the user
+            // deletes an earlier saved recording — don't cause the success write
+            // to land on the wrong slot or the failure cleanup to filter the
+            // wrong entry. `startedAt` is in closure scope from handlePlayPause.
+            const inFlightStartedAt = startedAt;
 
             const save = async () => {
               // get a snapshot of the simulation
@@ -459,23 +572,101 @@ export const AgentSimulationComponent = ({
                 text: finalCode
               });
 
-              objectStorage.add(storedObject);
+              const addPromise = objectStorage.add(storedObject);
+              // Absorb any late rejection on the timeout path. If the timeout fires, the
+              // underlying add() promise is still pending; if it eventually rejects (e.g.,
+              // Firestore returns "doc too big" after our timer fired), this prevents an
+              // unhandled-rejection warning. The forward marker for researchers is the
+              // log("save-recording-failed", { errorMessage: "save timed out after 30s" })
+              // event already emitted in the catch handler below.
+              addPromise.catch(() => undefined);
 
-              // Preserve existing recording data (including globalValues) while adding new fields
-              notPausedRecordings[currentRecordingIndex] = {
-                ...notPausedRecordings[currentRecordingIndex],
-                objectId: storedObject.id,
-                startedAt,
-                duration,
-                thumbnail,
-                snapshot
-              };
-              setRecordings(notPausedRecordings);
-
-              // Clear out the tick data for the next recording
+              let timeoutId: ReturnType<typeof setTimeout> | undefined;
+              try {
+                await Promise.race([
+                  addPromise,
+                  new Promise((_, reject) => {
+                    timeoutId = setTimeout(
+                      () => reject(new Error("save timed out after 30s")),
+                      SAVE_TIMEOUT_MS
+                    );
+                  }),
+                ]);
+                // Success path — locate the in-flight entry by its stable
+                // `startedAt` (set when recording began) rather than the captured
+                // index. If the user deleted an earlier saved recording during
+                // the save window, the index would have shifted and an index-
+                // based write would corrupt a different slot.
+                setRecordings(prev => {
+                  const idx = prev.findIndex(
+                    r => r.startedAt === inFlightStartedAt && !r.objectId
+                  );
+                  if (idx === -1) return prev; // entry was already removed
+                  const next = [...prev];
+                  next[idx] = {
+                    ...next[idx],
+                    objectId: storedObject.id,
+                    startedAt: inFlightStartedAt,
+                    duration,
+                    thumbnail,
+                    snapshot,
+                  };
+                  return next;
+                });
+              } catch (err) {
+                // Computed inside the catch (only on failure) so the success path doesn't
+                // pay for a ~1MB stringify of the tick data we already sent to Firestore.
+                const approximateSizeBytes = JSON.stringify(storedObject.data).length;
+                const errorMessage = err instanceof Error ? err.message : String(err);
+                // Synchronous publish BEFORE the modal opens, per spec.
+                recordingChannelRef.current?.publish({
+                  topic: "recording-save-failed",
+                  objectId: storedObject.id,
+                });
+                console.error("[agent-simulation] Recording save failed", {
+                  objectId: storedObject.id,
+                  errorMessage,
+                  approximateSizeBytes,
+                });
+                log("save-recording-failed", { errorMessage, approximateSizeBytes });
+                // Actively remove the in-progress entry that was committed to recordings/
+                // interactiveState when recording started. Identify by stable startedAt
+                // rather than by index so a mid-save delete of an earlier saved recording
+                // doesn't cause us to filter the wrong entry (leaving the phantom).
+                // Capture the placeholder index from the pre-filter array so the
+                // placeholder renders at the slot the recording would have occupied.
+                const preFilter = recordingsRef.current;
+                const inFlightIdx = preFilter.findIndex(
+                  r => r.startedAt === inFlightStartedAt && !r.objectId
+                );
+                setRecordings(prev =>
+                  prev.filter(r => !(r.startedAt === inFlightStartedAt && !r.objectId))
+                );
+                setCurrentRecordingIndex(-1);
+                // Single-modal policy: dismiss any open delete-confirm before opening the
+                // error modal so we don't render two aria-modal="true" dialogs at once
+                // with competing focus traps. Indices may have shifted because we just
+                // removed the in-progress entry; restarting the delete flow is safer.
+                setShowDeleteRecordingConfirm(false);
+                // Surface to the user. Placeholder occupies the slot just freed by
+                // removal, which is the position the recording would have had on success.
+                setFailedSaveInfo({
+                  approximateSizeBytes,
+                  placeholderIndex: inFlightIdx !== -1 ? inFlightIdx : preFilter.length,
+                  placeholderSnapshot: snapshot,
+                });
+              } finally {
+                // Clear the 30s timer if add() resolved or rejected before it fired.
+                // Without this, the reject callback runs 30s later into a settled promise
+                // (no observable effect, but holds a closure for 30s).
+                if (timeoutId !== undefined) clearTimeout(timeoutId);
+              }
+              // Tick data is cleared in both paths.
               tickDataRef.current = [];
             };
 
+            // save() handles its own errors internally via try/catch + modal.
+            // Intentionally not awaited so handlePlayPause stays synchronous.
             save();
           }
         }
@@ -598,23 +789,7 @@ export const AgentSimulationComponent = ({
     setZoomLevel(ZOOM_DEFAULT);
   };
 
-  const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const recordingsRef = useRef(recordings);
-  recordingsRef.current = recordings;
-
-  const cancelRecordingPoll = useCallback(() => {
-    if (pollTimerRef.current !== null) {
-      clearTimeout(pollTimerRef.current);
-      pollTimerRef.current = null;
-    }
-  }, []);
-
-  useEffect(() => {
-    return () => cancelRecordingPoll();
-  }, [cancelRecordingPoll]);
-
   const handleNewRecording = () => {
-    cancelRecordingPoll();
     const newRecording: IRecording = { modelName };
     const newRecordings = [...recordings, newRecording];
     setRecordings(newRecordings);
@@ -627,7 +802,6 @@ export const AgentSimulationComponent = ({
   };
 
   const handleSelectRecording = (index: number) => {
-    cancelRecordingPoll();
     setCurrentRecordingIndex(index);
 
     if (index === -1) {
@@ -642,56 +816,54 @@ export const AgentSimulationComponent = ({
       return;
     }
 
-    const buildTitle = (rec: IRecording) => {
-      if (rec.startedAt && rec.duration !== undefined) {
-        const durationInSeconds = Math.floor(rec.duration / 1000);
-        const durationString = `${durationInSeconds} ${durationInSeconds === 1 ? "sec" : "secs"}`;
-        const formattedTime = new Date(rec.startedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
-        return `${rec.modelName}: ${formattedTime} (${durationString})`;
-      }
-      return rec.modelName;
-    };
-    const title = buildTitle(recording);
+    // Saving-state guard: entries that have been started (startedAt set) but not
+    // yet saved (no objectId) are in the save-in-flight window between Stop and
+    // add() resolution. Selecting them would publish recording-selected and start
+    // polling for objectId — both pointless until the save resolves. The disabled
+    // <button> in the recording strip is the UI half of this defense-in-depth
+    // pair; this is the programmatic-call half. Empty recordings (no startedAt
+    // yet, just created via New) are NOT saving and remain selectable.
+    if (recording.startedAt !== undefined && !recording.objectId) {
+      return;
+    }
 
+    // Empty recording (no startedAt): re-publish "empty" so a user who deselected
+    // an empty recording can re-select it (handleNewRecording publishes "empty"
+    // at create-time; this handles re-selection from the strip).
     if (!recording.startedAt) {
       recordingChannelRef.current?.publish({
-        topic: "recording-selected", objectId: null, title, status: "empty"
+        topic: "recording-selected", objectId: null, title: recording.modelName, status: "empty"
       });
-    } else if (recording.objectId) {
-      recordingChannelRef.current?.publish({
-        topic: "recording-selected", objectId: recording.objectId, title, status: "ready"
-      });
-    } else {
-      recordingChannelRef.current?.publish({
-        topic: "recording-selected", objectId: null, title, status: "waiting"
-      });
-
-      const pollStart = Date.now();
-      const pollForObjectId = () => {
-        const current = recordingsRef.current[index];
-        if (current?.objectId) {
-          recordingChannelRef.current?.publish({
-            topic: "recording-selected", objectId: current.objectId, title, status: "ready"
-          });
-          pollTimerRef.current = null;
-        } else if (Date.now() - pollStart > 10000) {
-          recordingChannelRef.current?.publish({
-            topic: "recording-selected", objectId: null, title, status: "failed"
-          });
-          console.error("[agent-simulation] Timed out waiting for recording save", { index });
-          pollTimerRef.current = null;
-        } else {
-          pollTimerRef.current = setTimeout(pollForObjectId, 250);
-        }
-      };
-      pollTimerRef.current = setTimeout(pollForObjectId, 250);
+      return;
     }
+
+    // Past the guards above, recording.objectId is guaranteed defined. Narrow
+    // via a local const so we don't sprinkle non-null assertions through the
+    // publish call.
+    const { objectId } = recording;
+    if (!objectId) return; // type-narrowing belt-and-suspenders; unreachable.
+
+    // Broken-entry selection: skip the playback path entirely. The only purpose
+    // of selection here is to enable the existing control-panel Delete action.
+    if (brokenObjectIds.has(objectId)) {
+      return;
+    }
+
+    const durationInSeconds = Math.floor((recording.duration ?? 0) / 1000);
+    const durationString = `${durationInSeconds} ${durationInSeconds === 1 ? "sec" : "secs"}`;
+    const formattedTime = new Date(recording.startedAt).toLocaleTimeString([], { hour: "numeric", minute: "2-digit" });
+    const title = recording.duration !== undefined
+      ? `${recording.modelName}: ${formattedTime} (${durationString})`
+      : recording.modelName;
+
+    recordingChannelRef.current?.publish({
+      topic: "recording-selected", objectId, title, status: "ready"
+    });
   };
 
   const handleDeleteRecording = () => setShowDeleteRecordingConfirm(true);
   const handleCancelDeleteRecording = () => setShowDeleteRecordingConfirm(false);
   const handleConfirmDeleteRecording = useCallback(() => {
-    cancelRecordingPoll();
     const newRecordings = recordings.filter((_, i) => i !== currentRecordingIndex);
     setRecordings(newRecordings);
     setCurrentRecordingIndex(-1);
@@ -699,7 +871,7 @@ export const AgentSimulationComponent = ({
     setNewRecordingCount(prev => prev + 1);
     setShowDeleteRecordingConfirm(false);
     recordingChannelRef.current?.publish({ topic: "recording-deselected" });
-  }, [currentRecordingIndex, recordings, setRecordings, cancelRecordingPoll]);
+  }, [currentRecordingIndex, recordings, setRecordings]);
 
   const renderRecordingInfo = () => {
     const info = getRecordingInfo();
@@ -732,6 +904,11 @@ export const AgentSimulationComponent = ({
             onSelectRecording={handleSelectRecording}
             recordings={recordings}
             currentRecordingIndex={currentRecordingIndex}
+            brokenObjectIds={brokenObjectIds}
+            failedSavePlaceholder={failedSaveInfo ? {
+              index: failedSaveInfo.placeholderIndex,
+              snapshot: failedSaveInfo.placeholderSnapshot,
+            } : undefined}
           />
         </div>
       </div>
@@ -813,6 +990,18 @@ export const AgentSimulationComponent = ({
           confirmLabel="Delete"
           onConfirm={handleConfirmDeleteRecording}
           onCancel={handleCancelDeleteRecording}
+        />
+      )}
+      {failedSaveInfo && (
+        <Modal
+          mode="alert"
+          variant="orange"
+          title="Recording Save Failed"
+          Icon={WarningTriangleIcon}
+          message="This recording was too large to save and could not be kept. Please record a shorter session and try again."
+          confirmLabel="OK"
+          onConfirm={() => setFailedSaveInfo(null)}
+          onCancel={() => setFailedSaveInfo(null)}
         />
       )}
     </div>

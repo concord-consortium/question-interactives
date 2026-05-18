@@ -88,6 +88,48 @@
   }
 }
 
+.savingOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.25);
+}
+.savingSpinner {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 40%;
+  height: 40%;
+  animation: spin 1s linear infinite;
+  color: var(--saving-spinner-color, #ffffff);
+}
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+.brokenRecording {
+  cursor: default;
+  pointer-events: none; // placeholder is non-interactive
+}
+.currentBrokenRecordingButton {
+  // Warning-colored selection ring so users don't infer playback works.
+  // Distinct from .currentRecordingButton's orange-dark-1 ring.
+  outline: 2px solid var(--warning-ring-color, #f5a623);
+  outline-offset: -2px;
+}
+.brokenOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.35);
+}
+.brokenIcon {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  width: 24px;
+  height: 24px;
+  color: var(--warning-icon-color, #f5a623);
+}
+
 .newRecordingButton {
   @include interactive-button-base;
   @include interactive-button-orange;

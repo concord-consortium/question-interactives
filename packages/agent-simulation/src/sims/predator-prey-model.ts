@@ -3,7 +3,7 @@
 // NOTE: To pasting the code directly will not work because of the backticks.
 
 export const predatorPreyCode = `
-const sheepSvg = \`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+const sheepSvg = \`<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
   <!-- Circles (color -1 -> #FFFFFF) -->
   <circle cx="247" cy="109" r="44" fill="#FFFFFF" stroke="#FFFFFF" />
   <circle cx="151" cy="146" r="81" fill="#FFFFFF" stroke="#FFFFFF" />
@@ -47,7 +47,7 @@ const sheepSvg = \`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300"
 </svg>
 \`;
 
-const wolfSvg = \`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 300">
+const wolfSvg = \`<svg xmlns="http://www.w3.org/2000/svg" width="300" height="300" viewBox="0 0 300 300">
   <!-- Polygon -16777216 true false -->
   <!-- color = #000000 (black), filled, no stroke -->
   <polygon
