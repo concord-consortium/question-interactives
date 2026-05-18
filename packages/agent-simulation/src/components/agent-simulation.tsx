@@ -170,8 +170,9 @@ export const AgentSimulationComponent = ({
   // Mirror of `recordings` state. Two consumers read it:
   //   1. setRecordings (below) resolves the `prev` for functional callers
   //      without nesting setInteractiveState inside a React state updater.
-  //   2. handleSelectRecording's pollForObjectId reads the current value
-  //      across timeouts (declared lower in the file).
+  //   2. The save-failure path in handlePlayPause reads the current value
+  //      to compute the placeholder index before filtering out the
+  //      in-progress entry (declared lower in the file).
   const recordingsRef = useRef<IRecordings>(recordings);
   recordingsRef.current = recordings;
 
@@ -788,21 +789,7 @@ export const AgentSimulationComponent = ({
     setZoomLevel(ZOOM_DEFAULT);
   };
 
-  const pollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  const cancelRecordingPoll = useCallback(() => {
-    if (pollTimerRef.current !== null) {
-      clearTimeout(pollTimerRef.current);
-      pollTimerRef.current = null;
-    }
-  }, []);
-
-  useEffect(() => {
-    return () => cancelRecordingPoll();
-  }, [cancelRecordingPoll]);
-
   const handleNewRecording = () => {
-    cancelRecordingPoll();
     const newRecording: IRecording = { modelName };
     const newRecordings = [...recordings, newRecording];
     setRecordings(newRecordings);
@@ -815,7 +802,6 @@ export const AgentSimulationComponent = ({
   };
 
   const handleSelectRecording = (index: number) => {
-    cancelRecordingPoll();
     setCurrentRecordingIndex(index);
 
     if (index === -1) {
@@ -878,7 +864,6 @@ export const AgentSimulationComponent = ({
   const handleDeleteRecording = () => setShowDeleteRecordingConfirm(true);
   const handleCancelDeleteRecording = () => setShowDeleteRecordingConfirm(false);
   const handleConfirmDeleteRecording = useCallback(() => {
-    cancelRecordingPoll();
     const newRecordings = recordings.filter((_, i) => i !== currentRecordingIndex);
     setRecordings(newRecordings);
     setCurrentRecordingIndex(-1);
@@ -886,7 +871,7 @@ export const AgentSimulationComponent = ({
     setNewRecordingCount(prev => prev + 1);
     setShowDeleteRecordingConfirm(false);
     recordingChannelRef.current?.publish({ topic: "recording-deselected" });
-  }, [currentRecordingIndex, recordings, setRecordings, cancelRecordingPoll]);
+  }, [currentRecordingIndex, recordings, setRecordings]);
 
   const renderRecordingInfo = () => {
     const info = getRecordingInfo();
