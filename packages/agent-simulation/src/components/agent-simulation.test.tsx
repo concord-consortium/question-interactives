@@ -1717,12 +1717,13 @@ describe("AgentSimulationComponent", () => {
       const afterTick = getLatestAfterTick();
       act(() => { afterTick(); afterTick(); afterTick(); });
 
+      // Any further ticks that fire BEFORE the setTimeout(0) flushes (the "gap"
+      // between cap-hit and pause taking effect) must NOT add another sample —
+      // the cap must be exact. Synchronous act() calls run before pending timers.
+      act(() => { afterTick(); afterTick(); });
+
       // Flush the setTimeout(0) + the async save() chain (getThumbnail + add()).
       await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
-
-      // Any further ticks (from the sim before pause() fully takes effect) must NOT add
-      // another sample — the cap must be exact.
-      act(() => { afterTick(); afterTick(); });
 
       // Sim got paused.
       expect(mockSimulation.pause).toHaveBeenCalledWith(true);
@@ -1731,7 +1732,7 @@ describe("AgentSimulationComponent", () => {
       const stopped = mockPublish.mock.calls.find(([m]) => m?.topic === "recording-stopped");
       expect(stopped).toBeDefined();
 
-      // Exactly 3 recording-tick events were published (no over-shoot).
+      // Exactly 3 recording-tick events were published (no over-shoot from gap ticks).
       const recordingTicks = mockPublish.mock.calls.filter(
         ([m]) => m?.topic === "recording-tick"
       );
@@ -1746,6 +1747,46 @@ describe("AgentSimulationComponent", () => {
       expect(dataTableEntry).toBeDefined();
       const [dataTableId] = dataTableEntry as [string, any];
       expect(storedObject.data[dataTableId].rows).toHaveLength(3);
+    });
+
+    it("releases the max-samples guard after the deferred auto-stop runs, so later ticks can publish again", async () => {
+      // Regression for a save-failure path bug: maxSamplesAutoStoppedRef was only cleared
+      // when the sim was rebuilt, but save() rejection deselects the recording WITHOUT
+      // rebuilding the sim. A stale `true` guard would silently drop every subsequent
+      // tick in free-play. The guard must be released once handlePlayPause has paused
+      // the sim — at that point the gap it was protecting against has closed.
+      const authored: IAuthoredState = { ...defaultAuthoredState, maxSamples: 2 };
+
+      render(
+        <ObjectStorageProvider config={objectStorageConfig}>
+          <AgentSimulationComponent
+            authoredState={authored}
+            interactiveState={defaultInteractiveState}
+            setInteractiveState={mockSetInteractiveState}
+          />
+        </ObjectStorageProvider>
+      );
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      fireEvent.click(screen.getByText("New"));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+      fireEvent.click(screen.getByTestId("play-pause-button"));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      const afterTick = getLatestAfterTick();
+      // Hit the cap → auto-stop is queued.
+      act(() => { afterTick(); afterTick(); });
+      // Flush setTimeout(0) → handlePlayPause runs → guard released. Also lets
+      // save() complete and clear tickDataRef.
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+
+      mockPublish.mockClear();
+
+      // The next direct tick must publish. Before the guard was released after
+      // handlePlayPause, this would have been silently dropped by the early-return
+      // at the top of afterTick.
+      act(() => { afterTick(); });
+      expect(mockPublish.mock.calls.length).toBeGreaterThan(0);
     });
 
     it("does not auto-stop in free-play (non-recording) mode even when sample count exceeds maxSamples", async () => {

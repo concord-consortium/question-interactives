@@ -450,7 +450,15 @@ export const AgentSimulationComponent = ({
         tickDataRef.current.length >= cap
       ) {
         maxSamplesAutoStoppedRef.current = true;
-        setTimeout(() => handlePlayPauseRef.current(), 0);
+        setTimeout(() => {
+          handlePlayPauseRef.current();
+          // Release the guard once handlePlayPause has paused the sim. The guard
+          // only needs to cover the gap between cap-hit and the deferred pause;
+          // leaving it set across that boundary blocks future ticks on paths
+          // that don't rebuild the sim (e.g. save-failure deselects the
+          // recording without resetting, or the user re-enters free-play).
+          maxSamplesAutoStoppedRef.current = false;
+        }, 0);
       }
     };
 
