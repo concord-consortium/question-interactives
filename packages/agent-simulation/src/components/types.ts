@@ -17,6 +17,8 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   hint?: string;
   version: number;
   maxRecordingTime: number;
+  sampleIntervalMs?: number;
+  maxSamples?: number;
 }
 
 export interface IInteractiveState extends IRuntimeInteractiveMetadata {
@@ -28,7 +30,7 @@ export interface IInteractiveState extends IRuntimeInteractiveMetadata {
   recordings: IRecordings;
 }
 
-export const DefaultAuthoredState: Omit<Required<IAuthoredState>, "questionSubType"|"required"|"prompt"> = {
+export const DefaultAuthoredState: Omit<Required<IAuthoredState>, "questionSubType"|"required"|"prompt"|"sampleIntervalMs"|"maxSamples"> = {
   code: "",
   dataSourceInteractive: "",
   gridHeight: 450,

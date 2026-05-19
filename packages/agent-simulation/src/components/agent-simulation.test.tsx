@@ -1580,4 +1580,276 @@ describe("AgentSimulationComponent", () => {
       expect(playBtn).not.toBeDisabled();
     });
   });
+
+  describe("sample interval and max samples", () => {
+    let mockAdd: jest.Mock;
+    let mockPublish: jest.Mock;
+    let dateNowSpy: jest.SpyInstance | undefined;
+
+    // Returns the most-recently-registered afterTick — the visualization is recreated
+    // whenever the sim is reset (reset, new recording, code update), so we always want
+    // the latest call.
+    const getLatestAfterTick = (): (() => void) => {
+      const lastCall = mockVis.mock.calls[mockVis.mock.calls.length - 1];
+      return lastCall[1].afterTick as () => void;
+    };
+
+    const tickPublishes = () =>
+      mockPublish.mock.calls.filter(
+        ([msg]) =>
+          msg?.topic === "recording-tick" || msg?.topic === "simulation-tick"
+      );
+
+    beforeEach(() => {
+      mockAgentSimulation.widgets = [];
+      mockGlobals.values.mockReturnValue({ count: 5 });
+
+      mockAdd = jest.fn().mockResolvedValue(undefined);
+      mockPublish = jest.fn();
+      mockCreatePubSubChannel.mockReturnValue({
+        publish: mockPublish,
+        subscribe: jest.fn(),
+        unsubscribe: jest.fn(),
+      });
+      mockUseObjectStorage.mockReturnValue({
+        add: mockAdd,
+        list: jest.fn(),
+        monitor: jest.fn(),
+        read: jest.fn(),
+        readMetadata: jest.fn(() => Promise.resolve({})),
+        readData: jest.fn(),
+        readDataItem: jest.fn(),
+      });
+    });
+
+    afterEach(() => {
+      if (dateNowSpy) {
+        dateNowSpy.mockRestore();
+        dateNowSpy = undefined;
+      }
+    });
+
+    it("samples every tick when sampleIntervalMs and maxSamples are unset (default behavior)", async () => {
+      render(
+        <ObjectStorageProvider config={objectStorageConfig}>
+          <AgentSimulationComponent
+            authoredState={defaultAuthoredState}
+            interactiveState={defaultInteractiveState}
+            setInteractiveState={mockSetInteractiveState}
+          />
+        </ObjectStorageProvider>
+      );
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      const afterTick = getLatestAfterTick();
+      act(() => { afterTick(); afterTick(); afterTick(); });
+
+      const ticks = tickPublishes();
+      expect(ticks).toHaveLength(3);
+      // Sequential simulation tick values, all simulation-tick (no current recording).
+      expect(ticks.map(c => c[0].values.tick)).toEqual([0, 1, 2]);
+      expect(ticks.every(c => c[0].topic === "simulation-tick")).toBe(true);
+    });
+
+    it("throttles samples per sampleIntervalMs and stamps each sample with its sim-tick number", async () => {
+      let now = 1_000_000;
+      dateNowSpy = jest.spyOn(Date, "now").mockImplementation(() => now);
+
+      const authored: IAuthoredState = { ...defaultAuthoredState, sampleIntervalMs: 500 };
+
+      render(
+        <ObjectStorageProvider config={objectStorageConfig}>
+          <AgentSimulationComponent
+            authoredState={authored}
+            interactiveState={defaultInteractiveState}
+            setInteractiveState={mockSetInteractiveState}
+          />
+        </ObjectStorageProvider>
+      );
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      const afterTick = getLatestAfterTick();
+      // Sim ticks 0..5 at the wall-clock times below. Only ticks whose elapsed-since-last-sample
+      // is >= 500ms produce a published sample, but `tick` keeps counting on every call.
+      const schedule = [
+        { advanceMs: 0,   expectSample: true,  expectedTick: 0 }, // first tick — always sampled
+        { advanceMs: 200, expectSample: false                  }, // 200ms < 500ms → skip
+        { advanceMs: 299, expectSample: false                  }, // 499ms total < 500ms → skip
+        { advanceMs: 1,   expectSample: true,  expectedTick: 3 }, // exactly 500ms → sample
+        { advanceMs: 200, expectSample: false                  }, // 200ms since last → skip
+        { advanceMs: 301, expectSample: true,  expectedTick: 5 }, // 501ms since last → sample
+      ];
+      for (const step of schedule) {
+        now += step.advanceMs;
+        act(() => { afterTick(); });
+      }
+
+      const ticks = tickPublishes();
+      const expectedSamples = schedule.filter(s => s.expectSample);
+      expect(ticks).toHaveLength(expectedSamples.length);
+      expect(ticks.map(c => c[0].values.tick)).toEqual(expectedSamples.map(s => s.expectedTick));
+    });
+
+    it("auto-stops the recording when maxSamples is reached and saves exactly that many rows", async () => {
+      const authored: IAuthoredState = { ...defaultAuthoredState, maxSamples: 3 };
+
+      render(
+        <ObjectStorageProvider config={objectStorageConfig}>
+          <AgentSimulationComponent
+            authoredState={authored}
+            interactiveState={defaultInteractiveState}
+            setInteractiveState={mockSetInteractiveState}
+          />
+        </ObjectStorageProvider>
+      );
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      // Enter recording mode + press play. The play handler resets the sim because the
+      // recording has no startedAt yet, so afterTick is re-registered against the new vis.
+      fireEvent.click(screen.getByText("New"));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+      fireEvent.click(screen.getByTestId("play-pause-button"));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      mockSimulation.pause.mockClear();
+
+      // Fire the cap-many ticks → 3rd tick triggers auto-stop via setTimeout(0).
+      const afterTick = getLatestAfterTick();
+      act(() => { afterTick(); afterTick(); afterTick(); });
+
+      // Any further ticks that fire BEFORE the setTimeout(0) flushes (the "gap"
+      // between cap-hit and pause taking effect) must NOT add another sample —
+      // the cap must be exact. Synchronous act() calls run before pending timers.
+      act(() => { afterTick(); afterTick(); });
+
+      // Flush the setTimeout(0) + the async save() chain (getThumbnail + add()).
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+
+      // Sim got paused.
+      expect(mockSimulation.pause).toHaveBeenCalledWith(true);
+
+      // recording-stopped PubSub fired (reuses existing topic — no new event).
+      const stopped = mockPublish.mock.calls.find(([m]) => m?.topic === "recording-stopped");
+      expect(stopped).toBeDefined();
+
+      // Exactly 3 recording-tick events were published (no over-shoot from gap ticks).
+      const recordingTicks = mockPublish.mock.calls.filter(
+        ([m]) => m?.topic === "recording-tick"
+      );
+      expect(recordingTicks).toHaveLength(3);
+
+      // Save was called and the data table holds exactly 3 rows.
+      expect(mockAdd).toHaveBeenCalledTimes(1);
+      const storedObject = mockAdd.mock.calls[0][0];
+      const dataTableEntry = Object.entries(storedObject.metadata.items).find(
+        ([, item]: [string, any]) => item.subType === "simulation-tick-data"
+      );
+      expect(dataTableEntry).toBeDefined();
+      const [dataTableId] = dataTableEntry as [string, any];
+      expect(storedObject.data[dataTableId].rows).toHaveLength(3);
+    });
+
+    it("releases the max-samples guard after the deferred auto-stop runs, so later ticks can publish again", async () => {
+      // Regression for a save-failure path bug: maxSamplesAutoStoppedRef was only cleared
+      // when the sim was rebuilt, but save() rejection deselects the recording WITHOUT
+      // rebuilding the sim. A stale `true` guard would silently drop every subsequent
+      // tick in free-play. The guard must be released once handlePlayPause has paused
+      // the sim — at that point the gap it was protecting against has closed.
+      const authored: IAuthoredState = { ...defaultAuthoredState, maxSamples: 2 };
+
+      render(
+        <ObjectStorageProvider config={objectStorageConfig}>
+          <AgentSimulationComponent
+            authoredState={authored}
+            interactiveState={defaultInteractiveState}
+            setInteractiveState={mockSetInteractiveState}
+          />
+        </ObjectStorageProvider>
+      );
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      fireEvent.click(screen.getByText("New"));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+      fireEvent.click(screen.getByTestId("play-pause-button"));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      const afterTick = getLatestAfterTick();
+      // Hit the cap → auto-stop is queued.
+      act(() => { afterTick(); afterTick(); });
+      // Flush setTimeout(0) → handlePlayPause runs → guard released. Also lets
+      // save() complete and clear tickDataRef.
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+
+      mockPublish.mockClear();
+
+      // The next direct tick must publish. Before the guard was released after
+      // handlePlayPause, this would have been silently dropped by the early-return
+      // at the top of afterTick.
+      act(() => { afterTick(); });
+      expect(mockPublish.mock.calls.length).toBeGreaterThan(0);
+    });
+
+    it("does not auto-stop in free-play (non-recording) mode even when sample count exceeds maxSamples", async () => {
+      const authored: IAuthoredState = { ...defaultAuthoredState, maxSamples: 2 };
+
+      render(
+        <ObjectStorageProvider config={objectStorageConfig}>
+          <AgentSimulationComponent
+            authoredState={authored}
+            interactiveState={defaultInteractiveState}
+            setInteractiveState={mockSetInteractiveState}
+          />
+        </ObjectStorageProvider>
+      );
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      // Play, but don't enter a recording.
+      fireEvent.click(screen.getByTestId("play-pause-button"));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      mockSimulation.pause.mockClear();
+      mockAdd.mockClear();
+
+      const afterTick = getLatestAfterTick();
+      act(() => { afterTick(); afterTick(); afterTick(); afterTick(); });
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      // No auto-stop: sim still running, save not called.
+      expect(mockSimulation.pause).not.toHaveBeenCalledWith(true);
+      expect(mockAdd).not.toHaveBeenCalled();
+
+      // All four samples emitted as simulation-tick (free-play topic).
+      const simTicks = mockPublish.mock.calls.filter(([m]) => m?.topic === "simulation-tick");
+      expect(simTicks).toHaveLength(4);
+    });
+
+    it("interval throttle applies in free-play mode (simulation-tick) too", async () => {
+      let now = 2_000_000;
+      dateNowSpy = jest.spyOn(Date, "now").mockImplementation(() => now);
+
+      const authored: IAuthoredState = { ...defaultAuthoredState, sampleIntervalMs: 250 };
+
+      render(
+        <ObjectStorageProvider config={objectStorageConfig}>
+          <AgentSimulationComponent
+            authoredState={authored}
+            interactiveState={defaultInteractiveState}
+            setInteractiveState={mockSetInteractiveState}
+          />
+        </ObjectStorageProvider>
+      );
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      const afterTick = getLatestAfterTick();
+      // 4 ticks 100ms apart → only ticks at t=0 and t=300 (interval elapsed) sample.
+      act(() => { afterTick(); });          // sample (first)
+      now += 100; act(() => { afterTick(); }); // skip (100<250)
+      now += 100; act(() => { afterTick(); }); // skip (200<250)
+      now += 100; act(() => { afterTick(); }); // sample (300>=250)
+
+      const simTicks = mockPublish.mock.calls.filter(([m]) => m?.topic === "simulation-tick");
+      expect(simTicks).toHaveLength(2);
+      expect(simTicks.map(c => c[0].values.tick)).toEqual([0, 3]);
+    });
+  });
 });
