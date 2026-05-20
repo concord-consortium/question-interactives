@@ -15,9 +15,15 @@ export interface IAuthoredState extends IAuthoringInteractiveMetadata {
   gridStep: number;
   gridWidth: number;
   hint?: string;
-  version: number;
+  // `version: 2` (literal, not `number`) is what enables `version === 1` to
+  // narrow the `IAuthoredStateV1 | IAuthoredState` union down to V1 inside
+  // the migration's branch — which is what makes the V1-only
+  // `sampleIntervalMs` destructure typecheck. Matches carousel/labbook/
+  // scaffolded-question.
+  version: 2;
   maxRecordingTime: number;
-  sampleIntervalMs?: number;
+  sampleIntervalUnit?: "none" | "ms" | "ticks";
+  sampleInterval?: number;
   maxSamples?: number;
 }
 
@@ -30,7 +36,8 @@ export interface IInteractiveState extends IRuntimeInteractiveMetadata {
   recordings: IRecordings;
 }
 
-export const DefaultAuthoredState: Omit<Required<IAuthoredState>, "questionSubType"|"required"|"prompt"|"sampleIntervalMs"|"maxSamples"> = {
+export const DefaultAuthoredState: Omit<Required<IAuthoredState>,
+  "questionSubType"|"required"|"prompt"|"sampleIntervalUnit"|"sampleInterval"|"maxSamples"> = {
   code: "",
   dataSourceInteractive: "",
   gridHeight: 450,
@@ -38,7 +45,7 @@ export const DefaultAuthoredState: Omit<Required<IAuthoredState>, "questionSubTy
   gridWidth: 450,
   hint: "",
   questionType: "iframe_interactive",
-  version: 1,
+  version: 2,
   maxRecordingTime: defaultMaxRecordingTime,
 };
 
@@ -51,7 +58,7 @@ export const DemoAuthoredState: IAuthoredState = {
   hint: "",
   prompt: "",
   questionType: "iframe_interactive",
-  version: 1,
+  version: 2,
   maxRecordingTime: defaultMaxRecordingTime,
 };
 
@@ -65,3 +72,17 @@ export interface IRecording {
   globalValues?: Record<string, any>;
 }
 export type IRecordings = IRecording[];
+
+// Old authored state versions:
+export interface IAuthoredStateV1 extends IAuthoringInteractiveMetadata {
+  version: 1;
+  code: string;
+  dataSourceInteractive?: string;
+  gridHeight: number;
+  gridStep: number;
+  gridWidth: number;
+  hint?: string;
+  maxRecordingTime: number;
+  sampleIntervalMs?: number;
+  maxSamples?: number;
+}

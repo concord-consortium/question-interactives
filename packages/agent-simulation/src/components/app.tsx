@@ -5,6 +5,8 @@ import { BaseQuestionApp } from "@concord-consortium/question-interactives-helpe
 import { predatorPreyCode } from "../sims/predator-prey-model";
 import { IAuthoredState, IInteractiveState, defaultMaxRecordingTime, maxMaxRecordingTime } from "./types";
 import { Runtime } from "./runtime";
+import { migrateAuthoredState } from "./state-migrations";
+import { preprocessFormData } from "./authoring-utils";
 
 const baseAuthoringProps = {
   schema: {
@@ -12,7 +14,7 @@ const baseAuthoringProps = {
     properties: {
       version: {
         type: "number",
-        default: 1
+        default: 2
       },
       questionType: {
         type: "string",
@@ -52,9 +54,20 @@ const baseAuthoringProps = {
         maximum: maxMaxRecordingTime,
         default: defaultMaxRecordingTime
       },
-      sampleIntervalMs: {
-        title: "Sample Interval (ms, optional)",
-        type: "number",
+      sampleIntervalUnit: {
+        title: "Throttle samples by",
+        type: "string",
+        enum: ["none", "ms", "ticks"],
+        enumNames: [
+          "No throttling",
+          "Every N milliseconds",
+          "Every N simulation ticks"
+        ],
+        default: "none"
+      },
+      sampleInterval: {
+        title: "Interval",
+        type: "integer",
         minimum: 1
       },
       maxSamples: {
@@ -116,8 +129,9 @@ const baseAuthoringProps = {
     maxRecordingTime: {
       "ui:widget": "updown"
     },
-    sampleIntervalMs: {
-      "ui:widget": "updown"
+    sampleInterval: {
+      "ui:widget": "updown",
+      "ui:help": "Interpreted in the unit selected above. Review this value if you change the unit — for example, 1000 means 1000 milliseconds in ms mode and 1000 simulation ticks in tick mode."
     },
     maxSamples: {
       "ui:widget": "updown"
@@ -128,7 +142,9 @@ const baseAuthoringProps = {
         "rows": 15
       }
     }
-  }
+  },
+
+  preprocessFormData,
 };
 
 const isAnswered = (interactiveState: IInteractiveState | null) => true;
@@ -139,5 +155,6 @@ export const App = () => (
     baseAuthoringProps={baseAuthoringProps}
     isAnswered={isAnswered}
     linkedInteractiveProps={[{ label: "dataSourceInteractive" }]}
+    migrateAuthoredState={migrateAuthoredState}
   />
 );
