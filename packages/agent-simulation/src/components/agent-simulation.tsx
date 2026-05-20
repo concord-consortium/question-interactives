@@ -68,7 +68,7 @@ const SAVE_TIMEOUT_MS = 30_000;
 export const AgentSimulationComponent = ({
   authoredState, interactiveState, setInteractiveState, report
 }: IProps) => {
-  const { code, gridHeight, gridStep, gridWidth, maxRecordingTime, sampleIntervalMs, maxSamples } = authoredState;
+  const { code, gridHeight, gridStep, gridWidth, maxRecordingTime, sampleIntervalUnit, sampleInterval, maxSamples } = authoredState;
   // The blockly code we're using, which doesn't get updated until the user accepts newer code
   const [blocklyCode, _setBlocklyCode] = useState<string>(interactiveState?.blocklyCode || "");
   const [recordings, _setRecordings] = useState<IRecordings>(interactiveState?.recordings || []);
@@ -138,14 +138,19 @@ export const AgentSimulationComponent = ({
   // simulation. null = no sample yet, so the next tick is always sampled. Reset whenever
   // the simulation is recreated (reset / new-recording / code update).
   const lastSampleAtRef = useRef<number | null>(null);
+  // Sim-tick number of the most recent sample taken in this run of the simulation.
+  // null = no sample yet. Reset alongside lastSampleAtRef on sim (re)create.
+  const lastSampleTickRef = useRef<number | null>(null);
   // Set true once the max-samples cap has triggered an auto-stop, so we don't try to
   // auto-stop a second time before handlePlayPause has had a chance to pause the sim.
   const maxSamplesAutoStoppedRef = useRef(false);
-  // Mirrors authoredState.sampleIntervalMs / maxSamples for use inside afterTick (which
-  // closes over the values from the render that built the visualization). Updated on
-  // every render so authoring-time changes take effect on the next tick.
-  const sampleIntervalMsRef = useRef<number | undefined>(sampleIntervalMs);
-  sampleIntervalMsRef.current = sampleIntervalMs;
+  // Mirrors authoredState fields for use inside afterTick. `?? "none"` defaults a
+  // missing unit — the migrated V1 state with no sampleIntervalMs arrives with
+  // sampleIntervalUnit unset. (Fresh-authored states arrive with "none" explicit.)
+  const sampleIntervalUnitRef = useRef<"none" | "ms" | "ticks">(sampleIntervalUnit ?? "none");
+  sampleIntervalUnitRef.current = sampleIntervalUnit ?? "none";
+  const sampleIntervalRef = useRef<number | undefined>(sampleInterval);
+  sampleIntervalRef.current = sampleInterval;
   const maxSamplesRef = useRef<number | undefined>(maxSamples);
   maxSamplesRef.current = maxSamples;
 
@@ -400,6 +405,7 @@ export const AgentSimulationComponent = ({
     let tick = 0;
     tickDataRef.current = [];
     lastSampleAtRef.current = null;
+    lastSampleTickRef.current = null;
     maxSamplesAutoStoppedRef.current = false;
     const afterTick = () => {
       if (!simRef.current) {
@@ -416,20 +422,33 @@ export const AgentSimulationComponent = ({
       const currentTick = tick;
       tick++;
 
-      // Throttle samples by wall-clock interval when sampleIntervalMs is set.
-      // The first tick after a sim (re)create is always sampled because
-      // lastSampleAtRef starts null. `tick` keeps counting every simulation
-      // step so downstream consumers can read sim-time from the sample.
-      const intervalMs = sampleIntervalMsRef.current;
+      // Throttle samples by the configured unit: wall-clock ms or sim ticks.
+      // The first tick after a sim (re)create is always sampled because both
+      // lastSampleAtRef and lastSampleTickRef start null. `tick` keeps counting
+      // every simulation step so downstream consumers can read sim-time.
+      const unit = sampleIntervalUnitRef.current;
+      const interval = sampleIntervalRef.current;
       const now = Date.now();
       if (
-        intervalMs !== undefined &&
+        unit === "ms" &&
+        interval !== undefined &&
         lastSampleAtRef.current !== null &&
-        now - lastSampleAtRef.current < intervalMs
+        now - lastSampleAtRef.current < interval
       ) {
         return;
       }
+      if (
+        unit === "ticks" &&
+        interval !== undefined &&
+        lastSampleTickRef.current !== null &&
+        currentTick - lastSampleTickRef.current < interval
+      ) {
+        return;
+      }
+      // On a kept sample, update both refs unconditionally so a mid-run unit change
+      // doesn't replay history.
       lastSampleAtRef.current = now;
+      lastSampleTickRef.current = currentTick;
 
       const values = { tick: currentTick, ...globals.values() };
       tickDataRef.current.push(values);

@@ -80,7 +80,7 @@ describe("AgentSimulationComponent", () => {
   };
 
   const defaultAuthoredState: IAuthoredState = {
-    version: 1,
+    version: 2,
     questionType: "iframe_interactive",
     code: "// Default simulation code",
     gridHeight: 450,
@@ -1629,7 +1629,7 @@ describe("AgentSimulationComponent", () => {
       }
     });
 
-    it("samples every tick when sampleIntervalMs and maxSamples are unset (default behavior)", async () => {
+    it("samples every tick when sampleIntervalUnit and maxSamples are unset (default behavior)", async () => {
       render(
         <ObjectStorageProvider config={objectStorageConfig}>
           <AgentSimulationComponent
@@ -1651,11 +1651,11 @@ describe("AgentSimulationComponent", () => {
       expect(ticks.every(c => c[0].topic === "simulation-tick")).toBe(true);
     });
 
-    it("throttles samples per sampleIntervalMs and stamps each sample with its sim-tick number", async () => {
+    it("throttles samples per sampleInterval in ms mode and stamps each sample with its sim-tick number", async () => {
       let now = 1_000_000;
       dateNowSpy = jest.spyOn(Date, "now").mockImplementation(() => now);
 
-      const authored: IAuthoredState = { ...defaultAuthoredState, sampleIntervalMs: 500 };
+      const authored: IAuthoredState = { ...defaultAuthoredState, sampleIntervalUnit: "ms", sampleInterval: 500 };
 
       render(
         <ObjectStorageProvider config={objectStorageConfig}>
@@ -1827,7 +1827,7 @@ describe("AgentSimulationComponent", () => {
       let now = 2_000_000;
       dateNowSpy = jest.spyOn(Date, "now").mockImplementation(() => now);
 
-      const authored: IAuthoredState = { ...defaultAuthoredState, sampleIntervalMs: 250 };
+      const authored: IAuthoredState = { ...defaultAuthoredState, sampleIntervalUnit: "ms", sampleInterval: 250 };
 
       render(
         <ObjectStorageProvider config={objectStorageConfig}>
@@ -1850,6 +1850,216 @@ describe("AgentSimulationComponent", () => {
       const simTicks = mockPublish.mock.calls.filter(([m]) => m?.topic === "simulation-tick");
       expect(simTicks).toHaveLength(2);
       expect(simTicks.map(c => c[0].values.tick)).toEqual([0, 3]);
+    });
+
+    it("throttles samples per sampleInterval in ticks mode and stamps each sample with its sim-tick number", async () => {
+      const authored: IAuthoredState = { ...defaultAuthoredState, sampleIntervalUnit: "ticks", sampleInterval: 5 };
+
+      render(
+        <ObjectStorageProvider config={objectStorageConfig}>
+          <AgentSimulationComponent
+            authoredState={authored}
+            interactiveState={defaultInteractiveState}
+            setInteractiveState={mockSetInteractiveState}
+          />
+        </ObjectStorageProvider>
+      );
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      // 11 raw ticks (0..10). Tick mode keeps tick 0 (first) then every 5th tick after:
+      // ticks 5 and 10. Wall-clock is irrelevant in tick mode → no Date.now mocking.
+      const afterTick = getLatestAfterTick();
+      act(() => { for (let i = 0; i < 11; i++) afterTick(); });
+
+      const ticks = tickPublishes();
+      expect(ticks.map(c => c[0].values.tick)).toEqual([0, 5, 10]);
+    });
+
+    it("always samples the first tick after a sim (re)create in ticks mode", async () => {
+      const authored: IAuthoredState = { ...defaultAuthoredState, sampleIntervalUnit: "ticks", sampleInterval: 5 };
+
+      render(
+        <ObjectStorageProvider config={objectStorageConfig}>
+          <AgentSimulationComponent
+            authoredState={authored}
+            interactiveState={defaultInteractiveState}
+            setInteractiveState={mockSetInteractiveState}
+          />
+        </ObjectStorageProvider>
+      );
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      // The first afterTick is always sampled regardless of sampleInterval, because
+      // lastSampleTickRef starts null.
+      const afterTick = getLatestAfterTick();
+      act(() => { afterTick(); });
+
+      const ticks = tickPublishes();
+      expect(ticks).toHaveLength(1);
+      expect(ticks[0][0].values.tick).toBe(0);
+    });
+
+    it("tick-mode maxSamples auto-stops after the Nth kept sample and releases the deferred-pause guard", async () => {
+      // sampleInterval: 3 keeps ticks 0 and 3 — so the cap of 2 is reached on the
+      // tick-3 kept sample (2 kept rows out of 4 raw ticks), proving the cap counts
+      // rows pushed to tickDataRef, not raw ticks.
+      const authored: IAuthoredState = {
+        ...defaultAuthoredState, sampleIntervalUnit: "ticks", sampleInterval: 3, maxSamples: 2
+      };
+
+      render(
+        <ObjectStorageProvider config={objectStorageConfig}>
+          <AgentSimulationComponent
+            authoredState={authored}
+            interactiveState={defaultInteractiveState}
+            setInteractiveState={mockSetInteractiveState}
+          />
+        </ObjectStorageProvider>
+      );
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      // Enter recording mode + press play. The play handler resets the sim because the
+      // recording has no startedAt yet, so afterTick is re-registered against the new vis.
+      fireEvent.click(screen.getByText("New"));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+      fireEvent.click(screen.getByTestId("play-pause-button"));
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      mockSimulation.pause.mockClear();
+
+      // Raw ticks 0..3: kept at tick 0 and tick 3 → cap of 2 hit on the tick-3 sample,
+      // which queues the auto-stop via setTimeout(0).
+      const afterTick = getLatestAfterTick();
+      act(() => { afterTick(); afterTick(); afterTick(); afterTick(); });
+
+      // Flush setTimeout(0) + the async save() chain: handlePlayPause runs, the
+      // max-samples guard is released, and save() completes.
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 30)); });
+
+      // Sim got paused and exactly 2 rows were saved (ticks 0 and 3).
+      expect(mockSimulation.pause).toHaveBeenCalledWith(true);
+      expect(mockAdd).toHaveBeenCalledTimes(1);
+      const storedObject = mockAdd.mock.calls[0][0];
+      const dataTableEntry = Object.entries(storedObject.metadata.items).find(
+        ([, item]: [string, any]) => item.subType === "simulation-tick-data"
+      );
+      expect(dataTableEntry).toBeDefined();
+      const [dataTableId] = dataTableEntry as [string, any];
+      expect(storedObject.data[dataTableId].rows).toHaveLength(2);
+
+      mockPublish.mockClear();
+
+      // Raw ticks 4, 5, 6 (the `tick` closure is still at 4, since no tick incremented it
+      // after tick 3): ticks 4 and 5 are processed — proving the guard was released — but
+      // tick-throttle-skipped (4-3=1, 5-3=2, both < 3); tick 6 is kept and published
+      // (6-3=3), proving the throttle resumed its cadence.
+      act(() => { afterTick(); afterTick(); afterTick(); });
+
+      const tick6Publishes = mockPublish.mock.calls.filter(
+        ([m]) => (m?.topic === "recording-tick" || m?.topic === "simulation-tick") && m?.values?.tick === 6
+      );
+      expect(tick6Publishes).toHaveLength(1);
+    });
+
+    it("tick-mode interval throttle applies in free-play mode (simulation-tick) too", async () => {
+      const authored: IAuthoredState = { ...defaultAuthoredState, sampleIntervalUnit: "ticks", sampleInterval: 3 };
+
+      render(
+        <ObjectStorageProvider config={objectStorageConfig}>
+          <AgentSimulationComponent
+            authoredState={authored}
+            interactiveState={defaultInteractiveState}
+            setInteractiveState={mockSetInteractiveState}
+          />
+        </ObjectStorageProvider>
+      );
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      // 7 raw ticks (0..6), no recording entered → throttle keeps ticks 0, 3, 6.
+      const afterTick = getLatestAfterTick();
+      act(() => { for (let i = 0; i < 7; i++) afterTick(); });
+
+      const simTicks = mockPublish.mock.calls.filter(([m]) => m?.topic === "simulation-tick");
+      expect(simTicks.map(c => c[0].values.tick)).toEqual([0, 3, 6]);
+    });
+
+    it("uses an up-to-date lastSampleTickRef after a mid-run ms→ticks unit change", async () => {
+      // Exercises the "update both lastSampleAtRef and lastSampleTickRef unconditionally
+      // on a kept sample" rule. Coverage scope: that rule has two beneficiaries — an
+      // ms→ticks switch (relies on lastSampleTickRef being left fresh, exercised here)
+      // and a ticks→ms switch (relies on lastSampleAtRef being left fresh). The ticks→ms
+      // line is the adjacent statement in the same `lastSampleAtRef.current = now;
+      // lastSampleTickRef.current = currentTick;` pair, so a regression that
+      // conditionalized either update on the unit is caught by this test's premise.
+      let now = 3_000_000;
+      dateNowSpy = jest.spyOn(Date, "now").mockImplementation(() => now);
+
+      const msAuthored: IAuthoredState = { ...defaultAuthoredState, sampleIntervalUnit: "ms", sampleInterval: 100 };
+
+      const { rerender } = render(
+        <ObjectStorageProvider config={objectStorageConfig}>
+          <AgentSimulationComponent
+            authoredState={msAuthored}
+            interactiveState={defaultInteractiveState}
+            setInteractiveState={mockSetInteractiveState}
+          />
+        </ObjectStorageProvider>
+      );
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      // Fire 3 ticks (0, 1, 2), advancing wall-clock >= 100ms before each — all kept,
+      // so lastSampleTickRef ends at 2 and the closure's `tick` counter is at 3.
+      const afterTick = getLatestAfterTick();
+      act(() => { afterTick(); });
+      now += 100; act(() => { afterTick(); });
+      now += 100; act(() => { afterTick(); });
+      expect(tickPublishes()).toHaveLength(3);
+
+      // Switch the unit to ticks mid-run. The rerender only changes sample-interval
+      // fields — resetSimulationWithPreservedGlobals's useCallback deps contain no
+      // sample-interval field, so the sim is NOT rebuilt and the throttle refs survive.
+      const ticksAuthored: IAuthoredState = { ...defaultAuthoredState, sampleIntervalUnit: "ticks", sampleInterval: 2 };
+      rerender(
+        <ObjectStorageProvider config={objectStorageConfig}>
+          <AgentSimulationComponent
+            authoredState={ticksAuthored}
+            interactiveState={defaultInteractiveState}
+            setInteractiveState={mockSetInteractiveState}
+          />
+        </ObjectStorageProvider>
+      );
+
+      mockPublish.mockClear();
+
+      // currentTick = 3; 3 - lastSampleTickRef(2) = 1 < 2 → skipped. The skip is the
+      // proof: had the ms run left lastSampleTickRef null, the guard's
+      // `lastSampleTickRef.current !== null` clause would be false and the tick kept.
+      act(() => { afterTick(); });
+      expect(tickPublishes()).toHaveLength(0);
+    });
+
+    it("does not throttle in ticks mode when sampleInterval is undefined", async () => {
+      // Locks in the `interval !== undefined` guard in afterTick: with a unit but no
+      // value, every tick is kept (no throttle, no error).
+      const authored: IAuthoredState = { ...defaultAuthoredState, sampleIntervalUnit: "ticks" };
+
+      render(
+        <ObjectStorageProvider config={objectStorageConfig}>
+          <AgentSimulationComponent
+            authoredState={authored}
+            interactiveState={defaultInteractiveState}
+            setInteractiveState={mockSetInteractiveState}
+          />
+        </ObjectStorageProvider>
+      );
+      await act(async () => { await new Promise(resolve => setTimeout(resolve, 10)); });
+
+      const afterTick = getLatestAfterTick();
+      act(() => { afterTick(); afterTick(); afterTick(); afterTick(); });
+
+      const ticks = tickPublishes();
+      expect(ticks).toHaveLength(4);
+      expect(ticks.map(c => c[0].values.tick)).toEqual([0, 1, 2, 3]);
     });
   });
 });
