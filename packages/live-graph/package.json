@@ -1,6 +1,6 @@
 {
   "name": "live-graph",
-  "version": "1.25.0",
+  "version": "1.26.0",
   "description": "Live graph interactive",
   "repository": {
     "type": "git",
@@ -112,7 +112,7 @@
     "@concord-consortium/dynamic-text": "^1.0.6",
     "@concord-consortium/lara-interactive-api": "1.13.0",
     "@concord-consortium/object-storage": "1.0.0-pre.9",
-    "@concord-consortium/question-interactives-helpers": "^1.25.0",
+    "@concord-consortium/question-interactives-helpers": "^1.26.0",
     "@rjsf/core": "^5.9.0",
     "@rjsf/utils": "^5.0.1",
     "@rjsf/validator-ajv8": "^5.9.0",
