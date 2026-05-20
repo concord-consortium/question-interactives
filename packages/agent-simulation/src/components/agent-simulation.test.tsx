@@ -1955,9 +1955,7 @@ describe("AgentSimulationComponent", () => {
       // (6-3=3), proving the throttle resumed its cadence.
       act(() => { afterTick(); afterTick(); afterTick(); });
 
-      const tick6Publishes = mockPublish.mock.calls.filter(
-        ([m]) => (m?.topic === "recording-tick" || m?.topic === "simulation-tick") && m?.values?.tick === 6
-      );
+      const tick6Publishes = tickPublishes().filter(([m]) => m.values.tick === 6);
       expect(tick6Publishes).toHaveLength(1);
     });
 
