@@ -1,0 +1,29 @@
+@import "../../../helpers/src/styles/helpers.scss";
+@import "./_shared-button-styles.scss";
+
+.zoomControls {
+  left: 8px;
+  position: absolute;
+  top: 18px;
+  width: 34px;
+
+  button {
+    @include interactive-button-base;
+    border-radius: 4px;
+
+    &.fitAllButton {
+      margin-bottom: 8px;
+    }
+    &.zoomInButton {
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      margin-bottom: 0;
+    }
+    &.zoomOutButton {
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+      border-top: none;
+      margin-top: 0;
+    }
+  }
+}
