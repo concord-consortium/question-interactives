@@ -75,7 +75,11 @@ describe("Runtime", () => {
       />
     );
     expect(lastIframeRuntimeProps).not.toBeNull();
-    expect(lastIframeRuntimeProps.url).toBe(defaultAuthoredState.wrappedInteractiveUrl);
+    // The codap.concord.org URL is loaded with a cache-busting param appended.
+    const parsed = new URL(lastIframeRuntimeProps.url);
+    expect(parsed.origin + parsed.pathname).toBe("https://codap.concord.org/app");
+    expect(parsed.searchParams.get("documentId")).toBe("doc123");
+    expect(parsed.searchParams.get("_bustCache")).toBe("true");
   });
 
   it("shows message when no URL is configured", () => {
@@ -230,6 +234,33 @@ describe("Runtime", () => {
     expect(lastIframeRuntimeProps.url).toBe("https://fallback.example.com/app");
   });
 
+  it("appends the cache-busting param to a codap.concord.org query param URL", () => {
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    const queryString = require("query-string");
+    (queryString.parse as jest.Mock).mockReturnValueOnce({
+      wrappedInteractive: "https://codap.concord.org/app?interactiveApi&documentId=doc456"
+    });
+
+    const authoredState: IAuthoredState = {
+      version: 1,
+      questionType: "iframe_interactive"
+      // no wrappedInteractiveUrl - falls back to the query param URL
+    };
+    mount(
+      <Runtime
+        authoredState={authoredState}
+        interactiveState={defaultInteractiveState}
+        setInteractiveState={jest.fn()}
+      />
+    );
+    expect(lastIframeRuntimeProps).not.toBeNull();
+    // The query-param fallback path also gets the cache-busting param for codap URLs.
+    const parsed = new URL(lastIframeRuntimeProps.url);
+    expect(parsed.hostname).toBe("codap.concord.org");
+    expect(parsed.searchParams.get("documentId")).toBe("doc456");
+    expect(parsed.searchParams.get("_bustCache")).toBe("true");
+  });
+
   it("prefers authoredState URL over query param URL", () => {
     // eslint-disable-next-line @typescript-eslint/no-var-requires
     const queryString = require("query-string");
@@ -244,6 +275,10 @@ describe("Runtime", () => {
         setInteractiveState={jest.fn()}
       />
     );
-    expect(lastIframeRuntimeProps.url).toBe(defaultAuthoredState.wrappedInteractiveUrl);
+    // authoredState's codap URL is used (with cache-busting param), not the query param URL.
+    const parsed = new URL(lastIframeRuntimeProps.url);
+    expect(parsed.hostname).toBe("codap.concord.org");
+    expect(parsed.searchParams.get("documentId")).toBe("doc123");
+    expect(parsed.searchParams.get("_bustCache")).toBe("true");
   });
 });

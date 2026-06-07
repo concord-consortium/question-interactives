@@ -12,6 +12,7 @@ import {
   useInitMessage
 } from "@concord-consortium/lara-interactive-api";
 import { IAuthoredState, IInteractiveState } from "./types";
+import { addCacheBustParam } from "../authoring-configs/codap-url-utils";
 
 const screenfull = _screenfull.isEnabled ? _screenfull : undefined;
 
@@ -147,12 +148,16 @@ export const Runtime: React.FC<IRuntimeQuestionComponentProps<IAuthoredState, II
     return <div>Wrapped interactive is not configured.</div>;
   }
 
+  // Append a cache-busting param so CODAP is always loaded fresh from codap.concord.org.
+  // Non-CODAP URLs are returned unchanged.
+  const iframeUrl = addCacheBustParam(url);
+
   // Use setNotScaling() when fullscreen is disabled, otherwise use setScaling()
   const iframeStyle = fullscreenDisabled ? setNotScaling() : setScaling();
 
   return (
     <>
-      <IframeRuntime url={url}
+      <IframeRuntime url={iframeUrl}
                      iframeStyling={iframeStyle}
                      interactiveState={interactiveState}
                      setInteractiveState={setInteractiveState || (() => null)}

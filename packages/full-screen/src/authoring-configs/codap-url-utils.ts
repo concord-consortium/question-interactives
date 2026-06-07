@@ -142,6 +142,34 @@ export const parseCodapUrl = (inputUrl: string): IParsedCodapUrl => {
   }
 };
 
+// Host whose URLs should receive the cache-busting parameter.
+const CODAP_HOST = "codap.concord.org";
+// Cache-busting query parameter appended to CODAP URLs loaded in the iframe.
+const BUST_CACHE_PARAM = "_bustCache";
+
+/**
+ * Appends a `_bustCache=true` cache-busting query parameter to codap.concord.org
+ * URLs so the browser/CDN does not serve a stale copy of CODAP. URLs for any other
+ * host (or strings that aren't valid URLs) are returned unchanged. Existing query
+ * params and the hash/fragment are preserved.
+ */
+export const addCacheBustParam = (inputUrl: string): string => {
+  if (!inputUrl) {
+    return inputUrl;
+  }
+  try {
+    const url = new URL(inputUrl);
+    if (url.hostname !== CODAP_HOST) {
+      return inputUrl;
+    }
+    url.searchParams.set(BUST_CACHE_PARAM, "true");
+    return url.toString();
+  } catch (e) {
+    // Not a parseable URL - leave it untouched.
+    return inputUrl;
+  }
+};
+
 /**
  * Parses custom params string into URLSearchParams.
  */

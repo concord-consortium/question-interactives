@@ -7,7 +7,8 @@ import {
   getFilteredPassthroughParams,
   formatPassthroughParamsDisplay,
   buildCodapUrl,
-  parseCodapUrlToFormData
+  parseCodapUrlToFormData,
+  addCacheBustParam
 } from "./codap-url-utils";
 import { codapInitialData } from "./codap-schema";
 
@@ -557,6 +558,54 @@ describe("parseCodapUrlToFormData", () => {
     const result = parseCodapUrlToFormData(url);
     // Should still extract params from the inner URL
     expect(result.codapSourceDocumentUrl).toBe(url);
+  });
+});
+
+// ============================================================================
+// addCacheBustParam
+// ============================================================================
+
+describe("addCacheBustParam", () => {
+  it("appends _bustCache=true to a codap.concord.org URL", () => {
+    const url = "https://codap.concord.org/app/static/dg/en/cert/index.html?interactiveApi";
+    const result = addCacheBustParam(url);
+    const parsed = new URL(result);
+    expect(parsed.searchParams.get("_bustCache")).toBe("true");
+    // Existing params are preserved.
+    expect(parsed.searchParams.has("interactiveApi")).toBe(true);
+  });
+
+  it("preserves the hash fragment on shared-hash URLs", () => {
+    const url = "https://codap.concord.org/app/static/dg/en/cert/index.html#shared=https%3A%2F%2Fcfm-shared.concord.org%2Fdoc123";
+    const result = addCacheBustParam(url);
+    const parsed = new URL(result);
+    expect(parsed.searchParams.get("_bustCache")).toBe("true");
+    expect(parsed.hash).toBe("#shared=https%3A%2F%2Fcfm-shared.concord.org%2Fdoc123");
+  });
+
+  it("does not modify non-CODAP URLs", () => {
+    const url = "https://example.com/app?foo=bar";
+    expect(addCacheBustParam(url)).toBe(url);
+  });
+
+  it("does not modify URLs for other concord.org subdomains", () => {
+    const url = "https://models-resources.concord.org/app?foo=bar";
+    expect(addCacheBustParam(url)).toBe(url);
+  });
+
+  it("overwrites an existing _bustCache value rather than duplicating it", () => {
+    const url = "https://codap.concord.org/app?_bustCache=false";
+    const result = addCacheBustParam(url);
+    const parsed = new URL(result);
+    expect(parsed.searchParams.getAll("_bustCache")).toEqual(["true"]);
+  });
+
+  it("returns invalid URL strings unchanged", () => {
+    expect(addCacheBustParam("not a url")).toBe("not a url");
+  });
+
+  it("returns an empty string input unchanged", () => {
+    expect(addCacheBustParam("")).toBe("");
   });
 });
 /* eslint-enable @typescript-eslint/no-non-null-assertion */
