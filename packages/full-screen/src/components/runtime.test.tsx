@@ -75,7 +75,11 @@ describe("Runtime", () => {
       />
     );
     expect(lastIframeRuntimeProps).not.toBeNull();
-    expect(lastIframeRuntimeProps.url).toBe(defaultAuthoredState.wrappedInteractiveUrl);
+    // The codap.concord.org URL is loaded with a cache-busting param appended.
+    const parsed = new URL(lastIframeRuntimeProps.url);
+    expect(parsed.origin + parsed.pathname).toBe("https://codap.concord.org/app");
+    expect(parsed.searchParams.get("documentId")).toBe("doc123");
+    expect(parsed.searchParams.get("_bustCache")).toBe("true");
   });
 
   it("shows message when no URL is configured", () => {
@@ -244,6 +248,10 @@ describe("Runtime", () => {
         setInteractiveState={jest.fn()}
       />
     );
-    expect(lastIframeRuntimeProps.url).toBe(defaultAuthoredState.wrappedInteractiveUrl);
+    // authoredState's codap URL is used (with cache-busting param), not the query param URL.
+    const parsed = new URL(lastIframeRuntimeProps.url);
+    expect(parsed.hostname).toBe("codap.concord.org");
+    expect(parsed.searchParams.get("documentId")).toBe("doc123");
+    expect(parsed.searchParams.get("_bustCache")).toBe("true");
   });
 });
