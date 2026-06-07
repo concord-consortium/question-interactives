@@ -604,7 +604,7 @@ describe("addCacheBustParam", () => {
     expect(addCacheBustParam("not a url")).toBe("not a url");
   });
 
-  it("returns empty/undefined input unchanged", () => {
+  it("returns an empty string input unchanged", () => {
     expect(addCacheBustParam("")).toBe("");
   });
 });
