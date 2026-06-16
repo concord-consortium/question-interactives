@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import classNames from "classnames";
-import DrawingToolLib from "drawing-tool";
+import DrawingToolLib from "@concord-consortium/drawing-tool";
 import { getAnswerType, IGenericAuthoredState, IGenericInteractiveState, StampCollection } from "./types";
 import predefinedStampCollections from "./stamp-collections";
-import 'drawing-tool/dist/drawing-tool.css';
+import "@concord-consortium/drawing-tool/dist/drawing-tool.css";
 import { shouldUseLARAImgProxy } from "@concord-consortium/question-interactives-helpers/src/hooks/use-cors-image-error-check";
 import css from "./runtime.scss";
 

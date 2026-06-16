@@ -1,4 +1,4 @@
 declare module "*.scss";
 declare module "*.svg";
 declare module "shutterbug";
-declare module "drawing-tool";
+declare module "@concord-consortium/drawing-tool";
