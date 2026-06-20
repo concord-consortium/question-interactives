@@ -1,0 +1,161 @@
+@import "../../../helpers/src/styles/helpers.scss";
+
+.sliderWidget {
+  color: #333;
+  font-size: 16px;
+  text-align: center;
+
+  .sliderHeader {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+
+    .labelText {
+      display: inline-block;
+      flex-shrink: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .secondaryLabelText {
+      display: inline-block;
+      flex-shrink: 10; // Should shrink more aggressively than labelText
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+  }
+
+  // Wrapper for the slider element
+  .sliderBody {
+    background-color: var(--cc-teal-light-6);
+    border-radius: 17px;
+    margin-top: 5px;
+    padding: 12px 15px;
+  }
+
+  // Originally taken from CLUE repo, but modified
+  .rcSlider {
+    box-sizing: border-box;
+    height: 10px;
+    position: relative;
+    touch-action: none;
+    width: 100%;
+
+    :global(.rc-slider-handle) {
+      background-color: #fff;
+      border-radius: 50%;
+      border: solid 1.5px var(--cc-teal-dark-1);
+      box-shadow: 1px 1px 2px 0 rgba(0, 0, 0, 0.25);
+      cursor: grab;
+      height: 27px;
+      margin-left: 0;
+      margin-top: -8.25px;
+      position: absolute;
+      touch-action: pan-x;
+      width: 27px;
+      z-index: 2;
+
+      &:hover {
+        background-color: var(--cc-teal-light-3);
+      }
+
+      &:focus {
+        box-shadow: none;
+        outline: none;
+      }
+
+      &:active {
+        background-color: var(--cc-teal-dark-1);
+        border-color: white;
+        cursor: grabbing;
+      }
+    }
+
+    :global(.rc-slider-rail) {
+      background-color: #949494;
+      border-radius: 100px; // guarantees semicircle ends
+      height: 3px;
+      position: absolute;
+      top: 4px;
+      width: 100%;
+    }
+
+    :global(.rc-slider-track) {
+      background-color: var(--cc-teal-dark-1);
+      border-radius: 100px; // guarantees semicircle ends
+      height: 5px;
+      position: absolute;
+      top: 3px;
+    }
+
+    :global(.rc-slider-mark) {
+      font-size: 12px;
+      left: 0;
+      position: absolute;
+      top: 18px;
+      width: 100%;
+    }
+
+    :global(.rc-slider-mark-text) {
+      color: #999;
+      cursor: pointer;
+      display: inline-block;
+      position: absolute;
+      text-align: center;
+      vertical-align: middle;
+    }
+
+    :global(.rc-slider-mark-text-active) {
+      color: #666;
+    }
+  }
+
+  &.recording,
+  &.completedRecording {
+    .sliderBody {
+      background-color: #fffaf5;
+    }
+
+    :global(.rc-slider-handle) {
+      border: solid 1.5px var(--cc-orange-dark-1-alpha-35) !important;
+
+      &:hover, &:active {
+        background-color: #fff !important;
+      }
+    }
+
+    :global(.rc-slider-rail) {
+      opacity: 0.35;
+    }
+
+    :global(.rc-slider-track) {
+      background-color: var(--cc-orange-dark-1-alpha-35) !important;
+    }
+  }
+
+  &.inRecordingMode {
+    .sliderBody {
+      background-color: #fffaf5;
+    }
+
+    :global(.rc-slider-handle) {
+      border: solid 1.5px var(--cc-orange-dark-1);
+
+      &:hover {
+        background-color: var(--cc-orange-light-2);
+      }
+
+      &:active {
+        background-color: var(--cc-orange-dark-1);
+      }
+    }
+
+    :global(.rc-slider-track) {
+      background-color: var(--cc-orange-dark-1);
+    }
+  }
+}
