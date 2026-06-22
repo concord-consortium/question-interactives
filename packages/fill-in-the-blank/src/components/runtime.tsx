@@ -43,6 +43,38 @@ export const replaceBlanksWithInputs = (prompt: string) => {
   return prompt.replace(blankRegexp, blankId => `<input id="${blankId}"/>`);
 };
 
+const blankWord = "blank";
+
+// The id of the visually-hidden element that supplies the full prompt text as
+// an accessible description shared by every blank input (see getPromptContextDescription).
+export const blankContextId = "fill-in-the-blank-prompt-context";
+
+// Plain-text version of the prompt suitable for a screen reader: HTML removed
+// and each blank token read aloud as the word "blank".
+export const getBlankLabelContext = (prompt: string) =>
+  striptags(prompt)
+    .replace(blankRegexp, blankWord)
+    .replace(/\s+/g, " ")
+    .trim();
+
+// Concise accessible name for the input that fills `blankId`: just its position.
+// The surrounding prose supplies context when read linearly (browse mode), so
+// the name stays short to avoid duplicating that text on every field.
+export const getBlankAriaLabel = (prompt: string, blankId: string) => {
+  const orderedIds: string[] = prompt.match(blankRegexp) || [];
+  const total = orderedIds.length;
+  const position = orderedIds.indexOf(blankId) + 1;
+  // Inputs are generated from the prompt's own tokens, so position is always
+  // >= 1 in practice; fall back gracefully if a caller passes an unknown id.
+  if (position === 0) return "Blank";
+  return total > 1 ? `Blank ${position} of ${total}` : "Blank";
+};
+
+// Accessible description (announced on focus) giving the full prompt as context.
+// This is needed because focus mode skips the prose around an inline input.
+export const getPromptContextDescription = (prompt: string) =>
+  `Full text: ${getBlankLabelContext(prompt)}`;
+
 export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const decorateOptions = useGlossaryDecoration();
   const readOnly = !!(report || (authoredState.required && interactiveState?.submitted));
@@ -83,6 +115,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         const _swallowClicks = (event: React.MouseEvent<HTMLInputElement>) => event.stopPropagation();
         return (
           <input id={blankId} type="text"
+            aria-label={getBlankAriaLabel(authoredState.prompt || "", blankId)}
+            aria-describedby={blankContextId}
             className={getInputClass(report, userInfo?.response, authorInfo?.matchTerm)}
             value={userInfo?.response || ""}
             size={authorInfo?.size || defaultBlankSize}
@@ -96,12 +130,18 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
   };
 
-  const htmlContents = replaceBlanksWithInputs(authoredState.prompt || "");
+  const promptText = authoredState.prompt || "";
+  const hasBlanks = (promptText.match(blankRegexp) || []).length > 0;
+  const htmlContents = replaceBlanksWithInputs(promptText);
   return (
     <div className="fill-in-the-blank">
       <DecorateChildren decorateOptions={decorateOptions}>
         <DynamicText>{renderHTML(htmlContents, replaceInputs)}</DynamicText>
       </DecorateChildren>
+      {/* Hidden context shared by all blanks via aria-describedby. Uses `hidden`
+          (not a visually-hidden class) so it is not re-read during linear/browse
+          reading, only resolved as each input's description on focus. */}
+      { hasBlanks && <span id={blankContextId} hidden>{getPromptContextDescription(promptText)}</span> }
     </div>
   );
 };
