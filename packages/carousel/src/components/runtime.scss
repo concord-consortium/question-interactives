@@ -1,5 +1,16 @@
 @import "@concord-consortium/question-interactives-helpers/src/styles/helpers";
 
+:root {
+  // Local color tokens unique to this interactive (no equivalent in helpers.scss yet).
+  // TODO [a11y]: As part of the ongoing accessibility work, reconcile these with the
+  // shared palette — (1) assess which existing --cc-* values in helpers.scss should be
+  // updated for sufficient contrast, and (2) decide if any of these local tokens should be
+  // promoted into helpers.scss so other interactives can reuse them.
+  --cc-carousel-nav: #0093b0;          // active/highlight nav buttons & arrows — brand PMS 3145 C, ≥3:1 on white (WCAG 1.4.11)
+  --cc-carousel-nav-hover: #007c8b;    // nav button hover — unchanged; already ~4.93:1 on white (WCAG 1.4.11)
+  --cc-carousel-nav-disabled: #767676; // disabled prev/next arrows — ≥3:1 on white (WCAG 1.4.11)
+}
+
 .runtime {
   button {
     @include ap-button;
@@ -42,7 +53,7 @@ nav {
   width: 100%;
 
   button {
-    background: #6fc6da;
+    background: var(--cc-carousel-nav);
     border: none;
     border-radius: 50%;
     cursor: pointer;
@@ -55,10 +66,10 @@ nav {
     width: 20px;
 
     &:hover {
-      background: #007c8b;
+      background: var(--cc-carousel-nav-hover);
     }
     &.activeButton {
-      background: #ea6d2f;
+      background: var(--cc-orange-dark-1);
     }
     &.prevButton, &.nextButton {
       background: transparent;
@@ -69,17 +80,23 @@ nav {
       width: 0;
     }
     &.prevButton {
-      border-right: solid 20px #6fc6da;
+      border-right: solid 20px var(--cc-carousel-nav);
 
+      &:hover:not(.disabled) {
+        border-right-color: var(--cc-carousel-nav-hover);
+      }
       &.disabled {
-        border-right-color: #aaa;
+        border-right-color: var(--cc-carousel-nav-disabled);
       }
     }
     &.nextButton {
-      border-left: solid 20px #6fc6da;
+      border-left: solid 20px var(--cc-carousel-nav);
 
+      &:hover:not(.disabled) {
+        border-left-color: var(--cc-carousel-nav-hover);
+      }
       &.disabled {
-        border-left-color: #aaa;
+        border-left-color: var(--cc-carousel-nav-disabled);
       }
     }
     &.disabled {
@@ -101,7 +118,7 @@ nav {
 
       &:hover, &.activeButton {
         background-color: transparent;
-        border: solid 2px #ea6d2f;
+        border: solid 2px var(--cc-orange-dark-1);
         transform: scale(1.1);
       }
     }
@@ -113,7 +130,7 @@ nav {
 }
 
 :global .slider .slide {
-  background: #fff;
+  background: var(--white);
 }
 
 :global .slider .slide iframe {
