@@ -1,6 +1,6 @@
 import React from "react";
 import { act, render } from "@testing-library/react";
-import { useAuthoredState, useInitMessage, useInteractiveState } from "@concord-consortium/lara-interactive-api";
+import { setSupportedFeatures, useAuthoredState, useInitMessage, useInteractiveState } from "@concord-consortium/lara-interactive-api";
 import { App, isAnswered } from "./app";
 import { IAuthoredState, IInteractiveState } from "./types";
 
@@ -11,6 +11,9 @@ jest.mock("@concord-consortium/lara-interactive-api", () => ({
   useAuthoredState: jest.fn(),
   useInteractiveState: jest.fn(),
   setSupportedFeatures: jest.fn(),
+  addFocusEnterListener: jest.fn(),
+  removeFocusEnterListener: jest.fn(),
+  sendFocusExit: jest.fn(),
   getInteractiveList: jest.fn(() => new Promise(() => { /* never resolve */ })),
   getFirebaseJwt: jest.fn().mockReturnValue({token: "test"}),
   getClient: jest.fn().mockReturnValue({
@@ -22,6 +25,7 @@ jest.mock("@concord-consortium/lara-interactive-api", () => ({
 const useInitMessageMock = useInitMessage as jest.Mock;
 const useAuthoredStateMock = useAuthoredState as jest.Mock;
 const useInteractiveStateMock = useInteractiveState as jest.Mock;
+const setSupportedFeaturesMock = setSupportedFeatures as jest.Mock;
 
 const authoredState = {
   version: 1,
@@ -105,5 +109,17 @@ describe("Image question", () => {
       expect(isAnswered(interactiveStateWithUserBgAndAnswerText, authoredStateWithoutAnswerPrompt)).toBe(true);
       expect(isAnswered(interactiveStateWithUserBgAndAnswerText, authoredStateWithoutAnswerPrompt)).toBe(true);
     });
+  });
+
+  it("declares the focusProtocol supported feature", () => {
+    setSupportedFeaturesMock.mockClear();
+
+    act(() => {
+      render(<App />);
+    });
+
+    expect(setSupportedFeaturesMock).toHaveBeenCalledWith(
+      expect.objectContaining({ focusProtocol: true })
+    );
   });
 });

@@ -66,5 +66,6 @@ export const App = () => (
     isAnswered={isAnswered}
     linkedInteractiveProps={[{ label: "snapshotTarget", supportsSnapshots: true }]}
     disableSubmitBtnRendering={hasDrawingToolDialogUrlParam()}
+    focusProtocol={true}
   />
 );
