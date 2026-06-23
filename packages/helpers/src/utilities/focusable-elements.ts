@@ -8,9 +8,17 @@ const FOCUSABLE_SELECTOR = [
 ].join(",");
 
 const isVisible = (el: HTMLElement): boolean => {
-  if (el.hidden) return false;
-  const style = window.getComputedStyle(el);
-  return style.display !== "none" && style.visibility !== "hidden";
+  // visibility inherits, so the element's own computed value already accounts for ancestors.
+  if (window.getComputedStyle(el).visibility === "hidden") return false;
+  // display:none does NOT inherit, so an ancestor with display:none (or the hidden
+  // attribute) removes the whole subtree from the tab order — walk up to catch it.
+  let node: HTMLElement | null = el;
+  while (node) {
+    if (node.hidden) return false;
+    if (window.getComputedStyle(node).display === "none") return false;
+    node = node.parentElement;
+  }
+  return true;
 };
 
 /**

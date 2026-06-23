@@ -54,6 +54,8 @@ export const useFocusProtocol = ({ enabled }: IUseFocusProtocolOptions) => {
     document.addEventListener("keydown", onKeyDown);
 
     return () => {
+      // removeFocusEnterListener() clears ALL focusEnter listeners (lara has no
+      // per-listener removal). Fine here: this hook registers exactly one.
       removeFocusEnterListener();
       document.removeEventListener("focusin", onFocusIn);
       document.removeEventListener("keydown", onKeyDown);

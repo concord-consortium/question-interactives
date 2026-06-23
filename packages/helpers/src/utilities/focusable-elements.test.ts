@@ -52,6 +52,17 @@ describe("getFocusableElements", () => {
     expect(ids).toEqual(["b1"]);
   });
 
+  it("excludes elements hidden by an ancestor's display:none", () => {
+    setBody(`
+      <button id="b1">visible</button>
+      <div style="display:none">
+        <button id="b2">ancestor-hidden</button>
+      </div>
+    `);
+    const ids = getFocusableElements(document.body).map(el => el.id);
+    expect(ids).toEqual(["b1"]);
+  });
+
   it("defaults the root to document", () => {
     setBody(`<button id="b1">one</button>`);
     const ids = getFocusableElements().map(el => el.id);
