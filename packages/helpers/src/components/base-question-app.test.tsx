@@ -1,5 +1,6 @@
 import React from "react";
 import { mount } from "enzyme";
+import { setSupportedFeatures, addFocusEnterListener } from "@concord-consortium/lara-interactive-api";
 import { BaseQuestionApp } from "./base-question-app";
 
 jest.mock("@concord-consortium/lara-interactive-api", () => ({
@@ -7,11 +8,17 @@ jest.mock("@concord-consortium/lara-interactive-api", () => ({
   useAuthoredState: jest.fn(() => useAuthoredStateResult),
   useInteractiveState: jest.fn(() => ({})),
   setSupportedFeatures: jest.fn(),
+  addFocusEnterListener: jest.fn(),
+  removeFocusEnterListener: jest.fn(),
+  sendFocusExit: jest.fn(),
   getClient: jest.fn().mockReturnValue({
     addListener: jest.fn()
   }),
   useAccessibility: jest.fn(() => useAccessibilityResult),
 }));
+
+const setSupportedFeaturesMock = setSupportedFeatures as jest.Mock;
+const addFocusEnterListenerMock = addFocusEnterListener as jest.Mock;
 
 let initMessage = {};
 let useAuthoredStateResult = {};
@@ -21,6 +28,34 @@ describe("BaseApp", () => {
   beforeEach(() => {
     initMessage = {};
     useAuthoredStateResult = { authoredState: {}, setAuthoredState: jest.fn() };
+  });
+
+  it("declares focusProtocol and enables the hook at runtime when focusProtocol is set", () => {
+    initMessage = { mode: "runtime" };
+    setSupportedFeaturesMock.mockClear();
+    addFocusEnterListenerMock.mockClear();
+
+    const Runtime = () => null;
+    mount(<BaseQuestionApp Runtime={Runtime} disableSubmitBtnRendering={true} focusProtocol={true} />);
+
+    expect(setSupportedFeaturesMock).toHaveBeenCalledWith(
+      expect.objectContaining({ focusProtocol: true })
+    );
+    expect(addFocusEnterListenerMock).toHaveBeenCalled();
+  });
+
+  it("does not declare focusProtocol when the prop is not set", () => {
+    initMessage = { mode: "runtime" };
+    setSupportedFeaturesMock.mockClear();
+    addFocusEnterListenerMock.mockClear();
+
+    const Runtime = () => null;
+    mount(<BaseQuestionApp Runtime={Runtime} disableSubmitBtnRendering={true} />);
+
+    expect(setSupportedFeaturesMock).toHaveBeenCalledWith(
+      expect.not.objectContaining({ focusProtocol: true })
+    );
+    expect(addFocusEnterListenerMock).not.toHaveBeenCalled();
   });
 
   it("applies authored state migrations in runtime mode", () => {
