@@ -36,7 +36,7 @@ context("Test Image interactive", () => {
       });
 
       cy.getIframeBody().find(".dt-container").should('exist');
-      cy.getIframeBody().find('[title="Stamp tool (click and hold to show available categories)"]').should('not.exist');
+      cy.getIframeBody().find('[aria-label="Stamp tool"]').should('not.exist');
     });
 
     it("renders drawing tool with stamps", () => {
@@ -45,7 +45,7 @@ context("Test Image interactive", () => {
         authoredState: authoredStateWithStamps
       });
 
-      cy.getIframeBody().find('[title="Stamp tool (click and hold to show available categories)"]').should('exist');
+      cy.getIframeBody().find('[aria-label="Stamp tool"]').should('exist');
     });
   });
 });

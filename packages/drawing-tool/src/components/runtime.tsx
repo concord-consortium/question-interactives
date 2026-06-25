@@ -13,7 +13,7 @@ import { UploadBackground } from "./upload-background";
 import { TakeSnapshot } from "./take-snapshot";
 import { DrawingTool } from "./drawing-tool";
 
-import 'drawing-tool/dist/drawing-tool.css';
+import '@concord-consortium/drawing-tool/dist/drawing-tool.css';
 import css from "./runtime.scss";
 
 export interface IProps {

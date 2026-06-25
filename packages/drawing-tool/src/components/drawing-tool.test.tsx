@@ -2,7 +2,7 @@ import React from "react";
 import { mount } from "enzyme";
 import { DrawingTool, LARA_IMAGE_PROXY } from "./drawing-tool";
 
-jest.mock("drawing-tool", () => class DrawingToolLib {
+jest.mock("@concord-consortium/drawing-tool", () => class DrawingToolLib {
   on = jest.fn();
   resetHistory = jest.fn();
   save = jest.fn();

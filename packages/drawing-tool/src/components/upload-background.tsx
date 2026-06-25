@@ -4,7 +4,7 @@ import { copyImageToS3, copyLocalImageToS3 } from "@concord-consortium/question-
 import { getAnswerType, IGenericAuthoredState, IGenericInteractiveState } from "./types";
 import classnames from "classnames";
 
-import 'drawing-tool/dist/drawing-tool.css';
+import '@concord-consortium/drawing-tool/dist/drawing-tool.css';
 import css from "./runtime.scss";
 import cssHelpers from "@concord-consortium/question-interactives-helpers/src/styles/helpers.scss";
 
