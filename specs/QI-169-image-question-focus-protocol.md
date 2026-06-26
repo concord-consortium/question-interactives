@@ -136,7 +136,11 @@ elements that are enabled and visible:
   `[tabindex]` (excluding `tabindex="-1"`), and other natively focusable
   elements as needed.
 - Exclude disabled form controls.
-- Exclude non-visible elements (e.g. `offsetParent === null` / no client rects).
+- Exclude non-visible elements: an element is treated as not focusable if its
+  computed `visibility` is `hidden`, or if it (or any ancestor) has the `hidden`
+  attribute or computed `display: none`. `visibility` inherits so the element's own
+  computed value already accounts for ancestors; `display` and `hidden` do not, so
+  those are checked by walking up the ancestor chain.
 
 This utility resolves "first" (for `forward`) and "last" (for `reverse`) focus
 targets from image-question's dynamic dialog content (drawing-tool toolbar
@@ -153,7 +157,7 @@ representative DOM so the behavior is pinned down.
 image-question app.tsx
   └─ BaseQuestionApp focusProtocol           // opt-in flag
        ├─ setSupportedFeatures({ interactiveState, authoredState, focusProtocol })
-       └─ useFocusProtocol({ enabled: isRuntimeView && focusProtocol })
+       └─ useFocusProtocol({ enabled: focusProtocol })   // every mode: runtime, report, authoring
             ├─ addFocusEnterListener → place focus (first / last / restore)
             ├─ focusin → track lastFocused
             └─ keydown Escape → sendFocusExit("escape")

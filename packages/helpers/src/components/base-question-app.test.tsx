@@ -30,19 +30,25 @@ describe("BaseApp", () => {
     useAuthoredStateResult = { authoredState: {}, setAuthoredState: jest.fn() };
   });
 
-  it("declares focusProtocol and enables the hook at runtime when focusProtocol is set", () => {
-    initMessage = { mode: "runtime" };
-    setSupportedFeaturesMock.mockClear();
-    addFocusEnterListenerMock.mockClear();
+  // The focus protocol is advertised and enabled in every mode so the interactive
+  // always responds to AP's focus messages when it claims to cooperate.
+  it.each(["runtime", "report", "authoring"] as const)(
+    "declares focusProtocol and enables the hook in %s mode when focusProtocol is set",
+    (mode) => {
+      initMessage = { mode };
+      setSupportedFeaturesMock.mockClear();
+      addFocusEnterListenerMock.mockClear();
 
-    const Runtime = () => null;
-    mount(<BaseQuestionApp Runtime={Runtime} disableSubmitBtnRendering={true} focusProtocol={true} />);
+      const Runtime = () => null;
+      const Authoring = () => null;
+      mount(<BaseQuestionApp Runtime={Runtime} Authoring={Authoring} disableSubmitBtnRendering={true} focusProtocol={true} />);
 
-    expect(setSupportedFeaturesMock).toHaveBeenCalledWith(
-      expect.objectContaining({ focusProtocol: true })
-    );
-    expect(addFocusEnterListenerMock).toHaveBeenCalled();
-  });
+      expect(setSupportedFeaturesMock).toHaveBeenCalledWith(
+        expect.objectContaining({ focusProtocol: true })
+      );
+      expect(addFocusEnterListenerMock).toHaveBeenCalled();
+    }
+  );
 
   it("does not declare focusProtocol when the prop is not set", () => {
     initMessage = { mode: "runtime" };

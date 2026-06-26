@@ -84,7 +84,10 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
     addBodyClass: true,
     fontFamilySelector: "[data-font-family-override]",
   });
-  useFocusProtocol({ enabled: isRuntimeView && !!focusProtocol });
+  // Enabled in every mode (runtime, report, authoring) so that whenever we advertise
+  // focusProtocol via setSupportedFeatures we actually respond to AP's focus messages.
+  // The hook only registers mode-agnostic listeners (focusEnter / focusin / Escape).
+  useFocusProtocol({ enabled: !!focusProtocol });
 
   useEffect(() => {
     setSupportedFeatures({

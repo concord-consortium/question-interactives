@@ -17,7 +17,7 @@ interface IUseFocusProtocolOptions {
  * - tracks its last-focused control for restore,
  * - forwards Escape as focusExit("escape").
  *
- * This is NOT a trap: it never preventDefaults Tab and never sends
+ * This is NOT a trap: it never prevents default on Tab and never sends
  * focusExit("forward"|"reverse"). Directional exit flows out through AP's
  * sentinels.
  */
