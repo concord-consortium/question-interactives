@@ -19,12 +19,6 @@ module.exports = (env, argv) => {
         filename: `${interactiveName}/index.html`,
         template: '../../shared/index.html'
       })
-    ],
-    resolve: {
-      alias: {
-        '@concord-consortium/lara-interactive-api':
-          path.dirname(require.resolve('@concord-consortium/lara-interactive-api/package.json'))
-      }
-    }
+    ]
   });
 };
