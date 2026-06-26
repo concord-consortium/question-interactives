@@ -19,7 +19,7 @@ interface IUseFocusProtocolOptions {
  *
  * This is NOT a trap: it never preventDefaults Tab and never sends
  * focusExit("forward"|"reverse"). Directional exit flows out through AP's
- * sentinels (a later phase).
+ * sentinels.
  */
 export const useFocusProtocol = ({ enabled }: IUseFocusProtocolOptions) => {
   const lastFocusedRef = useRef<HTMLElement | null>(null);
