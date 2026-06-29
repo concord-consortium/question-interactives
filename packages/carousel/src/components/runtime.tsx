@@ -3,7 +3,7 @@ import { IframeRuntime } from "@concord-consortium/question-interactives-helpers
 import { IAuthoredState, IInteractiveState } from "./types";
 import { renderHTML } from "@concord-consortium/question-interactives-helpers/src/utilities/render-html";
 import { Carousel } from "react-responsive-carousel";
-import { libraryInteractiveIdToUrl } from "@concord-consortium/question-interactives-helpers/src/utilities/library-interactives";
+import { getLibraryInteractive, libraryInteractiveIdToUrl } from "@concord-consortium/question-interactives-helpers/src/utilities/library-interactives";
 import { cssUrlValue } from "@concord-consortium/question-interactives-helpers/src/utilities/css-url-value";
 import { DynamicText } from "@concord-consortium/dynamic-text";
 import { useAccessibility } from "@concord-consortium/lara-interactive-api";
@@ -106,6 +106,8 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         {subinteractives.map(function(interactive, index) {
           const subState = subStates && subStates[interactive.id];
           const subinteractiveUrl = libraryInteractiveIdToUrl(interactive.libraryInteractiveId, "carousel");
+          const interactiveTypeName = getLibraryInteractive(subinteractiveUrl)?.name || "Interactive content";
+          const iframeTitle = `Slide ${index + 1}: ${interactiveTypeName}`;
           const logRequestData: Record<string, unknown> = { subinteractive_url: subinteractiveUrl,
                                                             subinteractive_type: interactive.authoredState.questionType,
                                                             subinteractive_sub_type: interactive.authoredState.questionSubType,
@@ -127,6 +129,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                   scrolling="no"
                   accessibility={accessibility}
                   readOnly={readOnly}
+                  title={iframeTitle}
                 />
             </div>
           );
