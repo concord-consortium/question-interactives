@@ -34,12 +34,13 @@ interface IProps {
   flushOnSave?: boolean;
   accessibility: IAccessibilitySettings;
   onPhoneReady?: (phone: any) => (() => void) | void;
+  title?: string;
 }
 
 export const IframeRuntime: React.FC<IProps> =
   ({ authoredState, id, iframeStyling, interactiveState, logRequestData, report,
       url, setHint, setInteractiveState, addLocalLinkedDataListener, initMessage,
-      scale, onUnloadCallback, scrolling, flushOnSave, accessibility, readOnly, onPhoneReady }) => {
+      scale, onUnloadCallback, scrolling, flushOnSave, accessibility, readOnly, onPhoneReady, title }) => {
     const [ iframeHeight, setIframeHeight ] = useState(300);
     const [ internalHint, setInternalHint ] = useState("");
     const iframeRef = useRef<HTMLIFrameElement>(null);
@@ -246,6 +247,9 @@ export const IframeRuntime: React.FC<IProps> =
     iframeStyle.pointerEvents = "none";
   }
 
+  // Always give the iframe a title for accessibility.
+  const iframeTitle = title || getLibraryInteractive(url)?.name || "Interactive content";
+
   return (
     <>
       <iframe
@@ -255,6 +259,7 @@ export const IframeRuntime: React.FC<IProps> =
         scrolling={scrolling}
         tabIndex={readOnly ? -1 : undefined}
         allow="geolocation; microphone; camera; bluetooth; clipboard-read; clipboard-write"
+        title={iframeTitle}
       />
       { internalHint &&
         <div className={css.hint}><DynamicText>{renderHTML(internalHint)}</DynamicText></div> }
