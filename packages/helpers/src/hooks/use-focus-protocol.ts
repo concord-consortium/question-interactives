@@ -32,7 +32,12 @@ export const useFocusProtocol = ({ enabled }: IUseFocusProtocolOptions) => {
       if (mode === "reverse") {
         focusables[focusables.length - 1]?.focus();
       } else if (mode === "restore") {
-        (lastFocusedRef.current ?? focusables[0])?.focus();
+        // The remembered element may have been removed from the DOM since we
+        // recorded it (e.g. a drawing-tool control that unmounted). focus() on
+        // a detached node is a silent no-op, so fall back to the first
+        // focusable unless the remembered element is still connected.
+        const last = lastFocusedRef.current;
+        (last?.isConnected ? last : focusables[0])?.focus();
       } else {
         focusables[0]?.focus();
       }
@@ -45,7 +50,12 @@ export const useFocusProtocol = ({ enabled }: IUseFocusProtocolOptions) => {
       }
     };
     const onKeyDown = (e: KeyboardEvent) => {
-      if (e.key === "Escape") {
+      // Only forward Escape as focusExit if it bubbled up to the document
+      // unconsumed. A menu that closes on Escape (e.g. a drawing-tool palette)
+      // either stops propagation — so we never see the event — or calls
+      // preventDefault, which we honor here so its internal Escape doesn't also
+      // exit the interactive's focus context.
+      if (e.key === "Escape" && !e.defaultPrevented) {
         sendFocusExit("escape");
       }
     };

@@ -78,10 +78,29 @@ describe("useFocusProtocol", () => {
     expect(document.activeElement).toBe(byId("first"));
   });
 
+  it("falls back to the first focusable on restore when the last-focused element was removed", () => {
+    renderHook(() => useFocusProtocol({ enabled: true }));
+    const middle = byId("middle");
+    dispatchFocusIn(middle);
+    middle.remove();
+    capturedListener?.("restore");
+    expect(document.activeElement).toBe(byId("first"));
+  });
+
   it("sends focusExit('escape') on Escape", () => {
     renderHook(() => useFocusProtocol({ enabled: true }));
     dispatchEscape();
     expect(sendFocusExitMock).toHaveBeenCalledWith("escape");
+  });
+
+  it("does not send focusExit when Escape was already handled (defaultPrevented)", () => {
+    renderHook(() => useFocusProtocol({ enabled: true }));
+    const middle = byId("middle");
+    // Simulate an inner menu (e.g. a drawing-tool palette) that closes on
+    // Escape and marks the event handled before it bubbles to the document.
+    middle.addEventListener("keydown", e => e.preventDefault());
+    middle.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+    expect(sendFocusExitMock).not.toHaveBeenCalled();
   });
 
   it("does not record document.body as the last-focused element", () => {
