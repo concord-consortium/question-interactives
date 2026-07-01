@@ -110,7 +110,7 @@
   },
   "dependencies": {
     "@concord-consortium/dynamic-text": "^1.0.6",
-    "@concord-consortium/lara-interactive-api": "1.14.0-pre.0",
+    "@concord-consortium/lara-interactive-api": "1.14.0",
     "@concord-consortium/object-storage": "1.0.0-pre.9",
     "@concord-consortium/question-interactives-helpers": "^1.27.0",
     "@rjsf/core": "^5.9.0",

@@ -1,6 +1,14 @@
 # QI-169: Adopting lara-interactive-api 1.14.0-pre.0 — dependency investigation
 
-**Status:** branch still red on CI, but the override mechanism is now **understood** (see "Overrides: empirically verified behavior"). The remaining blocker for the general solution is the unrelated `react-dnd-preview` ERESOLVE that prevents any clean from-scratch `npm install`.
+**Status: RESOLVED.** `@concord-consortium/lara-interactive-api@1.14.0` (non-prerelease) is now published, which is Option 1 below (the "cleanest" outcome). All 23 workspace packages pin `1.14.0`, the temporary `.npmrc legacy-peer-deps=true` workaround and its dedupe scaffolding are removed, and the tree resolves to a single hoisted `1.14.0` copy with no override. The rest of this document is retained as the investigation record for the prerelease period (useful the next time a lara *prerelease* needs to be adopted before its final release).
+
+**Resolution procedure (executed on this branch):**
+1. `git checkout master -- package-lock.json` — start from the clean pre-branch lockfile so the resulting diff is only the lara bump, not carried-forward `legacy-peer-deps` regeneration churn.
+2. Delete `.npmrc` (the whole file was the temporary workaround).
+3. Bump every workspace package `1.14.0-pre.0` → `1.14.0`. `1.14.0` satisfies dynamic-text's `>=1.8.0` peer, so npm no longer auto-installs a second `1.13.0` copy.
+4. Incremental `npm install` (NOT a from-scratch lockfile delete — that is what sidesteps the unrelated `react-dnd-preview` ERESOLVE; the existing lockfile already encodes that resolution).
+5. Verified: lockfile diff vs master is lara-only (`1.13.0`→`1.14.0`, ~52/52 lines), a single physical `1.14.0` copy, `npm ci` reproduces it (exit 0), and the previously-failing suites pass — drawing-tool 38/38, image-question 14/14, helpers 109/109, no "loaded multiple times" guard trips.
+
 **Purpose:** record every approach tried to get the `1.14.0-pre.0` prerelease working across the monorepo, and why each was rejected or failed, so we stop going in circles.
 
 ---
