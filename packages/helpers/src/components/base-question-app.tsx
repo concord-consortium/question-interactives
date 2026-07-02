@@ -5,6 +5,7 @@ import { useAutoHeight } from "../hooks/use-auto-height";
 import { useHint } from "../hooks/use-hint";
 import { useRequiredQuestion } from "../hooks/use-required-question";
 import { useShutterbug } from "../hooks/use-shutterbug";
+import { useFocusProtocol } from "../hooks/use-focus-protocol";
 import { BaseAuthoring, IBaseAuthoringProps } from "./base-authoring";
 import { SubmitButton } from "./submit-button";
 import { LockedInfo } from "./locked-info";
@@ -51,13 +52,14 @@ interface IProps<IAuthoredState, IInteractiveState> {
   linkedInteractiveProps?: ILinkedInteractiveProp[];
   migrateAuthoredState?: (oldAuthoredState: any) => IAuthoredState;
   allowEmptyAuthoredStateAtRuntime?: boolean;
+  focusProtocol?: boolean;
 }
 
 // BaseApp for interactives that save interactive state and show in the report. E.g. open response, multiple choice.
 export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBaseQuestionAuthoredState,
   IInteractiveState extends IRuntimeMetadata & IBaseQuestionInteractiveState>(props: IProps<IAuthoredState, IInteractiveState>) => {
   const { Authoring, baseAuthoringProps, Runtime, isAnswered, disableAutoHeight, disableSubmitBtnRendering,
-    linkedInteractiveProps, migrateAuthoredState, allowEmptyAuthoredStateAtRuntime } = props;
+    linkedInteractiveProps, migrateAuthoredState, allowEmptyAuthoredStateAtRuntime, focusProtocol } = props;
   const container = useRef<HTMLDivElement>(null);
   const useAuthStateResult = useAuthoredState<IAuthoredState>();
   const authoredState = migrateAuthoredState && useAuthStateResult.authoredState ?
@@ -82,13 +84,18 @@ export const BaseQuestionApp = <IAuthoredState extends IAuthoringMetadata & IBas
     addBodyClass: true,
     fontFamilySelector: "[data-font-family-override]",
   });
+  // Enabled in every mode (runtime, report, authoring) so that whenever we advertise
+  // focusProtocol via setSupportedFeatures we actually respond to AP's focus messages.
+  // The hook only registers mode-agnostic listeners (focusEnter / focusin / Escape).
+  useFocusProtocol({ enabled: !!focusProtocol });
 
   useEffect(() => {
     setSupportedFeatures({
       interactiveState: true,
-      authoredState: true
+      authoredState: true,
+      ...(focusProtocol ? { focusProtocol: true } : {})
     });
-  }, [initMessage]);
+  }, [initMessage, focusProtocol]);
 
   // Some interactives, like full-screen, may not require authored state to render at runtime, and can signal that
   // by setting allowEmptyAuthoredStateAtRuntime to true. In the case of the full-screen interactive it originally
