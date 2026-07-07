@@ -71,6 +71,19 @@ describe("ThumbnailWrapper component", () => {
     expect(screen.queryAllByTestId("thumbnail-close-button")).toHaveLength(0);
   });
 
+  it("gives the delete button an accessible name", () => {
+    const thumbnailWrapperProps: IThumbnailWrapperProps = {
+      selected: true,
+      setSelectedContainerId: (id: string) => undefined,
+      clearContainer: (id: string) => undefined,
+      content: thumb,
+      readOnly: false
+    };
+
+    render(<ThumbnailWrapper {...thumbnailWrapperProps} />);
+    expect(screen.getByRole("button", { name: /delete model/i })).toBeInTheDocument();
+  });
+
   it("renders a readonly view", () => {
     const thumbnailWrapperProps: IThumbnailWrapperProps= {
       selected: true,
