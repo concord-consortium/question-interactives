@@ -11,3 +11,10 @@ input[type="file"] {
     // ⬆ Wont display on screen, but screen readers will read it.
   }
 }
+
+.fileInputLabel {
+  &:focus-within {
+    outline: 2px solid var(--cc-charcoal);
+    outline-offset: 2px;
+  }
+}
