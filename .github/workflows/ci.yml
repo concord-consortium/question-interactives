@@ -14,7 +14,10 @@ jobs:
       - name: Install Dependencies
         run: npm ci
       - name: Build
-        run: npm run build
+        # Cap Nx build parallelism (default is os.cpus().length = 4 on the runner).
+        # Running 4 production webpack builds at once caused runner "shutdown signal"
+        # flakes under memory pressure; limit to 3 concurrent builds.
+        run: npm run build -- --concurrency 3
       - name: Run Tests
         run: npm run test
   cypress:
@@ -37,7 +40,9 @@ jobs:
       - name: Install Dependencies
         run: npm ci
       - name: Build
-        run: npm run build
+        # See build_test note: cap Nx build parallelism to avoid runner
+        # "shutdown signal" flakes from concurrent webpack builds.
+        run: npm run build -- --concurrency 3
       - name: Start server in the background
         run: npm start &
       - uses: cypress-io/github-action@v4
