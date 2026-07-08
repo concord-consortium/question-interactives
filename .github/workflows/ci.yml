@@ -88,6 +88,10 @@ jobs:
       - name: Deploy files to Amazon S3
         uses: concord-consortium/s3-deploy-action@v1
         with:
+          # See build_test note: cap Nx build parallelism to avoid runner
+          # "shutdown signal" flakes from concurrent webpack builds. The action's
+          # default build is 'npm run build'; override it to add the concurrency cap.
+          build: npm run build -- --concurrency 3
           bucket: models-resources
           prefix: ${{ github.event.repository.name }} # 'question-interactives'
           awsAccessKeyId: ${{ secrets.AWS_ACCESS_KEY_ID }}
