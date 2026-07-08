@@ -41,6 +41,7 @@ export const ThumbnailWrapper: React.FC<IThumbnailWrapperProps> = (props) => {
   return (
     <div className={css["thumbnail-wrapper"]} data-testid="thumbnail-wrapper">
       <button className={classes}
+              type="button"
               onClick={clickHandler}
               data-testid="thumbnail-button"
               disabled={uploadPreviewMode}
@@ -66,8 +67,8 @@ export const ThumbnailWrapper: React.FC<IThumbnailWrapperProps> = (props) => {
       </button>
         {
           selected && !empty && !readOnly &&
-          <button className={css["close"]} onClick={handleClose}
-                  aria-label={t("THUMBNAIL_CHOOSER.DELETE_MODEL", { vars: { label: label || "" } })}
+          <button className={css["close"]} type="button" onClick={handleClose}
+                  aria-label={t("THUMBNAIL_CHOOSER.DELETE_MODEL", { vars: { label: label || "" } }).trim()}
                   data-testid="thumbnail-close-button">
             <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 12 12" width="12" height="12">
               <line x1="0" y1="0" x2="12" y2="12" strokeWidth="2.5"/>

@@ -81,7 +81,11 @@ describe("ThumbnailWrapper component", () => {
     };
 
     render(<ThumbnailWrapper {...thumbnailWrapperProps} />);
-    expect(screen.getByRole("button", { name: /delete model/i })).toBeInTheDocument();
+    const deleteButton = screen.getByTestId("thumbnail-close-button");
+    // Accessible name interpolates the label with no trailing whitespace, and the
+    // button is type="button" so it never acts as a form submit.
+    expect(deleteButton).toHaveAccessibleName("Delete model one");
+    expect(deleteButton).toHaveAttribute("type", "button");
   });
 
   it("renders a readonly view", () => {
