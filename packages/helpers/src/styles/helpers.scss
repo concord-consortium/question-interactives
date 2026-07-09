@@ -36,6 +36,9 @@
   --cc-ap-button-click: #ff8113;
   --cc-ap-button-border: #949494;
   --cc-ap-button-focus-ring: #0957d0;
+  // The browser-native focus ring color (matches native controls like the comment textarea
+  // and the thumbnail delete button). See the native-focus-ring mixin below.
+  --cc-native-focus-ring: #005fcc;
 }
 
 
@@ -68,6 +71,17 @@ $themeColor2: #34a5be;
   input[type=checkbox], input[type=radio] {
     margin-right: 10px;
   }
+}
+
+// Browser-native keyboard focus ring, so custom-styled controls match native controls
+// (the comment textarea, the thumbnail delete button, etc.). Two outline declarations on
+// purpose: the token is the fallback for engines that don't support the -webkit- keyword
+// (Firefox keeps the first declaration and drops the second). Pass an offset to push the
+// ring outside a selection border, e.g. native-focus-ring(3px).
+@mixin native-focus-ring($offset: 2px) {
+  outline: 2px solid var(--cc-native-focus-ring);
+  outline: 2px solid -webkit-focus-ring-color;
+  outline-offset: $offset;
 }
 
 @mixin interactive-button {

@@ -4,7 +4,6 @@ import classNames from "classnames";
 import css from "./upload-button.scss";
 
 export interface IUploadButtonProps {
-  label?:string;
   disabled?: boolean;
   onClick?: (type: string) => void;
   inDialog?: boolean;

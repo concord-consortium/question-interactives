@@ -1,5 +1,6 @@
 @import "../vars.scss";
 @import "../../../../helpers/src/styles/px-to-rem.scss";
+@import "../../../../helpers/src/styles/helpers.scss";
 
 :global(body.font-size-large) {
   .thumbnail-wrapper {
@@ -33,12 +34,9 @@
     transition: background-color .25s;
     overflow: hidden;
     &:focus-visible {
-      // Match the browser's default focus ring color (used by the delete button and the
-      // comment text area) and offset it outside the (up to 3px) teal selection border so
-      // it stays clearly visible when the thumbnail is selected.
-      outline: 2px solid #005fcc; // fallback for non-WebKit/Blink
-      outline: 2px solid -webkit-focus-ring-color;
-      outline-offset: 3px;
+      // Offset 3px so the ring sits outside the teal selection border when the thumbnail is
+      // selected, rather than blending into it.
+      @include native-focus-ring(3px);
     }
     &.wide {
       width: 105px;
