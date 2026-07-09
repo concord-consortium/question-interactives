@@ -162,14 +162,6 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
 
       drawingToolRef.current = new DrawingToolLib(`#${containerId}`, drawingToolOpts);
 
-      // A read-only Drawing Tool (e.g. Labbook thumbnail previews and report views) is not
-      // interactive, so its canvas container should not be a keyboard tab stop. The library
-      // always sets tabindex="0" on .dt-canvas-container; take read-only instances out of the
-      // tab order to avoid an extra tab stop per non-empty thumbnail. See QI-156.
-      if (readOnly) {
-        containerRef.current?.querySelector(".dt-canvas-container")?.setAttribute("tabindex", "-1");
-      }
-
       if (initialInteractiveStateRef.current) {
         drawingToolRef.current.load(initialInteractiveStateRef.current.drawingState, () => {
           // Load finished callback. Set manually background that is stored outside in the interactive or authored state.
@@ -183,6 +175,16 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
       });
     }
   }, [authoredState, readOnly, setBackground, buttons, width, height, onDrawingChanged, containerId, canvasScale, wideLayout]);
+
+  // Keep a read-only Drawing Tool out of the keyboard tab order. The library always sets
+  // tabindex="0" on .dt-canvas-container, but a read-only canvas — Labbook thumbnail previews,
+  // report views, or a submitted "required" question — is not interactive and shouldn't be a
+  // tab stop. This runs on mount and whenever readOnly changes, so it also handles a required
+  // question being submitted on an already-mounted instance (readOnly flips false -> true
+  // without the component remounting). See QI-156.
+  useEffect(() => {
+    containerRef.current?.querySelector(".dt-canvas-container")?.setAttribute("tabindex", readOnly ? "-1" : "0");
+  }, [readOnly]);
 
   useEffect(() => {
     setBackground(interactiveState?.userBackgroundImageUrl);

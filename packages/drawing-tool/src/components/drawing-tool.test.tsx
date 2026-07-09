@@ -88,5 +88,15 @@ describe("DrawingTool", () => {
       expect(canvasContainer?.getAttribute("tabindex")).toEqual("0");
       wrapper.unmount();
     });
+
+    it("updates the tab order when readOnly flips on an already-mounted instance", () => {
+      // e.g. a required question is submitted: readOnly goes false -> true without remounting.
+      const wrapper = mount(<DrawingTool authoredState={authoredState} readOnly={false} />, { attachTo: container });
+      const canvasContainer = container.querySelector(".dt-canvas-container");
+      expect(canvasContainer?.getAttribute("tabindex")).toEqual("0");
+      wrapper.setProps({ readOnly: true });
+      expect(canvasContainer?.getAttribute("tabindex")).toEqual("-1");
+      wrapper.unmount();
+    });
   });
 });
