@@ -103,6 +103,11 @@ $themeColor2: #34a5be;
   &:hover {
     background-color: var(--cc-teal-light-4);
   }
+  &:focus-visible {
+    // Visible keyboard focus indicator (WCAG 2.4.7). Consumers that render this style on a
+    // <label>/wrapper (e.g. the styled file input) otherwise show no ring at all.
+    @include native-focus-ring;
+  }
   &:active {
     background-color: var(--cc-teal-light-3);
   }
