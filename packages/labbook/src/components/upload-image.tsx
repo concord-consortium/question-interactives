@@ -53,7 +53,7 @@ export const UploadImage: React.FC<IProps> = ({ onUploadImage, uploadMode, onUpl
   };
 
   const handleFileUpload = (file: File|undefined) => {
-    if(!disabled) {
+    if(!disabled && !uploadInProgress) {
       if (file) {
         onUploadStart?.();
         uploadFile(file);
@@ -70,6 +70,7 @@ export const UploadImage: React.FC<IProps> = ({ onUploadImage, uploadMode, onUpl
         buttonClass={classes}
         onChange={handleFileUpload}
         id={text}
+        disabled={uploadInProgress || disabled}
       >
         {showUploadIcon && <UploadIcon/>}
         <div className={buttonTextClasses}>

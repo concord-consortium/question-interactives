@@ -14,4 +14,22 @@ describe("StyledFileInput", () => {
     expect(label.tagName).toBe("LABEL");
     expect(label).toContainElement(input);
   });
+
+  it("disables the file input (removing it from the tab order) when disabled", () => {
+    render(
+      <StyledFileInput buttonClass="btn" onChange={jest.fn()} id="x" disabled={true}>
+        Upload
+      </StyledFileInput>
+    );
+    expect(screen.getByTestId("file-input")).toBeDisabled();
+  });
+
+  it("leaves the file input enabled when not disabled", () => {
+    render(
+      <StyledFileInput buttonClass="btn" onChange={jest.fn()} id="x">
+        Upload
+      </StyledFileInput>
+    );
+    expect(screen.getByTestId("file-input")).toBeEnabled();
+  });
 });
