@@ -161,6 +161,15 @@ export const DrawingTool: React.FC<IProps> = ({ authoredState, interactiveState,
       }
 
       drawingToolRef.current = new DrawingToolLib(`#${containerId}`, drawingToolOpts);
+
+      // A read-only Drawing Tool (e.g. Labbook thumbnail previews and report views) is not
+      // interactive, so its canvas container should not be a keyboard tab stop. The library
+      // always sets tabindex="0" on .dt-canvas-container; take read-only instances out of the
+      // tab order to avoid an extra tab stop per non-empty thumbnail. See QI-156.
+      if (readOnly) {
+        containerRef.current?.querySelector(".dt-canvas-container")?.setAttribute("tabindex", "-1");
+      }
+
       if (initialInteractiveStateRef.current) {
         drawingToolRef.current.load(initialInteractiveStateRef.current.drawingState, () => {
           // Load finished callback. Set manually background that is stored outside in the interactive or authored state.
