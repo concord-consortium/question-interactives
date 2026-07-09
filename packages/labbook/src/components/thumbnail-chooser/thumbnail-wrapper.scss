@@ -32,6 +32,14 @@
     position: relative;
     transition: background-color .25s;
     overflow: hidden;
+    &:focus-visible {
+      // Match the browser's default focus ring color (used by the delete button and the
+      // comment text area) and offset it outside the (up to 3px) teal selection border so
+      // it stays clearly visible when the thumbnail is selected.
+      outline: 2px solid #005fcc; // fallback for non-WebKit/Blink
+      outline: 2px solid -webkit-focus-ring-color;
+      outline-offset: 3px;
+    }
     &.wide {
       width: 105px;
       &.selected {

@@ -14,7 +14,11 @@ input[type="file"] {
 
 .fileInputLabel {
   &:focus-within {
-    outline: 2px solid var(--cc-charcoal);
+    // Match the browser's default focus ring color used by native controls such as the
+    // thumbnail delete button and the comment text area. The input is off-screen, so the
+    // visible ring is drawn on the label.
+    outline: 2px solid #005fcc; // fallback for non-WebKit/Blink
+    outline: 2px solid -webkit-focus-ring-color;
     outline-offset: 2px;
   }
 }

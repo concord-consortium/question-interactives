@@ -92,6 +92,31 @@ is announced (e.g. "Delete model").
   Enter/Space-activatable in the Lab Book context.
 - **File input** upload — confirm Enter/Space opens the OS file dialog.
 
+## Focus ring color (design-system note)
+
+The focus rings this story adds — the Upload button, the styled file input, and
+the thumbnail — use the **browser's native focus ring color**
+(`-webkit-focus-ring-color`, `#005fcc`, with a hex fallback), matching the
+controls sitting right next to them: the thumbnail delete button and the comment
+text area, which are native elements and already render that ring.
+
+This is deliberately **not** the Concord design-system focus indicator. Our
+designer (Michael Tirenin) publishes specs in **Zeplin**, and the standard
+keyboard-focus style there is a double inset border — `2px #0957D0` inside
+`3px #FFFFFF` — captured in code as the `--cc-ap-button-focus-ring` token and the
+`@mixin ap-button` (added in QI-124, matching Activity Player AP-66). That style
+is currently applied only to the orange "AP" action buttons (the Submit/lock
+button `SubmitButton`, the Button interactive, carousel, scaffolded-question);
+its inner white ring exists specifically to keep the ring visible against the
+orange fill.
+
+The likely correct long-term direction is to restyle these Lab Book buttons as
+the standard orange AP buttons using that shared focus ring, for full
+design-system consistency. That is **deferred out of this story** to keep it
+scoped to keyboard operability (WCAG 2.1.1 / 2.4.7); here we only match the
+native controls already adjacent to them, and we intentionally do not touch the
+drawing-tool toolbar's own (teal `#016082`) ring.
+
 ## Out of scope
 
 - `aria-pressed` — there are no toggle buttons among the Lab-Book-added controls.
