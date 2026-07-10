@@ -1,4 +1,5 @@
 @import "../../../helpers/src/styles/px-to-rem.scss";
+@import "../../../helpers/src/styles/helpers.scss";
 
 :global(body.font-size-large) {
   .upload-button {
@@ -25,6 +26,11 @@
   background-color: var(--cc-teal-light-5);
   font-weight: normal;
   color: var(--cc-charcoal);
+  font-family: inherit;
+  cursor: pointer;
+  &:focus-visible {
+    @include native-focus-ring;
+  }
   &:hover {
     background-color: var(--cc-teal-light-4);
   }

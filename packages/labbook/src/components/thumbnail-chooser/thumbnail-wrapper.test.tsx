@@ -71,6 +71,23 @@ describe("ThumbnailWrapper component", () => {
     expect(screen.queryAllByTestId("thumbnail-close-button")).toHaveLength(0);
   });
 
+  it("gives the delete button an accessible name", () => {
+    const thumbnailWrapperProps: IThumbnailWrapperProps = {
+      selected: true,
+      setSelectedContainerId: (id: string) => undefined,
+      clearContainer: (id: string) => undefined,
+      content: thumb,
+      readOnly: false
+    };
+
+    render(<ThumbnailWrapper {...thumbnailWrapperProps} />);
+    const deleteButton = screen.getByTestId("thumbnail-close-button");
+    // Accessible name interpolates the label with no trailing whitespace, and the
+    // button is type="button" so it never acts as a form submit.
+    expect(deleteButton).toHaveAccessibleName("Delete model one");
+    expect(deleteButton).toHaveAttribute("type", "button");
+  });
+
   it("renders a readonly view", () => {
     const thumbnailWrapperProps: IThumbnailWrapperProps= {
       selected: true,

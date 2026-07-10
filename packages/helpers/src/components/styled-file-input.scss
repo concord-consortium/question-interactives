@@ -11,3 +11,17 @@ input[type="file"] {
     // ⬆ Wont display on screen, but screen readers will read it.
   }
 }
+
+@import "../styles/helpers.scss";
+
+.fileInputLabel {
+  // :focus-within (not :focus-visible) because the visible ring is drawn on the label while
+  // focus actually lands on the nested, off-screen <input>. This means a plain mouse click on
+  // the label also shows the ring. The precise fix, :has(:focus-visible), isn't usable: the
+  // repo has no browserslist config, so the default query includes Firefox ESR, which lacks
+  // :has() support, and autoprefixer can't polyfill a selector (the rule would be dropped and
+  // Firefox keyboard users would get no ring at all).
+  &:focus-within {
+    @include native-focus-ring;
+  }
+}

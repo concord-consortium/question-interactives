@@ -1,5 +1,6 @@
 @import "../vars.scss";
 @import "../../../../helpers/src/styles/px-to-rem.scss";
+@import "../../../../helpers/src/styles/helpers.scss";
 
 :global(body.font-size-large) {
   .thumbnail-wrapper {
@@ -32,6 +33,11 @@
     position: relative;
     transition: background-color .25s;
     overflow: hidden;
+    &:focus-visible {
+      // Offset 3px so the ring sits outside the teal selection border when the thumbnail is
+      // selected, rather than blending into it.
+      @include native-focus-ring(3px);
+    }
     &.wide {
       width: 105px;
       &.selected {

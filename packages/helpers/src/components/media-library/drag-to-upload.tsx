@@ -36,7 +36,7 @@ export const DragToUpload: React.FC<IProps> = ({disabled, onUploadImage, onUploa
   };
 
   const handleFileUpload = (file: File|undefined) => {
-    if(!disabled) {
+    if(!disabled && !uploadInProgress) {
       if (file) {
         onUploadStart?.();
         uploadFile(file);
@@ -79,6 +79,7 @@ export const DragToUpload: React.FC<IProps> = ({disabled, onUploadImage, onUploa
         buttonClass={classes}
         onChange={handleFileUpload}
         id={"drop-file-upload"}
+        disabled={uploadInProgress || disabled}
       >
         <div className={css["button-text"]}>
           { uploadInProgress
