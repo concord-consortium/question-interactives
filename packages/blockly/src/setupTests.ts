@@ -25,11 +25,15 @@ global.alert = jest.fn();
 // fetch, and the resulting unhandled rejection kills the Jest worker rather than
 // failing a test, so every suite that injects a workspace must have one available.
 // jsdom has no AudioContext either, so Blockly skips decoding whatever this returns.
-if (typeof globalThis.fetch === "undefined") {
-  (globalThis as any).fetch = jest.fn(() =>
-    Promise.resolve({ arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)) })
-  );
-}
+// Stub unconditionally: were the environment ever to supply a real fetch, tests would
+// silently start requesting the sound files over the network.
+(globalThis as any).fetch = jest.fn(() =>
+  Promise.resolve({
+    ok: true,
+    status: 200,
+    arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
+  })
+);
 
 // Blockly 13's stylesheet uses `:has()` nested inside `:not()` for its keyboard-focus
 // rules. jsdom's selector engine (nwsapi) cannot parse that and throws "is not a valid
@@ -99,7 +103,11 @@ if (textContent?.get && textContent?.set) {
       return textContent.get?.call(this);
     },
     set(this: HTMLStyleElement, value: string) {
-      textContent.set?.call(this, removeHasRules(String(value ?? "")));
+      const css = String(value ?? "");
+      // Only touch Blockly's own stylesheet. Rewriting every <style> in the suite could
+      // strip `:has()` from unrelated code and hide a genuine selector problem there.
+      const isBlocklyStylesheet = this.id === "blockly-common-style" || css.includes(".blockly");
+      textContent.set?.call(this, isBlocklyStylesheet ? removeHasRules(css) : css);
     },
   });
 }
