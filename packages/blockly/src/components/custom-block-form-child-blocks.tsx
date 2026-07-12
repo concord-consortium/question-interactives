@@ -3,6 +3,7 @@ import React, { MutableRefObject, useEffect, useRef } from "react";
 
 import { registerCustomBlocks } from "../blocks/block-factory";
 import { saveEvents, stateContainsType } from "../utils/block-utils";
+import { BLOCKLY_RENDERER } from "../utils/blockly-options";
 import { injectCustomBlocksIntoToolbox } from "../utils/toolbox-utils";
 import { ICustomBlock } from "./types";
 
@@ -56,7 +57,8 @@ export const CustomBlockFormChildBlocks = ({
     // Inject custom blocks into toolbox based on their assigned categories
     const enhancedToolbox = injectCustomBlocksIntoToolbox(toolbox, safeBlocks);
     const newWorkspace = inject(childBlocksContainerRef.current, {
-      readOnly: false, toolbox: JSON.parse(enhancedToolbox), trashcan: true
+      readOnly: false, toolbox: JSON.parse(enhancedToolbox), trashcan: true,
+      renderer: BLOCKLY_RENDERER
     });
 
     // Add the current template to the workspace and render it

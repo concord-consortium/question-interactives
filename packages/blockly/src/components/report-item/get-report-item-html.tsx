@@ -1,6 +1,7 @@
 import { IAuthoredState, IInteractiveState } from "../types";
-import { inject, serialization } from "blockly";
+import { inject, serialization, VERSION } from "blockly";
 import { registerCustomBlocks } from "../../blocks/block-factory";
+import { BLOCKLY_RENDERER } from "../../utils/blockly-options";
 import { injectCustomBlocksIntoToolbox } from "../../utils/toolbox-utils";
 
 import "../../blocks/block-registration";
@@ -49,7 +50,10 @@ export const getReportItemHtml = ({ interactiveState, authoredState }: IProps) =
       trashcan: false,
       scrollbars: false,
       zoom: { controls: false, wheel: false, startScale: 0.4, minScale: 0.4, maxScale: 0.4, scaleSpeed: 1 },
-      media: "https://unpkg.com/blockly/media/",
+      renderer: BLOCKLY_RENDERER,
+      // Pinned to the Blockly we actually bundle. An unversioned unpkg URL serves whatever
+      // is latest, which can drift out from under this build; VERSION tracks package.json.
+      media: `https://unpkg.com/blockly@${VERSION}/media/`,
     });
 
     serialization.workspaces.load(blocklyStateJson, workspace);

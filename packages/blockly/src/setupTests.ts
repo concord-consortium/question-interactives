@@ -21,6 +21,89 @@ if (typeof globalThis.crypto === "undefined") {
 // Mock window.alert
 global.alert = jest.fn();
 
+// Blockly 13 fetches its workspace sounds during inject(). jsdom provides no global
+// fetch, and the resulting unhandled rejection kills the Jest worker rather than
+// failing a test, so every suite that injects a workspace must have one available.
+// jsdom has no AudioContext either, so Blockly skips decoding whatever this returns.
+if (typeof globalThis.fetch === "undefined") {
+  (globalThis as any).fetch = jest.fn(() =>
+    Promise.resolve({ arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)) })
+  );
+}
+
+// Blockly 13's stylesheet uses `:has()` nested inside `:not()` for its keyboard-focus
+// rules. jsdom's selector engine (nwsapi) cannot parse that and throws "is not a valid
+// selector" out of inject(), so no workspace renders under test. jsdom only fixed this
+// in v27 by replacing nwsapi, and no jest-environment-jsdom runs a jsdom that new.
+// Dropping the offending rules keeps the rest of the stylesheet intact; they only drive
+// focus-ring styling, which jsdom does not render and no test asserts on.
+//
+// This is a workaround for a jsdom limitation, not a Blockly one, so it is gated on the
+// limitation itself rather than on a version number: the day jsdom can parse the selector,
+// the check below fails and tells us to delete all of this.
+const BLOCKLY_FOCUS_SELECTOR =
+  ".blocklyKeyboardNavigation:not(:has(.blocklyDropDownDiv:focus-within, .blocklyWidgetDiv:focus-within)) " +
+  ".blocklyPassiveFocus:is(.blocklyPath, .blocklyHighlightedConnectionPath)";
+
+const selectorEngineRejectsHas = (() => {
+  try {
+    document.createElement("div").matches(BLOCKLY_FOCUS_SELECTOR);
+    return false;
+  } catch {
+    return true;
+  }
+})();
+
+if (!selectorEngineRejectsHas) {
+  throw new Error(
+    "jsdom can now parse Blockly's `:has()` focus selectors, so the stylesheet workaround " +
+    "in setupTests.ts is obsolete. Delete removeHasRules and the HTMLStyleElement " +
+    "textContent patch below (and this check), then re-run the tests."
+  );
+}
+
+const removeHasRules = (css: string): string => {
+  let out = "";
+  let i = 0;
+  while (i < css.length) {
+    const open = css.indexOf("{", i);
+    if (open === -1) {
+      out += css.slice(i);
+      break;
+    }
+    const prelude = css.slice(i, open);
+    let depth = 1;
+    let j = open + 1;
+    while (j < css.length && depth > 0) {
+      if (css[j] === "{") depth++;
+      else if (css[j] === "}") depth--;
+      j++;
+    }
+    const body = css.slice(open + 1, j - 1);
+    if (prelude.trimStart().startsWith("@")) {
+      // At-rules (@media, @supports) nest further rules, so recurse into the block.
+      out += `${prelude}{${removeHasRules(body)}}`;
+    } else if (!prelude.includes(":has(")) {
+      out += css.slice(i, j);
+    }
+    i = j;
+  }
+  return out;
+};
+
+const textContent = Object.getOwnPropertyDescriptor(Node.prototype, "textContent");
+if (textContent?.get && textContent?.set) {
+  Object.defineProperty(HTMLStyleElement.prototype, "textContent", {
+    configurable: true,
+    get(this: HTMLStyleElement) {
+      return textContent.get?.call(this);
+    },
+    set(this: HTMLStyleElement, value: string) {
+      textContent.set?.call(this, removeHasRules(String(value ?? "")));
+    },
+  });
+}
+
 // https://www.benmvp.com/blog/quick-trick-jest-asynchronous-tests/
 beforeEach(() => {
   // ensure there's at least one assertion run for every test case
