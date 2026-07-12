@@ -91,6 +91,10 @@ export const CustomBlockFormChildBlocks = ({
     const childBlocksContainer = childBlocksContainerRef.current;
     return () => {
       newWorkspace.removeChangeListener(saveState);
+      // Clearing innerHTML drops the DOM but leaves the workspace registered with Blockly's
+      // global focus manager and shortcut registry, so an undisposed workspace can still
+      // react to keystrokes. This effect re-runs often as the authoring form re-renders.
+      newWorkspace.dispose();
       if (childBlocksContainer) childBlocksContainer.innerHTML = "";
     };
   }, [childBlocks, childBlocksRef, currentOption, editingBlock, existingBlocks, optionChildBlocksRef, setHasChange, toolbox]);

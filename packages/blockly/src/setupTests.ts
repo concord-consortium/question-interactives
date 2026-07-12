@@ -96,21 +96,29 @@ const removeHasRules = (css: string): string => {
 };
 
 const textContent = Object.getOwnPropertyDescriptor(Node.prototype, "textContent");
-if (textContent?.get && textContent?.set) {
-  Object.defineProperty(HTMLStyleElement.prototype, "textContent", {
-    configurable: true,
-    get(this: HTMLStyleElement) {
-      return textContent.get?.call(this);
-    },
-    set(this: HTMLStyleElement, value: string) {
-      const css = String(value ?? "");
-      // Only touch Blockly's own stylesheet. Rewriting every <style> in the suite could
-      // strip `:has()` from unrelated code and hide a genuine selector problem there.
-      const isBlocklyStylesheet = this.id === "blockly-common-style" || css.includes(".blockly");
-      textContent.set?.call(this, isBlocklyStylesheet ? removeHasRules(css) : css);
-    },
-  });
+if (!textContent?.get || !textContent?.set) {
+  // We know from the probe above that the workaround is still needed. Skipping it silently
+  // would surface later as an opaque selector-parse failure out of inject(), so say so here.
+  throw new Error(
+    "Cannot patch HTMLStyleElement.textContent: Node.prototype.textContent is not an " +
+    "accessor in this environment, so Blockly's `:has()` rules cannot be stripped. " +
+    "The suite will fail on selector parsing until this shim is reworked."
+  );
 }
+
+Object.defineProperty(HTMLStyleElement.prototype, "textContent", {
+  configurable: true,
+  get(this: HTMLStyleElement) {
+    return textContent.get?.call(this);
+  },
+  set(this: HTMLStyleElement, value: string) {
+    const css = String(value ?? "");
+    // Only touch Blockly's own stylesheet. Rewriting every <style> in the suite could
+    // strip `:has()` from unrelated code and hide a genuine selector problem there.
+    const isBlocklyStylesheet = this.id === "blockly-common-style" || css.includes(".blockly");
+    textContent.set?.call(this, isBlocklyStylesheet ? removeHasRules(css) : css);
+  },
+});
 
 // https://www.benmvp.com/blog/quick-trick-jest-asynchronous-tests/
 beforeEach(() => {
