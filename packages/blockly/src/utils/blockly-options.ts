@@ -4,6 +4,8 @@
  * so leaving the default in place would restyle every student's blocks as a side effect
  * of an accessibility upgrade. We pin geras to keep the appearance unchanged.
  *
- * This is shared by all four `inject()` sites so they cannot drift apart.
+ * Shared by every `inject()` site that renders for a user — the runtime, both authoring
+ * workspaces, and the report item — so they cannot drift apart. (A test injects a bare
+ * workspace directly; the renderer does not matter there.)
  */
 export const BLOCKLY_RENDERER = "geras";
