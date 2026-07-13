@@ -1,6 +1,4 @@
-@use "sass:math";
-
-@function pxToRem($value) {
-  $remValue: math.div($value, 16) + rem;
-  @return $remValue;
-}
+// Back-compat shim: pxToRem (and the rest of the tools) now live in _tools.scss.
+// Existing `@import ".../styles/px-to-rem"` sites keep working. Phase 2 repoints them
+// to `@use ".../styles/tools"` and deletes this file.
+@forward "./tools";
