@@ -324,6 +324,16 @@ for its class map). Split it:
   once; CSS-Modules hashing stays consistent because the emitted CSS and the class map
   come from the same single shared build.
 
+**Status — the `_tools.scss` seam has landed** (commits on this branch). `styles/_tools.scss`
+now owns the functions/`$vars`/mixins (emits no CSS); `helpers.scss` and `px-to-rem.scss`
+`@forward` it, so no consumer imports changed. This was done as a **pure, zero-behavior-change
+refactor** — the compiled CSS of the representative interactives is byte-identical before/after
+(verified against a pre-refactor baseline). Still **deferred to Phase 2** (the MF rollout, where
+the shared bundle emits the global CSS once): repointing the 28 `@import ".../helpers"` + 17
+px-to-rem sites to `@use ".../tools"`, moving the `:root` tokens / button classes to emit from
+the shared bundle, and deleting the `px-to-rem.scss` shim. See
+`docs/superpowers/plans/2026-07-13-helpers-scss-tools-split.md`.
+
 ### Proposed exposed surface (recommend: subsystem barrels)
 
 Matches the source dirs and the way interactives already group their imports, and keeps
