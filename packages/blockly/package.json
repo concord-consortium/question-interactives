@@ -111,12 +111,12 @@
     "webpack-dev-server": "^4.7.4"
   },
   "dependencies": {
-    "@blockly/field-slider": "8.0.2",
+    "@blockly/field-slider": "13.1.0",
     "@concord-consortium/dynamic-text": "^1.0.6",
     "@concord-consortium/lara-interactive-api": "1.14.0",
     "@concord-consortium/question-interactives-helpers": "^1.27.0",
     "@rjsf/utils": "^5.0.1",
-    "blockly": "12.3.0",
+    "blockly": "13.1.1",
     "chart.js": "^3.9.1",
     "classnames": "^2.3.1",
     "react": "^17.0.2",

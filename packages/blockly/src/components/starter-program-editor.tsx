@@ -4,6 +4,7 @@ import React, { useEffect, useMemo, useRef } from "react";
 import "../blocks/block-registration";
 import { registerCustomBlocks } from "../blocks/block-factory";
 import { saveEvents } from "../utils/block-utils";
+import { BLOCKLY_RENDERER } from "../utils/blockly-options";
 import { buildValidTypeSet, pruneStarterState } from "../utils/starter-utils";
 import { injectCustomBlocksIntoToolbox } from "../utils/toolbox-utils";
 import { ICustomBlock, INITIAL_SEED_BLOCKS, SEED_BLOCK_TYPES } from "./types";
@@ -55,7 +56,8 @@ export const StarterProgramEditor: React.FC<IProps> = ({ customBlocks, starterBl
     try {
       const parsedToolbox = JSON.parse(enhancedToolbox);
       workspace = inject(container, {
-        readOnly: false, toolbox: parsedToolbox, trashcan: true
+        readOnly: false, toolbox: parsedToolbox, trashcan: true,
+        renderer: BLOCKLY_RENDERER
       });
 
       if (effectiveStarter) {

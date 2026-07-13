@@ -9,6 +9,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import { registerCustomBlocks } from "../blocks/block-factory";
 import "../blocks/block-registration";
 import { saveEvents } from "../utils/block-utils";
+import { BLOCKLY_RENDERER } from "../utils/blockly-options";
 import { hasAuthoredStarterContent, parseStarterProgram } from "../utils/starter-utils";
 import { injectCustomBlocksIntoToolbox } from "../utils/toolbox-utils";
 import { IAuthoredState, IInteractiveState, INITIAL_SEED_BLOCKS, SEED_BLOCK_TYPES } from "./types";
@@ -70,7 +71,8 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
         // Inject custom blocks into toolbox based on their assigned categories
         const enhancedToolbox = injectCustomBlocksIntoToolbox(toolbox, safeCustomBlocks);
         const newWorkspace = inject(blocklyDivRef.current, {
-          readOnly: report, toolbox: JSON.parse(enhancedToolbox), trashcan: true
+          readOnly: report, toolbox: JSON.parse(enhancedToolbox), trashcan: true,
+          renderer: BLOCKLY_RENDERER
         });
         workspaceRef.current = newWorkspace;
         setError(null);
