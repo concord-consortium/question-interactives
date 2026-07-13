@@ -439,4 +439,50 @@ catch them.
   on branch `QI-proto-shared-font-injection` for reference).
 - **[[nx-per-package-build-caching]]** — this work satisfies that spec's Phase 0
   prerequisite (self-contained interactive outputs) by removing bundled `helpers`
-  from each interactive.
+  from each interactive. See "How this interacts with Nx caching" below for what does
+  and doesn't get decoupled.
+
+### How this interacts with Nx caching
+
+A natural question once types resolve from source (Phase 1): does type-checking against
+`helpers` **source** (rather than its built product) undercut per-package caching? Short
+answer: **no — caching works, but the `helpers → interactive` dependency edge stays, so
+a `helpers` source change still cascades to all interactives.** The details:
+
+**Two independently-cached artifacts.** Nx caches two *kinds* of build task separately:
+the **`helpers` remote** dist (one task) and each **interactive** dist (one task each).
+Crucially, an interactive's webpack build does **not** consume the shared dist at all —
+not even a cached copy. Under Module Federation the host references the remote by URL and
+loads it **at runtime**, so the shared dist is not a build input to the interactive. The
+shared dist is combined with the interactive dists only at **deploy assembly** (the
+whole-`dist` deploy), not inside any interactive's webpack step.
+
+**Interactive-only change → single rebuild (the happy path).** If only an interactive's
+own source changes, Nx rebuilds just that interactive. Its type-check reads (unchanged)
+`helpers` source and is deterministic; every other interactive and the `helpers` remote
+stay cached.
+
+**But interactives keep a build-time *source* dependency on `helpers` — broader than
+types.** After Phase 1, only helpers' **runtime JS** (components/hooks/utilities) moves
+to the remote. Interactives still pull helpers **source** at build time via three edges:
+(1) **TS types** (`import type`, resolved from source), (2) the **SCSS `_tools` mixins /
+`pxToRem`** (compiled into each interactive's own CSS), and (3) the **icons** (SVGs kept
+bundled per-interactive). So Nx keeps the `helpers → interactive` graph edge, and a
+**change to `helpers` source invalidates every interactive's build cache** and rebuilds
+them all — even though their packaged *output* wouldn't change (helpers JS is no longer
+inside it).
+
+**Why that's acceptable.** It is **not a regression**: with helpers bundled today, a
+helpers change already invalidates every interactive. And it is **correct**: a helpers
+public-type change *can* break an interactive's type-check. The caching win this spec
+unblocks is not "helpers changes stop rebuilding interactives" — it is that each
+interactive's **output becomes self-contained** (no shared fonts leaked to the dist
+root), so the artifacts are independently cacheable and deployable *at all*. Output
+self-containment ≠ decoupling the input dependency graph.
+
+**Optional future lever (only if the cascade hurts).** Type-check interactives against
+helpers' emitted **`.d.ts`** instead of source, and scope the Nx input to that
+declaration output — then helpers *implementation-only* changes no longer invalidate
+dependents (only public-API/`.d.ts` changes do). Cost: a helpers declaration build step
+plus more Nx input config, and the loss of the simple source-based dev loop (or
+maintaining both). Not worth doing up front; noted as the escape hatch.
