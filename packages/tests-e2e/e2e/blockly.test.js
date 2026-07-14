@@ -19,7 +19,10 @@ const authoredState = {
   questionType: "iframe_interactive",
   simulationCode: "",
   customBlocks: [],
-  // A loose controls_if alongside the seed blocks, so a keyboard user has something to move.
+  // Only `setup` is seeded here, not the whole SEED_BLOCKS set: it is the one drop target the move
+  // test needs, and every extra block adds candidate connections to Blockly's constrained-move
+  // traversal, which would invalidate the key sequence derived below. The default seeding path —
+  // all three seed blocks, non-deletable — is covered in the sibling context.
   starterBlocklyState: JSON.stringify({
     blocks: {
       languageVersion: 0,
