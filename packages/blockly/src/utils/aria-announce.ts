@@ -28,6 +28,11 @@ export interface IAnnounceableBlock {
   getNextBlock(): unknown;
   getDescendants(ordered: boolean): IAnnounceableBlock[];
   isEnabled(): boolean;
+  /** A block with neither connection has nothing it *could* attach to: `setup`/`go`/`onclick` are
+   *  top level by design. Held only to tell them apart from a block dropped loose, so they are
+   *  typed as loosely as that use allows. */
+  previousConnection: object | null;
+  outputConnection: object | null;
 }
 
 export interface IAnnounceableWorkspace {
@@ -72,6 +77,13 @@ export function describeMove(event: IMoveEventLike, workspace: IAnnounceableWork
   if (!block) return null;
 
   const label = block.getAriaLabel(ARIA_VERBOSITY);
+
+  // A block that does nothing is the one thing a student most needs told, so this qualifier goes on
+  // every branch below. disableOrphans disables the block dropped loose AND everything connected
+  // into it, so "connected" is no promise that the block will run: drop `repeat` on bare canvas and
+  // it is disabled, and the `move forward` you then drag inside it is disabled with it.
+  const disabled = block.isEnabled() ? "" : ", disabled";
+
   const parent = block.getParent();
   if (parent) {
     // `getParent()` is NOT "the block that surrounds me". A block joined to a preceding block's
@@ -83,26 +95,58 @@ export function describeMove(event: IMoveEventLike, workspace: IAnnounceableWork
     const parentLabel = parent.getAriaLabel(ARIA_VERBOSITY);
     const stackedAfterParent = parent.getNextBlock() === block;
     if (!stackedAfterParent) {
-      return `${label} connected inside ${parentLabel}.`;
+      return `${label} connected inside ${parentLabel}${disabled}.`;
     }
 
     // Stacked after a sibling. Name what it follows *and* what contains it: "after turn right"
     // alone leaves a blind student unable to tell a statement inside `setup` from one inside `go`.
     const surround = block.getSurroundParent();
     return surround
-      ? `${label} connected after ${parentLabel}, inside ${surround.getAriaLabel(ARIA_VERBOSITY)}.`
-      : `${label} connected after ${parentLabel}.`;
+      ? `${label} connected after ${parentLabel}, inside ${surround.getAriaLabel(ARIA_VERBOSITY)}${disabled}.`
+      : `${label} connected after ${parentLabel}${disabled}.`;
+  }
+
+  // `setup`/`go`/`onclick` have neither a previous-statement nor an output connection: there is
+  // nothing on the canvas they could attach to, and disableOrphans exempts them for exactly that
+  // reason. Telling a student who cannot see the canvas that the program's root container is "not
+  // connected" describes a fault that does not exist. They repositioned it; say so.
+  if (!block.previousConnection && !block.outputConnection) {
+    return `${label} moved${disabled}.`;
   }
 
   // An orphaned block is silently disabled by disableOrphans and does nothing. Say so.
-  const disabled = block.isEnabled() ? "" : ", disabled";
   return `${label} placed on workspace, not connected${disabled}.`;
 }
 
-export function describeDelete(event: IDeleteEventLike, labels: Map<string, string>): string | null {
+/** Ids of blocks this app's own machinery is about to dispose, which no student asked to delete.
+ *
+ *  `recordUndo` is not the "the student did this" flag it looks like. block-factory disposes blocks
+ *  on the *live* workspace as a matter of routine -- collapsing a disclosure block stashes its
+ *  children in `__savedChildrenXml` and disposes them; expanding one, and changing a creator's type
+ *  dropdown, append a template into the workspace and dispose it again -- and all of that runs
+ *  inside plain click and validator handlers, where `recordUndo` is `true`. Left alone, a student
+ *  who collapses a block hears their whole program announced as deleted.
+ *
+ *  A "we are mutating internally right now" flag cannot work: Blockly fires its events from a
+ *  timer, so the flag is long since false by the time the listener runs. Naming the blocks is what
+ *  survives the wait. The set is module-level because block-factory has no handle on the announcer;
+ *  Blockly ids are globally unique, so entries cannot collide across workspaces. */
+const internalDisposals = new Set<string>();
+
+/** Call immediately BEFORE disposing a block the student did not ask to delete, while the block is
+ *  still alive and can still name its descendants -- `dispose()` takes the whole subtree with it. */
+export function markInternalDisposal(block: { getDescendants(ordered: boolean): Array<{ id: string }> }): void {
+  block.getDescendants(false).forEach(b => internalDisposals.add(b.id));
+}
+
+export function describeDelete(
+  event: IDeleteEventLike, labels: Map<string, string>, internallyDisposed: ReadonlySet<string> = internalDisposals
+): string | null {
   if (event.type !== Events.BLOCK_DELETE) return null;
   // workspace.clear() during a load fires a delete per block, none of which record undo.
   if (!event.recordUndo) return null;
+  // Our own machinery disposed this one. Nothing was deleted; the student did nothing.
+  if (event.blockId && internallyDisposed.has(event.blockId)) return null;
 
   const label = event.blockId ? labels.get(event.blockId) : undefined;
   return label ? `${label} deleted.` : "Block deleted.";
@@ -117,9 +161,18 @@ const LABEL_CACHING_EVENTS: string[] = [Events.BLOCK_CREATE, Events.BLOCK_CHANGE
  *  `serialization.workspaces.load()` fires exactly ONE BLOCK_CREATE, for the root of the loaded
  *  stack; the blocks inside it never appear in any event. In this interactive a student's program
  *  lives inside `setup`/`go`/`onclick`, so without this every block a returning student wrote
- *  would fall through to the generic "Block deleted." — the fallback would be the default path. */
-function cacheSubtreeLabels(block: IAnnounceableBlock, labels: Map<string, string>) {
+ *  would fall through to the generic "Block deleted." — the fallback would be the default path.
+ *
+ *  Refresh upward as well: a block's ARIA label embeds the labels of the blocks plugged into its
+ *  value inputs, so editing a child stales every ancestor's cached label. Plug `50` into `chance`
+ *  and only the number block gets an event -- the cached label for `chance` still says "with a
+ *  chance of, %", and that stale text is what a student hears when they delete it, missing the one
+ *  number they would need to rebuild it. */
+function cacheBlockLabels(block: IAnnounceableBlock, labels: Map<string, string>) {
   block.getDescendants(false).forEach(b => labels.set(b.id, b.getAriaLabel(ARIA_VERBOSITY)));
+  for (let ancestor = block.getParent(); ancestor; ancestor = ancestor.getParent()) {
+    labels.set(ancestor.id, ancestor.getAriaLabel(ARIA_VERBOSITY));
+  }
 }
 
 export function attachAriaAnnouncements(workspace: WorkspaceSvg): () => void {
@@ -136,7 +189,7 @@ export function attachAriaAnnouncements(workspace: WorkspaceSvg): () => void {
 
       if (blockId && LABEL_CACHING_EVENTS.includes(event.type)) {
         const block = workspace.getBlockById(blockId);
-        if (block) cacheSubtreeLabels(block, labels);
+        if (block) cacheBlockLabels(block, labels);
       }
 
       let message: string | null = null;
@@ -144,12 +197,15 @@ export function attachAriaAnnouncements(workspace: WorkspaceSvg): () => void {
         message = describeMove(event as unknown as IMoveEventLike, workspace);
       } else if (event.type === Events.BLOCK_DELETE) {
         const deleteEvent = event as unknown as IDeleteEventLike;
-        message = describeDelete(deleteEvent, labels);
+        message = describeDelete(deleteEvent, labels, internalDisposals);
         // BLOCK_DELETE fires once for a whole stack and carries every id in `ids`. Evicting only
         // `blockId` would strand the descendants' entries in the cache for the life of the
         // workspace. Fall back to `blockId` in case a future Blockly stops populating `ids`.
         const deletedIds = deleteEvent.ids ?? (blockId ? [blockId] : []);
-        deletedIds.forEach(id => labels.delete(id));
+        deletedIds.forEach(id => {
+          labels.delete(id);
+          internalDisposals.delete(id);
+        });
       }
 
       if (!message) return;

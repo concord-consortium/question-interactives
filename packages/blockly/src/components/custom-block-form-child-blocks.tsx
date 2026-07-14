@@ -89,13 +89,12 @@ export const CustomBlockFormChildBlocks = ({
     };
     newWorkspace.addChangeListener(saveState);
 
-    // This effect re-runs whenever the authoring form re-renders, so the listener must be detached
-    // in the cleanup below rather than left for disposal to collect.
-    const detachAnnouncements = attachAriaAnnouncements(newWorkspace);
+    // Announce committed moves and deletions. The workspace is disposed in the cleanup below, and
+    // disposal drops its listeners, so no separate detach is needed here.
+    attachAriaAnnouncements(newWorkspace);
 
     const childBlocksContainer = childBlocksContainerRef.current;
     return () => {
-      detachAnnouncements();
       newWorkspace.removeChangeListener(saveState);
       // Clearing innerHTML drops the DOM but leaves the workspace registered with Blockly's
       // global focus manager and shortcut registry, so an undisposed workspace can still

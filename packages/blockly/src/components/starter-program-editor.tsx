@@ -108,12 +108,11 @@ export const StarterProgramEditor: React.FC<IProps> = ({ customBlocks, starterBl
     };
     workspace.addChangeListener(listener);
 
-    // This effect re-runs whenever the authoring form re-renders, so the listener must be detached
-    // in the cleanup below rather than left for disposal to collect.
-    const detachAnnouncements = attachAriaAnnouncements(workspace);
+    // Announce committed moves and deletions. The workspace is disposed in the cleanup below, and
+    // disposal drops its listeners, so no separate detach is needed here.
+    attachAriaAnnouncements(workspace);
 
     return () => {
-      detachAnnouncements();
       workspace.removeChangeListener(listener);
       workspace.dispose();
       container.innerHTML = "";

@@ -1,6 +1,7 @@
 import { Blocks, inputs } from "blockly/core";
 import { javascriptGenerator } from "blockly/javascript";
 
+import { ARIA_ROLE_DESCRIPTIONS } from "./aria-role-descriptions";
 import { DecorativeIcon } from "./decorative-icon";
 
 import GoIcon from "../assets/go-icon.png";
@@ -29,7 +30,7 @@ Blocks.setup = {
     ));
     this.appendStatementInput("statements");
     this.setColour(BG_COLOR);
-    this.setAriaRoleDescriptionProvider("program section");
+    this.setAriaRoleDescriptionProvider(ARIA_ROLE_DESCRIPTIONS.programSection);
   }
 };
 
@@ -45,7 +46,7 @@ Blocks.go = {
     ));
     this.appendStatementInput("statements");
     this.setColour(BG_COLOR);
-    this.setAriaRoleDescriptionProvider("program section");
+    this.setAriaRoleDescriptionProvider(ARIA_ROLE_DESCRIPTIONS.programSection);
   }
 };
 
@@ -61,7 +62,7 @@ Blocks.onclick = {
     ));
     this.appendStatementInput("statements");
     this.setColour(BG_COLOR);
-    this.setAriaRoleDescriptionProvider("program section");
+    this.setAriaRoleDescriptionProvider(ARIA_ROLE_DESCRIPTIONS.programSection);
   }
 };
 

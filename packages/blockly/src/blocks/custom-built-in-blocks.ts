@@ -5,6 +5,7 @@ import { Blocks, FieldNumber, FieldDropdown } from "blockly/core";
 import { javascriptGenerator, Order } from "blockly/javascript";
 
 import { IBuiltInBlockInfo } from "../components/types";
+import { ARIA_ROLE_DESCRIPTIONS } from "./aria-role-descriptions";
 
 const BG_COLOR = "#0089b8";
 
@@ -19,7 +20,7 @@ Blocks.chance = {
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(BG_COLOR);
-    this.setAriaRoleDescriptionProvider("control block");
+    this.setAriaRoleDescriptionProvider(ARIA_ROLE_DESCRIPTIONS.control);
   }
 };
 
@@ -39,7 +40,7 @@ Blocks.repeat = {
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(BG_COLOR);
-    this.setAriaRoleDescriptionProvider("control block");
+    this.setAriaRoleDescriptionProvider(ARIA_ROLE_DESCRIPTIONS.control);
   }
 };
 
@@ -60,7 +61,7 @@ Blocks.when = {
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(BG_COLOR);
-    this.setAriaRoleDescriptionProvider("control block");
+    this.setAriaRoleDescriptionProvider(ARIA_ROLE_DESCRIPTIONS.control);
   }
 };
 
@@ -78,7 +79,7 @@ Blocks.number = {
       .appendField(new FieldNumber(0), "NUM");
     this.setOutput(true, "Number");
     this.setColour(BG_COLOR);
-    this.setAriaRoleDescriptionProvider("value block");
+    this.setAriaRoleDescriptionProvider(ARIA_ROLE_DESCRIPTIONS.value);
   }
 };
 
@@ -97,7 +98,7 @@ Blocks.mathOperation = {
     this.setInputsInline(true);
     this.setOutput(true, "Number");
     this.setColour(BG_COLOR);
-    this.setAriaRoleDescriptionProvider("value block");
+    this.setAriaRoleDescriptionProvider(ARIA_ROLE_DESCRIPTIONS.value);
   }
 };
 
@@ -131,7 +132,7 @@ Blocks.randomInteger = {
     this.setInputsInline(true);
     this.setOutput(true, "Number");
     this.setColour(BG_COLOR);
-    this.setAriaRoleDescriptionProvider("value block");
+    this.setAriaRoleDescriptionProvider(ARIA_ROLE_DESCRIPTIONS.value);
   }
 };
 
@@ -152,7 +153,7 @@ Blocks.comparison = {
     this.setInputsInline(true);
     this.setOutput(true, "Boolean");
     this.setColour(BG_COLOR);
-    this.setAriaRoleDescriptionProvider("value block");
+    this.setAriaRoleDescriptionProvider(ARIA_ROLE_DESCRIPTIONS.value);
   }
 };
 

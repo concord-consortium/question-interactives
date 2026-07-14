@@ -7,6 +7,8 @@ import {
 } from "blockly/core";
 
 import { ICustomBlock, IBlockConfig } from "../components/types";
+import { markInternalDisposal } from "../utils/aria-announce";
+import { ariaRoleDescriptionForType } from "./aria-role-descriptions";
 import { DISCLOSURE_LABEL_COLLAPSED, DisclosureField, PLUS_ICON } from "./disclosure-field";
 import { createGenerator } from "./generators";
 import { appendParameterFields, applyParameterDefaults } from "./params";
@@ -15,26 +17,6 @@ const blockHasDisclosure = (blockDef: ICustomBlock, blockConfig: IBlockConfig): 
   return blockDef.type === "creator" ||
     (blockDef.type === "action" && !!blockConfig.canHaveChildren);
 };
-
-/** Blockly's default role description for our blocks is the structural "statement" or "value",
- *  which tells a student nothing about what the block does. These names match the block types
- *  authors already work in and the toolbox categories students already see.
- *
- *  Deriving them from the block's type, rather than adding a per-block authoring field, is
- *  deliberate: an authored field would mean a schema change, new authoring UI, and every block
- *  that already exists shipping blank until someone went back and filled it in. */
-const ARIA_ROLE_DESCRIPTIONS: Record<string, string> = {
-  action: "action block",
-  ask: "ask block",
-  condition: "condition block",
-  creator: "creator block",
-  globalValue: "global value block",
-  setter: "setter block"
-};
-
-export const ariaRoleDescriptionForType = (type: string): string | undefined =>
-  ARIA_ROLE_DESCRIPTIONS[type];
-
 
 // Filters and validates dropdown options to Blockly MenuOption format.
 const filterDropdownOptions = (options: unknown[]): MenuOption[] => {
@@ -73,26 +55,36 @@ const collectBlockChain = (startBlock: BlockSvg | null): BlockSvg[] => {
   return blocks;
 };
 
-// Disposes all connected child blocks from a statement input.
-const disposeChildBlocks = (block: BlockSvg, inputName = "statements"): void => {
-  const stmt = block.getInput(inputName);
-  if (!stmt?.connection) return;
-  
-  const targetBlock = stmt.connection.targetBlock() as BlockSvg | null;
-  if (!targetBlock) return;
-
-  const blocksToDispose = collectBlockChain(targetBlock);
+/** Every dispose in this file is bookkeeping, not a deletion: collapsing a disclosure block stashes
+ *  its children and disposes them, and both the template and the code generator build blocks on the
+ *  live workspace only to throw them away. All of it runs inside click and validator handlers, where
+ *  Blockly's `recordUndo` is `true` -- so to a listener these are indistinguishable from a student
+ *  hitting Delete. Naming the blocks first is what keeps the screen reader from announcing a
+ *  student's whole program as deleted when they merely collapsed it. See utils/aria-announce.ts. */
+const disposeChain = (blocks: BlockSvg[], context: string): void => {
   // Dispose in reverse order to avoid connection issues
-  blocksToDispose.reverse().forEach(b => {
+  blocks.reverse().forEach(b => {
     try {
+      markInternalDisposal(b);
       // false = do not "heal stack", i.e., don't reconnect remaining blocks when
       // one is removed. We skip healing because we're disposing all children.
       // See https://developers.google.com/blockly/reference/js/blockly.blocksvg_class.dispose_1_method.md
       b.dispose(false);
     } catch (e) {
-      console.warn("Error disposing child block:", e);
+      console.warn(`Error disposing ${context} block:`, e);
     }
   });
+};
+
+// Disposes all connected child blocks from a statement input.
+const disposeChildBlocks = (block: BlockSvg, inputName = "statements"): void => {
+  const stmt = block.getInput(inputName);
+  if (!stmt?.connection) return;
+
+  const targetBlock = stmt.connection.targetBlock() as BlockSvg | null;
+  if (!targetBlock) return;
+
+  disposeChain(collectBlockChain(targetBlock), "child");
 };
 
 // Serializes connected blocks to XML string.
@@ -138,6 +130,7 @@ const getXmlFromTemplate = (childBlocks: serialization.blocks.State, workspace: 
   const innerRoot = serialization.blocks.append(childBlocks, workspace);
   const dom = Xml.blockToDom(innerRoot, true);
   const xml = Xml.domToText(dom);
+  markInternalDisposal(innerRoot);
   innerRoot.dispose(false);
   return xml;
 };
@@ -165,20 +158,10 @@ const generateCodeFromXml = (block: BlockSvg, xml: string, inputName: string): s
     
     // Generate code from the temporary blocks
     const code = javascriptGenerator.statementToCode(block, inputName) || "";
-    
+
     // Clean up: dispose temp blocks
-    const blocksToDispose = collectBlockChain(tempBlock);
-    blocksToDispose.reverse().forEach(b => {
-      try {
-        // false = do not "heal stack", i.e., don't reconnect remaining blocks when
-        // one is removed. We skip healing because we're disposing all children.
-        // See https://developers.google.com/blockly/reference/js/blockly.blocksvg_class.dispose_1_method.md
-        b.dispose(false);
-      } catch (e) {
-        console.warn("Error disposing temp block:", e);
-      }
-    });
-    
+    disposeChain(collectBlockChain(tempBlock), "temp");
+
     // Remove temporary input
     block.removeInput(inputName, true);
     

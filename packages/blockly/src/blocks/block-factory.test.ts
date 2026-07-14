@@ -1,6 +1,7 @@
 import { Blocks, FieldDropdown, FieldNumber } from "blockly/core";
 import { javascriptGenerator } from "blockly/javascript";
-import { ariaRoleDescriptionForType, registerCustomBlocks } from "./block-factory";
+import { ariaRoleDescriptionForType } from "./aria-role-descriptions";
+import { registerCustomBlocks } from "./block-factory";
 import { DISCLOSURE_LABEL_COLLAPSED, DisclosureField, PLUS_ICON } from "./disclosure-field";
 import { ICustomBlock } from "../components/types";
 
@@ -23,7 +24,15 @@ jest.mock("blockly/core", () => ({
     getValue: jest.fn().mockReturnValue(defaultValue || 1),
     defaultValue
   })),
-  setLocale: jest.fn()
+  setLocale: jest.fn(),
+  // block-factory reaches aria-announce for markInternalDisposal, and that module reads
+  // utils.aria.Verbosity as it loads. Without this the mock breaks the import, not the assertion.
+  utils: {
+    aria: {
+      Verbosity: { TERSE: "terse" },
+      announceDynamicAriaState: jest.fn()
+    }
+  }
 }));
 
 jest.mock("./disclosure-field", () => ({

@@ -1,15 +1,19 @@
-import Blockly, { Events, serialization, utils, WorkspaceSvg } from "blockly/core";
+import Blockly, { BlockSvg, Events, serialization, utils, WorkspaceSvg } from "blockly/core";
 import * as En from "blockly/msg/en";
 
 // The real-workspace suite at the bottom of this file needs Blockly's built-in blocks and our seed
 // blocks registered, and its English messages loaded -- inject() cannot build a workspace, nor
-// compose an ARIA label, without them.
+// compose an ARIA label, without them. The JavaScript generators come with them: block-factory runs
+// one while collapsing a disclosure block, to cache the code of the children it is about to drop.
 import "blockly/blocks";
+import "blockly/javascript";
 import "../blocks/starter-blocks";
 
+import { registerCustomBlocks } from "../blocks/block-factory";
+import { ICustomBlock } from "../components/types";
 import {
   ARIA_VERBOSITY, attachAriaAnnouncements, describeDelete, describeMove, IAnnounceableBlock,
-  IAnnounceableWorkspace
+  IAnnounceableWorkspace, markInternalDisposal
 } from "./aria-announce";
 
 Blockly.setLocale(En as unknown as {[key: string]: string});
@@ -28,11 +32,16 @@ interface IMakeBlockOptions {
   /** Blocks inside this one. Blockly's `getDescendants()` includes the block itself. */
   descendants?: IAnnounceableBlock[];
   enabled?: boolean;
+  /** Blocks default to connectable. A hat block (`setup`/`go`/`onclick`) has neither connection:
+   *  it is top level by design, not a block someone left lying loose. */
+  connectable?: boolean;
 }
 
 const makeBlock = (
   label: string,
-  { id = label, parent = null, surroundParent = null, descendants = [], enabled = true }: IMakeBlockOptions = {}
+  {
+    id = label, parent = null, surroundParent = null, descendants = [], enabled = true, connectable = true
+  }: IMakeBlockOptions = {}
 ): IAnnounceableBlock => {
   const block: IAnnounceableBlock = {
     id,
@@ -41,7 +50,9 @@ const makeBlock = (
     getSurroundParent: () => surroundParent,
     getNextBlock: () => null,
     getDescendants: () => [block, ...descendants],
-    isEnabled: () => enabled
+    isEnabled: () => enabled,
+    previousConnection: connectable ? {} : null,
+    outputConnection: null
   };
   return block;
 };
@@ -98,9 +109,40 @@ describe("describeMove", () => {
   });
 
   it("omits the disabled clause for a loose block that is still enabled", () => {
-    const workspace = makeWorkspace({ b1: makeBlock("setup") });
+    const workspace = makeWorkspace({ b1: makeBlock("move forward") });
 
-    expect(describeMove(dragMove(), workspace)).toBe("setup placed on workspace, not connected.");
+    expect(describeMove(dragMove(), workspace)).toBe("move forward placed on workspace, not connected.");
+  });
+
+  // disableOrphans disables everything connected into a disabled block, so being connected is no
+  // promise that a block will run. Announcing the identical block as disabled when it is loose but
+  // live when it is nested inside a disabled `repeat` is exactly backwards.
+  it("says a block is disabled even when it connected into something, if the stack is disabled", () => {
+    const parent = makeBlock("repeat", { enabled: false });
+    const workspace = makeWorkspace({
+      b1: makeBlock("move forward", { parent, surroundParent: parent, enabled: false })
+    });
+
+    expect(describeMove(dragMove(), workspace)).toBe("move forward connected inside repeat, disabled.");
+  });
+
+  it("says a stacked block is disabled when the stack it joined is disabled", () => {
+    const container = makeBlock("repeat", { enabled: false });
+    const sibling = makeBlock("turn right", { parent: container, surroundParent: container, enabled: false });
+    const stacked = makeBlock("move forward", { id: "b1", parent: sibling, surroundParent: container, enabled: false });
+    stackAfter(sibling, stacked);
+    const workspace = makeWorkspace({ b1: stacked });
+
+    expect(describeMove(dragMove(), workspace))
+      .toBe("move forward connected after turn right, inside repeat, disabled.");
+  });
+
+  // `setup`/`go`/`onclick` have no previous or output connection: there is nothing on the canvas
+  // they could attach to. "not connected" would describe the program's root container as broken.
+  it("says a top-level hat block moved, not that it failed to connect", () => {
+    const workspace = makeWorkspace({ b1: makeBlock("setup", { connectable: false }) });
+
+    expect(describeMove(dragMove(), workspace)).toBe("setup moved.");
   });
 
   it.each([
@@ -164,6 +206,21 @@ describe("describeDelete", () => {
     const event = { type: BLOCK_MOVE, blockId: "b1", recordUndo: true };
 
     expect(describeDelete(event, labels)).toBeNull();
+  });
+
+  // `recordUndo` is not "the student did this". block-factory disposes blocks on the live workspace
+  // inside plain click and validator handlers, where recordUndo is true and no student asked for
+  // anything to be deleted.
+  it("stays silent for a block our own machinery disposed", () => {
+    const event = { type: BLOCK_DELETE, blockId: "b1", recordUndo: true };
+
+    expect(describeDelete(event, labels, new Set(["b1"]))).toBeNull();
+  });
+
+  it("still announces a student's deletion of a block our machinery never touched", () => {
+    const event = { type: BLOCK_DELETE, blockId: "b1", recordUndo: true };
+
+    expect(describeDelete(event, labels, new Set(["other"]))).toBe("move forward deleted.");
   });
 });
 
@@ -255,7 +312,9 @@ describe("attachAriaAnnouncements", () => {
       getSurroundParent: () => null,
       getNextBlock: () => null,
       getDescendants: () => [exploding],
-      isEnabled: () => true
+      isEnabled: () => true,
+      previousConnection: {},
+      outputConnection: null
     };
     const ws = makeListenableWorkspace({ b1: exploding });
     const warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
@@ -295,6 +354,75 @@ describe("attachAriaAnnouncements", () => {
     // The child's entry went with it: nothing is left in the cache to name.
     ws.fire({ type: "delete", blockId: "child", ids: ["child"], recordUndo: true });
     expect(announce).toHaveBeenLastCalledWith("Block deleted.");
+  });
+
+  // Collapsing a disclosure block disposes its children on the live workspace, inside a click
+  // handler where recordUndo is true. Nothing was deleted -- the children are stashed in
+  // `__savedChildrenXml` and come back verbatim on re-expand. Announcing them as deleted tells a
+  // student their program was destroyed when it was not.
+  it("stays silent for a block block-factory disposed behind the student's back", () => {
+    const child = makeBlock("set color", { id: "child" });
+    const ws = makeListenableWorkspace({ child });
+
+    attachAriaAnnouncements(ws as never);
+    ws.fire({ type: "create", blockId: "child", recordUndo: true });
+
+    markInternalDisposal(child);
+    ws.fire({ type: "delete", blockId: "child", ids: ["child"], recordUndo: true });
+
+    expect(announce).not.toHaveBeenCalled();
+  });
+
+  // The mark is spent on the delete it was made for. A block-factory dispose must not buy silence
+  // for whatever the student deletes next.
+  it("goes back to announcing once the internal disposal it was told about has landed", () => {
+    const child = makeBlock("set color", { id: "child" });
+    const other = makeBlock("move forward", { id: "other" });
+    const ws = makeListenableWorkspace({ child, other });
+
+    attachAriaAnnouncements(ws as never);
+    ws.fire({ type: "create", blockId: "child", recordUndo: true });
+    ws.fire({ type: "create", blockId: "other", recordUndo: true });
+
+    markInternalDisposal(child);
+    ws.fire({ type: "delete", blockId: "child", ids: ["child"], recordUndo: true });
+    ws.fire({ type: "delete", blockId: "other", ids: ["other"], recordUndo: true });
+
+    expect(announce).toHaveBeenCalledTimes(1);
+    expect(announce).toHaveBeenCalledWith("move forward deleted.");
+  });
+
+  // A block's ARIA label embeds the labels of the blocks plugged into its value inputs, so editing
+  // the child stales the *parent's* cached label -- and the parent's label is what the student
+  // hears when they delete it. Refreshing only downward leaves them told they deleted an empty
+  // `chance` block, missing the one number they would need to rebuild it.
+  it("refreshes an ancestor's cached label when the block plugged into it changes", () => {
+    let chanceValue = "";
+    const number = makeBlock("50", { id: "number" });
+    const chance: IAnnounceableBlock = {
+      id: "chance",
+      getAriaLabel: () => `with a chance of${chanceValue}, %`,
+      getParent: () => null,
+      getSurroundParent: () => null,
+      getNextBlock: () => null,
+      getDescendants: () => [chance, number],
+      isEnabled: () => true,
+      previousConnection: {},
+      outputConnection: null
+    };
+    number.getParent = () => chance;
+    const ws = makeListenableWorkspace({ chance, number });
+
+    attachAriaAnnouncements(ws as never);
+    ws.fire({ type: "create", blockId: "chance", recordUndo: false });
+
+    // The student types 50 into the number block. Only the *number* is named by the event.
+    chanceValue = " 50";
+    ws.fire({ type: "change", blockId: "number", recordUndo: true });
+
+    ws.fire({ type: "delete", blockId: "chance", ids: ["chance", "number"], recordUndo: true });
+
+    expect(announce).toHaveBeenCalledWith("with a chance of 50, % deleted.");
   });
 
   it("removes its listener when disposed", () => {
@@ -432,6 +560,51 @@ describe("attachAriaAnnouncements against a real Blockly workspace", () => {
 
       expect(describeMove(dragOf("stacked_print"), workspace as unknown as IAnnounceableWorkspace))
         .toBe("print connected after if, do, inside setup.");
+    });
+  });
+
+  // The bug the fakes above cannot reach. block-factory disposes blocks on the LIVE workspace as
+  // routine bookkeeping: collapsing a disclosure block stashes its children in `__savedChildrenXml`
+  // and disposes them, and seeding the template appends blocks only to throw them away again. All
+  // of it runs inside a click handler, where `recordUndo` is `true` -- indistinguishable, to a
+  // listener, from a student hitting Delete. And Blockly fires those events from a timer, so a
+  // synchronous "we are mutating internally now" flag would be false again by the time the listener
+  // saw them. Only a real workspace and a real toggle can prove the live region stays quiet.
+  describe("a disclosure block whose children are disposed behind the student's back", () => {
+    const blockDef: ICustomBlock = {
+      category: "Properties",
+      color: "#ff0000",
+      config: { canHaveChildren: true, defaultChildBlocks: { type: "controls_if" } },
+      id: "custom_action_wander",
+      name: "wander",
+      type: "action"
+    };
+
+    const clickDisclosureToggle = (block: BlockSvg) => {
+      const field = block.getField("__disclosure_icon");
+      (field as unknown as { showEditor_: () => void }).showEditor_();
+    };
+
+    it("announces nothing as deleted when the student expands it, then collapses it", async () => {
+      registerCustomBlocks([blockDef]);
+      const block = workspace.newBlock("custom_action_wander") as BlockSvg;
+      block.initSvg();
+      block.render();
+
+      // Expanding seeds a `controls_if` from the template -- and disposes the template it seeded
+      // from, plus the scratch blocks the code generator built.
+      clickDisclosureToggle(block);
+      await waitForEvent(Events.BLOCK_CREATE);
+      expect(block.getInput("statements")?.connection?.targetBlock()?.type).toBe("controls_if");
+
+      // Collapsing disposes the child chain outright. The child is not gone: it is serialized into
+      // `__savedChildrenXml` and comes back verbatim on re-expand.
+      firedTypes = [];
+      clickDisclosureToggle(block);
+      await waitForEvent(Events.BLOCK_DELETE);
+
+      const spoken = announce.mock.calls.map(call => String(call[0]));
+      expect(spoken.filter(text => text.includes("deleted"))).toEqual([]);
     });
   });
 });
