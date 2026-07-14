@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useRef } from "react";
 
 import "../blocks/block-registration";
 import { registerCustomBlocks } from "../blocks/block-factory";
+import { attachAriaAnnouncements } from "../utils/aria-announce";
 import { saveEvents } from "../utils/block-utils";
 import { BLOCKLY_RENDERER } from "../utils/blockly-options";
 import { buildValidTypeSet, pruneStarterState } from "../utils/starter-utils";
@@ -107,7 +108,12 @@ export const StarterProgramEditor: React.FC<IProps> = ({ customBlocks, starterBl
     };
     workspace.addChangeListener(listener);
 
+    // This effect re-runs whenever the authoring form re-renders, so the listener must be detached
+    // in the cleanup below rather than left for disposal to collect.
+    const detachAnnouncements = attachAriaAnnouncements(workspace);
+
     return () => {
+      detachAnnouncements();
       workspace.removeChangeListener(listener);
       workspace.dispose();
       container.innerHTML = "";

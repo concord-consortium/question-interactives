@@ -2,6 +2,7 @@ import { Events, inject, serialization } from "blockly";
 import React, { MutableRefObject, useEffect, useRef } from "react";
 
 import { registerCustomBlocks } from "../blocks/block-factory";
+import { attachAriaAnnouncements } from "../utils/aria-announce";
 import { saveEvents, stateContainsType } from "../utils/block-utils";
 import { BLOCKLY_RENDERER } from "../utils/blockly-options";
 import { injectCustomBlocksIntoToolbox } from "../utils/toolbox-utils";
@@ -88,8 +89,13 @@ export const CustomBlockFormChildBlocks = ({
     };
     newWorkspace.addChangeListener(saveState);
 
+    // This effect re-runs whenever the authoring form re-renders, so the listener must be detached
+    // in the cleanup below rather than left for disposal to collect.
+    const detachAnnouncements = attachAriaAnnouncements(newWorkspace);
+
     const childBlocksContainer = childBlocksContainerRef.current;
     return () => {
+      detachAnnouncements();
       newWorkspace.removeChangeListener(saveState);
       // Clearing innerHTML drops the DOM but leaves the workspace registered with Blockly's
       // global focus manager and shortcut registry, so an undisposed workspace can still

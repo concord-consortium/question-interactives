@@ -8,6 +8,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 
 import { registerCustomBlocks } from "../blocks/block-factory";
 import "../blocks/block-registration";
+import { attachAriaAnnouncements } from "../utils/aria-announce";
 import { saveEvents } from "../utils/block-utils";
 import { BLOCKLY_RENDERER } from "../utils/blockly-options";
 import { hasAuthoredStarterContent, parseStarterProgram } from "../utils/starter-utils";
@@ -128,6 +129,10 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
           }
         };
         newWorkspace.addChangeListener(saveState);
+
+        // Announce committed moves and deletions. The workspace is disposed on re-init (above) and
+        // on unmount, and disposal drops its listeners, so no separate detach is needed here.
+        attachAriaAnnouncements(newWorkspace);
       } catch (e) {
         setError(e instanceof Error ? e : new Error(String(e)));
       }
