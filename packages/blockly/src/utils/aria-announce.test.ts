@@ -288,11 +288,20 @@ describe("Blockly event type strings", () => {
 });
 
 // A fake WorkspaceSvg: enough surface for the listener, no Blockly rendering.
-const makeListenableWorkspace = (blocks: Record<string, IAnnounceableBlock>) => {
+const makeListenableWorkspace = (initialBlocks: Record<string, IAnnounceableBlock>) => {
   const listeners: Array<(event: unknown) => void> = [];
+  let blocks = initialBlocks;
   const workspace = {
     isReadOnly: () => false,
     getBlockById: (id: string) => blocks[id] ?? null,
+    // The workspace is the authority on what it contains — the announcer primes its label cache
+    // from this, rather than trusting that it saw every create event.
+    getAllBlocks: () => Object.values(blocks),
+    // Stand in for a load swapping the workspace's contents wholesale.
+    setBlocks: (next: Record<string, IAnnounceableBlock>) => {
+      blocks = next;
+      Object.values(next).forEach(b => { (b as { workspace?: object }).workspace = workspace; });
+    },
     addChangeListener: (fn: (event: unknown) => void) => { listeners.push(fn); return fn; },
     removeChangeListener: (fn: (event: unknown) => void) => {
       const i = listeners.indexOf(fn);
@@ -383,6 +392,38 @@ describe("attachAriaAnnouncements", () => {
     expect(() => ws.fire({ type: "move", blockId: "b1", reason: ["drag"], recordUndo: true })).not.toThrow();
     expect(warn).toHaveBeenCalled();
     expect(announce).not.toHaveBeenCalled();
+  });
+
+  // The cache was built only from events, so it was only ever as reliable as the events. A block
+  // already sitting in the workspace when the announcer attaches -- or one put there by a load whose
+  // create events the announcer missed -- had no cached label, and deleting it announced the generic
+  // "Block deleted." CI caught exactly this: a student's starter program loaded, then deleting a
+  // block said "Block deleted." rather than naming it. The workspace, not the event stream, is the
+  // authority on what it contains.
+  it("names a block that was already in the workspace when it attached", () => {
+    const existing = makeBlock("if, do", { id: "loose_if" });
+    const ws = makeListenableWorkspace({ loose_if: existing });
+
+    // No create event for it -- it was there first.
+    attachAriaAnnouncements(ws as never);
+    ws.fire({ type: "delete", blockId: "loose_if", ids: ["loose_if"], recordUndo: true });
+
+    expect(announce).toHaveBeenCalledWith("if, do deleted.");
+  });
+
+  it("re-primes from the workspace when a load replaces its contents", () => {
+    const ws = makeListenableWorkspace({});
+    attachAriaAnnouncements(ws as never);
+
+    // A load swaps the workspace's contents wholesale. Whatever create events it did or did not
+    // fire, FINISHED_LOADING says "look again".
+    const loaded = makeBlock("if, do", { id: "loose_if" });
+    ws.setBlocks({ loose_if: loaded });
+    ws.fire({ type: "finished_loading" });
+
+    ws.fire({ type: "delete", blockId: "loose_if", ids: ["loose_if"], recordUndo: true });
+
+    expect(announce).toHaveBeenCalledWith("if, do deleted.");
   });
 
   it("names a block that only ever appeared as a descendant of a created block", () => {
