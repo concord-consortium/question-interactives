@@ -131,35 +131,48 @@ export function describeMove(event: IMoveEventLike, workspace: IAnnounceableWork
  *  inside plain click and validator handlers, where `recordUndo` is `true`. Left alone, a student
  *  who collapses a block hears their whole program announced as deleted.
  *
- *  A "we are mutating internally right now" flag cannot work: Blockly fires its events from a
- *  timer, so the flag is long since false by the time the listener runs. Naming the blocks is what
- *  survives the wait. The set is module-level because block-factory has no handle on the announcer.
+ *  A "we are mutating internally right now" flag cannot work: Blockly fires its events from a timer,
+ *  so the flag is long since false by the time the listener runs. Naming the blocks is what survives
+ *  the wait.
  *
- *  What keeps it from growing without bound, and from suppressing a delete it was never meant to, is
- *  that an id lives here only between the mark and the BLOCK_DELETE it suppresses -- the listener
- *  evicts it there. Note that ids are NOT a safe key on their own: a loaded block takes its id from
- *  the saved JSON, so two workspaces loading the same state hold the same ids. The eviction is what
- *  makes this safe, not any uniqueness of the id. */
-const internalDisposals = new Set<string>();
+ *  Keyed per workspace, and it has to be. A block id is NOT unique across workspaces: a loaded block
+ *  takes its id from the saved JSON, and `getXmlFromTemplate` appends a child-block template that
+ *  carries the id it was saved with. Authoring renders the starter-program editor and the child-block
+ *  editor side by side, so the very same template id is a throwaway in one and the author's real,
+ *  deletable block in the other -- and one shared set would let the throwaway's mark silence the real
+ *  block's deletion. Scoping to the workspace makes that impossible by construction rather than by
+ *  argument. A WeakMap, so a disposed workspace's ids go with it: blockly.tsx re-creates its workspace
+ *  whenever the toolbox or the custom blocks change. */
+const disposalsByWorkspace = new WeakMap<object, Set<string>>();
+
+/** The internal-disposal set for one workspace, created on first use. Exported so a test can assert
+ *  that two workspaces really do not share one. */
+export function disposalsForWorkspace(workspace: object): Set<string> {
+  let disposals = disposalsByWorkspace.get(workspace);
+  if (!disposals) disposalsByWorkspace.set(workspace, disposals = new Set());
+  return disposals;
+}
 
 /** Call immediately BEFORE disposing a block the student did not ask to delete, while the block is
  *  still alive and can still name its descendants -- `dispose()` takes the whole subtree with it. */
 export function markInternalDisposal(
   block: { getDescendants(ordered: boolean): Array<{ id: string }>; workspace?: { isReadOnly(): boolean } },
-  internallyDisposed: Set<string> = internalDisposals
+  internallyDisposed?: Set<string>
 ): void {
-  // A read-only workspace has no announcer, so an id marked there would never be evicted -- and the
-  // report view injects one, then runs registerCustomBlocks, whose block init disposes template
-  // blocks. Left alone, every report view would leak ids into this set for the life of the page.
-  // Nothing can be moved or deleted there, so there is no announcement to suppress and nothing to
-  // record. This holds only because every *editable* workspace attaches an announcer, whose delete
-  // listener is what drains the set; a new editable workspace without one would accumulate ids.
-  if (block.workspace?.isReadOnly()) return;
-  block.getDescendants(false).forEach(b => internallyDisposed.add(b.id));
+  const { workspace } = block;
+  if (!workspace) return;
+  // A read-only workspace attaches no announcer, so nothing would ever evict an id marked there --
+  // and the report view injects one, then runs registerCustomBlocks, whose block init disposes
+  // template blocks. Nothing can be moved or deleted in a report, so there is no announcement to
+  // suppress and nothing worth remembering.
+  if (workspace.isReadOnly()) return;
+
+  const disposals = internallyDisposed ?? disposalsForWorkspace(workspace);
+  block.getDescendants(false).forEach(b => disposals.add(b.id));
 }
 
 export function describeDelete(
-  event: IDeleteEventLike, labels: Map<string, string>, internallyDisposed: ReadonlySet<string> = internalDisposals
+  event: IDeleteEventLike, labels: Map<string, string>, internallyDisposed: ReadonlySet<string> = new Set()
 ): string | null {
   if (event.type !== Events.BLOCK_DELETE) return null;
   // workspace.clear() during a load fires a delete per block, none of which record undo.
@@ -196,6 +209,10 @@ function cacheBlockLabels(block: IAnnounceableBlock, labels: Map<string, string>
 
 export function attachAriaAnnouncements(workspace: WorkspaceSvg): () => void {
   const labels = new Map<string, string>();
+  // Only this workspace's internal disposals. block-factory marks against the block's own workspace,
+  // so a template disposed in the starter-program editor cannot silence a real deletion in the
+  // child-block editor, even though both hold the same template id.
+  const disposals = disposalsForWorkspace(workspace);
 
   const listener = (event: Events.Abstract) => {
     // The whole body is guarded, not just the announcing call. Workspace.fireChangeListener has no
@@ -216,14 +233,14 @@ export function attachAriaAnnouncements(workspace: WorkspaceSvg): () => void {
         message = describeMove(event as unknown as IMoveEventLike, workspace);
       } else if (event.type === Events.BLOCK_DELETE) {
         const deleteEvent = event as unknown as IDeleteEventLike;
-        message = describeDelete(deleteEvent, labels, internalDisposals);
+        message = describeDelete(deleteEvent, labels, disposals);
         // BLOCK_DELETE fires once for a whole stack and carries every id in `ids`. Evicting only
         // `blockId` would strand the descendants' entries in the cache for the life of the
         // workspace. Fall back to `blockId` in case a future Blockly stops populating `ids`.
         const deletedIds = deleteEvent.ids ?? (blockId ? [blockId] : []);
         deletedIds.forEach(id => {
           labels.delete(id);
-          internalDisposals.delete(id);
+          disposals.delete(id);
         });
       }
 

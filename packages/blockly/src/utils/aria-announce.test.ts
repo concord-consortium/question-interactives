@@ -13,7 +13,7 @@ import { registerCustomBlocks } from "../blocks/block-factory";
 import { ICustomBlock } from "../components/types";
 import {
   ARIA_VERBOSITY, attachAriaAnnouncements, describeDelete, describeMove, IAnnounceableBlock,
-  IAnnounceableWorkspace, markInternalDisposal
+  disposalsForWorkspace, IAnnounceableWorkspace, markInternalDisposal
 } from "./aria-announce";
 
 Blockly.setLocale(En as unknown as {[key: string]: string});
@@ -248,6 +248,34 @@ describe("markInternalDisposal", () => {
 
     expect([...disposals]).toEqual(["b1"]);
   });
+
+  // Block ids are not unique across workspaces. `getXmlFromTemplate` appends a child-block template
+  // carrying the id it was saved with, so in authoring -- where the starter-program editor and the
+  // child-block editor are alive at once -- the very same id is a throwaway in one workspace and the
+  // author's real, deletable block in the other. One shared set let the throwaway's mark silence the
+  // real block's deletion.
+  it("keeps one workspace's disposals from silencing a real deletion in another", () => {
+    const templateWorkspace = { isReadOnly: () => false };
+    const editorWorkspace = { isReadOnly: () => false };
+    const SHARED_ID = "template_1";
+
+    // The starter-program editor appends the template, marks it, and throws it away.
+    markInternalDisposal({
+      workspace: templateWorkspace,
+      getDescendants: () => [{ id: SHARED_ID }]
+    });
+
+    // The child-block editor holds a *real* block with that same id. Deleting it must be announced.
+    const editorDisposals = disposalsForWorkspace(editorWorkspace);
+    const deletion = { type: BLOCK_DELETE, blockId: SHARED_ID, recordUndo: true };
+    const editorLabels = new Map([[SHARED_ID, "move forward"]]);
+
+    expect(describeDelete(deletion, editorLabels, editorDisposals)).toBe("move forward deleted.");
+
+    // ...while the same deletion in the workspace that marked it stays silent.
+    const templateDisposals = disposalsForWorkspace(templateWorkspace);
+    expect(describeDelete(deletion, editorLabels, templateDisposals)).toBeNull();
+  });
 });
 
 // These tests hard-code Blockly's event type strings. If Blockly ever renames them, the tests
@@ -262,7 +290,8 @@ describe("Blockly event type strings", () => {
 // A fake WorkspaceSvg: enough surface for the listener, no Blockly rendering.
 const makeListenableWorkspace = (blocks: Record<string, IAnnounceableBlock>) => {
   const listeners: Array<(event: unknown) => void> = [];
-  return {
+  const workspace = {
+    isReadOnly: () => false,
     getBlockById: (id: string) => blocks[id] ?? null,
     addChangeListener: (fn: (event: unknown) => void) => { listeners.push(fn); return fn; },
     removeChangeListener: (fn: (event: unknown) => void) => {
@@ -272,6 +301,10 @@ const makeListenableWorkspace = (blocks: Record<string, IAnnounceableBlock>) => 
     fire: (event: unknown) => listeners.forEach(fn => fn(event)),
     listenerCount: () => listeners.length
   };
+  // A block belongs to a workspace, and internal disposals are scoped to it — so the fakes have to
+  // model that too, or markInternalDisposal has no workspace to record against.
+  Object.values(blocks).forEach(b => { (b as { workspace?: object }).workspace = workspace; });
+  return workspace;
 };
 
 describe("attachAriaAnnouncements", () => {
