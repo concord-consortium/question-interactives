@@ -1,7 +1,7 @@
-import { Events } from "blockly/core";
+import { Events, utils } from "blockly/core";
 
 import {
-  describeDelete, describeMove, IAnnounceableBlock, IAnnounceableWorkspace
+  attachAriaAnnouncements, describeDelete, describeMove, IAnnounceableBlock, IAnnounceableWorkspace
 } from "./aria-announce";
 
 // Blockly's event type strings. Hard-coded rather than imported so these tests stay
@@ -116,5 +116,84 @@ describe("Blockly event type strings", () => {
   it("match the constants these tests hard-code", () => {
     expect(Events.BLOCK_MOVE).toBe(BLOCK_MOVE);
     expect(Events.BLOCK_DELETE).toBe(BLOCK_DELETE);
+  });
+});
+
+// A fake WorkspaceSvg: enough surface for the listener, no Blockly rendering.
+const makeListenableWorkspace = (blocks: Record<string, IAnnounceableBlock>) => {
+  const listeners: Array<(event: unknown) => void> = [];
+  return {
+    getBlockById: (id: string) => blocks[id] ?? null,
+    addChangeListener: (fn: (event: unknown) => void) => { listeners.push(fn); return fn; },
+    removeChangeListener: (fn: (event: unknown) => void) => {
+      const i = listeners.indexOf(fn);
+      if (i >= 0) listeners.splice(i, 1);
+    },
+    fire: (event: unknown) => listeners.forEach(fn => fn(event)),
+    listenerCount: () => listeners.length
+  };
+};
+
+describe("attachAriaAnnouncements", () => {
+  let announce: jest.SpyInstance;
+
+  beforeEach(() => {
+    announce = jest.spyOn(utils.aria, "announceDynamicAriaState").mockImplementation(() => undefined);
+  });
+
+  afterEach(() => jest.restoreAllMocks());
+
+  it("announces where a dragged block landed", () => {
+    const parent = makeBlock("setup, empty");
+    const ws = makeListenableWorkspace({ b1: makeBlock("move forward", { parent }) });
+
+    attachAriaAnnouncements(ws as never);
+    ws.fire({ type: "move", blockId: "b1", reason: ["drag"], recordUndo: true });
+
+    expect(announce).toHaveBeenCalledWith("move forward connected inside setup, empty.");
+  });
+
+  it("names a deleted block using the label cached while it existed", () => {
+    const ws = makeListenableWorkspace({ b1: makeBlock("move forward") });
+
+    attachAriaAnnouncements(ws as never);
+    // The block is seen while it still exists...
+    ws.fire({ type: "create", blockId: "b1", recordUndo: true });
+    // ...then deleted, at which point getBlockById would return null.
+    ws.fire({ type: "delete", blockId: "b1", recordUndo: true });
+
+    expect(announce).toHaveBeenCalledWith("move forward deleted.");
+  });
+
+  it("says nothing for programmatic events", () => {
+    const ws = makeListenableWorkspace({ b1: makeBlock("move forward") });
+
+    attachAriaAnnouncements(ws as never);
+    ws.fire({ type: "move", blockId: "b1", reason: ["bump"], recordUndo: true });
+    ws.fire({ type: "move", blockId: "b1", reason: ["drag"], recordUndo: false });
+    ws.fire({ type: "delete", blockId: "b1", recordUndo: false });
+
+    expect(announce).not.toHaveBeenCalled();
+  });
+
+  it("never lets a failed announcement break the workspace", () => {
+    const ws = makeListenableWorkspace({ b1: makeBlock("move forward") });
+    announce.mockImplementation(() => { throw new Error("ARIA live region not initialized."); });
+    const warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    attachAriaAnnouncements(ws as never);
+
+    expect(() => ws.fire({ type: "move", blockId: "b1", reason: ["drag"], recordUndo: true })).not.toThrow();
+    expect(warn).toHaveBeenCalled();
+  });
+
+  it("removes its listener when disposed", () => {
+    const ws = makeListenableWorkspace({ b1: makeBlock("move forward") });
+
+    const detach = attachAriaAnnouncements(ws as never);
+    expect(ws.listenerCount()).toBe(1);
+
+    detach();
+    expect(ws.listenerCount()).toBe(0);
   });
 });

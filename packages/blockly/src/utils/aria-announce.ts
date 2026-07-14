@@ -1,4 +1,4 @@
-import { Events, utils } from "blockly/core";
+import { Events, utils, WorkspaceSvg } from "blockly/core";
 
 /**
  * Blockly narrates a block's journey during a keyboard move ("Moving inside setup, empty.")
@@ -68,4 +68,43 @@ export function describeDelete(event: IDeleteEventLike, labels: Map<string, stri
 
   const label = event.blockId ? labels.get(event.blockId) : undefined;
   return label ? `${label} deleted.` : "Block deleted.";
+}
+
+/** The label cache exists because a BLOCK_DELETE event arrives after the block is gone — there is
+ *  nothing left to ask for a name. Reconstructing one from event.oldJson would mean duplicating
+ *  Blockly's label composition, which is exactly the internal coupling this module avoids. */
+const LABEL_CACHING_EVENTS: string[] = [Events.BLOCK_CREATE, Events.BLOCK_CHANGE, Events.BLOCK_MOVE];
+
+export function attachAriaAnnouncements(workspace: WorkspaceSvg): () => void {
+  const labels = new Map<string, string>();
+
+  const listener = (event: Events.Abstract) => {
+    const { blockId } = event as unknown as { blockId?: string };
+
+    if (blockId && LABEL_CACHING_EVENTS.includes(event.type)) {
+      const block = workspace.getBlockById(blockId);
+      if (block) labels.set(blockId, block.getAriaLabel(ARIA_VERBOSITY));
+    }
+
+    let message: string | null = null;
+    if (event.type === Events.BLOCK_MOVE) {
+      message = describeMove(event as unknown as IMoveEventLike, workspace);
+    } else if (event.type === Events.BLOCK_DELETE) {
+      message = describeDelete(event as unknown as IDeleteEventLike, labels);
+      if (blockId) labels.delete(blockId);
+    }
+
+    if (!message) return;
+
+    try {
+      utils.aria.announceDynamicAriaState(message);
+    } catch (e) {
+      // announceDynamicAriaState throws if the live region is not initialized. An unspoken
+      // announcement is a bug; a broken workspace is a catastrophe.
+      console.warn("Blockly ARIA announcement failed:", e);
+    }
+  };
+
+  workspace.addChangeListener(listener);
+  return () => workspace.removeChangeListener(listener);
 }
