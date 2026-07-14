@@ -162,22 +162,29 @@ context("Test blockly interactive", () => {
 
         cy.getIframeBody().find(LOOSE_IF).should("not.exist");
 
-        // TEMPORARY [QI-160] — REVERT BEFORE MERGE. Fails on purpose to print the whole story in one
-        // place: the inject/seed/announcer trace, the value the live region actually holds, and how
-        // many top blocks the live workspace has. CI only ever shows `attach blocks=0` then silence.
-        cy.getIframeBody().then($body => {
-          const win = $body[0].ownerDocument.defaultView;
-          const trace = win.__qi160 || ["(no trace)"];
-          const announced = ($body.find("#blocklyAriaAnnounce").text() || "").trim();
-          const wsCount = win.document.querySelectorAll(".blocklyBlockCanvas").length;
-          expect(
-            `announced=[${announced}] canvases=${wsCount}\n${trace.join("\n")}`,
-            "QI160 DUMP"
-          ).to.equal("__FORCE_FAIL__");
-        });
-
-        cy.getIframeBody().find("#blocklyAriaAnnounce").invoke("text")
-          .should("contain", "if, do deleted.");
+        // Blockly delivers its change events behind requestAnimationFrame (events/utils.ts:
+        // `requestAnimationFrame(() => setTimeout(fireNow, 0))`). The block's SVG is removed
+        // synchronously — hence `should("not.exist")` above — but the BLOCK_DELETE *event* that drives
+        // our announcement waits for the next animation frame. In a real browser that is ~16ms away;
+        // in headless CI a static page can sit many seconds between frames, so the queued event — and
+        // the announcement — never lands inside the retry window. The move test never hit this because
+        // its keyboard steps keep Blockly painting. A window resize makes Blockly lay out and paint,
+        // which ticks the compositor and fires the pending frame; `svgResize` does not touch program
+        // state. `.should()` retries the query but not this side effect, so nudge on every poll until
+        // the announcement arrives.
+        const nudgeUntilAnnounced = (needle, remaining = 40) => {
+          cy.getIframeBody().then($body => {
+            $body[0].ownerDocument.defaultView.dispatchEvent(new Event("resize"));
+            const text = $body.find("#blocklyAriaAnnounce").text() || "";
+            if (text.includes(needle)) return;
+            if (remaining <= 0) {
+              throw new Error(`live region never contained "${needle}"; last was "${text.trim()}"`);
+            }
+            cy.wait(200);
+            nudgeUntilAnnounced(needle, remaining - 1);
+          });
+        };
+        nudgeUntilAnnounced("if, do deleted.");
       });
     });
   });

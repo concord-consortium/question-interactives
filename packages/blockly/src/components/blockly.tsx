@@ -78,13 +78,6 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
         workspaceRef.current = newWorkspace;
         setError(null);
 
-        // TEMPORARY [QI-160] — REVERT BEFORE MERGE.
-        {
-          const w = window as unknown as { __qi160?: string[] };
-          if (!w.__qi160) w.__qi160 = [];
-          w.__qi160.push(`INJECT ws=${newWorkspace.id?.slice(0, 4)} report=${report}`);
-        }
-
         // Blocks not connected to top-level blocks (e.g., setup, go) should be disabled.
         newWorkspace.addChangeListener(Events.disableOrphans);
 
@@ -236,15 +229,6 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
 
   // Load saved state on initial load
   useEffect(() => {
-    // TEMPORARY [QI-160] — REVERT BEFORE MERGE.
-    {
-      const w = window as unknown as { __qi160?: string[] };
-      if (!w.__qi160) w.__qi160 = [];
-      w.__qi160.push(
-        `SEED-EFFECT ws=${workspaceRef.current?.id?.slice(0, 4)} ` +
-        `hasLoaded=${hasLoadedRef.current} hasSavedState=${!!interactiveState?.blocklyState}`
-      );
-    }
     if (hasLoadedRef.current || !workspaceRef.current) {
       return;
     }
