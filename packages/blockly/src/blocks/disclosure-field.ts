@@ -45,6 +45,21 @@ export class DisclosureField extends FieldImage {
     this.recomputeAriaContext();
   }
 
+  /**
+   * Keep the toggle out of the *block-level* label, exactly as `DecorativeIcon` does.
+   *
+   * `FieldImage.computeAriaLabel()` folds the alt text into the label Blockly composes for the
+   * whole block, so a report block read out as "…, image: Hide child blocks" — advertising a
+   * control that a read-only workspace does not let the reader operate.
+   *
+   * This costs the toggle nothing: its own accessible name is published from
+   * `recomputeAriaContext()` via `getAriaValue()` (the alt text), which is a separate path.
+   * Focus the toggle in an editable workspace and it still says "Show/Hide child blocks".
+   */
+  override computeAriaLabel(): string {
+    return "";
+  }
+
   override recomputeAriaContext(): boolean {
     // Per Blockly's contract, a false return means this element is hidden from the accessibility
     // tree (flyout blocks) or has no accessible role (read-only workspaces, e.g. the report view).

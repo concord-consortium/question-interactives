@@ -11,8 +11,16 @@ import { Events, utils, WorkspaceSvg } from "blockly/core";
  * under jsdom.
  */
 export interface IAnnounceableBlock {
+  id: string;
   getAriaLabel(verbosity: utils.aria.Verbosity): string;
   getParent(): IAnnounceableBlock | null;
+  /** The block that *contains* this one (an if, a loop, setup), skipping previous-statement
+   *  parents. Null for a block in a top-level stack. */
+  getSurroundParent(): IAnnounceableBlock | null;
+  /** Compared by identity only, so it is typed loosely: Blockly's `getNextBlock()` returns a
+   *  `Block`, which -- unlike `BlockSvg` -- has no `getAriaLabel`. */
+  getNextBlock(): unknown;
+  getDescendants(ordered: boolean): IAnnounceableBlock[];
   isEnabled(): boolean;
 }
 
@@ -30,6 +38,8 @@ export interface IMoveEventLike {
 export interface IDeleteEventLike {
   type: string;
   blockId?: string;
+  /** Every id in the deleted stack. BLOCK_DELETE fires once for the stack, not once per block. */
+  ids?: string[];
   recordUndo: boolean;
 }
 
@@ -53,7 +63,24 @@ export function describeMove(event: IMoveEventLike, workspace: IAnnounceableWork
   const label = block.getAriaLabel(ARIA_VERBOSITY);
   const parent = block.getParent();
   if (parent) {
-    return `${label} connected inside ${parent.getAriaLabel(ARIA_VERBOSITY)}.`;
+    // `getParent()` is NOT "the block that surrounds me". A block joined to a preceding block's
+    // nextConnection has that *sibling* as its parent -- Blockly's own docs on getSurroundParent()
+    // say so: "A parent block might just be the previous statement, whereas the surrounding block
+    // is an if statement, while loop, etc." Announcing "connected inside move forward" for a block
+    // stacked after `move forward` is confidently wrong about the one fact this module exists to
+    // convey, and sequencing statements is the commonest thing a student does here.
+    const parentLabel = parent.getAriaLabel(ARIA_VERBOSITY);
+    const stackedAfterParent = parent.getNextBlock() === block;
+    if (!stackedAfterParent) {
+      return `${label} connected inside ${parentLabel}.`;
+    }
+
+    // Stacked after a sibling. Name what it follows *and* what contains it: "after turn right"
+    // alone leaves a blind student unable to tell a statement inside `setup` from one inside `go`.
+    const surround = block.getSurroundParent();
+    return surround
+      ? `${label} connected after ${parentLabel}, inside ${surround.getAriaLabel(ARIA_VERBOSITY)}.`
+      : `${label} connected after ${parentLabel}.`;
   }
 
   // An orphaned block is silently disabled by disableOrphans and does nothing. Say so.
@@ -75,6 +102,15 @@ export function describeDelete(event: IDeleteEventLike, labels: Map<string, stri
  *  Blockly's label composition, which is exactly the internal coupling this module avoids. */
 const LABEL_CACHING_EVENTS: string[] = [Events.BLOCK_CREATE, Events.BLOCK_CHANGE, Events.BLOCK_MOVE];
 
+/** Cache the event's block *and its descendants*, not just the block the event names.
+ *  `serialization.workspaces.load()` fires exactly ONE BLOCK_CREATE, for the root of the loaded
+ *  stack; the blocks inside it never appear in any event. In this interactive a student's program
+ *  lives inside `setup`/`go`/`onclick`, so without this every block a returning student wrote
+ *  would fall through to the generic "Block deleted." — the fallback would be the default path. */
+function cacheSubtreeLabels(block: IAnnounceableBlock, labels: Map<string, string>) {
+  block.getDescendants(false).forEach(b => labels.set(b.id, b.getAriaLabel(ARIA_VERBOSITY)));
+}
+
 export function attachAriaAnnouncements(workspace: WorkspaceSvg): () => void {
   const labels = new Map<string, string>();
 
@@ -89,15 +125,20 @@ export function attachAriaAnnouncements(workspace: WorkspaceSvg): () => void {
 
       if (blockId && LABEL_CACHING_EVENTS.includes(event.type)) {
         const block = workspace.getBlockById(blockId);
-        if (block) labels.set(blockId, block.getAriaLabel(ARIA_VERBOSITY));
+        if (block) cacheSubtreeLabels(block, labels);
       }
 
       let message: string | null = null;
       if (event.type === Events.BLOCK_MOVE) {
         message = describeMove(event as unknown as IMoveEventLike, workspace);
       } else if (event.type === Events.BLOCK_DELETE) {
-        message = describeDelete(event as unknown as IDeleteEventLike, labels);
-        if (blockId) labels.delete(blockId);
+        const deleteEvent = event as unknown as IDeleteEventLike;
+        message = describeDelete(deleteEvent, labels);
+        // BLOCK_DELETE fires once for a whole stack and carries every id in `ids`. Evicting only
+        // `blockId` would strand the descendants' entries in the cache for the life of the
+        // workspace. Fall back to `blockId` in case a future Blockly stops populating `ids`.
+        const deletedIds = deleteEvent.ids ?? (blockId ? [blockId] : []);
+        deletedIds.forEach(id => labels.delete(id));
       }
 
       if (!message) return;

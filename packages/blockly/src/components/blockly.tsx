@@ -130,9 +130,13 @@ export const BlocklyComponent: React.FC<IProps> = ({ authoredState, interactiveS
         };
         newWorkspace.addChangeListener(saveState);
 
-        // Announce committed moves and deletions. The workspace is disposed on re-init (above) and
-        // on unmount, and disposal drops its listeners, so no separate detach is needed here.
-        attachAriaAnnouncements(newWorkspace);
+        // Announce committed moves and deletions. Not in the report: that workspace is injected
+        // readOnly, so nothing there can be moved or deleted, and the design's AC says the
+        // read-only report is untouched. The workspace is disposed on re-init (above) and on
+        // unmount, and disposal drops its listeners, so no separate detach is needed here.
+        if (!report) {
+          attachAriaAnnouncements(newWorkspace);
+        }
       } catch (e) {
         setError(e instanceof Error ? e : new Error(String(e)));
       }

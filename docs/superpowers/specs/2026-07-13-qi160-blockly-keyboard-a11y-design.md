@@ -149,15 +149,27 @@ to sighted users, and a low-vision user running a magnifier alongside a screen r
 well drag with a mouse. Gating on `keyboardNavigationController.getIsActive()` would add a
 second API dependency and leave that user silent, for no benefit.
 
-**Messages**, composed from `BlockSvg.getAriaLabel()` on the moved block and on
-`block.getParent()`:
+**Messages**, composed from `BlockSvg.getAriaLabel()` on the moved block and on its relatives:
 
 | Situation | Announcement |
 |---|---|
-| connected to a parent | `"move forward connected inside setup."` |
+| nested into a container | `"move forward connected inside setup."` |
+| stacked after a sibling, inside a container | `"turn right connected after move forward, inside setup."` |
+| stacked after a sibling in a top-level stack | `"turn right connected after move forward."` |
 | dropped loose on the canvas | `"move forward placed on workspace, not connected, disabled."` |
 | deleted | `"move forward deleted."` |
 | deleted, label unknown | `"Block deleted."` |
+
+**The stacked case is not the nested case, and `getParent()` cannot tell them apart.** For a block
+joined to a preceding block's `nextConnection`, the parent *is that preceding sibling* — Blockly's
+own docs on `getSurroundParent()` say so: "A parent block might just be the previous statement,
+whereas the surrounding block is an if statement, while loop, etc." Announcing "connected inside
+move forward" for a block stacked *after* `move forward` would be confidently wrong about the one
+fact this feature exists to convey, and sequencing statements is the commonest thing a student does
+here. The two are distinguished with public API only: the relationship is *stacked* when
+`parent.getNextBlock() === block`, and the container in that case is `block.getSurroundParent()`
+(null in a top-level stack). Naming both the block it follows and the container it landed in is
+what lets a listener tell a statement inside `setup` from one inside `go`.
 
 The `", disabled"` clause is conditional on `!block.isEnabled()` rather than assumed, so it
 tracks `disableOrphans` (`blockly.tsx:81`) rather than duplicating its logic. This clause
@@ -166,10 +178,19 @@ block is silently disabled and does nothing, and today nothing tells a blind stu
 
 **The label cache.** By the time `BLOCK_DELETE` fires, the block is gone — there is nothing
 left to ask for a label. `attachAriaAnnouncements` therefore maintains a
-`Map<blockId, string>` updated on create/change/move (O(1) per event) and read on delete.
+`Map<blockId, string>` updated on create/change/move and read on delete.
 Falls back to `"Block deleted."` on a miss. This is preferred over reconstructing a label
 from `event.oldJson`, which would mean re-implementing Blockly's label composition — the
 exact internal coupling this design avoids.
+
+Each caching event caches the event's block **and its whole subtree** (`block.getDescendants(false)`,
+public). `serialization.workspaces.load()` fires exactly *one* `BLOCK_CREATE`, for the root of the
+loaded stack; the blocks inside it never appear in any event. Since a student's program lives inside
+`setup`/`go`/`onclick`, caching only the event's own `blockId` would leave every block a returning
+student wrote unnamed, making the `"Block deleted."` fallback the default path rather than a rare
+miss. Symmetrically, `BLOCK_DELETE` fires once for a whole stack and carries every id in `event.ids`,
+so eviction walks `ids` — evicting only `blockId` would strand the descendants' entries for the life
+of the workspace.
 
 **Failure mode.** The `announceDynamicAriaState` call is wrapped so that a failed
 announcement can never break the workspace. An unspoken message is a bug; a broken canvas
@@ -195,6 +216,12 @@ alt text, so this is the supported path:
 - expanded → `"Hide child blocks"`
 
 Result: *"Show child blocks, button, collapsed"* rather than *"plus slash minus, button."*
+
+It also overrides `computeAriaLabel()` to return `""` (as `DecorativeIcon` does), which keeps the
+toggle out of the **block-level** label. Otherwise a block reads "…, image: Hide child blocks" — and
+in the read-only report that advertises a control the reader cannot operate. The toggle's own
+accessible name travels a different path (`getAriaValue()` via `recomputeAriaContext()`), so it is
+unaffected: in an editable workspace the toggle still announces "Show/Hide child blocks".
 
 The existing `setOnClickHandler` is unchanged. `Enter` already routes to it — verified.
 
@@ -283,7 +310,8 @@ nothing and cover every block immediately.
 
 - [ ] Committing a user drag — keyboard or mouse — announces the block's new position,
       distinguishing a connection from a loose (and therefore disabled) drop
-- [ ] Deleting a block announces the deletion
+- [ ] A block stacked after a sibling is announced as *after* it, not *inside* it
+- [ ] Deleting a block names it, including a block restored from saved work (which no event names)
 - [ ] Programmatic moves (bump, snap, cleanup, load, seed) announce nothing
 - [ ] The `+/-` disclosure toggle has a stateful accessible name and exposes `aria-expanded`
 - [ ] `aria-expanded` survives a block re-render

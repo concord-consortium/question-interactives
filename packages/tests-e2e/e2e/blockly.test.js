@@ -146,13 +146,16 @@ context("Test blockly interactive", () => {
         cy.getIframeBody().find("#blocklyAriaAnnounce").should("contain", "connected inside setup");
       });
 
-      it("announces a deletion", () => {
+      // Assert the *named* string, not merely "deleted": the generic "Block deleted." fallback
+      // contains that word too, so a looser assertion passes while a student hears nothing about
+      // which block went away. That is exactly how a real fallback regression once hid here.
+      it("announces a deletion, naming the block that went away", () => {
         focusLooseIf();
 
         pressKey("Delete", "Delete", 46);
 
         cy.getIframeBody().find(LOOSE_IF).should("not.exist");
-        cy.getIframeBody().find("#blocklyAriaAnnounce").should("contain", "deleted");
+        cy.getIframeBody().find("#blocklyAriaAnnounce").should("contain", "if, do deleted.");
       });
     });
   });

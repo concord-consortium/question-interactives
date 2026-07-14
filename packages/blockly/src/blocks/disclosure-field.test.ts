@@ -22,6 +22,20 @@ describe("DisclosureField", () => {
 
   afterEach(() => jest.restoreAllMocks());
 
+  // Every other test here goes through the constants, so renaming one would keep them all green
+  // while changing what a student actually hears. These are the strings the design specifies.
+  it("names the toggle for what it does", () => {
+    expect(DISCLOSURE_LABEL_COLLAPSED).toBe("Show child blocks");
+    expect(DISCLOSURE_LABEL_EXPANDED).toBe("Hide child blocks");
+  });
+
+  // The toggle names itself through getAriaValue()/recomputeAriaContext(), not through the
+  // block-level label. Folding it into the block would make a read-only report block read
+  // "..., image: Hide child blocks" -- advertising a control the reader cannot operate.
+  it("keeps itself out of the block-level ARIA label", () => {
+    expect(field.computeAriaLabel()).toBe("");
+  });
+
   it("starts collapsed and says so", () => {
     field.recomputeAriaContext();
 

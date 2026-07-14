@@ -282,6 +282,26 @@ describe("block-factory nested override", () => {
       });
     });
 
+    // Excluding the toggle from the block-level label (computeAriaLabel -> "") must not cost the
+    // toggle its own name: that is published on a different path (getAriaValue via
+    // recomputeAriaContext). In an editable workspace it still announces itself, while the block
+    // that owns it no longer recites "image: Hide child blocks" -- a control a report reader
+    // cannot operate.
+    it("names itself without putting its name on the block that owns it", () => {
+      const iconField = cb?.getField("__disclosure_icon") as any;
+      const blockLabel = () =>
+        (cb as Blockly.BlockSvg).getAriaLabel(Blockly.utils.aria.Verbosity.STANDARD);
+
+      expect(blockLabel()).toContain("molecules");
+      expect(blockLabel()).not.toContain(DISCLOSURE_LABEL_COLLAPSED);
+      expect(disclosureAria(cb as Blockly.BlockSvg).accessibleName).toBe(DISCLOSURE_LABEL_COLLAPSED);
+
+      iconField.clickHandler?.();
+
+      expect(blockLabel()).not.toContain(DISCLOSURE_LABEL_EXPANDED);
+      expect(disclosureAria(cb as Blockly.BlockSvg).accessibleName).toBe(DISCLOSURE_LABEL_EXPANDED);
+    });
+
     // The restore path (saved student work, starter program, report view) runs domToMutation,
     // not the click handler, so it has to reach the same aria state.
     it("survives a serialization round-trip of a block saved in the open state", () => {
