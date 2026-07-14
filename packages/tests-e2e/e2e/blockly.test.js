@@ -161,6 +161,16 @@ context("Test blockly interactive", () => {
         pressKey("Delete", "Delete", 46);
 
         cy.getIframeBody().find(LOOSE_IF).should("not.exist");
+
+        // TEMPORARY [QI-160] — REVERT BEFORE MERGE. This assertion always fails, on purpose: it is
+        // the only way to get the announcer's trace printed in the CI log. This test names the block
+        // locally and says the generic "Block deleted." in CI, every time, and CI is the only place
+        // that reproduces it.
+        cy.getIframeBody().then($body => {
+          const trace = $body[0].ownerDocument.defaultView.__qi160 || ["(no trace)"];
+          expect(trace.join("\n"), "ANNOUNCER TRACE").to.equal("__DUMP__");
+        });
+
         cy.getIframeBody().find("#blocklyAriaAnnounce").invoke("text")
           .should("contain", "if, do deleted.");
       });

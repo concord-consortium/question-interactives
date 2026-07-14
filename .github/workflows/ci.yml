@@ -29,8 +29,11 @@ jobs:
       # https://github.com/cypress-io/github-action/issues/48
       fail-fast: false
       matrix:
-        # run 3 copies of the current job in parallel
-        containers: [1, 2, 3]
+        # TEMPORARY [QI-160] — REVERT BEFORE MERGE. Restore to [1, 2, 3].
+        # The Blockly delete-announcement test fails only in CI and never locally, so CI is the
+        # only reproducer we have and every diagnosis costs a full run. One container running one
+        # spec turns a 20-minute cycle into a few minutes.
+        containers: [1]
     steps:
       - name: Checkout
         uses: actions/checkout@v5
@@ -50,10 +53,13 @@ jobs:
           # we have already installed all dependencies above
           install: false
           working-directory: ./packages/tests-e2e
-          # only record the results to dashboard.cypress.io if CYPRESS_RECORD_KEY is set
-          record: ${{ !!secrets.CYPRESS_RECORD_KEY }}
-          # only do parallel if we have a record key
-          parallel: ${{ !!secrets.CYPRESS_RECORD_KEY }}
+          # TEMPORARY [QI-160] — REVERT BEFORE MERGE. Restore record/parallel to the
+          # `${{ !!secrets.CYPRESS_RECORD_KEY }}` expressions and drop `spec`.
+          # Only the blockly spec is under investigation; parallelism across one container is
+          # pointless, and recording a partial run would pollute the Cypress dashboard.
+          spec: e2e/blockly.test.js
+          record: false
+          parallel: false
         env:
           # pass the Dashboard record key as an environment variable
           CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY }}

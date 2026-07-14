@@ -234,7 +234,22 @@ export function attachAriaAnnouncements(workspace: WorkspaceSvg): () => void {
     }
   };
 
+  // TEMPORARY [QI-160] — REVERT BEFORE MERGE.
+  // The delete announcement names the block locally and says the generic "Block deleted." in CI, on
+  // every run. Four theories about why have each been wrong, and CI is the only reproducer, so stop
+  // guessing and record what the announcer actually sees.
+  const debug = (step: string, event?: Events.Abstract) => {
+    const w = window as unknown as { __qi160?: string[] };
+    if (!w.__qi160) w.__qi160 = [];
+    if (w.__qi160.length > 60) return;
+    w.__qi160.push(
+      `${step}${event ? ":" + event.type : ""} ws=${workspace.id?.slice(0, 4)} ` +
+      `blocks=${workspace.getAllBlocks(false).length} cached=[${[...labels.keys()].join("|")}]`
+    );
+  };
+
   const listener = (event: Events.Abstract) => {
+    debug("evt", event); // TEMPORARY [QI-160] — REVERT BEFORE MERGE
     // The whole body is guarded, not just the announcing call. Workspace.fireChangeListener has no
     // try/catch of its own, and fireNow has already cleared the fire queue before dispatching, so a
     // throw from here -- composing a label as much as speaking it -- would drop every remaining
@@ -283,6 +298,7 @@ export function attachAriaAnnouncements(workspace: WorkspaceSvg): () => void {
 
   // Anything already on the canvas got no create event we could have seen.
   primeFromWorkspace();
+  debug("attach"); // TEMPORARY [QI-160] — REVERT BEFORE MERGE
   workspace.addChangeListener(listener);
   return () => workspace.removeChangeListener(listener);
 }
