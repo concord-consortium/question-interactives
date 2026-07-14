@@ -1,5 +1,7 @@
-import { Blocks, FieldImage, inputs } from "blockly/core";
+import { Blocks, inputs } from "blockly/core";
 import { javascriptGenerator } from "blockly/javascript";
+
+import { DecorativeIcon } from "./decorative-icon";
 
 import GoIcon from "../assets/go-icon.png";
 import OnclickIcon from "../assets/onclick-icon.png";
@@ -10,13 +12,16 @@ const ICON_WIDTH = 15;
 const ICON_HEIGHT = 15;
 const GO_ICON_WIDTH = 10;
 const GO_ICON_HEIGHT = 10;
-const ICON_ALT_TEXT = ""; // empty string since the icons are purely decorative
+// Empty string since the icons are purely decorative -- they repeat the text label beside them.
+// DecorativeIcon is what keeps that emptiness out of the block's ARIA label; a bare FieldImage
+// would turn it into the word "empty". See decorative-icon.ts.
+const ICON_ALT_TEXT = "";
 
 Blocks.setup = {
   init() {
     this.appendDummyInput()
       .appendField("setup")
-      .setAlign(inputs.Align.RIGHT).appendField(new FieldImage(
+      .setAlign(inputs.Align.RIGHT).appendField(new DecorativeIcon(
       Setup,
       ICON_WIDTH,
       ICON_HEIGHT,
@@ -32,7 +37,7 @@ Blocks.go = {
   init() {
     this.appendDummyInput()
       .appendField("go")
-      .setAlign(inputs.Align.RIGHT).appendField(new FieldImage(
+      .setAlign(inputs.Align.RIGHT).appendField(new DecorativeIcon(
       GoIcon,
       GO_ICON_WIDTH,
       GO_ICON_HEIGHT,
@@ -48,7 +53,7 @@ Blocks.onclick = {
   init() {
     this.appendDummyInput()
       .appendField("on mouse click")
-      .setAlign(inputs.Align.RIGHT).appendField(new FieldImage(
+      .setAlign(inputs.Align.RIGHT).appendField(new DecorativeIcon(
       OnclickIcon,
       ICON_WIDTH,
       ICON_HEIGHT,

@@ -131,9 +131,11 @@ context("Test blockly interactive", () => {
 
         pressKey("m", "KeyM", 77); // enter move mode
 
-        // A keyboard move is a real drag: each arrow nudges the block 20px and it connects once a
-        // candidate is within 28px. From the authored position, setup's empty statement input is
-        // two steps down and ten steps left.
+        // A keyboard move is a constrained move, not a free-form drag: there is no snap radius
+        // here. Each arrow steps 20px and Blockly traverses its list of candidate connections,
+        // picking a direction from the dominant axis of the accumulated delta. The sequence below
+        // was derived empirically against the authored block coordinates, so re-derive it if
+        // those coordinates change.
         Cypress._.times(2, () => pressKey("ArrowDown", "ArrowDown", 40));
         Cypress._.times(10, () => pressKey("ArrowLeft", "ArrowLeft", 37));
 

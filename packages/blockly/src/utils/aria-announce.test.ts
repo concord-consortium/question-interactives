@@ -187,6 +187,25 @@ describe("attachAriaAnnouncements", () => {
     expect(warn).toHaveBeenCalled();
   });
 
+  // Composing the message is as dangerous as speaking it: Workspace.fireChangeListener has no
+  // try/catch, and fireNow has already cleared the queue, so a throw here would swallow every
+  // remaining event in the batch -- for every workspace on the page.
+  it("never lets a failure while composing the message break the workspace", () => {
+    const exploding: IAnnounceableBlock = {
+      getAriaLabel: () => { throw new Error("label composition failed"); },
+      getParent: () => null,
+      isEnabled: () => true
+    };
+    const ws = makeListenableWorkspace({ b1: exploding });
+    const warn = jest.spyOn(console, "warn").mockImplementation(() => undefined);
+
+    attachAriaAnnouncements(ws as never);
+
+    expect(() => ws.fire({ type: "move", blockId: "b1", reason: ["drag"], recordUndo: true })).not.toThrow();
+    expect(warn).toHaveBeenCalled();
+    expect(announce).not.toHaveBeenCalled();
+  });
+
   it("removes its listener when disposed", () => {
     const ws = makeListenableWorkspace({ b1: makeBlock("move forward") });
 

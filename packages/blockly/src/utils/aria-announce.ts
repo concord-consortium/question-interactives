@@ -79,28 +79,32 @@ export function attachAriaAnnouncements(workspace: WorkspaceSvg): () => void {
   const labels = new Map<string, string>();
 
   const listener = (event: Events.Abstract) => {
-    const { blockId } = event as unknown as { blockId?: string };
-
-    if (blockId && LABEL_CACHING_EVENTS.includes(event.type)) {
-      const block = workspace.getBlockById(blockId);
-      if (block) labels.set(blockId, block.getAriaLabel(ARIA_VERBOSITY));
-    }
-
-    let message: string | null = null;
-    if (event.type === Events.BLOCK_MOVE) {
-      message = describeMove(event as unknown as IMoveEventLike, workspace);
-    } else if (event.type === Events.BLOCK_DELETE) {
-      message = describeDelete(event as unknown as IDeleteEventLike, labels);
-      if (blockId) labels.delete(blockId);
-    }
-
-    if (!message) return;
-
+    // The whole body is guarded, not just the announcing call. Workspace.fireChangeListener has no
+    // try/catch of its own, and fireNow has already cleared the fire queue before dispatching, so a
+    // throw from here -- composing a label as much as speaking it -- would drop every remaining
+    // event in the batch, for every workspace on the page. An unspoken announcement is a bug; a
+    // broken workspace is a catastrophe.
     try {
+      const { blockId } = event as unknown as { blockId?: string };
+
+      if (blockId && LABEL_CACHING_EVENTS.includes(event.type)) {
+        const block = workspace.getBlockById(blockId);
+        if (block) labels.set(blockId, block.getAriaLabel(ARIA_VERBOSITY));
+      }
+
+      let message: string | null = null;
+      if (event.type === Events.BLOCK_MOVE) {
+        message = describeMove(event as unknown as IMoveEventLike, workspace);
+      } else if (event.type === Events.BLOCK_DELETE) {
+        message = describeDelete(event as unknown as IDeleteEventLike, labels);
+        if (blockId) labels.delete(blockId);
+      }
+
+      if (!message) return;
+
+      // announceDynamicAriaState throws if the live region is not initialized.
       utils.aria.announceDynamicAriaState(message);
     } catch (e) {
-      // announceDynamicAriaState throws if the live region is not initialized. An unspoken
-      // announcement is a bug; a broken workspace is a catastrophe.
       console.warn("Blockly ARIA announcement failed:", e);
     }
   };
