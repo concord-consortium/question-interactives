@@ -162,13 +162,18 @@ context("Test blockly interactive", () => {
 
         cy.getIframeBody().find(LOOSE_IF).should("not.exist");
 
-        // TEMPORARY [QI-160] — REVERT BEFORE MERGE. This assertion always fails, on purpose: it is
-        // the only way to get the announcer's trace printed in the CI log. This test names the block
-        // locally and says the generic "Block deleted." in CI, every time, and CI is the only place
-        // that reproduces it.
+        // TEMPORARY [QI-160] — REVERT BEFORE MERGE. Fails on purpose to print the whole story in one
+        // place: the inject/seed/announcer trace, the value the live region actually holds, and how
+        // many top blocks the live workspace has. CI only ever shows `attach blocks=0` then silence.
         cy.getIframeBody().then($body => {
-          const trace = $body[0].ownerDocument.defaultView.__qi160 || ["(no trace)"];
-          expect(trace.join("\n"), "ANNOUNCER TRACE").to.equal("__DUMP__");
+          const win = $body[0].ownerDocument.defaultView;
+          const trace = win.__qi160 || ["(no trace)"];
+          const announced = ($body.find("#blocklyAriaAnnounce").text() || "").trim();
+          const wsCount = win.document.querySelectorAll(".blocklyBlockCanvas").length;
+          expect(
+            `announced=[${announced}] canvases=${wsCount}\n${trace.join("\n")}`,
+            "QI160 DUMP"
+          ).to.equal("__FORCE_FAIL__");
         });
 
         cy.getIframeBody().find("#blocklyAriaAnnounce").invoke("text")
