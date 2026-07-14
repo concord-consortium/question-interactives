@@ -33,6 +33,17 @@ jest.mock("blockly/core", () => ({
   setLocale: jest.fn()
 }));
 
+jest.mock("./disclosure-field", () => ({
+  DISCLOSURE_LABEL_COLLAPSED: "Show child blocks",
+  DISCLOSURE_LABEL_EXPANDED: "Hide child blocks",
+  DisclosureField: jest.fn().mockImplementation((src, width, height, alt) => ({
+    setValue: jest.fn(),
+    setExpanded: jest.fn(),
+    setOnClickHandler: jest.fn(),
+    src, width, height, alt
+  }))
+}));
+
 jest.mock("@blockly/field-slider", () => ({
   FieldSlider: jest.fn().mockImplementation((defaultValue, min, max) => ({
     setValue: jest.fn(),

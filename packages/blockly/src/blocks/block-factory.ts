@@ -2,11 +2,12 @@ import { FieldSlider } from "@blockly/field-slider";
 import type { BlockSvg } from "blockly";
 import { javascriptGenerator } from "blockly/javascript";
 import {
-  Blocks, FieldDropdown, FieldDropdownValidator, FieldImage, FieldNumber, Input, MenuOption, serialization, utils,
+  Blocks, FieldDropdown, FieldDropdownValidator, FieldNumber, Input, MenuOption, serialization, utils,
   WorkspaceSvg, Xml
 } from "blockly/core";
 
 import { ICustomBlock, IBlockConfig } from "../components/types";
+import { DISCLOSURE_LABEL_COLLAPSED, DisclosureField } from "./disclosure-field";
 import { createGenerator } from "./generators";
 import { appendParameterFields, applyParameterDefaults } from "./params";
 
@@ -325,7 +326,7 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaul
           this.__childrenSeeded = false;
 
           // Add open/close toggle button.
-          const icon = new FieldImage(PLUS_ICON, 16, 16, "+/-");
+          const icon = new DisclosureField(PLUS_ICON, 16, 16, DISCLOSURE_LABEL_COLLAPSED);
           icon.setOnClickHandler?.(() => {
             const open = !this.__disclosureOpen;
             this.__disclosureOpen = open;
@@ -366,6 +367,7 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaul
             }
 
             icon.setValue(open ? MINUS_ICON : PLUS_ICON);
+            icon.setExpanded(open);
             this.render();
           });
           input.insertFieldAt(0, icon, "__disclosure_icon");
