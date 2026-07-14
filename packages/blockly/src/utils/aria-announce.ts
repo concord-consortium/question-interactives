@@ -68,7 +68,11 @@ export const ARIA_VERBOSITY = utils.aria.Verbosity.TERSE;
 
 export function describeMove(event: IMoveEventLike, workspace: IAnnounceableWorkspace): string | null {
   if (event.type !== Events.BLOCK_MOVE) return null;
-  // Seed and load events carry recordUndo: false; only a real user action records undo.
+  // recordUndo: false marks the seed and load paths, so this excludes them. It does NOT mean "a
+  // student did this": block-factory's bookkeeping runs inside click and validator handlers, where
+  // recordUndo is `true` (see markInternalDisposal below). What actually carries the weight here is
+  // the drag reason on the next line -- bookkeeping connects blocks, which reports `connect`, never
+  // `drag`.
   if (!event.recordUndo) return null;
   if (!event.reason?.includes(USER_DRAG)) return null;
   if (!event.blockId) return null;
