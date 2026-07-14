@@ -1,14 +1,20 @@
 import { Events, utils, WorkspaceSvg } from "blockly/core";
 
 /**
- * Blockly narrates a block's journey during a keyboard move ("Moving inside setup, empty.")
- * but says nothing when the move commits, and nothing when a block is deleted. A student who
- * cannot see the canvas has no way to know whether a drop landed, or landed where they meant.
- * These functions compose what the live region should say; `attachAriaAnnouncements` pushes it.
+ * Blockly narrates a block's journey during a keyboard move ("Moving inside setup.") but says
+ * nothing when the move commits, and nothing when a block is deleted. A student who cannot see
+ * the canvas has no way to know whether a drop landed, or landed where they meant. These
+ * functions compose what the live region should say; `attachAriaAnnouncements` pushes it.
  *
  * The shapes below are structural on purpose. BlockSvg and WorkspaceSvg satisfy them, but the
  * pure functions can be unit-tested with plain objects, without standing up a Blockly workspace
  * under jsdom.
+ *
+ * Public API only. Blockly composes its own move narration in `core/block_aria_composer.ts`
+ * (`computeMoveLabel`, `configureAriaRole`) and `core/hints.ts`, and `BlockDragStrategy.announceMove`
+ * is private -- none are exported from Blockly's barrel, and all are marked @internal. They are the
+ * obvious place to reach when asked to improve this wording, and they are off limits: composing our
+ * own text from public getters is what keeps a Blockly upgrade from breaking this file.
  */
 export interface IAnnounceableBlock {
   id: string;
@@ -44,7 +50,12 @@ export interface IDeleteEventLike {
 }
 
 /** Keyboard commits route through the same dragger as the mouse, so both land here. Programmatic
- *  moves (bump, snap, cleanup, connect, load) carry other reasons and must stay silent. */
+ *  moves (bump, snap, cleanup, connect, load) carry other reasons and must stay silent.
+ *
+ *  Announcing mouse drags as well as keyboard ones is deliberate: live-region text is inaudible to
+ *  sighted users, and a low-vision user running a magnifier alongside a screen reader may well drag
+ *  with a mouse. Do not narrow this to keyboardNavigationController.getIsActive() -- it buys nothing
+ *  and silences exactly that user. */
 const USER_DRAG = "drag";
 
 /** TERSE keeps the parent's label to its own name rather than reciting its whole subtree. */
@@ -143,7 +154,11 @@ export function attachAriaAnnouncements(workspace: WorkspaceSvg): () => void {
 
       if (!message) return;
 
-      // announceDynamicAriaState throws if the live region is not initialized.
+      // announceDynamicAriaState throws if the live region is not initialized. It also *coalesces*
+      // rather than replaces: calls landing in the same setTimeout window are joined with "\n" into
+      // a single announcement, so our text is concatenated with whatever Blockly said, not layered
+      // over it. That reads oddly in the DOM but is tolerable, because Blockly says nothing at the
+      // moment of commit -- which is the gap this module exists to fill.
       utils.aria.announceDynamicAriaState(message);
     } catch (e) {
       console.warn("Blockly ARIA announcement failed:", e);

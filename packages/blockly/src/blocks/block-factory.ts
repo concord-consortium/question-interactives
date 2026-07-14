@@ -18,7 +18,11 @@ const blockHasDisclosure = (blockDef: ICustomBlock, blockConfig: IBlockConfig): 
 
 /** Blockly's default role description for our blocks is the structural "statement" or "value",
  *  which tells a student nothing about what the block does. These names match the block types
- *  authors already work in and the toolbox categories students already see. */
+ *  authors already work in and the toolbox categories students already see.
+ *
+ *  Deriving them from the block's type, rather than adding a per-block authoring field, is
+ *  deliberate: an authored field would mean a schema change, new authoring UI, and every block
+ *  that already exists shipping blank until someone went back and filled it in. */
 const ARIA_ROLE_DESCRIPTIONS: Record<string, string> = {
   action: "action block",
   ask: "ask block",
