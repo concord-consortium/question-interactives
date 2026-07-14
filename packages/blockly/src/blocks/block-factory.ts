@@ -7,17 +7,9 @@ import {
 } from "blockly/core";
 
 import { ICustomBlock, IBlockConfig } from "../components/types";
-import { DISCLOSURE_LABEL_COLLAPSED, DisclosureField } from "./disclosure-field";
+import { DISCLOSURE_LABEL_COLLAPSED, DisclosureField, PLUS_ICON } from "./disclosure-field";
 import { createGenerator } from "./generators";
 import { appendParameterFields, applyParameterDefaults } from "./params";
-
-const PLUS_ICON  = "data:image/svg+xml;utf8," +
-  "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>" +
-  "<text fill='white' x='8' y='12' text-anchor='middle' font-size='14'>+</text></svg>";
-
-const MINUS_ICON = "data:image/svg+xml;utf8," +
-  "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>" +
-  "<text fill='white' x='8' y='12' text-anchor='middle' font-size='14'>−</text></svg>";
 
 const blockHasDisclosure = (blockDef: ICustomBlock, blockConfig: IBlockConfig): boolean => {
   return blockDef.type === "creator" ||
@@ -366,7 +358,7 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaul
               this.removeInput("statements", true);
             }
 
-            icon.setValue(open ? MINUS_ICON : PLUS_ICON);
+            // Swaps the icon image, the accessible name, and aria-expanded together.
             icon.setExpanded(open);
             this.render();
           });
@@ -455,9 +447,11 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaul
             b.removeInput("statements", true);
           }
           
+          // Restored blocks have to announce the state they were restored into, not the state a
+          // freshly initialized block starts in, so go through the field's own setExpanded.
           const iconField = b.getField("__disclosure_icon");
-          if (iconField) {
-            iconField.setValue(open ? MINUS_ICON : PLUS_ICON);
+          if (iconField instanceof DisclosureField) {
+            iconField.setExpanded(open);
           }
         }
         // Note: blocks without disclosure don't need statement inputs added here.

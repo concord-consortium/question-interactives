@@ -1,6 +1,7 @@
 import { Blocks, FieldDropdown, FieldNumber } from "blockly/core";
 import { javascriptGenerator } from "blockly/javascript";
 import { registerCustomBlocks } from "./block-factory";
+import { DISCLOSURE_LABEL_COLLAPSED, DisclosureField, PLUS_ICON } from "./disclosure-field";
 import { ICustomBlock } from "../components/types";
 
 // Mock Blockly and its components
@@ -22,22 +23,15 @@ jest.mock("blockly/core", () => ({
     getValue: jest.fn().mockReturnValue(defaultValue || 1),
     defaultValue
   })),
-  FieldImage: jest.fn().mockImplementation((src, width, height, alt) => ({
-    setValue: jest.fn(),
-    setOnClickHandler: jest.fn(),
-    src,
-    width,
-    height,
-    alt
-  })),
   setLocale: jest.fn()
 }));
 
 jest.mock("./disclosure-field", () => ({
   DISCLOSURE_LABEL_COLLAPSED: "Show child blocks",
   DISCLOSURE_LABEL_EXPANDED: "Hide child blocks",
+  PLUS_ICON: "plus-icon",
+  MINUS_ICON: "minus-icon",
   DisclosureField: jest.fn().mockImplementation((src, width, height, alt) => ({
-    setValue: jest.fn(),
     setExpanded: jest.fn(),
     setOnClickHandler: jest.fn(),
     src, width, height, alt
@@ -342,6 +336,8 @@ describe("block-factory", () => {
       Blocks["custom_create_molecules_456"].init.call(mockBlock);
 
       expect(mockInput.insertFieldAt).toHaveBeenCalledWith(0, expect.any(Object), "__disclosure_icon");
+      // The toggle starts closed, so it starts with the plus icon and the collapsed name.
+      expect(DisclosureField).toHaveBeenCalledWith(PLUS_ICON, 16, 16, DISCLOSURE_LABEL_COLLAPSED);
       expect(mockInput.appendField).toHaveBeenCalledWith(expect.any(Object), "count");
     });
 
