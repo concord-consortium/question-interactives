@@ -19,6 +19,7 @@ Blocks.chance = {
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(BG_COLOR);
+    this.setAriaRoleDescriptionProvider("control block");
   }
 };
 
@@ -38,6 +39,7 @@ Blocks.repeat = {
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(BG_COLOR);
+    this.setAriaRoleDescriptionProvider("control block");
   }
 };
 
@@ -58,6 +60,7 @@ Blocks.when = {
     this.setPreviousStatement(true, null);
     this.setNextStatement(true, null);
     this.setColour(BG_COLOR);
+    this.setAriaRoleDescriptionProvider("control block");
   }
 };
 
@@ -75,6 +78,7 @@ Blocks.number = {
       .appendField(new FieldNumber(0), "NUM");
     this.setOutput(true, "Number");
     this.setColour(BG_COLOR);
+    this.setAriaRoleDescriptionProvider("value block");
   }
 };
 
@@ -93,6 +97,7 @@ Blocks.mathOperation = {
     this.setInputsInline(true);
     this.setOutput(true, "Number");
     this.setColour(BG_COLOR);
+    this.setAriaRoleDescriptionProvider("value block");
   }
 };
 
@@ -126,6 +131,7 @@ Blocks.randomInteger = {
     this.setInputsInline(true);
     this.setOutput(true, "Number");
     this.setColour(BG_COLOR);
+    this.setAriaRoleDescriptionProvider("value block");
   }
 };
 
@@ -146,6 +152,7 @@ Blocks.comparison = {
     this.setInputsInline(true);
     this.setOutput(true, "Boolean");
     this.setColour(BG_COLOR);
+    this.setAriaRoleDescriptionProvider("value block");
   }
 };
 

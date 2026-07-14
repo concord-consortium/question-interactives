@@ -16,6 +16,21 @@ const blockHasDisclosure = (blockDef: ICustomBlock, blockConfig: IBlockConfig): 
     (blockDef.type === "action" && !!blockConfig.canHaveChildren);
 };
 
+/** Blockly's default role description for our blocks is the structural "statement" or "value",
+ *  which tells a student nothing about what the block does. These names match the block types
+ *  authors already work in and the toolbox categories students already see. */
+const ARIA_ROLE_DESCRIPTIONS: Record<string, string> = {
+  action: "action block",
+  ask: "ask block",
+  condition: "condition block",
+  creator: "creator block",
+  globalValue: "global value block",
+  setter: "setter block"
+};
+
+export const ariaRoleDescriptionForType = (type: string): string | undefined =>
+  ARIA_ROLE_DESCRIPTIONS[type];
+
 
 // Filters and validates dropdown options to Blockly MenuOption format.
 const filterDropdownOptions = (options: unknown[]): MenuOption[] => {
@@ -193,6 +208,9 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaul
         const displayName = displayNameForBlock(blockDef);
         // Create input without immediately appending the name so we can control placement as needed.
         const input = this.appendDummyInput();
+
+        const roleDescription = ariaRoleDescriptionForType(blockDef.type);
+        if (roleDescription) this.setAriaRoleDescriptionProvider(roleDescription);
 
         // Returns the default child blocks, which can change based on the selected type for creator blocks
         const getDefaultChildBlocks = (type?: string) => {

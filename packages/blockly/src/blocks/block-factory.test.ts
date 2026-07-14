@@ -1,6 +1,6 @@
 import { Blocks, FieldDropdown, FieldNumber } from "blockly/core";
 import { javascriptGenerator } from "blockly/javascript";
-import { registerCustomBlocks } from "./block-factory";
+import { ariaRoleDescriptionForType, registerCustomBlocks } from "./block-factory";
 import { DISCLOSURE_LABEL_COLLAPSED, DisclosureField, PLUS_ICON } from "./disclosure-field";
 import { ICustomBlock } from "../components/types";
 
@@ -110,7 +110,8 @@ describe("block-factory", () => {
       getFieldValue: jest.fn(),
       render: jest.fn(),
       workspace: mockWorkspace,
-      isInFlyout: false
+      isInFlyout: false,
+      setAriaRoleDescriptionProvider: jest.fn()
     };
 
     spy = jest
@@ -1090,6 +1091,37 @@ describe("block-factory", () => {
 
       expect(mockBlock.setPreviousStatement).not.toHaveBeenCalled();
       expect(mockBlock.setNextStatement).not.toHaveBeenCalled();
+    });
+  });
+
+  describe("aria role descriptions", () => {
+    it("maps every authored block type to a description a student would recognize", () => {
+      expect(ariaRoleDescriptionForType("creator")).toBe("creator block");
+      expect(ariaRoleDescriptionForType("setter")).toBe("setter block");
+      expect(ariaRoleDescriptionForType("globalValue")).toBe("global value block");
+      expect(ariaRoleDescriptionForType("ask")).toBe("ask block");
+      expect(ariaRoleDescriptionForType("action")).toBe("action block");
+      expect(ariaRoleDescriptionForType("condition")).toBe("condition block");
+    });
+
+    it("has no description for a type it does not know", () => {
+      expect(ariaRoleDescriptionForType("builtIn")).toBeUndefined();
+    });
+
+    it("applies the description when the block is registered", () => {
+      const blockDef: ICustomBlock = {
+        category: "Properties",
+        color: "#ff0000",
+        config: { canHaveChildren: false },
+        id: "custom_action_move",
+        name: "move",
+        type: "action"
+      };
+
+      registerCustomBlocks([blockDef]);
+      Blocks.custom_action_move.init.call(mockBlock);
+
+      expect(mockBlock.setAriaRoleDescriptionProvider).toHaveBeenCalledWith("action block");
     });
   });
 });

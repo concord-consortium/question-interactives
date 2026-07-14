@@ -24,6 +24,7 @@ Blocks.setup = {
     ));
     this.appendStatementInput("statements");
     this.setColour(BG_COLOR);
+    this.setAriaRoleDescriptionProvider("program section");
   }
 };
 
@@ -39,6 +40,7 @@ Blocks.go = {
     ));
     this.appendStatementInput("statements");
     this.setColour(BG_COLOR);
+    this.setAriaRoleDescriptionProvider("program section");
   }
 };
 
@@ -54,6 +56,7 @@ Blocks.onclick = {
     ));
     this.appendStatementInput("statements");
     this.setColour(BG_COLOR);
+    this.setAriaRoleDescriptionProvider("program section");
   }
 };
 
