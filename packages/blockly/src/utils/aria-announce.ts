@@ -133,14 +133,29 @@ export function describeMove(event: IMoveEventLike, workspace: IAnnounceableWork
  *
  *  A "we are mutating internally right now" flag cannot work: Blockly fires its events from a
  *  timer, so the flag is long since false by the time the listener runs. Naming the blocks is what
- *  survives the wait. The set is module-level because block-factory has no handle on the announcer;
- *  Blockly ids are globally unique, so entries cannot collide across workspaces. */
+ *  survives the wait. The set is module-level because block-factory has no handle on the announcer.
+ *
+ *  What keeps it from growing without bound, and from suppressing a delete it was never meant to, is
+ *  that an id lives here only between the mark and the BLOCK_DELETE it suppresses -- the listener
+ *  evicts it there. Note that ids are NOT a safe key on their own: a loaded block takes its id from
+ *  the saved JSON, so two workspaces loading the same state hold the same ids. The eviction is what
+ *  makes this safe, not any uniqueness of the id. */
 const internalDisposals = new Set<string>();
 
 /** Call immediately BEFORE disposing a block the student did not ask to delete, while the block is
  *  still alive and can still name its descendants -- `dispose()` takes the whole subtree with it. */
-export function markInternalDisposal(block: { getDescendants(ordered: boolean): Array<{ id: string }> }): void {
-  block.getDescendants(false).forEach(b => internalDisposals.add(b.id));
+export function markInternalDisposal(
+  block: { getDescendants(ordered: boolean): Array<{ id: string }>; workspace?: { isReadOnly(): boolean } },
+  internallyDisposed: Set<string> = internalDisposals
+): void {
+  // A read-only workspace has no announcer, so an id marked there would never be evicted -- and the
+  // report view injects one, then runs registerCustomBlocks, whose block init disposes template
+  // blocks. Left alone, every report view would leak ids into this set for the life of the page.
+  // Nothing can be moved or deleted there, so there is no announcement to suppress and nothing to
+  // record. This holds only because every *editable* workspace attaches an announcer, whose delete
+  // listener is what drains the set; a new editable workspace without one would accumulate ids.
+  if (block.workspace?.isReadOnly()) return;
+  block.getDescendants(false).forEach(b => internallyDisposed.add(b.id));
 }
 
 export function describeDelete(

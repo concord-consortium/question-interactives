@@ -224,6 +224,32 @@ describe("describeDelete", () => {
   });
 });
 
+// A read-only workspace attaches no announcer, so nothing would ever evict an id marked there --
+// and the report view injects one and then runs registerCustomBlocks, whose block init disposes
+// template blocks. Marking there would leak ids for the life of the page, and nothing can be moved
+// or deleted in a report anyway, so there is nothing to suppress.
+describe("markInternalDisposal", () => {
+  const blockIn = (readOnly: boolean) => ({
+    id: "b1",
+    workspace: { isReadOnly: () => readOnly },
+    getDescendants: () => [{ id: "b1" }]
+  });
+
+  it("records nothing in a read-only workspace, where no announcer will ever evict it", () => {
+    const disposals = new Set<string>();
+    markInternalDisposal(blockIn(true), disposals);
+
+    expect(disposals.size).toBe(0);
+  });
+
+  it("records the block and its descendants in an editable workspace", () => {
+    const disposals = new Set<string>();
+    markInternalDisposal(blockIn(false), disposals);
+
+    expect([...disposals]).toEqual(["b1"]);
+  });
+});
+
 // These tests hard-code Blockly's event type strings. If Blockly ever renames them, the tests
 // above would keep passing against a listener that no longer fires. Pin them.
 describe("Blockly event type strings", () => {
