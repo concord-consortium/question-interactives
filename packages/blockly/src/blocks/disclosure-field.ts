@@ -23,9 +23,13 @@ export const MINUS_ICON = "data:image/svg+xml;utf8," +
  * set only the image -- announcing the inverse of the block's real state).
  *
  * aria-expanded is applied by overriding `recomputeAriaContext` (public API) rather than by
- * setting the attribute from the click handler: Blockly re-runs `recomputeAriaContext` on every
- * re-render and rewrites `role` and `aria-label` on this element, so an attribute set outside
- * that lifecycle would survive until the first re-render and then silently disappear.
+ * setting the attribute from the click handler, for two reasons:
+ * - `FieldImage.setAlt()` never touches ARIA -- it only updates `altText` and the SVG `alt`
+ *   attribute. The accessible name only reaches the DOM via `recomputeAriaContext()`, which is
+ *   the only place that calls `setState(el, LABEL, getAriaValue())`.
+ * - On the restore path the field's DOM is newly created, and `initView()` -> `recomputeAriaContext()`
+ *   is the only hook that stamps it. An attribute set from the click handler would never have
+ *   existed on the re-created element.
  */
 export class DisclosureField extends FieldImage {
   private expanded = false;

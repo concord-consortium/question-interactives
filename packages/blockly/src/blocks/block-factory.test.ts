@@ -28,14 +28,10 @@ jest.mock("blockly/core", () => ({
 
 jest.mock("./disclosure-field", () => ({
   DISCLOSURE_LABEL_COLLAPSED: "Show child blocks",
-  DISCLOSURE_LABEL_EXPANDED: "Hide child blocks",
   PLUS_ICON: "plus-icon",
-  MINUS_ICON: "minus-icon",
-  DisclosureField: jest.fn().mockImplementation((src, width, height, alt) => ({
-    setExpanded: jest.fn(),
-    setOnClickHandler: jest.fn(),
-    src, width, height, alt
-  }))
+  DisclosureField: jest.fn().mockImplementation(function (this: any, src, width, height, alt) {
+    Object.assign(this, { setExpanded: jest.fn(), setOnClickHandler: jest.fn(), src, width, height, alt });
+  })
 }));
 
 jest.mock("@blockly/field-slider", () => ({
