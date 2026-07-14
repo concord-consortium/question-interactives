@@ -146,7 +146,10 @@ context("Test blockly interactive", () => {
 
         // The block really landed inside setup, so the announcement is not lying about it.
         cy.getIframeBody().find(`g.setup ${LOOSE_IF}`).should("exist");
-        cy.getIframeBody().find("#blocklyAriaAnnounce").should("contain", "connected inside setup");
+        // `invoke("text")` rather than asserting on the element: on failure it prints what the live
+        // region actually said, which is the only thing worth knowing when this breaks.
+        cy.getIframeBody().find("#blocklyAriaAnnounce").invoke("text")
+          .should("contain", "connected inside setup");
       });
 
       // Assert the *named* string, not merely "deleted": the generic "Block deleted." fallback
@@ -158,7 +161,8 @@ context("Test blockly interactive", () => {
         pressKey("Delete", "Delete", 46);
 
         cy.getIframeBody().find(LOOSE_IF).should("not.exist");
-        cy.getIframeBody().find("#blocklyAriaAnnounce").should("contain", "if, do deleted.");
+        cy.getIframeBody().find("#blocklyAriaAnnounce").invoke("text")
+          .should("contain", "if, do deleted.");
       });
     });
   });
