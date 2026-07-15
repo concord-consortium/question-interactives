@@ -100,15 +100,17 @@ nav {
       transform: scale(1.25);
     }
     &.prevButton, &.nextButton {
+      // Border-drawn triangles: the 24px border box is the pointer target (WCAG 2.5.8),
+      // matching the round dots. 12px top/bottom + 24px on the pointing side = 24×24.
       background: transparent;
-      border-top: solid 10px transparent;
-      border-bottom: solid 10px transparent;
+      border-top: solid 12px transparent;
+      border-bottom: solid 12px transparent;
       border-radius: 0;
       height: 0;
       width: 0;
     }
     &.prevButton {
-      border-right: solid 20px var(--cc-carousel-nav);
+      border-right: solid 24px var(--cc-carousel-nav);
 
       &:hover:not(:disabled) {
         border-right-color: var(--cc-carousel-nav-hover);
@@ -118,7 +120,7 @@ nav {
       }
     }
     &.nextButton {
-      border-left: solid 20px var(--cc-carousel-nav);
+      border-left: solid 24px var(--cc-carousel-nav);
 
       &:hover:not(:disabled) {
         border-left-color: var(--cc-carousel-nav-hover);

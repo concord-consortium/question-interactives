@@ -121,9 +121,15 @@ describe("Carousel Runtime Prev/Next availability", () => {
 });
 
 describe("Carousel Runtime slide-change announcements", () => {
+  const originalHref = window.location.href;
+
   beforeEach(() => {
     // Resolve the child interactive type names so the announcement includes them.
     window.history.replaceState(null, "", "/version/0.5.0/carousel");
+  });
+
+  afterEach(() => {
+    window.history.replaceState(null, "", originalHref);
   });
 
   it("exposes a polite status region naming the current slide and total", () => {

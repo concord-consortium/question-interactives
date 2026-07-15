@@ -17,14 +17,10 @@ interface IProps {
   setInteractiveState?: (updateFunc: (prevState: IInteractiveState | null) => IInteractiveState) => void;
 }
 
-type Subinteractive = NonNullable<IAuthoredState["subinteractives"]>[number];
-
-// Resolve the human-readable interactive type (e.g. "Open response", "Image") for a slide,
-// falling back to a generic name when the library interactive can't be resolved.
-const getInteractiveTypeName = (interactive: Subinteractive) => {
-  const url = libraryInteractiveIdToUrl(interactive.libraryInteractiveId, "carousel");
-  return getLibraryInteractive(url)?.name || "Interactive content";
-};
+// Resolve the human-readable interactive type (e.g. "Open response", "Image") from a slide's
+// already-resolved subinteractive URL, falling back to a generic name when it can't be resolved.
+const getInteractiveTypeName = (subinteractiveUrl: string) =>
+  getLibraryInteractive(subinteractiveUrl)?.name || "Interactive content";
 
 // react-responsive-carousel keeps every slide in the DOM (off-screen ones are only visually
 // offset), so their iframes stay focusable and in the accessibility tree. Marking non-current
@@ -106,7 +102,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
 
   const currentInteractive = subinteractives[currentSlide];
   const slideAnnouncement = currentInteractive
-    ? `Slide ${currentSlide + 1} of ${subinteractives.length}: ${getInteractiveTypeName(currentInteractive)}`
+    ? `Slide ${currentSlide + 1} of ${subinteractives.length}: ${getInteractiveTypeName(libraryInteractiveIdToUrl(currentInteractive.libraryInteractiveId, "carousel"))}`
     : "";
 
   return (
@@ -116,7 +112,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         {subinteractives.map(function(interactive, index) {
           const subState = subStates && subStates[interactive.id];
           const subinteractiveUrl = libraryInteractiveIdToUrl(interactive.libraryInteractiveId, "carousel");
-          const interactiveTypeName = getInteractiveTypeName(interactive);
+          const interactiveTypeName = getInteractiveTypeName(subinteractiveUrl);
           const iframeTitle = `Slide ${index + 1}: ${interactiveTypeName}`;
           const logRequestData: Record<string, unknown> = { subinteractive_url: subinteractiveUrl,
                                                             subinteractive_type: interactive.authoredState.questionType,
