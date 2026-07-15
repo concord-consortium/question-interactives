@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import classNames from "classnames";
 
 import { ISavedBlocklyState } from "./types";
@@ -56,6 +56,11 @@ export const Header: React.FC<IProps> = (props) => {
     setActiveIndex(index);
     setShowMenu(true);
   };
+
+  const closeMenu = useCallback((focusButton: boolean) => {
+    setShowMenu(false);
+    if (focusButton) fileMenuButtonRef.current?.focus();
+  }, []);
 
   const activateItem = (index: number) => {
     const item = items[index];
@@ -130,6 +135,16 @@ export const Header: React.FC<IProps> = (props) => {
       case " ":
         e.preventDefault();
         activateItem(activeIndex);
+        break;
+      case "Escape":
+        e.preventDefault();
+        closeMenu(true);
+        break;
+      case "Tab":
+        // Close and return focus to the button rather than stranding focus on
+        // the unmounting item (see plan/spec).
+        e.preventDefault();
+        closeMenu(true);
         break;
     }
   };

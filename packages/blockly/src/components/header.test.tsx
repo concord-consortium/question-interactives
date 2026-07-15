@@ -135,4 +135,25 @@ describe("Header", () => {
     expect(onShowFileModal).not.toHaveBeenCalled();  // no-op
     expect(screen.getByRole("menu")).toBeInTheDocument(); // stays open
   });
+
+  it.each(["Escape", "Tab"])(
+    "closes the menu and returns focus to the button on %s",
+    (key) => {
+      render(<Header {...defaultProps} onShowFileModal={jest.fn()} />);
+      const button = screen.getByRole("button", { name: "File menu" });
+      fireEvent.click(button);
+      fireEvent.keyDown(screen.getByRole("menu"), { key });
+      expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+      expect(document.activeElement).toBe(button);
+    }
+  );
+
+  it("closes and returns focus to the button on Shift+Tab", () => {
+    render(<Header {...defaultProps} onShowFileModal={jest.fn()} />);
+    const button = screen.getByRole("button", { name: "File menu" });
+    fireEvent.click(button);
+    fireEvent.keyDown(screen.getByRole("menu"), { key: "Tab", shiftKey: true });
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    expect(document.activeElement).toBe(button);
+  });
 });
