@@ -15,12 +15,19 @@
     transition: max-height 500ms;
   }
 
-  .link {
-    cursor: pointer;
-  }
-
   h4 {
     margin-left: 10px;
+  }
+
+  // The collapsible-section toggle is a real <button> (keyboard-operable, exposes
+  // aria-expanded) styled to read as the heading text rather than a default button.
+  .headerToggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font: inherit;
+    padding: 0;
+    text-align: left;
   }
 
   .navButtonField {

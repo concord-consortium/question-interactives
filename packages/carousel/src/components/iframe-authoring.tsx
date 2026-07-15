@@ -118,7 +118,11 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
       {
         libraryInteractiveId &&
         <div className={interactiveWrapperClass}>
-          <h4 onClick={handleHeaderClick} className={css.link} data-cy="subquestion-authoring">{authoringOpened ? "▼" : "▶"} Subquestion Authoring</h4>
+          <h4>
+            <button type="button" className={css.headerToggle} aria-expanded={authoringOpened} onClick={handleHeaderClick} data-cy="subquestion-authoring">
+              {authoringOpened ? "▼" : "▶"} Subquestion Authoring
+            </button>
+          </h4>
           <div className={css.iframeContainer} style={{maxHeight: authoringOpened ? iframeHeight : 0 }}>
             <div className={css.navButtonField}>
               <label htmlFor="navImageUrl">Custom Navigation Button Image URL</label>
