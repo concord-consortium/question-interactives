@@ -82,7 +82,7 @@ nav {
     // Nav buttons live outside .runtime, so they don't inherit the ap-button focus ring.
     // Give them their own visible focus indicator (WCAG 2.4.7). The outline follows the
     // border-radius, so it renders as a ring around the round dots and a box around the
-    // triangle buttons (whose 20×20 border-box encloses the arrow).
+    // triangle buttons (whose 24×24 border-box encloses the arrow).
     &:focus-visible {
       @include native-focus-ring(3px);
     }
