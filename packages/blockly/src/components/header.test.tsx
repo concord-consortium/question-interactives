@@ -62,4 +62,22 @@ describe("Header", () => {
     expect(items[0]).toHaveAttribute("tabindex", "0");
     items.slice(1).forEach(item => expect(item).toHaveAttribute("tabindex", "-1"));
   });
+
+  it("opens the menu and focuses the first item on ArrowDown from the button", () => {
+    render(<Header {...defaultProps} onShowFileModal={jest.fn()} />);
+    const button = screen.getByRole("button", { name: "File menu" });
+    button.focus();
+    fireEvent.keyDown(button, { key: "ArrowDown" });
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+    expect(document.activeElement).toBe(screen.getByRole("menuitem", { name: /New/ }));
+  });
+
+  it("opens the menu and focuses the last item on ArrowUp from the button", () => {
+    render(<Header {...defaultProps} onShowFileModal={jest.fn()} />);
+    const button = screen.getByRole("button", { name: "File menu" });
+    button.focus();
+    fireEvent.keyDown(button, { key: "ArrowUp" });
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+    expect(document.activeElement).toBe(screen.getByRole("menuitem", { name: /Delete/ }));
+  });
 });

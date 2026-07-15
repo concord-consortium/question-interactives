@@ -95,6 +95,19 @@ export const Header: React.FC<IProps> = (props) => {
     }
   };
 
+  const handleButtonKeyDown = (e: React.KeyboardEvent) => {
+    // Enter/Space are intentionally NOT handled here: the native button already
+    // synthesizes a click for them, which handleButtonClick turns into an open.
+    // Handling them here too would open then immediately toggle closed.
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      openMenu(0);
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      openMenu(items.length - 1);
+    }
+  };
+
   const renderMenu = () => (
     <div
       id={menuId}
@@ -128,6 +141,7 @@ export const Header: React.FC<IProps> = (props) => {
           type="button"
           className={classNames(css.fileMenuButton, { [css.active]: showMenu })}
           onClick={handleButtonClick}
+          onKeyDown={handleButtonKeyDown}
           aria-expanded={showMenu}
           aria-haspopup="menu"
           aria-controls={showMenu ? menuId : undefined}
