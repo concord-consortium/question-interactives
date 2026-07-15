@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import classNames from "classnames";
 
 import { ISavedBlocklyState } from "./types";
@@ -41,7 +41,14 @@ export const Header: React.FC<IProps> = (props) => {
   const menuRef = useRef<HTMLDivElement>(null);           // wrapper: button + menu
   const fileMenuButtonRef = useRef<HTMLButtonElement>(null);
   const itemRefs = useRef<Array<HTMLDivElement | null>>([]);
-  const menuId = useMemo(() => `blockly-file-menu-${++menuInstanceCount}`, []);
+  // A ref-backed constant (not useMemo, which React may discard) keeps the id
+  // stable for the component's lifetime — it links the button's aria-controls to
+  // the menu's id. Lazily initialized so the counter only increments once.
+  const menuIdRef = useRef<string>();
+  if (menuIdRef.current === undefined) {
+    menuIdRef.current = `blockly-file-menu-${++menuInstanceCount}`;
+  }
+  const menuId = menuIdRef.current;
   const hasSavedStates = savedStates.length > 1;
 
   const items: IMenuItem[] = [

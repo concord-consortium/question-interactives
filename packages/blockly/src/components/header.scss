@@ -105,6 +105,13 @@
         .fileMenuItemContent {
           opacity: 0.35;
         }
+
+        // A disabled item must not look interactive on mouse hover/press. The
+        // keyboard focus indicator below still applies (higher specificity is not
+        // needed since :focus is a different state).
+        &:hover, &:active {
+          background-color: transparent;
+        }
       }
 
       &:hover {
