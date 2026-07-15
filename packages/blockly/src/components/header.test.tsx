@@ -10,8 +10,8 @@ const defaultProps = {
   savedStates: [],
 };
 
-// The File menu button toggles the menu on mousedown (see header.tsx).
-const openMenu = () => fireEvent.mouseDown(screen.getByRole("button", { name: "File menu" }));
+// The File button toggles the menu on click.
+const openMenu = () => fireEvent.click(screen.getByRole("button", { name: "File menu" }));
 
 describe("Header", () => {
   it("returns focus to the File menu button when a menu item is activated", () => {
@@ -31,5 +31,35 @@ describe("Header", () => {
     openMenu();
     fireEvent.click(screen.getByRole("menuitem", { name: /New/ }));
     expect(onShowFileModal).toHaveBeenCalledWith("new");
+  });
+
+  it("opens the menu on button click and moves focus to the first item", () => {
+    render(<Header {...defaultProps} onShowFileModal={jest.fn()} />);
+    openMenu();
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+    expect(document.activeElement).toBe(screen.getByRole("menuitem", { name: /New/ }));
+  });
+
+  it("toggles the menu closed on a second button click", () => {
+    render(<Header {...defaultProps} onShowFileModal={jest.fn()} />);
+    openMenu();
+    openMenu();
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+  });
+
+  it("closes the menu on an outside mousedown", () => {
+    render(<Header {...defaultProps} onShowFileModal={jest.fn()} />);
+    openMenu();
+    expect(screen.getByRole("menu")).toBeInTheDocument();
+    fireEvent.mouseDown(document.body);
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+  });
+
+  it("gives only the active item tabIndex 0 (roving tabindex)", () => {
+    render(<Header {...defaultProps} onShowFileModal={jest.fn()} />);
+    openMenu();
+    const items = screen.getAllByRole("menuitem");
+    expect(items[0]).toHaveAttribute("tabindex", "0");
+    items.slice(1).forEach(item => expect(item).toHaveAttribute("tabindex", "-1"));
   });
 });
