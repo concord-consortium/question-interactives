@@ -71,6 +71,10 @@ export const Modal = ({
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Escape") {
       e.preventDefault();
+      // Keep dismissal self-contained: don't let Escape bubble to an ancestor
+      // (e.g. the Blockly workspace, which also listens for Escape) and trigger
+      // a second, unrelated action from the same keypress.
+      e.stopPropagation();
       // Route Escape per mode so it mirrors the modal's own dismiss affordance:
       // in alert mode to onConfirm (dismiss == the single OK button), in confirm
       // mode to onCancel (dismiss without acting == Cancel/X). The onConfirm prop

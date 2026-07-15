@@ -333,6 +333,28 @@ describe("Modal", () => {
     it.each([
       ["confirm", "confirm" as const],
       ["alert", "alert" as const],
+    ])("stops Escape from propagating to ancestors (%s mode)", (_label, mode) => {
+      const ancestorKeyDown = jest.fn();
+      render(
+        <div onKeyDown={ancestorKeyDown}>
+          <Modal
+            {...defaultProps}
+            mode={mode}
+            onConfirm={jest.fn()}
+            onCancel={jest.fn()}
+          />
+        </div>
+      );
+      const dialog = screen.getByRole("dialog");
+      fireEvent.keyDown(dialog, { key: "Escape" });
+      // Dismissal must be self-contained: an ancestor (e.g. the Blockly workspace,
+      // which also listens for Escape) must not receive the same keypress.
+      expect(ancestorKeyDown).not.toHaveBeenCalled();
+    });
+
+    it.each([
+      ["confirm", "confirm" as const],
+      ["alert", "alert" as const],
     ])("renders dialog role with aria-modal, aria-labelledby pointing at title, aria-describedby pointing at message (%s mode)", (_label, mode) => {
       render(
         <Modal
