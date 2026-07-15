@@ -112,24 +112,27 @@ nav {
     &.prevButton {
       border-right: solid 24px var(--cc-carousel-nav);
 
-      &:hover:not(:disabled) {
+      &:hover:not([aria-disabled="true"]) {
         border-right-color: var(--cc-carousel-nav-hover);
       }
-      &:disabled {
+      &[aria-disabled="true"] {
         border-right-color: var(--cc-carousel-nav-disabled);
       }
     }
     &.nextButton {
       border-left: solid 24px var(--cc-carousel-nav);
 
-      &:hover:not(:disabled) {
+      &:hover:not([aria-disabled="true"]) {
         border-left-color: var(--cc-carousel-nav-hover);
       }
-      &:disabled {
+      &[aria-disabled="true"] {
         border-left-color: var(--cc-carousel-nav-disabled);
       }
     }
-    &:disabled {
+    // Prev/Next use aria-disabled (not the native `disabled` attribute) so the button keeps
+    // focus at the slide boundaries; the click handlers no-op there. Style the aria state to
+    // match the old disabled look.
+    &[aria-disabled="true"] {
       cursor: not-allowed;
       opacity: .8;
     }
@@ -146,10 +149,19 @@ nav {
       max-height: 100px;
       width: 150px;
 
-      &:hover, &.activeButton {
+      &:hover {
         background-color: transparent;
         border: solid 2px var(--cc-orange-dark-1);
         transform: scale(1.1);
+      }
+      // Active custom button: a stronger cue than hover — the same white-gap + orange ring the
+      // default active dot uses (see &.activeButton:not(.customButton) above) plus a larger
+      // bump — so the current slide stays distinguishable from a merely-hovered one (WCAG 1.4.1).
+      &.activeButton {
+        background-color: transparent;
+        border: solid 2px var(--cc-orange-dark-1);
+        box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--cc-orange-dark-1);
+        transform: scale(1.15);
       }
     }
   }

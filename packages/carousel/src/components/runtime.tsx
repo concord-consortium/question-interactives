@@ -1,4 +1,4 @@
-import React, { MouseEvent, useCallback, useRef, useState } from "react";
+import React, { MouseEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { IframeRuntime } from "@concord-consortium/question-interactives-helpers/src/components/iframe-runtime";
 import { IAuthoredState, IInteractiveState } from "./types";
 import { renderHTML } from "@concord-consortium/question-interactives-helpers/src/utilities/render-html";
@@ -15,6 +15,7 @@ interface IProps {
   authoredState: IAuthoredState;
   interactiveState?: IInteractiveState | null;
   setInteractiveState?: (updateFunc: (prevState: IInteractiveState | null) => IInteractiveState) => void;
+  report?: boolean;
 }
 
 // Resolve the human-readable interactive type (e.g. "Open response", "Image") from a slide's
@@ -23,9 +24,21 @@ const getInteractiveTypeName = (subinteractiveUrl: string) =>
   getLibraryInteractive(subinteractiveUrl)?.name || "Interactive content";
 
 // react-responsive-carousel keeps every slide in the DOM (off-screen ones are only visually
-// offset), so their iframes stay focusable and in the accessibility tree. Marking non-current
-// slides `inert` removes them from the tab order and from AT. `inert` isn't a typed React 17
-// prop, so we toggle the attribute directly via a ref callback.
+// offset), so their iframes stay focusable and in the accessibility tree. In the runtime we
+// mark non-current slides `inert` to remove them from the tab order and from AT (matching the
+// one-slide-at-a-time carousel pattern). In report mode we skip inert so a reviewer can read
+// every response. `inert` isn't a typed React 17 prop, so we toggle the attribute directly via
+// a ref callback.
+//
+// We rely on native `inert` (Baseline "widely available" since 2023 — Chrome/Safari 2022,
+// Firefox 112) with no polyfill. On a browser predating that support, `inert` is ignored and
+// the off-screen slides fall back to react-responsive-carousel's raw behavior: still focusable
+// and in the DOM. A keyboard user tabbing past the current slide's last control would then step
+// into a visually off-screen slide's iframe. This is disorienting, not blocking — focus is not
+// trapped; continued tabbing walks through the hidden content and eventually reaches the nav
+// buttons, it just does so with no visual indication of where focus is. We accept that edge case
+// rather than pulling in wicg-inert. Add the polyfill here if an older-browser target ever
+// becomes a requirement.
 const setSlideInert = (el: HTMLElement | null, inert: boolean) => {
   if (!el) return;
   if (inert) {
@@ -35,14 +48,44 @@ const setSlideInert = (el: HTMLElement | null, inert: boolean) => {
   }
 };
 
-export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState }) => {
+export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, setInteractiveState, report }) => {
   const readOnly = authoredState.required && interactiveState?.submitted;
+  // Memoized so its reference is stable across renders (the `|| []` fallback would otherwise
+  // produce a new array each render, defeating the slideInfos memo below).
+  const subinteractives = useMemo(() => authoredState.subinteractives || [], [authoredState.subinteractives]);
 
   const [currentSlide, setCurrentSlide] = useState(0);
   const currentSlideRef = useRef(currentSlide);
   currentSlideRef.current = currentSlide;
 
   const accessibility = useAccessibility();
+
+  // Resolve each slide's subinteractive URL + human-readable type once, reused by both the
+  // slide render and the slide-change announcement (avoids resolving the current slide twice
+  // per render).
+  const slideInfos = useMemo(
+    () => subinteractives.map((interactive) => {
+      const url = libraryInteractiveIdToUrl(interactive.libraryInteractiveId, "carousel");
+      return { url, typeName: getInteractiveTypeName(url) };
+    }),
+    [subinteractives]
+  );
+
+  // Announce slide changes to screen readers via the polite live region, but stay silent on the
+  // initial mount: slide 1 is already visible on load, so re-announcing it would be redundant.
+  // Only subsequent changes are announced (including navigating back to the first slide).
+  const [slideAnnouncement, setSlideAnnouncement] = useState("");
+  const didMountRef = useRef(false);
+  useEffect(() => {
+    if (!didMountRef.current) {
+      didMountRef.current = true;
+      return;
+    }
+    const info = slideInfos[currentSlide];
+    if (info) {
+      setSlideAnnouncement(`Slide ${currentSlide + 1} of ${slideInfos.length}: ${info.typeName}`);
+    }
+  }, [currentSlide, slideInfos]);
 
   const updateCurrentSlide = useCallback((index: number, event?: MouseEvent<HTMLButtonElement>) => {
     if (event) {
@@ -55,7 +98,6 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     }
   }, []);
 
-  const subinteractives = authoredState.subinteractives || [];
   if (subinteractives.length === 0) {
     return <div>No sub items available. Please add them using the authoring interface.</div>;
   }
@@ -100,19 +142,13 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
     });
   };
 
-  const currentInteractive = subinteractives[currentSlide];
-  const slideAnnouncement = currentInteractive
-    ? `Slide ${currentSlide + 1} of ${subinteractives.length}: ${getInteractiveTypeName(libraryInteractiveIdToUrl(currentInteractive.libraryInteractiveId, "carousel"))}`
-    : "";
-
   return (
     <div role="region" aria-roledescription="carousel" aria-label="Carousel">
       <div role="status" aria-live="polite" className={css.visuallyHidden}>{slideAnnouncement}</div>
       <Carousel selectedItem={currentSlide} onChange={updateCurrentSlide} showArrows={false} showIndicators={false} showStatus={false} showThumbs={false} autoPlay={false} dynamicHeight={false} transitionTime={300}>
         {subinteractives.map(function(interactive, index) {
           const subState = subStates && subStates[interactive.id];
-          const subinteractiveUrl = libraryInteractiveIdToUrl(interactive.libraryInteractiveId, "carousel");
-          const interactiveTypeName = getInteractiveTypeName(subinteractiveUrl);
+          const { url: subinteractiveUrl, typeName: interactiveTypeName } = slideInfos[index];
           const iframeTitle = `Slide ${index + 1}: ${interactiveTypeName}`;
           const logRequestData: Record<string, unknown> = { subinteractive_url: subinteractiveUrl,
                                                             subinteractive_type: interactive.authoredState.questionType,
@@ -120,7 +156,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
                                                             subinteractive_id: interactive.id,
                                                           };
           return (
-            <div key={index} ref={(el) => setSlideInert(el, currentSlide !== index)} className={css.runtime} role="group" aria-roledescription="slide" aria-label={`Slide ${index + 1} of ${subinteractives.length}`}>
+            <div key={index} ref={(el) => setSlideInert(el, !report && currentSlide !== index)} className={css.runtime} role="group" aria-roledescription="slide" aria-label={`Slide ${index + 1} of ${subinteractives.length}`}>
               { authoredState.prompt &&
                 <div><DynamicText>{renderHTML(authoredState.prompt)}</DynamicText></div> }
                 <IframeRuntime
@@ -142,7 +178,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
         })}
       </Carousel>
       <nav data-cy="carousel-nav" aria-label="Carousel navigation">
-        <button type="button" className={css.prevButton} disabled={currentSlide === 0} aria-label="Previous slide" onClick={previousSlide}>Prev</button>
+        <button type="button" className={css.prevButton} aria-disabled={currentSlide === 0} aria-label="Previous slide" onClick={previousSlide}>Prev</button>
         {subinteractives.map(function(interactive, index) {
           let buttonStyle = {};
           let buttonClass = currentSlide === index ? css.activeButton : "";
@@ -155,7 +191,7 @@ export const Runtime: React.FC<IProps> = ({ authoredState, interactiveState, set
             <button type="button" key={index} className={buttonClass} style={buttonStyle} title={buttonText} aria-label={buttonText} aria-current={currentSlide === index ? "true" : undefined} onClick={(event) => updateCurrentSlide(index, event)}>{buttonText}</button>
           );
         })}
-        <button type="button" className={css.nextButton} disabled={currentSlide === subinteractives.length - 1} aria-label="Next slide" onClick={nextSlide}>Next</button>
+        <button type="button" className={css.nextButton} aria-disabled={currentSlide === subinteractives.length - 1} aria-label="Next slide" onClick={nextSlide}>Next</button>
       </nav>
     </div>
   );

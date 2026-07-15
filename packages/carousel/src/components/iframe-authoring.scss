@@ -21,13 +21,17 @@
 
   // The collapsible-section toggle is a real <button> (keyboard-operable, exposes
   // aria-expanded) styled to read as the heading text rather than a default button.
+  // block + full width preserves the whole heading row as the click target (the old
+  // full-width <h4 onClick>), not just the width of the text.
   .headerToggle {
     background: none;
     border: none;
     cursor: pointer;
+    display: block;
     font: inherit;
     padding: 0;
     text-align: left;
+    width: 100%;
   }
 
   .navButtonField {

@@ -84,24 +84,26 @@ describe("Carousel Runtime active slide indication", () => {
 });
 
 describe("Carousel Runtime Prev/Next availability", () => {
-  it("disables Prev on the first slide and enables Next", () => {
+  // Prev/Next use aria-disabled (not the native `disabled` attribute) so a keyboard user keeps
+  // focus on the button at the slide boundaries instead of having focus dropped to <body>.
+  it("marks Prev aria-disabled on the first slide and leaves Next enabled", () => {
     const { getByRole } = render(
       <Runtime authoredState={authoredState} interactiveState={null} setInteractiveState={jest.fn()} />
     );
-    expect(getByRole("button", { name: "Previous slide" })).toBeDisabled();
-    expect(getByRole("button", { name: "Next slide" })).toBeEnabled();
+    expect(getByRole("button", { name: "Previous slide" })).toHaveAttribute("aria-disabled", "true");
+    expect(getByRole("button", { name: "Next slide" })).toHaveAttribute("aria-disabled", "false");
   });
 
-  it("disables Next on the last slide and enables Prev", () => {
+  it("marks Next aria-disabled on the last slide and leaves Prev enabled", () => {
     const { getByRole } = render(
       <Runtime authoredState={authoredState} interactiveState={null} setInteractiveState={jest.fn()} />
     );
     fireEvent.click(getByRole("button", { name: "Go to slide 2" }));
-    expect(getByRole("button", { name: "Next slide" })).toBeDisabled();
-    expect(getByRole("button", { name: "Previous slide" })).toBeEnabled();
+    expect(getByRole("button", { name: "Next slide" })).toHaveAttribute("aria-disabled", "true");
+    expect(getByRole("button", { name: "Previous slide" })).toHaveAttribute("aria-disabled", "false");
   });
 
-  it("does not advance past the first slide when disabled Prev is clicked", () => {
+  it("does not advance past the first slide when aria-disabled Prev is clicked", () => {
     const { getByRole } = render(
       <Runtime authoredState={authoredState} interactiveState={null} setInteractiveState={jest.fn()} />
     );
@@ -132,13 +134,14 @@ describe("Carousel Runtime slide-change announcements", () => {
     window.history.replaceState(null, "", originalHref);
   });
 
-  it("exposes a polite status region naming the current slide and total", () => {
+  it("exposes a polite status region that stays silent on load (the first slide is already visible)", () => {
     const { getByRole } = render(
       <Runtime authoredState={authoredState} interactiveState={null} setInteractiveState={jest.fn()} />
     );
     const status = getByRole("status");
     expect(status).toHaveAttribute("aria-live", "polite");
-    expect(status).toHaveTextContent("Slide 1 of 2: Open response");
+    // No spurious announcement of the already-shown first slide on mount.
+    expect(status).toBeEmptyDOMElement();
   });
 
   it("updates the status region when the slide changes", () => {
@@ -147,6 +150,15 @@ describe("Carousel Runtime slide-change announcements", () => {
     );
     fireEvent.click(getByRole("button", { name: "Go to slide 2" }));
     expect(getByRole("status")).toHaveTextContent("Slide 2 of 2: Image");
+  });
+
+  it("announces the first slide when the user navigates back to it", () => {
+    const { getByRole } = render(
+      <Runtime authoredState={authoredState} interactiveState={null} setInteractiveState={jest.fn()} />
+    );
+    fireEvent.click(getByRole("button", { name: "Go to slide 2" }));
+    fireEvent.click(getByRole("button", { name: "Go to slide 1" }));
+    expect(getByRole("status")).toHaveTextContent("Slide 1 of 2: Open response");
   });
 });
 
@@ -189,6 +201,14 @@ describe("Carousel Runtime carousel structure", () => {
     );
     fireEvent.click(getByRole("button", { name: "Go to slide 2" }));
     expect(getByLabelText("Slide 1 of 2")).toHaveAttribute("inert");
+    expect(getByLabelText("Slide 2 of 2")).not.toHaveAttribute("inert");
+  });
+
+  it("does not mark slides inert in report mode, so every response stays readable", () => {
+    const { getByLabelText } = render(
+      <Runtime authoredState={authoredState} interactiveState={null} setInteractiveState={jest.fn()} report={true} />
+    );
+    expect(getByLabelText("Slide 1 of 2")).not.toHaveAttribute("inert");
     expect(getByLabelText("Slide 2 of 2")).not.toHaveAttribute("inert");
   });
 });
