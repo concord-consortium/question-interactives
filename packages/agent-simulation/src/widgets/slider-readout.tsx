@@ -138,7 +138,7 @@ export const SliderReadout: React.FC<IProps> = (props) => {
       <input
         className={css.valueInput}
         data-testid="slider-widget-input"
-        aria-label={label || undefined}
+        aria-label={label?.trim() ? label : undefined}
         disabled={isRecording || isCompletedRecording}
         min={min}
         max={max}

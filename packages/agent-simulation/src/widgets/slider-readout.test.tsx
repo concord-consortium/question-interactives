@@ -121,4 +121,14 @@ describe("SliderReadout", () => {
     render(<SliderReadout {...baseProps} />);
     expect(screen.getByTestId("slider-widget-input")).not.toHaveAttribute("aria-label");
   });
+
+  it("omits aria-label when the label is an empty string", () => {
+    render(<SliderReadout {...baseProps} label="" />);
+    expect(screen.getByTestId("slider-widget-input")).not.toHaveAttribute("aria-label");
+  });
+
+  it("omits aria-label when the label is whitespace only", () => {
+    render(<SliderReadout {...baseProps} label="   " />);
+    expect(screen.getByTestId("slider-widget-input")).not.toHaveAttribute("aria-label");
+  });
 });
