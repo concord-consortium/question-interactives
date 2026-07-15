@@ -126,6 +126,11 @@ export const Header: React.FC<IProps> = (props) => {
         e.preventDefault();
         setActiveIndex(items.length - 1);
         break;
+      case "Enter":
+      case " ":
+        e.preventDefault();
+        activateItem(activeIndex);
+        break;
     }
   };
 

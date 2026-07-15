@@ -107,4 +107,32 @@ describe("Header", () => {
     fireEvent.keyDown(menu, { key: "Home" });
     expect(document.activeElement).toBe(menuItems[0]);
   });
+
+  it.each(["Enter", " "])(
+    "activates the focused enabled item on '%s', closes the menu, and refocuses the button",
+    (key) => {
+      const onShowFileModal = jest.fn();
+      render(<Header {...defaultProps} onShowFileModal={onShowFileModal} />);
+      const button = screen.getByRole("button", { name: "File menu" });
+      fireEvent.click(button); // opens, focus on New (index 0)
+      fireEvent.keyDown(screen.getByRole("menu"), { key });
+      expect(onShowFileModal).toHaveBeenCalledWith("new");
+      expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+      expect(document.activeElement).toBe(button);
+    }
+  );
+
+  it("marks the disabled Open item aria-disabled and does not activate it", () => {
+    const onShowFileModal = jest.fn();
+    render(<Header {...defaultProps} onShowFileModal={onShowFileModal} />);
+    fireEvent.click(screen.getByRole("button", { name: "File menu" }));
+    const menu = screen.getByRole("menu");
+    const open = screen.getByRole("menuitem", { name: /Open/ });
+    expect(open).toHaveAttribute("aria-disabled", "true");
+    fireEvent.keyDown(menu, { key: "ArrowDown" }); // move to Open (index 1)
+    expect(document.activeElement).toBe(open);      // reachable by keyboard
+    fireEvent.keyDown(menu, { key: "Enter" });
+    expect(onShowFileModal).not.toHaveBeenCalled();  // no-op
+    expect(screen.getByRole("menu")).toBeInTheDocument(); // stays open
+  });
 });
