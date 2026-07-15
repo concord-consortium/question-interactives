@@ -131,6 +131,7 @@ export const Slider = ({renderedBar, top, bottom, max, handleSliderChange, label
       onKeyDown={handleKeyDown}
       role="slider"
       aria-label={label}
+      aria-orientation="vertical"
       aria-valuemin={0}
       aria-valuemax={max}
       aria-valuenow={renderedBar.value}

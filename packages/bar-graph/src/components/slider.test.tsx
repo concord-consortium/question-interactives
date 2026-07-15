@@ -42,4 +42,9 @@ describe("Slider accessibility", () => {
     const node = renderSlider({ valueText: undefined }).find('[role="slider"]').getDOMNode();
     expect(node.hasAttribute("aria-valuetext")).toBe(false);
   });
+
+  it("declares a vertical orientation (slider is operated up/down)", () => {
+    const node = renderSlider().find('[role="slider"]').getDOMNode();
+    expect(node.getAttribute("aria-orientation")).toEqual("vertical");
+  });
 });
