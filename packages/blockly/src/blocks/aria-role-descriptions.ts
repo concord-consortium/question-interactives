@@ -25,6 +25,11 @@ export const ARIA_ROLE_DESCRIPTIONS = {
  *  Deriving it from the block's type, rather than adding a per-block authoring field, is deliberate:
  *  an authored field would mean a schema change, new authoring UI, and every block that already
  *  exists shipping blank until someone went back and filled it in. Types with no entry here (the
- *  `builtIn` passthrough) simply get none. */
+ *  `builtIn` passthrough) simply get none.
+ *
+ *  The own-property guard keeps inherited members (`toString`, `constructor`, `__proto__`) from
+ *  resolving up `Object.prototype` and returning a function/object in place of `string | undefined`. */
 export const ariaRoleDescriptionForType = (type: string): string | undefined =>
-  ARIA_ROLE_DESCRIPTIONS[type as keyof typeof ARIA_ROLE_DESCRIPTIONS];
+  Object.prototype.hasOwnProperty.call(ARIA_ROLE_DESCRIPTIONS, type)
+    ? ARIA_ROLE_DESCRIPTIONS[type as keyof typeof ARIA_ROLE_DESCRIPTIONS]
+    : undefined;

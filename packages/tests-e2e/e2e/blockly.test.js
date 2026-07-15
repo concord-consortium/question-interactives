@@ -14,11 +14,16 @@ const toolbox = JSON.stringify({
   ]
 });
 
-const authoredState = {
+const baseAuthoredState = {
   version: 1,
   questionType: "iframe_interactive",
   simulationCode: "",
   customBlocks: [],
+  toolbox
+};
+
+const authoredState = {
+  ...baseAuthoredState,
   // Only `setup` is seeded here, not the whole SEED_BLOCKS set: it is the one drop target the move
   // test needs, and every extra block adds candidate connections to Blockly's constrained-move
   // traversal, which would invalidate the key sequence derived below. The default seeding path —
@@ -31,18 +36,11 @@ const authoredState = {
         { type: "controls_if", id: "loose_if", x: 240, y: 10 }
       ]
     }
-  }),
-  toolbox
+  })
 };
 
 // Without an authored starter the runtime falls back to seeding SEED_BLOCKS.
-const authoredStateWithoutStarter = {
-  version: 1,
-  questionType: "iframe_interactive",
-  simulationCode: "",
-  customBlocks: [],
-  toolbox
-};
+const authoredStateWithoutStarter = { ...baseAuthoredState };
 
 const loadRuntime = (state) => {
   cy.visit("/wrapper.html?iframe=/blockly");
@@ -129,6 +127,28 @@ context("Test blockly interactive", () => {
         cy.getIframeBody().find(`${LOOSE_IF} > path.blocklyPath.blocklyActiveFocus`).should("exist");
       };
 
+      // Both the move and delete announcements ride the same event listener, and Blockly delivers
+      // those events behind requestAnimationFrame (events/utils.ts: `requestAnimationFrame(() =>
+      // setTimeout(fireNow, 0))`). A static headless CI page can sit many seconds between frames, so
+      // after the committing keystroke there is nothing to keep the compositor painting and the
+      // pending frame can miss Cypress's default window. A window resize is dispatched on every poll
+      // to make Blockly lay out and paint, ticking the compositor so the pending frame fires.
+      // `svgResize` does not touch program state. `.should()` retries the query but not this side
+      // effect, so the nudge lives in the poll. On failure it prints what the live region actually
+      // said, which is the only thing worth knowing when this breaks.
+      const nudgeUntilAnnounced = (needle, remaining = 40) => {
+        cy.getIframeBody().then($body => {
+          $body[0].ownerDocument.defaultView.dispatchEvent(new Event("resize"));
+          const text = $body.find("#blocklyAriaAnnounce").text() || "";
+          if (text.includes(needle)) return;
+          if (remaining <= 0) {
+            throw new Error(`live region never contained "${needle}"; last was "${text.trim()}"`);
+          }
+          cy.wait(200);
+          nudgeUntilAnnounced(needle, remaining - 1);
+        });
+      };
+
       it("announces the parent a block was connected into", () => {
         focusLooseIf();
 
@@ -146,10 +166,9 @@ context("Test blockly interactive", () => {
 
         // The block really landed inside setup, so the announcement is not lying about it.
         cy.getIframeBody().find(`g.setup ${LOOSE_IF}`).should("exist");
-        // `invoke("text")` rather than asserting on the element: on failure it prints what the live
-        // region actually said, which is the only thing worth knowing when this breaks.
-        cy.getIframeBody().find("#blocklyAriaAnnounce").invoke("text")
-          .should("contain", "connected inside setup");
+        // The move announcement is rAF-gated like the deletion, and after the commit Enter there are
+        // no further keystrokes to keep the page painting — so nudge the compositor until it fires.
+        nudgeUntilAnnounced("connected inside setup");
       });
 
       // Assert only that a deletion is announced, not which block. Naming the block ("if, do
@@ -163,7 +182,7 @@ context("Test blockly interactive", () => {
       // enough to assert it. What matters for the accessibility requirement (WCAG 4.1.3) is that a
       // deletion IS announced — "Block deleted." satisfies that floor. The unit tests in
       // packages/blockly cover the naming logic deterministically; the sibling "connected inside
-      // setup" test, whose keyboard steps keep the page painting, covers the reliable happy path.
+      // setup" test, which nudges the compositor the same way, covers a named announcement.
       it("announces a deletion", () => {
         focusLooseIf();
 
@@ -171,22 +190,6 @@ context("Test blockly interactive", () => {
 
         cy.getIframeBody().find(LOOSE_IF).should("not.exist");
 
-        // The BLOCK_DELETE event that drives the announcement is still gated behind requestAnimationFrame
-        // (see above), so a window resize is dispatched on every poll to make Blockly lay out and paint,
-        // ticking the compositor so the pending frame fires. `svgResize` does not touch program state.
-        // `.should()` retries the query but not this side effect, so the nudge lives in the poll.
-        const nudgeUntilAnnounced = (needle, remaining = 40) => {
-          cy.getIframeBody().then($body => {
-            $body[0].ownerDocument.defaultView.dispatchEvent(new Event("resize"));
-            const text = $body.find("#blocklyAriaAnnounce").text() || "";
-            if (text.includes(needle)) return;
-            if (remaining <= 0) {
-              throw new Error(`live region never contained "${needle}"; last was "${text.trim()}"`);
-            }
-            cy.wait(200);
-            nudgeUntilAnnounced(needle, remaining - 1);
-          });
-        };
         // "deleted" matches both "if, do deleted." (real browser) and "Block deleted." (the generic
         // fallback headless CI degrades to). Both satisfy "a deletion is announced".
         nudgeUntilAnnounced("deleted");

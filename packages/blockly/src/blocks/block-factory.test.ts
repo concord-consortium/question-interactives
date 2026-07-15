@@ -1117,6 +1117,14 @@ describe("block-factory", () => {
       expect(ariaRoleDescriptionForType("builtIn")).toBeUndefined();
     });
 
+    it("does not return inherited Object members for reserved-name types", () => {
+      // Without an own-property guard these resolve up Object.prototype to a function/object,
+      // violating the string | undefined contract.
+      expect(ariaRoleDescriptionForType("toString")).toBeUndefined();
+      expect(ariaRoleDescriptionForType("constructor")).toBeUndefined();
+      expect(ariaRoleDescriptionForType("__proto__")).toBeUndefined();
+    });
+
     it("applies the description when the block is registered", () => {
       const blockDef: ICustomBlock = {
         category: "Properties",
