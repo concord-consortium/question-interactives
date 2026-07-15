@@ -2,27 +2,21 @@ import { FieldSlider } from "@blockly/field-slider";
 import type { BlockSvg } from "blockly";
 import { javascriptGenerator } from "blockly/javascript";
 import {
-  Blocks, FieldDropdown, FieldDropdownValidator, FieldImage, FieldNumber, Input, MenuOption, serialization, utils,
+  Blocks, FieldDropdown, FieldDropdownValidator, FieldNumber, Input, MenuOption, serialization, utils,
   WorkspaceSvg, Xml
 } from "blockly/core";
 
 import { ICustomBlock, IBlockConfig } from "../components/types";
+import { markInternalDisposal } from "../utils/aria-announce";
+import { ariaRoleDescriptionForType } from "./aria-role-descriptions";
+import { DISCLOSURE_LABEL_COLLAPSED, DisclosureField, PLUS_ICON } from "./disclosure-field";
 import { createGenerator } from "./generators";
 import { appendParameterFields, applyParameterDefaults } from "./params";
-
-const PLUS_ICON  = "data:image/svg+xml;utf8," +
-  "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>" +
-  "<text fill='white' x='8' y='12' text-anchor='middle' font-size='14'>+</text></svg>";
-
-const MINUS_ICON = "data:image/svg+xml;utf8," +
-  "<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16'>" +
-  "<text fill='white' x='8' y='12' text-anchor='middle' font-size='14'>−</text></svg>";
 
 const blockHasDisclosure = (blockDef: ICustomBlock, blockConfig: IBlockConfig): boolean => {
   return blockDef.type === "creator" ||
     (blockDef.type === "action" && !!blockConfig.canHaveChildren);
 };
-
 
 // Filters and validates dropdown options to Blockly MenuOption format.
 const filterDropdownOptions = (options: unknown[]): MenuOption[] => {
@@ -61,26 +55,36 @@ const collectBlockChain = (startBlock: BlockSvg | null): BlockSvg[] => {
   return blocks;
 };
 
-// Disposes all connected child blocks from a statement input.
-const disposeChildBlocks = (block: BlockSvg, inputName = "statements"): void => {
-  const stmt = block.getInput(inputName);
-  if (!stmt?.connection) return;
-  
-  const targetBlock = stmt.connection.targetBlock() as BlockSvg | null;
-  if (!targetBlock) return;
-
-  const blocksToDispose = collectBlockChain(targetBlock);
+/** Every dispose in this file is bookkeeping, not a deletion: collapsing a disclosure block stashes
+ *  its children and disposes them, and both the template and the code generator build blocks on the
+ *  live workspace only to throw them away. All of it runs inside click and validator handlers, where
+ *  Blockly's `recordUndo` is `true` -- so to a listener these are indistinguishable from a student
+ *  hitting Delete. Naming the blocks first is what keeps the screen reader from announcing a
+ *  student's whole program as deleted when they merely collapsed it. See utils/aria-announce.ts. */
+const disposeChain = (blocks: BlockSvg[], context: string): void => {
   // Dispose in reverse order to avoid connection issues
-  blocksToDispose.reverse().forEach(b => {
+  blocks.reverse().forEach(b => {
     try {
+      markInternalDisposal(b);
       // false = do not "heal stack", i.e., don't reconnect remaining blocks when
       // one is removed. We skip healing because we're disposing all children.
       // See https://developers.google.com/blockly/reference/js/blockly.blocksvg_class.dispose_1_method.md
       b.dispose(false);
     } catch (e) {
-      console.warn("Error disposing child block:", e);
+      console.warn(`Error disposing ${context} block:`, e);
     }
   });
+};
+
+// Disposes all connected child blocks from a statement input.
+const disposeChildBlocks = (block: BlockSvg, inputName = "statements"): void => {
+  const stmt = block.getInput(inputName);
+  if (!stmt?.connection) return;
+
+  const targetBlock = stmt.connection.targetBlock() as BlockSvg | null;
+  if (!targetBlock) return;
+
+  disposeChain(collectBlockChain(targetBlock), "child");
 };
 
 // Serializes connected blocks to XML string.
@@ -126,6 +130,7 @@ const getXmlFromTemplate = (childBlocks: serialization.blocks.State, workspace: 
   const innerRoot = serialization.blocks.append(childBlocks, workspace);
   const dom = Xml.blockToDom(innerRoot, true);
   const xml = Xml.domToText(dom);
+  markInternalDisposal(innerRoot);
   innerRoot.dispose(false);
   return xml;
 };
@@ -153,20 +158,10 @@ const generateCodeFromXml = (block: BlockSvg, xml: string, inputName: string): s
     
     // Generate code from the temporary blocks
     const code = javascriptGenerator.statementToCode(block, inputName) || "";
-    
+
     // Clean up: dispose temp blocks
-    const blocksToDispose = collectBlockChain(tempBlock);
-    blocksToDispose.reverse().forEach(b => {
-      try {
-        // false = do not "heal stack", i.e., don't reconnect remaining blocks when
-        // one is removed. We skip healing because we're disposing all children.
-        // See https://developers.google.com/blockly/reference/js/blockly.blocksvg_class.dispose_1_method.md
-        b.dispose(false);
-      } catch (e) {
-        console.warn("Error disposing temp block:", e);
-      }
-    });
-    
+    disposeChain(collectBlockChain(tempBlock), "temp");
+
     // Remove temporary input
     block.removeInput(inputName, true);
     
@@ -200,6 +195,9 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaul
         const displayName = displayNameForBlock(blockDef);
         // Create input without immediately appending the name so we can control placement as needed.
         const input = this.appendDummyInput();
+
+        const roleDescription = ariaRoleDescriptionForType(blockDef.type);
+        if (roleDescription) this.setAriaRoleDescriptionProvider(roleDescription);
 
         // Returns the default child blocks, which can change based on the selected type for creator blocks
         const getDefaultChildBlocks = (type?: string) => {
@@ -325,7 +323,7 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaul
           this.__childrenSeeded = false;
 
           // Add open/close toggle button.
-          const icon = new FieldImage(PLUS_ICON, 16, 16, "+/-");
+          const icon = new DisclosureField(PLUS_ICON, 16, 16, DISCLOSURE_LABEL_COLLAPSED);
           icon.setOnClickHandler?.(() => {
             const open = !this.__disclosureOpen;
             this.__disclosureOpen = open;
@@ -365,7 +363,8 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaul
               this.removeInput("statements", true);
             }
 
-            icon.setValue(open ? MINUS_ICON : PLUS_ICON);
+            // Swaps the icon image, the accessible name, and aria-expanded together.
+            icon.setExpanded(open);
             this.render();
           });
           input.insertFieldAt(0, icon, "__disclosure_icon");
@@ -453,9 +452,11 @@ export const registerCustomBlocks = (customBlocks: ICustomBlock[], includeDefaul
             b.removeInput("statements", true);
           }
           
+          // Restored blocks have to announce the state they were restored into, not the state a
+          // freshly initialized block starts in, so go through the field's own setExpanded.
           const iconField = b.getField("__disclosure_icon");
-          if (iconField) {
-            iconField.setValue(open ? MINUS_ICON : PLUS_ICON);
+          if (iconField instanceof DisclosureField) {
+            iconField.setExpanded(open);
           }
         }
         // Note: blocks without disclosure don't need statement inputs added here.

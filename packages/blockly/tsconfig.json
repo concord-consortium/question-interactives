@@ -1,5 +1,12 @@
 {
   "extends": "../../shared/tsconfig",
+  "compilerOptions": {
+    // Blockly ships real ES2015+ classes (e.g. FieldImage). The shared config's es5 target makes
+    // TypeScript downlevel `class X extends Y` into a function that calls `Y.apply(this, ...)`,
+    // which throws "Class constructor cannot be invoked without 'new'" against a native class.
+    // Targeting es2015 keeps `extends` as a real native class so subclassing Blockly works.
+    "target": "es2015"
+  },
   "include": [
     "./src/**/*"
   ]

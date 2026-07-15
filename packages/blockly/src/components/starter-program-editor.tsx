@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useRef } from "react";
 
 import "../blocks/block-registration";
 import { registerCustomBlocks } from "../blocks/block-factory";
+import { attachAriaAnnouncements } from "../utils/aria-announce";
 import { saveEvents } from "../utils/block-utils";
 import { BLOCKLY_RENDERER } from "../utils/blockly-options";
 import { buildValidTypeSet, pruneStarterState } from "../utils/starter-utils";
@@ -106,6 +107,10 @@ export const StarterProgramEditor: React.FC<IProps> = ({ customBlocks, starterBl
       performSave();
     };
     workspace.addChangeListener(listener);
+
+    // Announce committed moves and deletions. The workspace is disposed in the cleanup below, and
+    // disposal drops its listeners, so no separate detach is needed here.
+    attachAriaAnnouncements(workspace);
 
     return () => {
       workspace.removeChangeListener(listener);

@@ -2,6 +2,7 @@ import { Events, inject, serialization } from "blockly";
 import React, { MutableRefObject, useEffect, useRef } from "react";
 
 import { registerCustomBlocks } from "../blocks/block-factory";
+import { attachAriaAnnouncements } from "../utils/aria-announce";
 import { saveEvents, stateContainsType } from "../utils/block-utils";
 import { BLOCKLY_RENDERER } from "../utils/blockly-options";
 import { injectCustomBlocksIntoToolbox } from "../utils/toolbox-utils";
@@ -87,6 +88,10 @@ export const CustomBlockFormChildBlocks = ({
       }
     };
     newWorkspace.addChangeListener(saveState);
+
+    // Announce committed moves and deletions. The workspace is disposed in the cleanup below, and
+    // disposal drops its listeners, so no separate detach is needed here.
+    attachAriaAnnouncements(newWorkspace);
 
     const childBlocksContainer = childBlocksContainerRef.current;
     return () => {
