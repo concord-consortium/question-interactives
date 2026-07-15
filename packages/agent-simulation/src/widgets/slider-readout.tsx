@@ -10,6 +10,7 @@ interface IProps {
   isCompletedRecording?: boolean;
   inRecordingMode?: boolean;
   isRecording?: boolean;
+  label?: string;
   max: number;
   min: number;
   precision?: number;
@@ -41,7 +42,7 @@ const calculateInputWidth = (min: number, max: number, currentValue: number, for
 };
 
 export const SliderReadout: React.FC<IProps> = (props) => {
-  const { formatType = "integer", isCompletedRecording, inRecordingMode, isRecording, min, max, onChange, precision, step, unit: _unit, value } = props;
+  const { formatType = "integer", isCompletedRecording, inRecordingMode, isRecording, label, min, max, onChange, precision, step, unit: _unit, value } = props;
   const unit = formatType === "percent" ? "%" : (_unit ?? "");
   
   const formattedValue = useMemo(() => {
@@ -137,6 +138,7 @@ export const SliderReadout: React.FC<IProps> = (props) => {
       <input
         className={css.valueInput}
         data-testid="slider-widget-input"
+        aria-label={label?.trim() ? label : undefined}
         disabled={isRecording || isCompletedRecording}
         min={min}
         max={max}

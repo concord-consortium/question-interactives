@@ -105,4 +105,30 @@ describe("SliderReadout", () => {
     fireEvent.keyDown(input, { key: "Enter" });
     expect(document.activeElement).not.toBe(input);
   });
+
+  it("sets aria-label on the input when a label is provided", () => {
+    render(<SliderReadout {...baseProps} label="Sheep Energy from Grass" />);
+    expect(screen.getByTestId("slider-widget-input")).toHaveAttribute("aria-label", "Sheep Energy from Grass");
+  });
+
+  it("exposes the label as the input's accessible name", () => {
+    render(<SliderReadout {...baseProps} label="Sheep Energy from Grass" />);
+    // getByRole spinbutton resolves the accessible name; this is what a screen reader announces.
+    expect(screen.getByRole("spinbutton", { name: "Sheep Energy from Grass" })).toBeInTheDocument();
+  });
+
+  it("omits aria-label when no label is provided", () => {
+    render(<SliderReadout {...baseProps} />);
+    expect(screen.getByTestId("slider-widget-input")).not.toHaveAttribute("aria-label");
+  });
+
+  it("omits aria-label when the label is an empty string", () => {
+    render(<SliderReadout {...baseProps} label="" />);
+    expect(screen.getByTestId("slider-widget-input")).not.toHaveAttribute("aria-label");
+  });
+
+  it("omits aria-label when the label is whitespace only", () => {
+    render(<SliderReadout {...baseProps} label="   " />);
+    expect(screen.getByTestId("slider-widget-input")).not.toHaveAttribute("aria-label");
+  });
 });

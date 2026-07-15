@@ -92,6 +92,12 @@ describe("CircularSliderWidget", () => {
       renderWidget({ data: { ...defaultData, showReadout: undefined } });
       expect(screen.queryByTestId("slider-widget-input")).toBeNull();
     });
+
+    it("gives the readout input an accessible name matching the visible label", () => {
+      mockGlobals.set("foo", 42);
+      renderWidget({ data: { ...defaultData, showReadout: true } });
+      expect(screen.getByRole("spinbutton", { name: "Test Label Text" })).toBeInTheDocument();
+    });
   });
 
   describe("functionality", () => {
