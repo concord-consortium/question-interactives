@@ -214,26 +214,6 @@ export function attachAriaAnnouncements(workspace: WorkspaceSvg): () => void {
   // child-block editor, even though both hold the same template id.
   const disposals = disposalsForWorkspace(workspace);
 
-  /** The workspace, not the event stream, is the authority on what it contains.
-   *
-   *  Building the cache only from events made it exactly as reliable as the events, and they are
-   *  not reliable enough: a block already present when we attach never had a create event, and a
-   *  load's creates can be missed entirely when the workspace is re-injected around them (blockly.tsx
-   *  re-creates its workspace whenever the toolbox or the custom blocks change). CI caught this and
-   *  a local run never did -- a student's starter program loaded, and deleting a block from it
-   *  announced the generic "Block deleted." instead of naming it. Reading the workspace closes that
-   *  hole regardless of which events fired. */
-  const primeFromWorkspace = () => {
-    // Guarded like every other path here, and for the same reason: this one runs at attach time,
-    // outside the listener, so an exception would take the whole workspace injection down with it.
-    // A missing label costs a student the name of one block; a failed inject costs them everything.
-    try {
-      workspace.getAllBlocks(false).forEach(b => labels.set(b.id, b.getAriaLabel(ARIA_VERBOSITY)));
-    } catch (e) {
-      console.warn("Blockly ARIA label priming failed:", e);
-    }
-  };
-
   const listener = (event: Events.Abstract) => {
     // The whole body is guarded, not just the announcing call. Workspace.fireChangeListener has no
     // try/catch of its own, and fireNow has already cleared the fire queue before dispatching, so a
@@ -242,10 +222,6 @@ export function attachAriaAnnouncements(workspace: WorkspaceSvg): () => void {
     // broken workspace is a catastrophe.
     try {
       const { blockId } = event as unknown as { blockId?: string };
-
-      // A load swaps the workspace's contents wholesale. Whatever create events it did or did not
-      // deliver, this says "look again".
-      if (event.type === Events.FINISHED_LOADING) primeFromWorkspace();
 
       if (blockId && LABEL_CACHING_EVENTS.includes(event.type)) {
         const block = workspace.getBlockById(blockId);
@@ -281,8 +257,6 @@ export function attachAriaAnnouncements(workspace: WorkspaceSvg): () => void {
     }
   };
 
-  // Anything already on the canvas got no create event we could have seen.
-  primeFromWorkspace();
   workspace.addChangeListener(listener);
   return () => workspace.removeChangeListener(listener);
 }
