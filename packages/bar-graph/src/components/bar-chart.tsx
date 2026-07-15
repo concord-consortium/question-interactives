@@ -208,9 +208,13 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
               })}
               {!readOnly && chartInfo.bars.map(renderedBar => {
                 const { index } = renderedBar;
-                if (authoredState.bars[index].lockValue) {
+                const bar = authoredState.bars[index];
+                if (bar.lockValue) {
                   return null;
                 }
+                const label = bar.label || `Bar ${index + 1}`;
+                const value = authoredState.numberOfDecimalPlaces ? renderedBar.value.toFixed(authoredState.numberOfDecimalPlaces) : renderedBar.value;
+                const valueText = authoredState.yAxisLabel ? `${value} ${authoredState.yAxisLabel}` : undefined;
                 return (
                   <Slider
                     key={index}
@@ -219,6 +223,8 @@ export const BarChartComponent: React.FC<IProps> = ({ authoredState, interactive
                     bottom={chartInfo.bottom}
                     max={max}
                     handleSliderChange={handleSliderChange}
+                    label={label}
+                    valueText={valueText}
                   />
                 );
               })}

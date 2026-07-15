@@ -13,9 +13,11 @@ interface IProps {
   bottom: number;
   max: number;
   handleSliderChange: SliderChangeCallback;
+  label: string;
+  valueText?: string;
 }
 
-export const Slider = ({renderedBar, top, bottom, max, handleSliderChange}: IProps) => {
+export const Slider = ({renderedBar, top, bottom, max, handleSliderChange, label, valueText}: IProps) => {
   const {index} = renderedBar;
   const style: React.CSSProperties = {
     top: renderedBar.top - SliderIconHalfHeight,
@@ -128,9 +130,11 @@ export const Slider = ({renderedBar, top, bottom, max, handleSliderChange}: IPro
       tabIndex={tabIndex}
       onKeyDown={handleKeyDown}
       role="slider"
+      aria-label={label}
       aria-valuemin={0}
       aria-valuemax={max}
       aria-valuenow={renderedBar.value}
+      aria-valuetext={valueText}
       data-cy={`slider${renderedBar.index}`}
     >
       <SliderIcon />
