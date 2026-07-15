@@ -264,11 +264,12 @@ export const CircularSliderWidget = observer(function CircularSliderWidget(props
         </div>
         {showReadout &&
           <div className={css.readoutContainer}>
-            <SliderReadout 
+            <SliderReadout
               formatType={formatType}
               isCompletedRecording={isCompletedRecording}
               inRecordingMode={inRecordingMode}
               isRecording={isRecording}
+              label={label}
               min={min}
               max={max}
               onChange={handleInputChange}
