@@ -1,5 +1,5 @@
 import React from "react";
-import { render, cleanup } from "@testing-library/react";
+import { render, cleanup, fireEvent } from "@testing-library/react";
 
 import { Runtime } from "./runtime";
 import { IAuthoredState } from "./types";
@@ -61,5 +61,24 @@ describe("Carousel Runtime child iframe titles", () => {
       <Runtime authoredState={unknownState} interactiveState={null} setInteractiveState={jest.fn()} />
     );
     expect(getByTestId("iframe-runtime")).toHaveAttribute("data-title", "Slide 1: Interactive content");
+  });
+});
+
+describe("Carousel Runtime active slide indication", () => {
+  it("marks only the active slide's nav button with aria-current=true", () => {
+    const { getByRole } = render(
+      <Runtime authoredState={authoredState} interactiveState={null} setInteractiveState={jest.fn()} />
+    );
+    expect(getByRole("button", { name: "Go to slide 1" })).toHaveAttribute("aria-current", "true");
+    expect(getByRole("button", { name: "Go to slide 2" })).not.toHaveAttribute("aria-current");
+  });
+
+  it("moves aria-current to the newly selected slide when a nav button is clicked", () => {
+    const { getByRole } = render(
+      <Runtime authoredState={authoredState} interactiveState={null} setInteractiveState={jest.fn()} />
+    );
+    fireEvent.click(getByRole("button", { name: "Go to slide 2" }));
+    expect(getByRole("button", { name: "Go to slide 1" })).not.toHaveAttribute("aria-current");
+    expect(getByRole("button", { name: "Go to slide 2" })).toHaveAttribute("aria-current", "true");
   });
 });
