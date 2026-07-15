@@ -159,7 +159,7 @@ export const Header: React.FC<IProps> = (props) => {
     >
       {items.map((item, index) => (
         <React.Fragment key={item.id}>
-          {item.id === "rename" && <div className={css.fileMenuSeparator} />}
+          {item.id === "rename" && <div className={css.fileMenuSeparator} role="separator" />}
           <div
             ref={el => { itemRefs.current[index] = el; }}
             className={classNames(css.fileMenuItem, { [css.disabled]: item.disabled })}
@@ -168,7 +168,9 @@ export const Header: React.FC<IProps> = (props) => {
             aria-disabled={item.disabled || undefined}
             onClick={() => activateItem(index)}
           >
-            <item.Icon /> {item.label}
+            <span className={css.fileMenuItemContent}>
+              <item.Icon /> {item.label}
+            </span>
           </div>
         </React.Fragment>
       ))}

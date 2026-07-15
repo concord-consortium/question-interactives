@@ -89,11 +89,22 @@
       white-space: nowrap;
       cursor: pointer;
 
+      .fileMenuItemContent {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
       &.disabled {
-        opacity: 0.35;
-        // No pointer-events:none — the item must still receive roving focus.
-        // Activation is blocked by aria-disabled and the activateItem guard.
+        // Dim only the content, not the whole item, so the focus indicator stays
+        // visible when a keyboard user arrows onto this (still-focusable) disabled
+        // item. Activation is blocked by aria-disabled and the activateItem guard;
+        // no pointer-events:none, which would also block roving focus.
         cursor: default;
+
+        .fileMenuItemContent {
+          opacity: 0.35;
+        }
       }
 
       &:hover {
@@ -102,10 +113,14 @@
       &:active {
         background-color: var(--cc-teal-light-4);
       }
-      // Visible focus indicator for the roving-tabindex active item.
+      // Focus indicator for the roving-tabindex active item: a strong inset ring
+      // (distinct from the :active background alone) plus a background tint. The
+      // ring sits on the item box at full opacity, so focus stays perceptible even
+      // on the dimmed-content disabled item.
       &:focus, &:focus-visible {
         outline: none;
         background-color: var(--cc-teal-light-4);
+        box-shadow: inset 0 0 0 2px var(--cc-teal);
       }
 
       &:first-child {
