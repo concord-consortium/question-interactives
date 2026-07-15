@@ -80,4 +80,31 @@ describe("Header", () => {
     expect(screen.getByRole("menu")).toBeInTheDocument();
     expect(document.activeElement).toBe(screen.getByRole("menuitem", { name: /Delete/ }));
   });
+
+  it("moves focus to the next/previous item with Arrow keys, wrapping at the ends", () => {
+    render(<Header {...defaultProps} onShowFileModal={jest.fn()} />);
+    openMenu();
+    const menuItems = screen.getAllByRole("menuitem"); // [New, Open, Make a copy, Rename, Delete]
+    const menu = screen.getByRole("menu");
+    expect(document.activeElement).toBe(menuItems[0]);
+    fireEvent.keyDown(menu, { key: "ArrowDown" });
+    expect(document.activeElement).toBe(menuItems[1]);
+    fireEvent.keyDown(menu, { key: "ArrowUp" });
+    expect(document.activeElement).toBe(menuItems[0]);
+    fireEvent.keyDown(menu, { key: "ArrowUp" }); // wrap to last
+    expect(document.activeElement).toBe(menuItems[4]);
+    fireEvent.keyDown(menu, { key: "ArrowDown" }); // wrap to first
+    expect(document.activeElement).toBe(menuItems[0]);
+  });
+
+  it("jumps to the first/last item with Home/End", () => {
+    render(<Header {...defaultProps} onShowFileModal={jest.fn()} />);
+    openMenu();
+    const menuItems = screen.getAllByRole("menuitem");
+    const menu = screen.getByRole("menu");
+    fireEvent.keyDown(menu, { key: "End" });
+    expect(document.activeElement).toBe(menuItems[4]);
+    fireEvent.keyDown(menu, { key: "Home" });
+    expect(document.activeElement).toBe(menuItems[0]);
+  });
 });

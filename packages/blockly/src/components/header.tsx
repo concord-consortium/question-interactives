@@ -108,12 +108,34 @@ export const Header: React.FC<IProps> = (props) => {
     }
   };
 
+  const handleMenuKeyDown = (e: React.KeyboardEvent) => {
+    switch (e.key) {
+      case "ArrowDown":
+        e.preventDefault();
+        setActiveIndex(i => (i + 1) % items.length);
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        setActiveIndex(i => (i - 1 + items.length) % items.length);
+        break;
+      case "Home":
+        e.preventDefault();
+        setActiveIndex(0);
+        break;
+      case "End":
+        e.preventDefault();
+        setActiveIndex(items.length - 1);
+        break;
+    }
+  };
+
   const renderMenu = () => (
     <div
       id={menuId}
       className={css.fileMenu}
       role="menu"
       aria-label="File menu"
+      onKeyDown={handleMenuKeyDown}
     >
       {items.map((item, index) => (
         <React.Fragment key={item.id}>
