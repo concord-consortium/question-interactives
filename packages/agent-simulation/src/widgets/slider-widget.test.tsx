@@ -101,6 +101,12 @@ describe("SliderWidget", () => {
       const sliderBody = screen.getByTestId("slider-widget-slider-body");
       expect(sliderBody.querySelector(".rcSlider")).toBeInTheDocument();
     });
+
+    it("gives the readout input an accessible name matching the visible label", () => {
+      mockGlobals.set("foo", 42);
+      renderWidget({ data: { ...defaultData, showReadout: true } });
+      expect(screen.getByRole("spinbutton", { name: "Primary Label Text" })).toBeInTheDocument();
+    });
   });
 
   describe("functionality", () => {

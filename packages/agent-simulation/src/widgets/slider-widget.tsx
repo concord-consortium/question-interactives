@@ -67,11 +67,12 @@ export const SliderWidget = observer(function SliderWidget({ data, globalKey, si
           {label}
         </span>
         {showReadout &&
-          <SliderReadout 
+          <SliderReadout
             formatType={formatType}
             isCompletedRecording={isCompletedRecording}
             inRecordingMode={inRecordingMode}
             isRecording={isRecording}
+            label={label}
             min={min}
             max={max}
             onChange={handleInputChange}
