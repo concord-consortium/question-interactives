@@ -91,13 +91,20 @@
 
       &.disabled {
         opacity: 0.35;
-        pointer-events: none;
+        // No pointer-events:none — the item must still receive roving focus.
+        // Activation is blocked by aria-disabled and the activateItem guard.
+        cursor: default;
       }
 
       &:hover {
         background-color: var(--cc-teal-light-6);
       }
       &:active {
+        background-color: var(--cc-teal-light-4);
+      }
+      // Visible focus indicator for the roving-tabindex active item.
+      &:focus, &:focus-visible {
+        outline: none;
         background-color: var(--cc-teal-light-4);
       }
 
