@@ -1,15 +1,5 @@
 @import "./variables.scss";
 
-.backdrop {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 999;
-  background: transparent;
-}
-
 .header {
   position: relative;
   background: var(--cc-teal-light-5);
@@ -99,9 +89,29 @@
       white-space: nowrap;
       cursor: pointer;
 
+      .fileMenuItemContent {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
       &.disabled {
-        opacity: 0.35;
-        pointer-events: none;
+        // Dim only the content, not the whole item, so the focus indicator stays
+        // visible when a keyboard user arrows onto this (still-focusable) disabled
+        // item. Activation is blocked by aria-disabled and the activateItem guard;
+        // no pointer-events:none, which would also block roving focus.
+        cursor: default;
+
+        .fileMenuItemContent {
+          opacity: 0.35;
+        }
+
+        // A disabled item must not look interactive on mouse hover/press. The
+        // keyboard focus indicator below still applies (higher specificity is not
+        // needed since :focus is a different state).
+        &:hover, &:active {
+          background-color: transparent;
+        }
       }
 
       &:hover {
@@ -109,6 +119,15 @@
       }
       &:active {
         background-color: var(--cc-teal-light-4);
+      }
+      // Focus indicator for the roving-tabindex active item: a strong inset ring
+      // (distinct from the :active background alone) plus a background tint. The
+      // ring sits on the item box at full opacity, so focus stays perceptible even
+      // on the dimmed-content disabled item.
+      &:focus, &:focus-visible {
+        outline: none;
+        background-color: var(--cc-teal-light-4);
+        box-shadow: inset 0 0 0 2px var(--cc-teal);
       }
 
       &:first-child {
