@@ -1,5 +1,5 @@
 import React from "react";
-import { render, cleanup } from "@testing-library/react";
+import { render, cleanup, fireEvent } from "@testing-library/react";
 
 import { Runtime } from "./runtime";
 import { IAuthoredState } from "./types";
@@ -61,5 +61,154 @@ describe("Carousel Runtime child iframe titles", () => {
       <Runtime authoredState={unknownState} interactiveState={null} setInteractiveState={jest.fn()} />
     );
     expect(getByTestId("iframe-runtime")).toHaveAttribute("data-title", "Slide 1: Interactive content");
+  });
+});
+
+describe("Carousel Runtime active slide indication", () => {
+  it("marks only the active slide's nav button with aria-current=true", () => {
+    const { getByRole } = render(
+      <Runtime authoredState={authoredState} interactiveState={null} setInteractiveState={jest.fn()} />
+    );
+    expect(getByRole("button", { name: "Go to slide 1" })).toHaveAttribute("aria-current", "true");
+    expect(getByRole("button", { name: "Go to slide 2" })).not.toHaveAttribute("aria-current");
+  });
+
+  it("moves aria-current to the newly selected slide when a nav button is clicked", () => {
+    const { getByRole } = render(
+      <Runtime authoredState={authoredState} interactiveState={null} setInteractiveState={jest.fn()} />
+    );
+    fireEvent.click(getByRole("button", { name: "Go to slide 2" }));
+    expect(getByRole("button", { name: "Go to slide 1" })).not.toHaveAttribute("aria-current");
+    expect(getByRole("button", { name: "Go to slide 2" })).toHaveAttribute("aria-current", "true");
+  });
+});
+
+describe("Carousel Runtime Prev/Next availability", () => {
+  // Prev/Next use aria-disabled (not the native `disabled` attribute) so a keyboard user keeps
+  // focus on the button at the slide boundaries instead of having focus dropped to <body>.
+  it("marks Prev aria-disabled on the first slide and leaves Next enabled", () => {
+    const { getByRole } = render(
+      <Runtime authoredState={authoredState} interactiveState={null} setInteractiveState={jest.fn()} />
+    );
+    expect(getByRole("button", { name: "Previous slide" })).toHaveAttribute("aria-disabled", "true");
+    expect(getByRole("button", { name: "Next slide" })).toHaveAttribute("aria-disabled", "false");
+  });
+
+  it("marks Next aria-disabled on the last slide and leaves Prev enabled", () => {
+    const { getByRole } = render(
+      <Runtime authoredState={authoredState} interactiveState={null} setInteractiveState={jest.fn()} />
+    );
+    fireEvent.click(getByRole("button", { name: "Go to slide 2" }));
+    expect(getByRole("button", { name: "Next slide" })).toHaveAttribute("aria-disabled", "true");
+    expect(getByRole("button", { name: "Previous slide" })).toHaveAttribute("aria-disabled", "false");
+  });
+
+  it("does not advance past the first slide when aria-disabled Prev is clicked", () => {
+    const { getByRole } = render(
+      <Runtime authoredState={authoredState} interactiveState={null} setInteractiveState={jest.fn()} />
+    );
+    fireEvent.click(getByRole("button", { name: "Previous slide" }));
+    // aria-current must stay on slide 1 — currentSlide never goes negative
+    expect(getByRole("button", { name: "Go to slide 1" })).toHaveAttribute("aria-current", "true");
+  });
+
+  it("gives all nav buttons type=button so they never submit a surrounding form", () => {
+    const { getByRole } = render(
+      <Runtime authoredState={authoredState} interactiveState={null} setInteractiveState={jest.fn()} />
+    );
+    expect(getByRole("button", { name: "Previous slide" })).toHaveAttribute("type", "button");
+    expect(getByRole("button", { name: "Next slide" })).toHaveAttribute("type", "button");
+    expect(getByRole("button", { name: "Go to slide 1" })).toHaveAttribute("type", "button");
+  });
+});
+
+describe("Carousel Runtime slide-change announcements", () => {
+  const originalHref = window.location.href;
+
+  beforeEach(() => {
+    // Resolve the child interactive type names so the announcement includes them.
+    window.history.replaceState(null, "", "/version/0.5.0/carousel");
+  });
+
+  afterEach(() => {
+    window.history.replaceState(null, "", originalHref);
+  });
+
+  it("exposes a polite status region that stays silent on load (the first slide is already visible)", () => {
+    const { getByRole } = render(
+      <Runtime authoredState={authoredState} interactiveState={null} setInteractiveState={jest.fn()} />
+    );
+    const status = getByRole("status");
+    expect(status).toHaveAttribute("aria-live", "polite");
+    // No spurious announcement of the already-shown first slide on mount.
+    expect(status).toBeEmptyDOMElement();
+  });
+
+  it("updates the status region when the slide changes", () => {
+    const { getByRole } = render(
+      <Runtime authoredState={authoredState} interactiveState={null} setInteractiveState={jest.fn()} />
+    );
+    fireEvent.click(getByRole("button", { name: "Go to slide 2" }));
+    expect(getByRole("status")).toHaveTextContent("Slide 2 of 2: Image");
+  });
+
+  it("announces the first slide when the user navigates back to it", () => {
+    const { getByRole } = render(
+      <Runtime authoredState={authoredState} interactiveState={null} setInteractiveState={jest.fn()} />
+    );
+    fireEvent.click(getByRole("button", { name: "Go to slide 2" }));
+    fireEvent.click(getByRole("button", { name: "Go to slide 1" }));
+    expect(getByRole("status")).toHaveTextContent("Slide 1 of 2: Open response");
+  });
+});
+
+describe("Carousel Runtime carousel structure", () => {
+  it("exposes the carousel as a labeled region", () => {
+    const { getByRole } = render(
+      <Runtime authoredState={authoredState} interactiveState={null} setInteractiveState={jest.fn()} />
+    );
+    const region = getByRole("region", { name: "Carousel" });
+    expect(region).toHaveAttribute("aria-roledescription", "carousel");
+  });
+
+  it("labels each slide as a group with its position", () => {
+    const { getByRole } = render(
+      <Runtime authoredState={authoredState} interactiveState={null} setInteractiveState={jest.fn()} />
+    );
+    const slide1 = getByRole("group", { name: "Slide 1 of 2" });
+    expect(slide1).toHaveAttribute("aria-roledescription", "slide");
+    expect(getByRole("group", { name: "Slide 2 of 2" })).toHaveAttribute("aria-roledescription", "slide");
+  });
+
+  it("labels the nav landmark", () => {
+    const { getByRole } = render(
+      <Runtime authoredState={authoredState} interactiveState={null} setInteractiveState={jest.fn()} />
+    );
+    expect(getByRole("navigation", { name: "Carousel navigation" })).toBeInTheDocument();
+  });
+
+  it("keeps only the current slide reachable, marking off-screen slides inert", () => {
+    const { getByLabelText } = render(
+      <Runtime authoredState={authoredState} interactiveState={null} setInteractiveState={jest.fn()} />
+    );
+    expect(getByLabelText("Slide 1 of 2")).not.toHaveAttribute("inert");
+    expect(getByLabelText("Slide 2 of 2")).toHaveAttribute("inert");
+  });
+
+  it("moves inert to the previously-current slide when the slide changes", () => {
+    const { getByLabelText, getByRole } = render(
+      <Runtime authoredState={authoredState} interactiveState={null} setInteractiveState={jest.fn()} />
+    );
+    fireEvent.click(getByRole("button", { name: "Go to slide 2" }));
+    expect(getByLabelText("Slide 1 of 2")).toHaveAttribute("inert");
+    expect(getByLabelText("Slide 2 of 2")).not.toHaveAttribute("inert");
+  });
+
+  it("does not mark slides inert in report mode, so every response stays readable", () => {
+    const { getByLabelText } = render(
+      <Runtime authoredState={authoredState} interactiveState={null} setInteractiveState={jest.fn()} report={true} />
+    );
+    expect(getByLabelText("Slide 1 of 2")).not.toHaveAttribute("inert");
+    expect(getByLabelText("Slide 2 of 2")).not.toHaveAttribute("inert");
   });
 });

@@ -11,6 +11,20 @@
   --cc-carousel-nav-disabled: #767676; // disabled prev/next arrows — ≥3:1 on white (WCAG 1.4.11)
 }
 
+// Visually hidden but available to assistive technology (e.g. the slide-change live region).
+// Uses clip/absolute positioning rather than display:none so screen readers still announce it.
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
 .runtime {
   button {
     @include ap-button;
@@ -57,49 +71,68 @@ nav {
     border: none;
     border-radius: 50%;
     cursor: pointer;
-    height: 20px;
+    height: 24px; // WCAG 2.2 SC 2.5.8: ≥24px pointer target
     margin: 15px 0 10px 15px;
     overflow: hidden;
     padding: 0;
     text-indent: 200%;
     white-space: nowrap;
-    width: 20px;
+    width: 24px;
 
+    // Nav buttons live outside .runtime, so they don't inherit the ap-button focus ring.
+    // Give them their own visible focus indicator (WCAG 2.4.7). The outline follows the
+    // border-radius, so it renders as a ring around the round dots and a box around the
+    // triangle buttons (whose 24×24 border-box encloses the arrow).
+    &:focus-visible {
+      @include native-focus-ring(3px);
+    }
     &:hover {
       background: var(--cc-carousel-nav-hover);
     }
     &.activeButton {
       background: var(--cc-orange-dark-1);
     }
+    // Non-color cue for the active dot so it's distinguishable without relying on hue
+    // (WCAG 1.4.1): a white gap + orange ring plus a size bump. Custom-image buttons have
+    // their own border/scale cue below, so this is scoped to the default dots.
+    &.activeButton:not(.customButton) {
+      box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--cc-orange-dark-1);
+      transform: scale(1.25);
+    }
     &.prevButton, &.nextButton {
+      // Border-drawn triangles: the 24px border box is the pointer target (WCAG 2.5.8),
+      // matching the round dots. 12px top/bottom + 24px on the pointing side = 24×24.
       background: transparent;
-      border-top: solid 10px transparent;
-      border-bottom: solid 10px transparent;
+      border-top: solid 12px transparent;
+      border-bottom: solid 12px transparent;
       border-radius: 0;
       height: 0;
       width: 0;
     }
     &.prevButton {
-      border-right: solid 20px var(--cc-carousel-nav);
+      border-right: solid 24px var(--cc-carousel-nav);
 
-      &:hover:not(.disabled) {
+      &:hover:not([aria-disabled="true"]) {
         border-right-color: var(--cc-carousel-nav-hover);
       }
-      &.disabled {
+      &[aria-disabled="true"] {
         border-right-color: var(--cc-carousel-nav-disabled);
       }
     }
     &.nextButton {
-      border-left: solid 20px var(--cc-carousel-nav);
+      border-left: solid 24px var(--cc-carousel-nav);
 
-      &:hover:not(.disabled) {
+      &:hover:not([aria-disabled="true"]) {
         border-left-color: var(--cc-carousel-nav-hover);
       }
-      &.disabled {
+      &[aria-disabled="true"] {
         border-left-color: var(--cc-carousel-nav-disabled);
       }
     }
-    &.disabled {
+    // Prev/Next use aria-disabled (not the native `disabled` attribute) so the button keeps
+    // focus at the slide boundaries; the click handlers no-op there. Style the aria state to
+    // match the old disabled look.
+    &[aria-disabled="true"] {
       cursor: not-allowed;
       opacity: .8;
     }
@@ -116,10 +149,19 @@ nav {
       max-height: 100px;
       width: 150px;
 
-      &:hover, &.activeButton {
+      &:hover {
         background-color: transparent;
         border: solid 2px var(--cc-orange-dark-1);
         transform: scale(1.1);
+      }
+      // Active custom button: a stronger cue than hover — the same white-gap + orange ring the
+      // default active dot uses (see &.activeButton:not(.customButton) above) plus a larger
+      // bump — so the current slide stays distinguishable from a merely-hovered one (WCAG 1.4.1).
+      &.activeButton {
+        background-color: transparent;
+        border: solid 2px var(--cc-orange-dark-1);
+        box-shadow: 0 0 0 2px var(--white), 0 0 0 4px var(--cc-orange-dark-1);
+        transform: scale(1.15);
       }
     }
   }

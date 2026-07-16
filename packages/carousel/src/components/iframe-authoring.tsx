@@ -118,8 +118,28 @@ export const IframeAuthoring: React.FC<FieldProps> = props => {
       {
         libraryInteractiveId &&
         <div className={interactiveWrapperClass}>
-          <h4 onClick={handleHeaderClick} className={css.link} data-cy="subquestion-authoring">{authoringOpened ? "▼" : "▶"} Subquestion Authoring</h4>
-          <div className={css.iframeContainer} style={{maxHeight: authoringOpened ? iframeHeight : 0 }}>
+          <h4>
+            <button type="button" className={css.headerToggle} aria-expanded={authoringOpened} onClick={handleHeaderClick} data-cy="subquestion-authoring">
+              {authoringOpened ? "▼" : "▶"} Subquestion Authoring
+            </button>
+          </h4>
+          <div
+            className={css.iframeContainer}
+            // When collapsed the panel is only visually clipped (maxHeight: 0), so its inputs and
+            // iframe would otherwise stay in the tab order — tabbing off the toggle would drop focus
+            // into the hidden panel. Mark it `inert` while closed to remove it from the tab order and
+            // from AT, matching aria-expanded. `inert` isn't a typed React 17 prop, so we toggle the
+            // attribute directly via a ref callback (same approach as the runtime's off-screen slides).
+            ref={el => {
+              if (!el) return;
+              if (authoringOpened) {
+                el.removeAttribute("inert");
+              } else {
+                el.setAttribute("inert", "");
+              }
+            }}
+            style={{maxHeight: authoringOpened ? iframeHeight : 0 }}
+          >
             <div className={css.navButtonField}>
               <label htmlFor="navImageUrl">Custom Navigation Button Image URL</label>
               <ImageUploadComponent className="form-control" id="navImageUrl" defaultValue={navImageUrl} onChange={handleNavImageUrlChange} tokenServiceClient={tokenServiceClient} />
