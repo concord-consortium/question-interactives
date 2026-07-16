@@ -1,45 +1,5 @@
 @import "./px-to-rem.scss";
-
-// Colors &etc.
-
-:root {
-  --white: #ffffff;
-  --cc-charcoal: #3f3f3f;
-  --cc-charcoal-hint: #828282;
-  --cc-charcoal-light-1: #979797;
-  --cc-charcoal-light-2: #dfdfdf;
-  --cc-teal-dark-2: #016082;
-  --cc-teal-dark-1: #0481a0;
-  --cc-teal-dark-1-alpha-50: rgba(4, 129, 160, 0.5);
-  --cc-teal-dark-1-alpha-0: rgba(4, 129, 160, 0);
-  --cc-teal: #0592af;
-  --cc-teal-light-1: #2ba5c1;
-  --cc-teal-light-2: #6fc6da;
-  --cc-teal-light-3: #93d5e4;
-  --cc-teal-light-4: #b7e2ec;
-  --cc-teal-light-5: #cdebf2;
-  --cc-teal-light-6: #e2f4f8;
-  --cc-teal-light-7: #f5fbfc;
-  --cc-orange-dark-1: #ea6d2f;
-  --cc-orange-dark-1-alpha-35: #f7cab6; // approximates rgba(234, 109, 47, 0.35) w/o transparency;
-  --cc-orange: #ff8415;
-  --cc-orange-light-1: #ffa350;
-  --cc-orange-light-2: #ffc18a;
-  --cc-orange-light-3: #ffcea1;
-  --cc-orange-light-4: #ffe6d0;
-  --cc-orange-light-4-b: #ffeddc;
-  --cc-orange-light-5: #fff2e7;
-  --cc-orange-light-6: #fff9f3;
-  --cc-ap-button-color: #000000;
-  --cc-ap-button-default: #ffba7d;
-  --cc-ap-button-hover: #ff9a42;
-  --cc-ap-button-click: #ff8113;
-  --cc-ap-button-border: #949494;
-  --cc-ap-button-focus-ring: #0957d0;
-  // The browser-native focus ring color (matches native controls like the comment textarea
-  // and the thumbnail delete button). See the native-focus-ring mixin below.
-  --cc-native-focus-ring: #005fcc;
-}
+@import "./variables.scss";
 
 
 $correctColor: #055c05;
