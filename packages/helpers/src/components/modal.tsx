@@ -131,13 +131,13 @@ export const Modal = ({
           )}
         </div>
         <div ref={bodyRef} className={css.modalBody}>
-          {/* OK button is intentionally rendered outside <form> so pressing Enter
+          {/* The confirm button is rendered outside <form> so pressing Enter
               on it doesn't double-fire onConfirm (button click + form submit).
-              Keep it outside if you ever refactor this layout. The <form> wrapper
-              has no submittable content today (just a message div), so it cannot
-              fire onSubmit on its own. If you ever add an <input>/<textarea> inside
-              this body, be aware that Enter inside that field would route to
-              onConfirm — switch to a regular <div> or route submit explicitly. */}
+              The <form> wraps `message`, which may contain an <input>/<textarea>
+              (e.g. a rename dialog) — pressing Enter in such a field submits the
+              form and calls onConfirm, which is intentional. Keep the confirm
+              button outside the form when refactoring; if a future dialog needs
+              Enter to do something other than confirm, handle onSubmit explicitly. */}
           <form onSubmit={onConfirm}>
             <div id={messageId} className={css.modalMessage}>{message}</div>
           </form>
