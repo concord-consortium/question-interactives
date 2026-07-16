@@ -47,4 +47,25 @@ describe("Slider accessibility", () => {
     const node = renderSlider().find('[role="slider"]').getDOMNode();
     expect(node.getAttribute("aria-orientation")).toEqual("vertical");
   });
+
+  it("hides the decorative handle svg from assistive tech", () => {
+    const svg = renderSlider().find('[role="slider"] svg').getDOMNode();
+    expect(svg.getAttribute("aria-hidden")).toEqual("true");
+  });
+
+  it("increases the value on ArrowRight (mirrors ArrowUp)", () => {
+    const handleSliderChange = jest.fn();
+    renderSlider({ handleSliderChange })
+      .find('[role="slider"]').simulate("keydown", { key: "ArrowRight" });
+    expect(handleSliderChange).toHaveBeenCalledWith(
+      renderedBar, 1, { via: "keyboard", key: "ArrowRight", delta: true });
+  });
+
+  it("decreases the value on ArrowLeft (mirrors ArrowDown)", () => {
+    const handleSliderChange = jest.fn();
+    renderSlider({ handleSliderChange })
+      .find('[role="slider"]').simulate("keydown", { key: "ArrowLeft" });
+    expect(handleSliderChange).toHaveBeenCalledWith(
+      renderedBar, -1, { via: "keyboard", key: "ArrowLeft", delta: true });
+  });
 });

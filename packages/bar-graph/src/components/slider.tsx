@@ -77,9 +77,11 @@ export const Slider = ({renderedBar, top, bottom, max, handleSliderChange, label
     const options: SliderChangeCallbackOptions = {via: "keyboard", key: e.key};
     switch (e.key) {
       case "ArrowUp":
+      case "ArrowRight":
         handleSliderChange(renderedBar, 1, {...options, delta: true});
         break;
       case "ArrowDown":
+      case "ArrowLeft":
         handleSliderChange(renderedBar, -1, {...options, delta: true});
         break;
       case "Home":
@@ -148,7 +150,7 @@ export const SliderIconHalfWidth = 14;
 
 export const SliderIcon = () => {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 38 38">
+    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 38 38" aria-hidden="true" focusable="false">
       <defs>
         <filter id="jk8sb59w0a" width="140%" height="140%" x="-20%" y="-20%" filterUnits="objectBoundingBox">
           <feOffset in="SourceAlpha" result="shadowOffsetOuter1" />
