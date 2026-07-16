@@ -26,6 +26,7 @@ export const Header: React.FC<IProps> = (props) => {
   const {savedStates, onShowFileModal} = props;
   const [showMenu, setShowMenu] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
+  const fileMenuButtonRef = useRef<HTMLButtonElement>(null);
   const hasSavedStates = savedStates.length > 1;
 
   const handleMouseDown = (e: React.MouseEvent) => {
@@ -38,6 +39,11 @@ export const Header: React.FC<IProps> = (props) => {
   };
 
   const handleShowFileModal = (fileModal: FileModal) => () => {
+    // Return focus to the persistent File menu button before the menu (and the
+    // activating menu item) unmount. The dialog the parent renders in response
+    // captures this element as the previously focused one and restores focus to
+    // it on close; without this, focus would fall to <body> when the item unmounts.
+    fileMenuButtonRef.current?.focus();
     setShowMenu(false);
     onShowFileModal(fileModal);
   };
@@ -71,6 +77,7 @@ export const Header: React.FC<IProps> = (props) => {
       {showMenu && <div className={css.backdrop} onMouseDown={handleCloseMenu} />}
       <div className={css.fileMenuWrapper} ref={menuRef}>
         <button
+          ref={fileMenuButtonRef}
           className={classNames(css.fileMenuButton, {[css.active]: showMenu})}
           onMouseDown={handleMouseDown}
           aria-expanded={showMenu}

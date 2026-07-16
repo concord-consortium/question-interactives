@@ -71,7 +71,7 @@ describe("Modal", () => {
       expect(onCancel).toHaveBeenCalled();
     });
 
-    it("does not move initial focus to the OK button", () => {
+    it("moves initial focus to the first focusable in the body (Cancel when the message has none), not the X close button", () => {
       render(
         <Modal
           {...defaultProps}
@@ -79,8 +79,112 @@ describe("Modal", () => {
           onCancel={jest.fn()}
         />
       );
-      // In confirm mode there is no initial focus management.
-      expect(document.activeElement).not.toBe(screen.getByRole("button", { name: "OK" }));
+      // Initial focus skips the title-bar X and lands on the first focusable
+      // inside the modal body. With a plain-text message that is the Cancel
+      // button (the safe default for a confirm dialog).
+      expect(document.activeElement).toBe(screen.getByRole("button", { name: "Cancel" }));
+      expect(document.activeElement).not.toBe(screen.getByRole("button", { name: "Close" }));
+    });
+
+    it("moves initial focus to a form field inside the message when present", () => {
+      render(
+        <Modal
+          {...defaultProps}
+          message={<div><input data-testid="name-input" type="text" /></div>}
+          onConfirm={jest.fn()}
+          onCancel={jest.fn()}
+        />
+      );
+      expect(document.activeElement).toBe(screen.getByTestId("name-input"));
+    });
+
+    it("calls onCancel when Escape is pressed (and not onConfirm)", () => {
+      const onConfirm = jest.fn();
+      const onCancel = jest.fn();
+      render(
+        <Modal
+          {...defaultProps}
+          onConfirm={onConfirm}
+          onCancel={onCancel}
+        />
+      );
+      const dialog = screen.getByRole("dialog");
+      fireEvent.keyDown(dialog, { key: "Escape" });
+      expect(onCancel).toHaveBeenCalled();
+      expect(onConfirm).not.toHaveBeenCalled();
+    });
+
+    it("traps focus, wrapping Tab from the last focusable back to the first", async () => {
+      const user = userEvent.setup();
+      render(
+        <Modal
+          {...defaultProps}
+          onConfirm={jest.fn()}
+          onCancel={jest.fn()}
+        />
+      );
+      const close = screen.getByRole("button", { name: "Close" });
+      const ok = screen.getByRole("button", { name: "OK" });
+      // Tabbing forward off the last focusable (OK) wraps to the first (X close).
+      ok.focus();
+      await user.tab();
+      expect(document.activeElement).toBe(close);
+      // Shift+Tab off the first focusable (X close) wraps to the last (OK).
+      close.focus();
+      await user.tab({ shift: true });
+      expect(document.activeElement).toBe(ok);
+    });
+
+    it("restores focus to the previously focused element on cancel", () => {
+      const Wrapper = () => {
+        const [open, setOpen] = React.useState(false);
+        return (
+          <div>
+            <button onClick={() => setOpen(true)} data-testid="opener">open</button>
+            {open && (
+              <Modal
+                {...defaultProps}
+                onConfirm={() => setOpen(false)}
+                onCancel={() => setOpen(false)}
+              />
+            )}
+          </div>
+        );
+      };
+      render(<Wrapper />);
+      const opener = screen.getByTestId("opener");
+      opener.focus();
+      fireEvent.click(opener);
+      expect(screen.getByRole("dialog")).toBeInTheDocument();
+      fireEvent.click(screen.getByRole("button", { name: "Cancel" }));
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(document.activeElement).toBe(opener);
+    });
+
+    it("restores focus to the previously focused element on dismiss via Escape", () => {
+      const Wrapper = () => {
+        const [open, setOpen] = React.useState(false);
+        return (
+          <div>
+            <button onClick={() => setOpen(true)} data-testid="opener">open</button>
+            {open && (
+              <Modal
+                {...defaultProps}
+                onConfirm={() => setOpen(false)}
+                onCancel={() => setOpen(false)}
+              />
+            )}
+          </div>
+        );
+      };
+      render(<Wrapper />);
+      const opener = screen.getByTestId("opener");
+      opener.focus();
+      fireEvent.click(opener);
+      const dialog = screen.getByRole("dialog");
+      fireEvent.keyDown(dialog, { key: "Escape" });
+      expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
+      expect(document.activeElement).toBe(opener);
     });
   });
 
@@ -226,6 +330,28 @@ describe("Modal", () => {
   });
 
   describe("both modes", () => {
+    it.each([
+      ["confirm", "confirm" as const],
+      ["alert", "alert" as const],
+    ])("stops Escape from propagating to ancestors (%s mode)", (_label, mode) => {
+      const ancestorKeyDown = jest.fn();
+      render(
+        <div onKeyDown={ancestorKeyDown}>
+          <Modal
+            {...defaultProps}
+            mode={mode}
+            onConfirm={jest.fn()}
+            onCancel={jest.fn()}
+          />
+        </div>
+      );
+      const dialog = screen.getByRole("dialog");
+      fireEvent.keyDown(dialog, { key: "Escape" });
+      // Dismissal must be self-contained: an ancestor (e.g. the Blockly workspace,
+      // which also listens for Escape) must not receive the same keypress.
+      expect(ancestorKeyDown).not.toHaveBeenCalled();
+    });
+
     it.each([
       ["confirm", "confirm" as const],
       ["alert", "alert" as const],

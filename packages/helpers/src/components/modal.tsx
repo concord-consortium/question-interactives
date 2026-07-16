@@ -6,6 +6,11 @@ import CloseIcon from "../assets/close-icon.svg";
 
 import css from "./modal.scss";
 
+// Elements considered focusable for initial focus and the focus trap.
+const FOCUSABLE_SELECTOR =
+  'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), ' +
+  'textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 interface Props {
   variant: "teal" | "orange";
   title: string;
@@ -18,9 +23,11 @@ interface Props {
        | React.KeyboardEvent<HTMLDivElement>
   ) => void;
   onCancel: () => void;
-  // Optional mode. Defaults to "confirm" (existing behavior). In "alert" mode the Cancel
-  // button and X close button are hidden, and full focus management is applied: initial
-  // focus on the confirm button, focus trap, Escape dismisses, focus is restored on close.
+  // Optional mode. Defaults to "confirm". Both modes apply full focus management:
+  // initial focus is moved into the dialog, Tab is trapped within it, Escape dismisses,
+  // and focus is restored to the previously focused element on close. In "alert" mode the
+  // Cancel and X close buttons are hidden and Escape routes to onConfirm (dismiss == OK);
+  // in "confirm" mode Escape routes to onCancel (dismiss without acting).
   mode?: "confirm" | "alert";
 }
 
@@ -34,15 +41,19 @@ export const Modal = ({
   // React 17 lacks useId; useMemo with a uuid achieves the same per-instance uniqueness.
   const titleId = useMemo(() => `modal-title-${uuid()}`, []);
   const messageId = useMemo(() => `modal-message-${uuid()}`, []);
-  const confirmButtonRef = useRef<HTMLButtonElement>(null);
+  const bodyRef = useRef<HTMLDivElement>(null);
   const overlayRef = useRef<HTMLDivElement>(null);
   const previouslyFocusedRef = useRef<Element | null>(null);
 
-  // Initial focus + focus restore (alert mode only).
+  // Initial focus + focus restore (both modes). Mode never changes for a given
+  // mounted modal, so this runs once on open and cleans up on close.
   useEffect(() => {
-    if (!isAlert) return;
     previouslyFocusedRef.current = document.activeElement;
-    confirmButtonRef.current?.focus();
+    // Move initial focus to the first focusable inside the modal body, which
+    // deliberately skips the title-bar Close (X). In alert mode that is the OK
+    // button; in confirm mode it is the first form field, or the Cancel button
+    // when the body has no field (the safe default for a destructive confirm).
+    bodyRef.current?.querySelector<HTMLElement>(FOCUSABLE_SELECTOR)?.focus();
     return () => {
       const prev = previouslyFocusedRef.current as HTMLElement | null;
       if (prev && document.contains(prev) && typeof prev.focus === "function") {
@@ -54,27 +65,30 @@ export const Modal = ({
         (document.activeElement as HTMLElement | null)?.blur?.();
       }
     };
-  }, [isAlert]);
+  }, []);
 
-  // Escape dismisses + focus trap (alert mode only).
+  // Escape dismisses + focus trap (both modes).
   const handleKeyDown = useCallback((e: React.KeyboardEvent<HTMLDivElement>) => {
-    if (!isAlert) return;
     if (e.key === "Escape") {
       e.preventDefault();
-      // Route Escape to onConfirm (not onCancel) in alert mode so it dismisses
-      // identically to clicking OK by construction. Otherwise a caller passing
-      // different handlers for onConfirm vs onCancel could silently violate the
-      // requirement that Escape and OK behave identically. The onConfirm prop
+      // Keep dismissal self-contained: don't let Escape bubble to an ancestor
+      // (e.g. the Blockly workspace, which also listens for Escape) and trigger
+      // a second, unrelated action from the same keypress.
+      e.stopPropagation();
+      // Route Escape per mode so it mirrors the modal's own dismiss affordance:
+      // in alert mode to onConfirm (dismiss == the single OK button), in confirm
+      // mode to onCancel (dismiss without acting == Cancel/X). The onConfirm prop
       // signature includes React.KeyboardEvent<HTMLDivElement> in its union to
-      // accept this path without a cast.
-      onConfirm(e);
+      // accept the alert path without a cast.
+      if (isAlert) {
+        onConfirm(e);
+      } else {
+        onCancel();
+      }
       return;
     }
     if (e.key === "Tab" && overlayRef.current) {
-      const focusables = overlayRef.current.querySelectorAll<HTMLElement>(
-        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), ' +
-        'textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
-      );
+      const focusables = overlayRef.current.querySelectorAll<HTMLElement>(FOCUSABLE_SELECTOR);
       if (focusables.length === 0) return;
       if (focusables.length === 1) {
         // Single focusable (alert mode's OK button): prevent Tab from moving
@@ -94,7 +108,7 @@ export const Modal = ({
         first.focus();
       }
     }
-  }, [isAlert, onConfirm]);
+  }, [isAlert, onConfirm, onCancel]);
 
   return (
     <div
@@ -116,14 +130,14 @@ export const Modal = ({
             </button>
           )}
         </div>
-        <div className={css.modalBody}>
-          {/* OK button is intentionally rendered outside <form> so pressing Enter
+        <div ref={bodyRef} className={css.modalBody}>
+          {/* The confirm button is rendered outside <form> so pressing Enter
               on it doesn't double-fire onConfirm (button click + form submit).
-              Keep it outside if you ever refactor this layout. The <form> wrapper
-              has no submittable content today (just a message div), so it cannot
-              fire onSubmit on its own. If you ever add an <input>/<textarea> inside
-              this body, be aware that Enter inside that field would route to
-              onConfirm — switch to a regular <div> or route submit explicitly. */}
+              The <form> wraps `message`, which may contain an <input>/<textarea>
+              (e.g. a rename dialog) — pressing Enter in such a field submits the
+              form and calls onConfirm, which is intentional. Keep the confirm
+              button outside the form when refactoring; if a future dialog needs
+              Enter to do something other than confirm, handle onSubmit explicitly. */}
           <form onSubmit={onConfirm}>
             <div id={messageId} className={css.modalMessage}>{message}</div>
           </form>
@@ -134,7 +148,6 @@ export const Modal = ({
               </button>
             )}
             <button
-              ref={confirmButtonRef}
               onClick={onConfirm}
               className={classnames(css.modalConfirmButton, css[variant])}
             >
