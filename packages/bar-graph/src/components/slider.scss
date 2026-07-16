@@ -1,5 +1,24 @@
+@import "../../../helpers/src/styles/variables.scss";
+
 .slider {
   position: absolute;
+
+  // Draw a visible keyboard focus ring on the svg handle so keyboard focus is
+  // at least as clear as the hover/active affordance. --cc-teal is 3.66:1 on the
+  // white plot area, meeting WCAG 1.4.11 Non-text Contrast (>=3:1).
+  //
+  // Suppress the UA outline only under :focus-visible (not plain :focus): in
+  // modern browsers keyboard focus shows just our ring, while pointer focus is
+  // already outline-free via the browser's own :focus-visible heuristic.
+  // Browsers WITHOUT :focus-visible support drop this rule entirely, keeping
+  // the default UA outline as a fallback focus indicator rather than none.
+  &:focus-visible {
+    outline: none;
+
+    svg {
+      box-shadow: 0 0 0 3px var(--cc-teal);
+    }
+  }
 
   svg {
     border-radius: 50%;

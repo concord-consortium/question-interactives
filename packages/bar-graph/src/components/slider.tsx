@@ -13,9 +13,11 @@ interface IProps {
   bottom: number;
   max: number;
   handleSliderChange: SliderChangeCallback;
+  label: string;
+  valueText?: string;
 }
 
-export const Slider = ({renderedBar, top, bottom, max, handleSliderChange}: IProps) => {
+export const Slider = ({renderedBar, top, bottom, max, handleSliderChange, label, valueText}: IProps) => {
   const {index} = renderedBar;
   const style: React.CSSProperties = {
     top: renderedBar.top - SliderIconHalfHeight,
@@ -75,9 +77,11 @@ export const Slider = ({renderedBar, top, bottom, max, handleSliderChange}: IPro
     const options: SliderChangeCallbackOptions = {via: "keyboard", key: e.key};
     switch (e.key) {
       case "ArrowUp":
+      case "ArrowRight":
         handleSliderChange(renderedBar, 1, {...options, delta: true});
         break;
       case "ArrowDown":
+      case "ArrowLeft":
         handleSliderChange(renderedBar, -1, {...options, delta: true});
         break;
       case "Home":
@@ -128,9 +132,12 @@ export const Slider = ({renderedBar, top, bottom, max, handleSliderChange}: IPro
       tabIndex={tabIndex}
       onKeyDown={handleKeyDown}
       role="slider"
+      aria-label={label}
+      aria-orientation="vertical"
       aria-valuemin={0}
       aria-valuemax={max}
       aria-valuenow={renderedBar.value}
+      aria-valuetext={valueText}
       data-cy={`slider${renderedBar.index}`}
     >
       <SliderIcon />
@@ -143,7 +150,7 @@ export const SliderIconHalfWidth = 14;
 
 export const SliderIcon = () => {
   return (
-    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 38 38">
+    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 38 38" aria-hidden="true" focusable="false">
       <defs>
         <filter id="jk8sb59w0a" width="140%" height="140%" x="-20%" y="-20%" filterUnits="objectBoundingBox">
           <feOffset in="SourceAlpha" result="shadowOffsetOuter1" />
