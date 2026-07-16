@@ -38,4 +38,14 @@ describe("IframeAuthoring collapsible header", () => {
     fireEvent.click(toggle);
     expect(toggle).toHaveAttribute("aria-expanded", "false");
   });
+
+  it("marks the collapsed panel inert so its inputs stay out of the tab order, and clears it when opened", () => {
+    const { getByRole, getAllByTestId } = render(<IframeAuthoring {...baseProps} />);
+    // The image-upload inputs live inside the collapsible panel.
+    const panelInput = getAllByTestId("image-upload")[0];
+    expect(panelInput.closest("[inert]")).not.toBeNull();
+
+    fireEvent.click(getByRole("button", { name: /Subquestion Authoring/ }));
+    expect(panelInput.closest("[inert]")).toBeNull();
+  });
 });
