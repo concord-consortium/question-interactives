@@ -1,4 +1,5 @@
 name: Perform Release
+run-name: Release ${{ github.event.inputs.version }}
 
 on:
   workflow_dispatch:
@@ -20,14 +21,13 @@ env:
   PREFIX: ${{ github.event.repository.name }}
   SRC_FILE: index-top.html
   DEST_FILE: ${{ github.event.inputs.release-type }}
-  AWS_DEFAULT_REGION: us-east-1
-  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 
 jobs:
   release:
     name: Copy [interactive]/index-top.html
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
     strategy:
       matrix:
         include:
@@ -55,6 +55,10 @@ jobs:
           - INTERACTIVE_FOLDER: video-player
           - INTERACTIVE_FOLDER: wrapper
     steps:
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::612297603577:role/question-interactives
+          aws-region: us-east-1
       - name: Set S3 Paths
         run: |
           echo "S3_VERSIONED_INTERACTIVE_PATH=s3://${{ env.BUCKET }}/${{ env.PREFIX }}/version/${{ github.event.inputs.version }}/${{ matrix.INTERACTIVE_FOLDER }}" >> $GITHUB_ENV
