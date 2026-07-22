@@ -75,6 +75,10 @@ jobs:
       - build_test
       - cypress
     runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      deployments: write
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -86,6 +90,10 @@ jobs:
           # Skip installing Cypress since it isn't needed for just building
           # This decreases the deploy time quite a bit
           CYPRESS_INSTALL_BINARY: 0
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::612297603577:role/question-interactives
+          aws-region: us-east-1
       - name: Deploy files to Amazon S3
         uses: concord-consortium/s3-deploy-action@v1
         with:
@@ -95,8 +103,6 @@ jobs:
           build: npm run build -- --concurrency 3
           bucket: models-resources
           prefix: ${{ github.event.repository.name }} # 'question-interactives'
-          awsAccessKeyId: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          awsSecretAccessKey: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           githubToken: ${{ secrets.GITHUB_TOKEN }}
           deployRunUrl: https://models-resources.concord.org/question-interactives/__deployPath__/
           # Add the default branch as a top branch

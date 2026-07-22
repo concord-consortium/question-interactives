@@ -97,6 +97,8 @@ Use the following steps to add a new interactive:
 
 ## Deployment
 
+S3 deployment uses OIDC for AWS authentication — see [deploy-setup.md in starter-projects](https://github.com/concord-consortium/starter-projects/blob/main/doc/deploy-setup.md) for how the AWS side is set up, and [doc/deploy.md](doc/deploy.md) for how deploys work in this repo.
+
 Production releases to S3 are based on the contents of the `/dist` folder and are built automatically by GitHub Actions
 for each branch pushed to GitHub and each merge into production.
 
