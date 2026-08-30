@@ -1,0 +1,123 @@
+@import "./_shared-button-styles.scss";
+
+.controlPanel {
+  align-items: center;
+  background: var(--cc-teal-light-5);
+  container-type: inline-size;
+  display: flex;
+  margin: 0;
+  padding: 8px;
+  width: 100%;
+
+  &.actionControls {
+    align-items: center;
+    gap: 8px;
+    height: 50px;
+
+    button {
+      @include interactive-button-base;
+      border-radius: 50%;
+      flex-shrink: 0;
+
+      &.updateButton {
+        background-color: #ffffdd;
+        border: 1px solid #333;
+
+        &:not([disabled]) {
+          animation: pulse-shadow 1.75s ease infinite;
+        }
+
+        &:disabled {
+          background-color: var(--cc-teal-light-4);
+          border-color: #b8b8b8;
+        }
+      }
+
+      &.recording {
+        background-color: white;
+
+        &:hover, &:focus {
+          background-color: var(--cc-orange-light-2);
+        }
+        &:active {
+          background-color: var(--cc-orange-dark-1);
+          border-color: white;
+
+          svg {
+            circle {
+              fill: white;
+            }
+          }
+        }
+      }
+    }
+
+    .deleteRecordingButton {
+      @include interactive-button-orange;
+    }
+
+    @keyframes pulse-shadow {
+      0% {
+        box-shadow: 0 0 0 0 var(--cc-teal-dark-1-alpha-50);
+      }
+      100% {
+        box-shadow: 0 0 0 8px var(--cc-teal-dark-1-alpha-0);
+      }
+    }
+  }
+
+  .simSpeedControl {
+    align-items: center;
+    border-left: solid 1px var(--cc-teal);
+    display: flex;
+    gap: 8px;
+    margin: 0 0 0 auto;
+    padding: 8px 0 8px 8px;
+    width: 172px;
+
+    @container (max-width: 448px) {
+      gap: 4px;
+      width: 126px;
+    }
+
+    @container (max-width: 396px) {
+      width: 75px;
+    }
+
+    label {
+      display: block;
+      color: var(--cc-charcoal);
+      font-size: 14px;
+      font-weight: 500;
+      margin: 0 0 0 auto;
+      padding: 0;
+
+      @container (max-width: 448px) {
+        font-size: 14px;
+        line-height: 1.2;
+        text-align: center;
+        white-space: normal;
+        word-wrap: break-word;
+      }
+
+      @container (max-width: 396px) {
+        display: none;
+      }
+    }
+
+    select {
+      appearance: none;
+      background: var(--cc-teal-light-5);
+      background-image: url("../assets/arrow-icon.svg");
+      background-position: right 2px center;
+      background-repeat: no-repeat;
+      border: solid 1px #949494;
+      border-radius: 4px;
+      font-size: 16px;
+      height: 34px;
+      margin: 0 0 0 auto;
+      padding: 0 8px;
+      width: 75px;
+    }
+  }
+}
